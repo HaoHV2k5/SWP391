@@ -1,4 +1,4 @@
-package service;
+package com.example.backend.service;
 
 import org.springframework.stereotype.Service;
 
