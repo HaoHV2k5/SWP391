@@ -2,16 +2,19 @@ package com.example.backend.exception;
 
 import com.example.backend.dto.response.ApiResponse;
 import jakarta.validation.ConstraintViolation;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 //import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Map;
 import java.util.Objects;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalException {
     private static final String  MIN_STRING = "min";
 
@@ -21,7 +24,7 @@ public class GlobalException {
         ApiResponse apiResponse = new ApiResponse<>();
         apiResponse.setCode(errorCode.getCode());
         apiResponse.setMessage(errorCode.getMessage());
-        return ResponseEntity.status(errorCode.getCode()).body(apiResponse);
+        return ResponseEntity.status(errorCode.getHttpStatusCode()).body(apiResponse);
     }
 
     @ExceptionHandler(value = Exception.class)
@@ -30,7 +33,7 @@ public class GlobalException {
         ApiResponse apiResponse = new ApiResponse<>();
         apiResponse.setCode(ErrorCode.UNCATEGORIZED.getCode());
         apiResponse.setMessage(ErrorCode.UNCATEGORIZED.getMessage());
-        return ResponseEntity.status(ErrorCode.UNCATEGORIZED.getCode()).body(apiResponse);
+        return ResponseEntity.status(ErrorCode.UNCATEGORIZED.getHttpStatusCode()).body(apiResponse);
     }
 
 //    @ExceptionHandler(value = AuthorizationDeniedException.class)
@@ -57,15 +60,27 @@ public class GlobalException {
         ApiResponse apiResponse = new ApiResponse<>();
         apiResponse.setCode(errorCode.getCode());
         apiResponse.setMessage(Objects.nonNull(attribute)? mapAttribute(errorCode.getMessage(), attribute): errorCode.getMessage());
-        return ResponseEntity.status(errorCode.getCode()).body(apiResponse);
+        return ResponseEntity.badRequest().body(apiResponse);
 
 
     }
 
     public String mapAttribute(String message, Map<String,Object> attributes){
         String min = String.valueOf(attributes.get(MIN_STRING));
-        return message.replaceAll("{"+MIN_STRING+"}",min);
+        return message.replace("{"+MIN_STRING+"}",min);
 
+    }
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse> handleJsonFormatError(HttpMessageNotReadableException ex) {
+        ApiResponse apiResponse = ApiResponse.builder().code(ErrorCode.DATE_FORMAT_INVALID.getCode()).message(ErrorCode.DATE_FORMAT_INVALID.getMessage()).build();
+        return ResponseEntity.status(ErrorCode.DATE_FORMAT_INVALID.getHttpStatusCode()).body(apiResponse);
+
+    }
+
+    @ExceptionHandler(value = DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse>  handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+        ApiResponse apiResponse = ApiResponse.builder().code(ErrorCode.USER_EXISTED.getCode()).message(ErrorCode.USER_EXISTED.getMessage()).build();
+        return ResponseEntity.status(ErrorCode.USER_EXISTED.getHttpStatusCode()).body(apiResponse);
     }
 
 
