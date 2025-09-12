@@ -1,4 +1,4 @@
-package exception;
+package com.example.backend.exception;
 
 public class AppException extends   RuntimeException{
     private ErrorCode errorCode;
