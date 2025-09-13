@@ -25,6 +25,7 @@ public enum ErrorCode {
     PHONE_INVALID(1014, "phone is not valid", HttpStatus.BAD_REQUEST),
     DATE_FORMAT_INVALID(1014, "Date format is not valid", HttpStatus.BAD_REQUEST),
     PASSWORD_NOT_MATCH(1015, "password do not match", HttpStatus.BAD_REQUEST),
+    USERNAME_NOT_BLANK(1011, "username must not be blank", HttpStatus.BAD_REQUEST),
 
     ;
     private int code;
