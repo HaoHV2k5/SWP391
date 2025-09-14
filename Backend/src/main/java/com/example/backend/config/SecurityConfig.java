@@ -15,8 +15,13 @@ import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -33,7 +38,9 @@ public class SecurityConfig  {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST,WHITE_LIST).permitAll()
-                                .anyRequest().authenticated())
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .anyRequest().authenticated()   
+                )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(  jwtDecoder() )))
                 .oauth2Login(oauth2 -> oauth2.loginPage("/login")
                         .defaultSuccessUrl("/index",true))
@@ -47,6 +54,19 @@ public class SecurityConfig  {
     public JwtDecoder  jwtDecoder() {
         SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(),"HS512");
         return NimbusJwtDecoder.withSecretKey(secretKeySpec).macAlgorithm(MacAlgorithm.HS512).build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(){
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000" ));
+        configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS"));
+        configuration.setAllowCredentials(true);
+        configuration.setAllowedHeaders(Arrays.asList("Authorization","Cache-Control","Content-Type"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**",configuration);
+        return source;
+
     }
 
 

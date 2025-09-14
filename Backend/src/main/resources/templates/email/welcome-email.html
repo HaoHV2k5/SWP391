@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chào mừng đến với EV Exchange</title>
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #eef2f7;
+            margin: 0;
+            padding: 0;
+        }
+        .wrapper {
+            max-width: 650px;
+            margin: 30px auto;
+            background: #ffffff;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        .header {
+            background-color: #0d6efd;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 26px;
+        }
+        .header p {
+            margin: 5px 0 0;
+            font-size: 15px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+            text-align: left;
+            color: #333;
+        }
+        .content h2 {
+            color: #0d6efd;
+        }
+        .highlight {
+            color: #198754;
+            font-weight: bold;
+        }
+        .cta {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .cta a {
+            background: #198754;
+            color: white !important;
+            text-decoration: none;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            display: inline-block;
+            transition: background 0.3s ease;
+        }
+        .cta a:hover {
+            background: #157347;
+        }
+        .footer {
+            background: #f8f9fa;
+            text-align: center;
+            padding: 20px;
+            font-size: 13px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="header">
+        <h1>🚗🔋 EV Exchange</h1>
+        <p>Nền tảng giao dịch xe điện & pin đã qua sử dụng</p>
+    </div>
+
+    <div class="content">
+        <h2>Xin chào <span th:text="${name}">Người dùng</span>,</h2>
+
+        <p>
+            🎉 Chúc mừng bạn đã <span class="highlight">đăng ký thành công</span> tài khoản tại
+            <strong>EV Exchange</strong>!
+        </p>
+
+        <p>
+            Với tài khoản này, bạn có thể:
+        </p>
+        <ul>
+            <li>Đăng tin bán xe điện hoặc pin cũ nhanh chóng.</li>
+            <li>Tìm kiếm sản phẩm phù hợp với nhu cầu.</li>
+            <li>Kết nối an toàn và minh bạch với cộng đồng người dùng.</li>
+        </ul>
+
+        <div class="cta">
+            <a th:href="${loginUrl}">👉 Bắt đầu ngay</a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email.</p>
+        <p>© 2025 EV Exchange. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>
