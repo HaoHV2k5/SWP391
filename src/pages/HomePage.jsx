@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Battery, Car, Zap, Shield, Star, ArrowRight } from "lucide-react";
+import { Car, Zap, Shield, Star, ArrowRight, Battery } from "lucide-react";
+import logoImage from "../assets/images/z7010476232855_5640f4cbb91e0087128c1d8b7fc29d33.jpg";
 
 const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -7,6 +8,20 @@ const HomePage = () => {
   const features = [
     {
       icon: <Battery size={48} className="text-blue-500" />,
+      // icon: (
+      //   <img
+      //     src={logoImage}
+      //     alt="ElectricTrade Logo"
+      //     style={{
+      //       width: "96px",
+      //       height: "96px",
+      //       objectFit: "contain",
+      //       borderRadius: "50%",
+      //       border: "4px solid #3b82f6",
+      //       boxShadow: "0 6px 20px rgba(59, 130, 246, 0.4)",
+      //     }}
+      //   />
+      // ),
       title: "Pin xe điện chất lượng cao",
       description:
         "Các loại pin lithium-ion, pin sắt phosphate với hiệu suất cao và độ bền lâu dài",

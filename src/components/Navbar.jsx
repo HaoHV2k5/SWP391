@@ -1,13 +1,34 @@
 import { Link } from "react-router-dom";
-import { Battery, Car, User, LogOut } from "lucide-react";
+import { Car, User, LogOut } from "lucide-react";
+import logoImage from "../assets/images/z7010476232855_5640f4cbb91e0087128c1d8b7fc29d33.jpg";
 
 const Navbar = ({ user, onLogout }) => {
   return (
     <nav className="navbar">
       <div className="nav-container">
-        <Link to="/" className="logo">
-          <Battery className="inline-block mr-2" size={24} />
-          ElectricTrade
+        <Link
+          to="/"
+          className="logo"
+          style={{ display: "flex", alignItems: "center" }}
+        >
+          <img
+            src={logoImage}
+            alt="ElectricTrade Logo"
+            className="inline-block mr-3"
+            style={{
+              width: "150px",
+              height: "150px",
+              objectFit: "contain",
+              borderRadius: "50%",
+              border: "8px solid #3b82f6",
+              boxShadow: "0 8px 30px rgba(59, 130, 246, 0.4)",
+            }}
+          />
+          <span
+            style={{ fontSize: "1.5rem", fontWeight: "bold", color: "white" }}
+          >
+            ElectricTrade
+          </span>
         </Link>
 
         <ul className="nav-links">
