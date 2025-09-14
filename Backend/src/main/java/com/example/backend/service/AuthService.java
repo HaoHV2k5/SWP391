@@ -58,7 +58,7 @@ public class AuthService {
                 .issuer("swp391.com")
                 .subject(user.getUsername())
                 .issueTime(new Date())
-                .expirationTime(Date.from(Instant.now().plus(1, ChronoUnit.HOURS)))
+                .expirationTime(Date.from(Instant.now().plus(30, ChronoUnit.MINUTES)))
                 .jwtID(UUID.randomUUID().toString())
                 .build();
 
