@@ -23,7 +23,7 @@ import javax.crypto.spec.SecretKeySpec;
 public class SecurityConfig  {
     @Value("${jwt.secret}")
     private String secretKey;
-    private static final String[] WHITE_LIST = {"auth/login", "auth/register"};
+    private static final String[] WHITE_LIST = {"/auth/login", "/users/register"};
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);

@@ -18,6 +18,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final MailService mailService;
     public RegisterResponse createUser(RegisterRequest request){
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new AppException(ErrorCode.USER_EXISTED);
@@ -28,6 +29,7 @@ public class UserService {
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
+        mailService.sendEmail(user.getEmail());
         return userMapper.toRegisterResponse(user);
 
     }
