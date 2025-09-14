@@ -8,10 +8,8 @@ import com.example.backend.dto.response.LoginResponse;
 import com.example.backend.service.AuthService;
 import com.example.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,5 +26,10 @@ public class AuthController {
     public ApiResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request) {
         IntrospectResponse result = uauthService.introspectToken(request);
         return ApiResponse.<IntrospectResponse>builder().data(result).build();
+    }
+//   test login by gg
+    @GetMapping("/me")
+    public Object getCurrentUser(Authentication authentication) {
+        return authentication.getPrincipal();
     }
 }
