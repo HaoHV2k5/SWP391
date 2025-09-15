@@ -28,7 +28,7 @@ import java.util.Arrays;
 public class SecurityConfig  {
     @Value("${jwt.secret}")
     private String secretKey;
-    private static final String[] WHITE_LIST = {"/auth/login", "/users/register"};
+    private static final String[] WHITE_LIST = {"/auth/**", "/users/register"};
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);
@@ -42,8 +42,8 @@ public class SecurityConfig  {
                         .anyRequest().authenticated()   
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(  jwtDecoder() )))
-                .oauth2Login(oauth2 -> oauth2.loginPage("/login")
-                        .defaultSuccessUrl("/index",true))
+                .oauth2Login(oauth2 ->
+                        oauth2.defaultSuccessUrl("/auth/google/success",true))
         ;
 
 
