@@ -28,7 +28,11 @@ import java.util.Arrays;
 public class SecurityConfig  {
     @Value("${jwt.secret}")
     private String secretKey;
-    private static final String[] WHITE_LIST = {"/auth/**", "/users/register"};
+    private static final String[] WHITE_LIST = {
+            "/auth/**",
+            "/users/register",
+            "/permissions/**"
+    };
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);
