@@ -14,4 +14,10 @@ public interface UserMapper {
     @Mapping(source = "email", target = "email")
     User toUser(CreationUserRequest request);
     CreationUserResponse toCreationUserResponse(User user);
+
+    @Mapping(source = "email", target = "username")
+    @Mapping(source = "email", target = "email")
+    User toUser(RegisterRequest request);
+    RegisterResponse toRegisterResponse(User user);
+
 }

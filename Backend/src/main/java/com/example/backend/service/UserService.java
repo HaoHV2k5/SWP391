@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.example.backend.repository.UserRepository;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
@@ -25,32 +26,56 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
     private String LOGIN_URL ="http://localhost:3979/login";
-    public CreationUserResponse createUser(CreationUserRequest request){
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new AppException(ErrorCode.USER_EXISTED);
-        }
-        if (!request.getPassword().equals(request.getConfirmPassword())){
-            throw new AppException(ErrorCode.PASSWORD_NOT_MATCH);
-        }
-
-        User user = userMapper.toUser(request);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-
-
-        try {
-            mailService.sendEmail(user.getEmail(), LOGIN_URL ,user.getFullname());
-        } catch (MessagingException e) {
-            throw new AppException(ErrorCode.EMAIL_SEND_UNSUCCESS);
-        }
-
-        CreationUserResponse creationUserResponse = userMapper.toCreationUserResponse(user);
-        return creationUserResponse;
-
+    public CreationUserResponse createUser(CreationUserRequest request) {
+        User user = processRegister(
+                request.getEmail(),
+                request.getPassword(),
+                request.getConfirmPassword(),
+                () -> userMapper.toUser(request)
+        );
+        return userMapper.toCreationUserResponse(user);
     }
 
     public List<User> getUsers(){
         List<User> users = userRepository.findAll();
         return users;
+    }
+
+
+
+    public RegisterResponse registerUser(RegisterRequest request) {
+        User user = processRegister(
+                request.getEmail(),
+                request.getPassword(),
+                request.getConfirmPassword(),
+                () -> userMapper.toUser(request)
+        );
+        return userMapper.toRegisterResponse(user);
+    }
+
+
+    private User processRegister(String email,
+                                 String password,
+                                 String confirmPassword,
+                                 Supplier<User> userSupplier) {
+
+        if (userRepository.existsByEmail(email)) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
+        if (!password.equals(confirmPassword)) {
+            throw new AppException(ErrorCode.PASSWORD_NOT_MATCH);
+        }
+
+        User user = userSupplier.get();
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        userRepository.save(user);
+
+        try {
+            mailService.sendEmail(user.getEmail(), LOGIN_URL, user.getFullname());
+        } catch (MessagingException e) {
+            throw new AppException(ErrorCode.EMAIL_SEND_UNSUCCESS);
+        }
+
+        return user;
     }
 }

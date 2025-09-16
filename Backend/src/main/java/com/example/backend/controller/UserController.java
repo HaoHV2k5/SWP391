@@ -16,31 +16,18 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/admin")
+@RequestMapping("/users")
 @Slf4j
 public class UserController {
     private final UserService userService;
-//    @PostMapping("/register")
-//    public ApiResponse<RegisterResponse> register(@RequestBody @Valid  RegisterRequest request){
-//
-//        RegisterResponse registerResponse = userService.createUser(request);
-//        return ApiResponse.<RegisterResponse>builder().data(registerResponse).build();
-//    }
+    @PostMapping("/register")
+    public ApiResponse<RegisterResponse> register(@RequestBody @Valid  RegisterRequest request){
 
-
-    @GetMapping("/users")
-    public ApiResponse<List<User>> getUsers(){
-        List<User> users = userService.getUsers();
-        return ApiResponse.<List<User>>builder()
-                .data(users)
-                .build();
+        RegisterResponse registerResponse = userService.registerUser(request);
+        return ApiResponse.<RegisterResponse>builder().data(registerResponse).build();
     }
 
-    @PostMapping("/createUser")
-    public ApiResponse<CreationUserResponse> register(@RequestBody @Valid CreationUserRequest request){
 
-        CreationUserResponse creationUserResponse = userService.createUser(request);
-        return ApiResponse.<CreationUserResponse>builder().data(creationUserResponse).build();
-    }
+
 
 }
