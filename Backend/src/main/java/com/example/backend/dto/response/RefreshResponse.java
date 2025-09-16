@@ -9,5 +9,5 @@ public class RefreshResponse {
 
     private String token;
     private String refreshToken;
-    
+
 }

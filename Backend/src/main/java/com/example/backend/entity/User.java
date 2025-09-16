@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Entity
 @Data
@@ -39,4 +40,10 @@ public class User {
 
     @Column(columnDefinition = "NVARCHAR(255)")
     private String address;
+
+    @ManyToMany
+    private Set<Role>  roles;
+
+
+
 }
