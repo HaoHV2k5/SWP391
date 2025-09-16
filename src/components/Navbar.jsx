@@ -14,7 +14,7 @@ const Navbar = ({ user, onLogout }) => {
           <img
             src={logoImage}
             alt="ElectricTrade Logo"
-            className="inline-block mr-3"
+            className="inline-block mr-6"
             style={{
               width: "150px",
               height: "150px",
@@ -25,7 +25,7 @@ const Navbar = ({ user, onLogout }) => {
             }}
           />
           <span
-            style={{ fontSize: "1.5rem", fontWeight: "bold", color: "white" }}
+            style={{ fontSize: "1.5rem", fontWeight: "bold", color: "white  " }}
           >
             ElectricTrade
           </span>

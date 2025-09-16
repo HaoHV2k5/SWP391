@@ -8,27 +8,14 @@ const HomePage = () => {
   const features = [
     {
       icon: <Battery size={48} className="text-blue-500" />,
-      // icon: (
-      //   <img
-      //     src={logoImage}
-      //     alt="ElectricTrade Logo"
-      //     style={{
-      //       width: "96px",
-      //       height: "96px",
-      //       objectFit: "contain",
-      //       borderRadius: "50%",
-      //       border: "4px solid #3b82f6",
-      //       boxShadow: "0 6px 20px rgba(59, 130, 246, 0.4)",
-      //     }}
-      //   />
-      // ),
+
       title: "Pin xe điện chất lượng cao",
       description:
         "Các loại pin lithium-ion, pin sắt phosphate với hiệu suất cao và độ bền lâu dài",
     },
     {
       icon: <Car size={48} className="text-green-500" />,
-      title: "Xe điện qua sử dụng",
+      title: "Xe điện đã qua sử dụng",
       description:
         "Xe điện đã qua sử dụng được kiểm định kỹ lưỡng, đảm bảo chất lượng",
     },
