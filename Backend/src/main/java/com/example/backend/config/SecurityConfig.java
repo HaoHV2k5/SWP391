@@ -28,20 +28,23 @@ import java.util.Arrays;
 public class SecurityConfig  {
     @Value("${jwt.secret}")
     private String secretKey;
+
     private static final String[] WHITE_LIST = {
             "/auth/**",
             "/users/register",
             "/permissions/**"
     };
+    
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {//cogig chặn quyền truy cập ai mới có được quyền dùng
         http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST,WHITE_LIST).permitAll()
+                .authorizeHttpRequests(request -> request.requestMatchers(WHITE_LIST).permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()   
                 )
