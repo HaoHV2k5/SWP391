@@ -71,36 +71,40 @@ const HomePage = () => {
     <div className="homepage" style={{ width: "100%", overflowX: "hidden" }}>
       {/* Hero Section */}
       <section
-        className="hero"
+        className="hero fpt-hero"
         style={{
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          color: "white",
-          padding: "4rem 0",
-          textAlign: "center",
+          background:
+            "radial-gradient(1200px 420px at 30% -10%, rgba(33,150,243,.35), rgba(0,0,0,0))," +
+            "radial-gradient(900px 380px at 90% -20%, rgba(2,132,199,.30), rgba(0,0,0,0))," +
+            "linear-gradient(180deg, rgba(11,18,32,1) 0%, rgba(10,17,30,1) 100%)",
+          color: "#fff",
+          padding: "3.4rem 0",
         }}
       >
         <div
           className="container"
-          style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 2rem" }}
+          style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 1.25rem" }}
         >
-          <h1
-            style={{
-              fontSize: "3rem",
-              marginBottom: "1rem",
-              fontWeight: "bold",
-            }}
-          >
-            Nền tảng giao dịch pin và xe điện
-          </h1>
-          <p style={{ fontSize: "1.2rem", marginBottom: "2rem", opacity: 0.9 }}>
-            Kết nối người mua và bán pin, xe điện qua sử dụng một cách an toàn
-            và tiện lợi
-          </p>
+          <div style={{ textAlign: "center" }}>
+            <h1
+              style={{
+                fontSize: "3rem",
+                marginBottom: ".5rem",
+                fontWeight: 900,
+                letterSpacing: ".3px",
+              }}
+            >
+              Nền tảng giao dịch pin và xe điện
+            </h1>
+            <p style={{ fontSize: "1.1rem", marginBottom: "1.25rem", opacity: 0.9, color: "#e5e5e5" }}>
+              Kết nối người mua và bán pin, xe điện đã qua sử dụng — an toàn, tiện lợi
+            </p>
+          </div>
 
           <div
             style={{
               display: "flex",
-              gap: "1rem",
+              gap: ".75rem",
               justifyContent: "center",
               flexWrap: "wrap",
             }}
@@ -111,19 +115,19 @@ const HomePage = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
-                padding: "1rem",
-                borderRadius: "5px",
-                border: "none",
+                padding: "0.9rem 1rem",
+                borderRadius: "10px",
+                border: "2px solid #2196f3",
+                background: "#ffffff",
+                color: "#0e1b2b",
                 fontSize: "1rem",
                 minWidth: "300px",
                 flex: "1",
-                maxWidth: "400px",
+                maxWidth: "520px",
+                outline: "none",
               }}
             />
-            <button
-              className="btn btn-primary"
-              style={{ padding: "1rem 2rem" }}
-            >
+            <button className="btn btn-primary" style={{ padding: "0.9rem 1.25rem", fontWeight: 800 }}>
               Tìm kiếm
             </button>
           </div>
@@ -131,17 +135,18 @@ const HomePage = () => {
       </section>
 
       {/* Features Section */}
-      <section style={{ padding: "4rem 0", backgroundColor: "white" }}>
+      <section style={{ padding: "3rem 0", background: "#f5fbff" }}>
         <div
           className="container"
-          style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 2rem" }}
+          style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 1.25rem" }}
         >
           <h2
             style={{
               textAlign: "center",
-              marginBottom: "3rem",
-              fontSize: "2.5rem",
-              color: "#333",
+              marginBottom: "2rem",
+              fontSize: "2.2rem",
+              color: "#1565c0",
+              fontWeight: 900,
             }}
           >
             Tại sao chọn chúng tôi?
@@ -152,14 +157,14 @@ const HomePage = () => {
                 <div style={{ marginBottom: "1rem" }}>{feature.icon}</div>
                 <h3
                   style={{
-                    marginBottom: "1rem",
-                    fontSize: "1.5rem",
-                    color: "#333",
+                    marginBottom: "0.75rem",
+                    fontSize: "1.35rem",
+                    color: "#0e1b2b",
                   }}
                 >
                   {feature.title}
                 </h3>
-                <p style={{ color: "#666", lineHeight: "1.6" }}>
+                <p style={{ color: "#4f6b8a", lineHeight: "1.6" }}>
                   {feature.description}
                 </p>
               </div>
@@ -169,20 +174,20 @@ const HomePage = () => {
       </section>
 
       {/* Products Section */}
-      <section style={{ padding: "4rem 0", backgroundColor: "#f8f9fa" }}>
+      <section style={{ padding: "3rem 0", background: "#ffffff" }}>
         <div
           className="container"
-          style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 2rem" }}
+          style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 1.25rem" }}
         >
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: "3rem",
+              marginBottom: "2rem",
             }}
           >
-            <h2 style={{ fontSize: "2.5rem", color: "#333" }}>
+            <h2 style={{ fontSize: "2.1rem", color: "#0e1b2b", fontWeight: 900 }}>
               Sản phẩm nổi bật
             </h2>
             <button className="btn btn-secondary">
@@ -195,11 +200,11 @@ const HomePage = () => {
               <div
                 key={product.id}
                 className="card"
-                style={{ cursor: "pointer", transition: "transform 0.3s" }}
+                style={{ cursor: "pointer", transition: "transform 0.2s" }}
               >
                 <div
                   style={{
-                    fontSize: "4rem",
+                    fontSize: "3rem",
                     textAlign: "center",
                     marginBottom: "1rem",
                   }}
@@ -209,13 +214,13 @@ const HomePage = () => {
                 <h3
                   style={{
                     marginBottom: "0.5rem",
-                    fontSize: "1.2rem",
-                    color: "#333",
+                    fontSize: "1.1rem",
+                    color: "#0e1b2b",
                   }}
                 >
                   {product.name}
                 </h3>
-                <p style={{ color: "#666", marginBottom: "1rem" }}>
+                <p style={{ color: "#4f6b8a", marginBottom: "1rem" }}>
                   {product.condition}
                 </p>
                 <div
@@ -227,9 +232,9 @@ const HomePage = () => {
                 >
                   <span
                     style={{
-                      fontSize: "1.2rem",
+                      fontSize: "1.1rem",
                       fontWeight: "bold",
-                      color: "#667eea",
+                      color: "#1976d2",
                     }}
                   >
                     {product.price}
@@ -239,9 +244,8 @@ const HomePage = () => {
                       padding: "0.25rem 0.75rem",
                       borderRadius: "15px",
                       fontSize: "0.8rem",
-                      backgroundColor:
-                        product.type === "Pin" ? "#e3f2fd" : "#e8f5e8",
-                      color: product.type === "Pin" ? "#1976d2" : "#388e3c",
+                      backgroundColor: product.type === "Pin" ? "#1a1a1a" : "#171a14",
+                      color: product.type === "Pin" ? "#64b5f6" : "#a5d6a7",
                     }}
                   >
                     {product.type}
@@ -254,31 +258,25 @@ const HomePage = () => {
       </section>
 
       {/* Stats Section */}
-      <section
-        style={{
-          padding: "4rem 0",
-          backgroundColor: "#667eea",
-          color: "white",
-        }}
-      >
+      <section style={{ padding: "3rem 0", background: "linear-gradient(180deg, #e3f2fd 0%, #bbdefb 100%)", color: "#0e1b2b" }}>
         <div
           className="container"
-          style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 2rem" }}
+          style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 1.25rem" }}
         >
           <div className="grid grid-3" style={{ textAlign: "center" }}>
             <div>
-              <h3 style={{ fontSize: "3rem", marginBottom: "0.5rem" }}>500+</h3>
-              <p>Sản phẩm đã bán</p>
+              <h3 style={{ fontSize: "3rem", marginBottom: "0.5rem", color: "#1565c0" }}>500+</h3>
+              <p>"Sản phẩm đã bán"</p>
             </div>
             <div>
-              <h3 style={{ fontSize: "3rem", marginBottom: "0.5rem" }}>
+              <h3 style={{ fontSize: "3rem", marginBottom: "0.5rem", color: "#1565c0" }}>
                 1000+
               </h3>
-              <p>Khách hàng tin tưởng</p>
+              <p>"Khách hàng tin tưởng"</p>
             </div>
             <div>
-              <h3 style={{ fontSize: "3rem", marginBottom: "0.5rem" }}>99%</h3>
-              <p>Đánh giá tích cực</p>
+              <h3 style={{ fontSize: "3rem", marginBottom: "0.5rem", color: "#1565c0" }}>99%</h3>
+              <p>"Đánh giá tích cực"</p>
             </div>
           </div>
         </div>

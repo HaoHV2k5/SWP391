@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { GoogleLogin } from '@react-oauth/google';
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, User, Mail, Lock, Phone, Calendar } from "lucide-react";
 import { toast } from "react-toastify";
-import { authService } from "../services/authService";
+
 
 const LoginPage = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -54,7 +55,7 @@ const LoginPage = ({ onLogin }) => {
     if (!/[A-Z]/.test(data.password)) {
       return "Mật khẩu phải có ít nhất 1 chữ hoa";
     }
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(data.password)) {
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/.test(data.password)) {
       return "Mật khẩu phải có ít nhất 1 ký tự đặc biệt";
     }
 
@@ -102,7 +103,7 @@ const LoginPage = ({ onLogin }) => {
           errors.password = "Mật khẩu phải có ít nhất 6 ký tự";
         } else if (!/[A-Z]/.test(value)) {
           errors.password = "Mật khẩu phải có ít nhất 1 chữ hoa";
-        } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value)) {
+        } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/.test(value)) {
           errors.password = "Mật khẩu phải có ít nhất 1 ký tự đặc biệt";
         } else {
           delete errors.password;
@@ -338,7 +339,7 @@ const LoginPage = ({ onLogin }) => {
           )}
         </div>
 
-        {error && (
+  {error && (
           <div
             style={{
               backgroundColor: "#f8d7da",
@@ -353,7 +354,7 @@ const LoginPage = ({ onLogin }) => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+  <form onSubmit={handleSubmit}>
           {!isLogin && (
             <div className="form-group">
               <label htmlFor="fullName">
@@ -594,7 +595,60 @@ const LoginPage = ({ onLogin }) => {
           </button>
         </form>
 
-        <div style={{ textAlign: "center" }}>
+        <div style={{ textAlign: "center", margin: "1.5rem 0 0.5rem 0" }}>
+          <GoogleLogin
+            onSuccess={(credentialResponse) => {
+              try {
+                const credential = credentialResponse?.credential;
+                if (!credential) {
+                  toast.error("Không nhận được thông tin Google");
+                  return;
+                }
+                const payload = JSON.parse(atob(credential.split('.')[1] || ''));
+                const googleUser = {
+                  id: payload.sub,
+                  email: payload.email,
+                  fullName: payload.name,
+                  avatar: payload.picture,
+                  role: 'user',
+                };
+                // Auto-register to local users store if not exists
+                const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+                const found = existingUsers.find(u => u.email === googleUser.email);
+                if (!found) {
+                  existingUsers.push({
+                    id: googleUser.id,
+                    email: googleUser.email,
+                    fullName: googleUser.fullName,
+                    password: '',
+                    role: 'user',
+                    createdAt: new Date().toISOString(),
+                    provider: 'google'
+                  });
+                  localStorage.setItem('users', JSON.stringify(existingUsers));
+                }
+                const loginData = {
+                  token: credential,
+                  user: googleUser,
+                };
+                onLogin(loginData);
+                toast.success("Đăng nhập Google thành công!");
+                setTimeout(() => navigate('/'), 400);
+              } catch (e) {
+                toast.error("Không thể xử lý thông tin Google");
+                console.error(e);
+              }
+            }}
+            onError={() => {
+              toast.error("Đăng nhập Google thất bại!");
+            }}
+            width="100%"
+            text={isLogin ? "signin_with" : "signup_with"}
+            shape="pill"
+            theme="filled_black"
+            locale="vi"
+          />
+          <div style={{ margin: '1rem 0', color: '#aaa', fontWeight: 500 }}>Hoặc</div>
           <p style={{ color: "#666" }}>
             {isLogin ? "Chưa có tài khoản?" : "Đã có tài khoản?"}
             <button
