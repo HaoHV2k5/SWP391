@@ -4,9 +4,12 @@ import com.example.backend.dto.request.CreationUserRequest;
 import com.example.backend.dto.request.RegisterRequest;
 import com.example.backend.dto.response.CreationUserResponse;
 import com.example.backend.dto.response.RegisterResponse;
+import com.example.backend.entity.Role;
 import com.example.backend.entity.User;
+import com.example.backend.enums.Roles;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
+import com.example.backend.repository.RoleRepository;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import com.example.backend.mapper.UserMapper;
@@ -14,7 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.backend.repository.UserRepository;
 
-import java.util.List;
+import java.util.*;
 import java.util.function.Supplier;
 
 @Service
@@ -25,6 +28,8 @@ public class UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
+    private final RoleRepository roleRepository;
+
     private String LOGIN_URL ="http://localhost:3979/login";
     public CreationUserResponse createUser(CreationUserRequest request) {
         User user = processRegister(
@@ -37,8 +42,8 @@ public class UserService {
     }
 
     public List<User> getUsers(){
-        List<User> users = userRepository.findAll();
-        return users;
+        List<User> listUsers = userRepository.findAll();
+        return listUsers;
     }
 
 
@@ -68,6 +73,9 @@ public class UserService {
 
         User user = userSupplier.get();
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        HashSet<Role> roles = new HashSet<>();
+        roleRepository.findById(Roles.USER.name()).ifPresent(roles::add);
+        user.setRoles(roles);
         userRepository.save(user);
 
         try {
