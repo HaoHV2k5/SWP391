@@ -46,6 +46,9 @@ public class AuthService {
     public LoginResponse login(LoginRequest loginRequest) {
         User user = userRepository.findByUsername(loginRequest.getUsername())
                 .orElseThrow( () -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        if(!user.isVerified()){
+            throw new AppException(ErrorCode.OTP_NOT_VERIFY);
+        }
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         boolean auth = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
         if(!auth){
