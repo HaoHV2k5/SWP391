@@ -2,6 +2,7 @@ package com.example.backend.service;
 
 import com.example.backend.dto.request.CreationUserRequest;
 import com.example.backend.dto.request.RegisterRequest;
+import com.example.backend.dto.request.VerifyOtpRequest;
 import com.example.backend.dto.response.CreationUserResponse;
 import com.example.backend.dto.response.RegisterResponse;
 import com.example.backend.entity.Role;
@@ -29,6 +30,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
     private final RoleRepository roleRepository;
+    private final OtpService otpService;
 
     private String LOGIN_URL ="http://localhost:3979/login";
     public CreationUserResponse createUser(CreationUserRequest request) {
@@ -48,14 +50,14 @@ public class UserService {
 
 
 
-    public RegisterResponse registerUser(RegisterRequest request) {
+    public User registerUser(RegisterRequest request) {
         User user = processRegister(
                 request.getEmail(),
                 request.getPassword(),
                 request.getConfirmPassword(),
                 () -> userMapper.toUser(request)
         );
-        return userMapper.toRegisterResponse(user);
+        return user;
     }
 
 
@@ -86,4 +88,14 @@ public class UserService {
 
         return user;
     }
+
+    public User getUser(String email){
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_EXISTED));
+
+
+        return user;
+
+    }
+
+
 }
