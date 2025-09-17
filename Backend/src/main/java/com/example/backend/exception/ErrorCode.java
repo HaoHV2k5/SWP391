@@ -28,6 +28,8 @@ public enum ErrorCode {
     USERNAME_NOT_BLANK(1018, "username must not be blank", HttpStatus.BAD_REQUEST),
     EMAIL_SEND_UNSUCCESS(1019, "username must not be blank", HttpStatus.BAD_REQUEST),
     ROLE_NOT_EXISTED(1020, "role not existed", HttpStatus.NOT_FOUND),
+    OTP_NOT_VERIFY (1021, "Account not verified with OTP.", HttpStatus.BAD_REQUEST),
+
     ;
     private int code;
     private String message;

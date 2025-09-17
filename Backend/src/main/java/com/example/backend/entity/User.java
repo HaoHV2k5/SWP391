@@ -44,6 +44,8 @@ public class User {
     @ManyToMany
     private Set<Role>  roles;
 
+    private boolean isVerified = false;
+
 
 
 }

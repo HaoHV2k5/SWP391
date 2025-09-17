@@ -31,7 +31,7 @@ public class SecurityConfig  {
 
     private static final String[] WHITE_LIST = {
             "/auth/**",
-            "/users/register",
+            "/users/**",
             "/permissions/**",
             "/roles/**"
     };
@@ -45,7 +45,7 @@ public class SecurityConfig  {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {//cogig chặn quyền truy cập ai mới có được quyền dùng
         http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST,WHITE_LIST).permitAll()
+                .authorizeHttpRequests(request -> request.requestMatchers(WHITE_LIST).permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()   
                 )
