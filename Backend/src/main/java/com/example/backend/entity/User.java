@@ -34,7 +34,7 @@ public class User {
     private String gender;
     private LocalDate yob;
 
-    @Column(nullable = false)
+    @Column(nullable = false)//không cho phép lưu giá trị null xuống database
     private String email;
     private String phone;
 

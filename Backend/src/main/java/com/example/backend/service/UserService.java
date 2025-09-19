@@ -4,6 +4,7 @@ import com.example.backend.dto.request.AdminUpdateUserRequest;
 import com.example.backend.dto.request.CreationUserRequest;
 import com.example.backend.dto.request.RegisterRequest;
 import com.example.backend.dto.response.CreationUserResponse;
+import com.example.backend.dto.response.UserAfterUpdateResponse;
 import com.example.backend.dto.response.UserDetailResponse;
 import com.example.backend.entity.Role;
 import com.example.backend.entity.User;
@@ -120,11 +121,16 @@ public class UserService {
         return userMapper.toUserDetailResponse(user);
     }
 
-//    public UserDetailResponse UpdateUserbyAdmin(long id, AdminUpdateUserRequest request){
-//        User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-//
-//
-//    }
+    public UserAfterUpdateResponse UpdateUserbyAdmin(long id, AdminUpdateUserRequest request){
+        User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        if(user.isLocked()){
+            throw new AppException(ErrorCode.ACCOUNT_LOCKED);
+        }
+        userMapper.updateUserFromRequest(request,user);
+        User savedUser = userRepository.save(user);
+        return userMapper.toUserAfterUpdateResponse(savedUser);
+    }
 
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)

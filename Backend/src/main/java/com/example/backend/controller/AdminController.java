@@ -4,6 +4,7 @@ import com.example.backend.dto.request.AdminUpdateUserRequest;
 import com.example.backend.dto.request.CreationUserRequest;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.CreationUserResponse;
+import com.example.backend.dto.response.UserAfterUpdateResponse;
 import com.example.backend.dto.response.UserDetailResponse;
 import com.example.backend.entity.User;
 import com.example.backend.service.UserService;
@@ -36,6 +37,11 @@ public class AdminController {
         return ApiResponse.<CreationUserResponse>builder().data(creationUserResponse).build();
     }
 
+    @GetMapping("/user/{userId}")
+    public ApiResponse<UserDetailResponse> getUser(@PathVariable("userId") Long userId){
+        UserDetailResponse userDetailResponse = userService.getUserById(userId);
+        return ApiResponse.<UserDetailResponse>builder().data(userDetailResponse).build();
+    }
 
 
     @PostMapping("/users/{id}/lock")
@@ -51,12 +57,21 @@ public class AdminController {
     }
 
     // Delete a user
-    @DeleteMapping("/users/{id}")
+    @DeleteMapping("/user/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)//HttpStatus.NO_CONTENT = 204 nghĩa là request thành công nhưng server không trả nội dung nào
     public ApiResponse<Void> deleteUser(@PathVariable("id") Long id){
         userService.deleteUser(id);
         return ApiResponse.<Void>builder()
                 .message("User deleted successfully")
+                .build();
+    }
+
+    //Update a user
+    @PostMapping("/user/{id}")
+    public ApiResponse<UserAfterUpdateResponse>  updateUser(@PathVariable("id") Long id, @RequestBody @Valid AdminUpdateUserRequest request){
+        UserAfterUpdateResponse userAfterUpdateResponse = userService.UpdateUserbyAdmin(id, request);
+        return ApiResponse.<UserAfterUpdateResponse>builder()
+                .data(userAfterUpdateResponse)
                 .build();
     }
 }
