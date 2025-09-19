@@ -29,6 +29,7 @@ public enum ErrorCode {
     EMAIL_SEND_UNSUCCESS(1019, "username must not be blank", HttpStatus.BAD_REQUEST),
     ROLE_NOT_EXISTED(1020, "role not existed", HttpStatus.NOT_FOUND),
     OTP_NOT_VERIFY (1021, "Account not verified with OTP.", HttpStatus.BAD_REQUEST),
+    ACCOUNT_LOCKED(1022, "account is locked", HttpStatus.FORBIDDEN),
 
     ;
     private int code;
