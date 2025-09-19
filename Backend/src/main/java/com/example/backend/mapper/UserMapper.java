@@ -1,5 +1,6 @@
 package com.example.backend.mapper;
 
+import com.example.backend.dto.request.AdminUpdateUserRequest;
 import com.example.backend.dto.request.CreationUserRequest;
 import com.example.backend.dto.request.RegisterRequest;
 import com.example.backend.dto.response.CreationUserResponse;
@@ -8,8 +9,8 @@ import com.example.backend.dto.response.UserDetailResponse;
 import com.example.backend.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
- 
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
@@ -26,6 +27,5 @@ public interface UserMapper {
 
     UserDetailResponse toUserDetailResponse(User user);
 
-
-
+    void updateUserFromRequest(AdminUpdateUserRequest request, @MappingTarget User user);
 }

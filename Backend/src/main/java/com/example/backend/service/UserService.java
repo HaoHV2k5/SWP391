@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+import com.example.backend.dto.request.AdminUpdateUserRequest;
 import com.example.backend.dto.request.CreationUserRequest;
 import com.example.backend.dto.request.RegisterRequest;
 import com.example.backend.dto.response.CreationUserResponse;
@@ -69,8 +70,6 @@ public class UserService {
         return userMapper.toUserDetailResponse(saved);
     }
 
-
-
     public User registerUser(RegisterRequest request) {
         User user = processRegister(
                 request.getEmail(),
@@ -112,11 +111,24 @@ public class UserService {
 
     public User getUser(String email){
         User user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_EXISTED));
-
-
         return user;
+    }
+
+    public UserDetailResponse getUserById(long id){
+        User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        return userMapper.toUserDetailResponse(user);
+    }
+
+    public UserDetailResponse UpdateUserbyAdmin(long id, AdminUpdateUserRequest request){
+        User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
 
     }
 
-
+    public void deleteUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        userRepository.delete(user);
+    }
 }

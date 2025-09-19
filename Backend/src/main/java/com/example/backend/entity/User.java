@@ -48,7 +48,4 @@ public class User {
     @Column(name = "locked",nullable = false)
 
     private boolean locked = false;
-
-
-
 }
