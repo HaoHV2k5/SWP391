@@ -28,7 +28,7 @@ public class GlobalException {
     }
 
     @ExceptionHandler(value = Exception.class)
-    public ResponseEntity<ApiResponse> handleException(AppException ex) {
+    public ResponseEntity<ApiResponse> handleException(Exception ex) {
 
         ApiResponse apiResponse = new ApiResponse<>();
         apiResponse.setCode(ErrorCode.UNCATEGORIZED.getCode());
@@ -70,6 +70,7 @@ public class GlobalException {
         return message.replace("{"+MIN_STRING+"}",min);
 
     }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse> handleJsonFormatError(HttpMessageNotReadableException ex) {
         ApiResponse apiResponse = ApiResponse.builder().code(ErrorCode.DATE_FORMAT_INVALID.getCode()).message(ErrorCode.DATE_FORMAT_INVALID.getMessage()).build();

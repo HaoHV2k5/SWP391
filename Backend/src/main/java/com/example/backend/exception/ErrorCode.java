@@ -22,11 +22,14 @@ public enum ErrorCode {
     FULLNAME_NOT_BLANK(1013, "fullname must be not blank", HttpStatus.BAD_REQUEST),
     YOB_NOT_BLANK(1014, "yob must be not blank", HttpStatus.BAD_REQUEST),
 
-    PHONE_INVALID(1014, "phone is not valid", HttpStatus.BAD_REQUEST),
-    DATE_FORMAT_INVALID(1014, "Date format is not valid", HttpStatus.BAD_REQUEST),
-    PASSWORD_NOT_MATCH(1015, "password do not match", HttpStatus.BAD_REQUEST),
-    USERNAME_NOT_BLANK(1011, "username must not be blank", HttpStatus.BAD_REQUEST),
-    EMAIL_SEND_UNSUCCESS(1011, "username must not be blank", HttpStatus.BAD_REQUEST),
+    PHONE_INVALID(1015, "phone is not valid", HttpStatus.BAD_REQUEST),
+    DATE_FORMAT_INVALID(1016, "Date format is not valid", HttpStatus.BAD_REQUEST),
+    PASSWORD_NOT_MATCH(1017, "password do not match", HttpStatus.BAD_REQUEST),
+    USERNAME_NOT_BLANK(1018, "username must not be blank", HttpStatus.BAD_REQUEST),
+    EMAIL_SEND_UNSUCCESS(1019, "username must not be blank", HttpStatus.BAD_REQUEST),
+    ROLE_NOT_EXISTED(1020, "role not existed", HttpStatus.NOT_FOUND),
+    OTP_NOT_VERIFY (1021, "Account not verified with OTP.", HttpStatus.BAD_REQUEST),
+    ACCOUNT_LOCKED(1022, "account is locked", HttpStatus.FORBIDDEN),
 
     ;
     private int code;
