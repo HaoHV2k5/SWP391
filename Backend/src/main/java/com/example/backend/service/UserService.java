@@ -120,11 +120,11 @@ public class UserService {
         return userMapper.toUserDetailResponse(user);
     }
 
-    public UserDetailResponse UpdateUserbyAdmin(long id, AdminUpdateUserRequest request){
-        User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
-
-    }
+//    public UserDetailResponse UpdateUserbyAdmin(long id, AdminUpdateUserRequest request){
+//        User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+//
+//
+//    }
 
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
