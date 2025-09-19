@@ -33,7 +33,8 @@ public class SecurityConfig  {
             "/auth/**",
             "/users/**",
             "/permissions/**",
-            "/roles/**"
+            "/roles/**",
+            "/admin/**"
     };
     
 

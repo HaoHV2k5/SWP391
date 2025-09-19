@@ -45,6 +45,9 @@ public class User {
     private Set<Role>  roles;
 
     private boolean isVerified = false;
+    @Column(name = "locked",nullable = false)
+
+    private boolean locked = false;
 
 
 
