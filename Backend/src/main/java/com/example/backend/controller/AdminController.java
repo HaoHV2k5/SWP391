@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import com.example.backend.dto.request.CreationUserRequest;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.CreationUserResponse;
+import com.example.backend.dto.response.UserDetailResponse;
 import com.example.backend.entity.User;
 import com.example.backend.service.UserService;
 import jakarta.validation.Valid;
@@ -17,7 +18,7 @@ import java.util.List;
 @RequestMapping("/admin")
 @Slf4j
 public class AdminController {
-    private UserService userService;
+    private final UserService userService;
     @GetMapping("/users")
     public ApiResponse<List<User>> getUsers(){
         List<User> users = userService.getUsers();
@@ -31,5 +32,17 @@ public class AdminController {
 
         CreationUserResponse creationUserResponse = userService.createUser(request);
         return ApiResponse.<CreationUserResponse>builder().data(creationUserResponse).build();
+    }
+
+    @PostMapping("/users/{id}/lock")
+    public ApiResponse<UserDetailResponse> lockUser(@PathVariable("id") Long id){
+        UserDetailResponse updated = userService.lockUserDetail(id);
+        return ApiResponse.<UserDetailResponse>builder().data(updated).message("User account locked").build();
+    }
+
+    @PostMapping("/users/{id}/unlock")
+    public ApiResponse<UserDetailResponse> unlockUser(@PathVariable("id") Long id){
+        UserDetailResponse updated = userService.unlockUserDetail(id);
+        return ApiResponse.<UserDetailResponse>builder().data(updated).message("User account unlocked").build();
     }
 }
