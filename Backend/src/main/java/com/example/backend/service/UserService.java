@@ -2,9 +2,8 @@ package com.example.backend.service;
 
 import com.example.backend.dto.request.CreationUserRequest;
 import com.example.backend.dto.request.RegisterRequest;
-import com.example.backend.dto.request.VerifyOtpRequest;
 import com.example.backend.dto.response.CreationUserResponse;
-import com.example.backend.dto.response.RegisterResponse;
+import com.example.backend.dto.response.UserDetailResponse;
 import com.example.backend.entity.Role;
 import com.example.backend.entity.User;
 import com.example.backend.enums.Roles;
@@ -30,7 +29,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
     private final RoleRepository roleRepository;
-    private final OtpService otpService;
+ 
 
     private String LOGIN_URL ="http://localhost:3979/login";
     public CreationUserResponse createUser(CreationUserRequest request) {
@@ -46,6 +45,28 @@ public class UserService {
     public List<User> getUsers(){
         List<User> listUsers = userRepository.findAll();
         return listUsers;
+    }
+
+    public User lockUser(Long userId){
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        user.setLocked(true);
+        return userRepository.save(user);
+    }
+
+    public User unlockUser(Long userId){
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        user.setLocked(false);
+        return userRepository.save(user);
+    }
+
+    public UserDetailResponse lockUserDetail(Long userId){
+        User saved = lockUser(userId);
+        return userMapper.toUserDetailResponse(saved);
+    }
+
+    public UserDetailResponse unlockUserDetail(Long userId){
+        User saved = unlockUser(userId);
+        return userMapper.toUserDetailResponse(saved);
     }
 
 
