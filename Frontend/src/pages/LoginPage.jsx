@@ -294,7 +294,7 @@ const LoginPage = ({ onLogin }) => {
     <div
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        background: "linear-gradient(135deg, #00A86B 0%, #4CAF50 100%)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -316,11 +316,12 @@ const LoginPage = ({ onLogin }) => {
           {isLogin && (
             <div
               style={{
-                backgroundColor: "#e3f2fd",
+                backgroundColor: "#e8f5e8",
                 padding: "1rem",
-                borderRadius: "5px",
+                borderRadius: "8px",
                 marginTop: "1rem",
                 fontSize: "0.9rem",
+                border: "1px solid #c8e6c9"
               }}
             >
               <strong>Tài khoản Admin:</strong>
@@ -345,7 +346,7 @@ const LoginPage = ({ onLogin }) => {
               backgroundColor: "#f8d7da",
               color: "#721c24",
               padding: "1rem",
-              borderRadius: "5px",
+              borderRadius: "8px",
               marginBottom: "1rem",
               border: "1px solid #f5c6cb",
             }}
@@ -648,40 +649,17 @@ const LoginPage = ({ onLogin }) => {
             theme="filled_black"
             locale="vi"
           />
-          <div style={{ margin: '1rem 0', color: '#aaa', fontWeight: 500 }}>Hoặc</div>
-          <p style={{ color: "#666" }}>
-            {isLogin ? "Chưa có tài khoản?" : "Đã có tài khoản?"}
-            <button
-              type="button"
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setError("");
-                setFieldErrors({});
-                setFormData({
-                  email: "",
-                  password: "",
-                  fullName: "",
-                  phone: "",
-                  dateOfBirth: "",
-                  confirmPassword: "",
-                });
-              }}
-              style={{
-                background: "none",
-                border: "none",
-                color: "#667eea",
-                cursor: "pointer",
-                textDecoration: "underline",
-                marginLeft: "0.5rem",
-              }}
-            >
-              {isLogin ? "Đăng ký ngay" : "Đăng nhập"}
-            </button>
-          </p>
         </div>
 
         <div style={{ textAlign: "center", marginTop: "2rem" }}>
-          <Link to="/" style={{ color: "#667eea", textDecoration: "none" }}>
+          <Link to="/" style={{ 
+            color: "#00A86B", 
+            textDecoration: "none",
+            fontWeight: "500",
+            transition: "color 0.3s ease"
+          }}
+          onMouseEnter={(e) => e.target.style.color = "#007A4B"}
+          onMouseLeave={(e) => e.target.style.color = "#00A86B"}>
             ← Quay về trang chủ
           </Link>
         </div>
