@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -10,8 +10,9 @@ import RegisterPage from "./pages/RegisterPage";
 import AdminPage from "./pages/AdminPage";
 import "./App.css";
 
-function App() {
+function AppContent() {
   const [user, setUser] = useState(null);
+  const location = useLocation();
 
   useEffect(() => {
     // Kiểm tra user data trong localStorage
@@ -40,32 +41,45 @@ function App() {
     localStorage.removeItem("userData");
   };
 
+  // Kiểm tra xem có phải trang đăng nhập hoặc đăng ký không
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
+
+  return (
+    <div className="App">
+      {/* Chỉ hiển thị Navbar và Footer cho trang chủ và admin */}
+      {!isAuthPage && <Navbar user={user} onLogout={handleLogout} />}
+      
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/admin" element={<AdminPage user={user} />} />
+      </Routes>
+      
+      {/* Chỉ hiển thị Footer cho trang chủ và admin */}
+      {!isAuthPage && <Footer />}
+
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+    </div>
+  );
+}
+
+function App() {
   return (
     <Router>
-      <div className="App">
-        <Navbar user={user} onLogout={handleLogout} />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/admin" element={<AdminPage user={user} />} />
-        </Routes>
-        <Footer />
-
-        {/* Toast Container */}
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
-      </div>
+      <AppContent />
     </Router>
   );
 }

@@ -114,6 +114,7 @@ body {
   border-radius: 8px;
   font-size: 1rem;
   background: #f8fafc;
+  color: #333 !important;
   transition: border-color 0.3s, box-shadow 0.3s;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
@@ -124,6 +125,7 @@ body {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(0, 168, 107, 0.2);
+  color: #333 !important;
 }
 
 /* Grid Layout */
