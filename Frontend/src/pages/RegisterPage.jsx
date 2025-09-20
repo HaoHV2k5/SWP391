@@ -81,39 +81,39 @@ const RegisterPage = () => {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "linear-gradient(135deg, #00A86B 0%, #4CAF50 100%)",
+      background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      padding: "2rem"
+      padding: "1rem"
     }}>
-      <div className="card" style={{ width: "100%", maxWidth: "500px" }}>
+      <div className="card" style={{ width: "100%", maxWidth: "500px", padding: "1rem" }}>
         {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+        <div style={{ textAlign: "center", marginBottom: "1rem" }}>
           <div style={{
             background: "#00A86B",
             borderRadius: "50%",
-            width: "80px",
-            height: "80px",
+            width: "60px",
+            height: "60px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            margin: "0 auto 20px",
+            margin: "0 auto 10px",
             color: "white"
           }}>
-            <User size={40} />
+            <User size={30} />
           </div>
           <h1 style={{
-            fontSize: "28px",
+            fontSize: "24px",
             fontWeight: "bold",
             color: "#00A86B",
-            marginBottom: "10px"
+            marginBottom: "5px"
           }}>
             Đăng ký tài khoản
           </h1>
           <p style={{
             color: "#666",
-            fontSize: "14px"
+            fontSize: "13px"
           }}>
             Tạo tài khoản để mua sắm xe điện và pin
           </p>
@@ -122,7 +122,7 @@ const RegisterPage = () => {
         {/* Form */}
         <form onSubmit={handleSubmit}>
           {/* Full Name */}
-          <div style={{ marginBottom: "20px" }}>
+          <div style={{ marginBottom: "12px" }}>
             <label style={{
               display: "block",
               marginBottom: "8px",
@@ -134,7 +134,7 @@ const RegisterPage = () => {
             </label>
             <div style={{ position: "relative" }}>
               <User 
-                size={20} 
+                size={16} 
                 style={{
                   position: "absolute",
                   left: "12px",
@@ -151,7 +151,7 @@ const RegisterPage = () => {
                 placeholder="Nhập họ và tên"
                 style={{
                   width: "100%",
-                  padding: "12px 12px 12px 45px",
+                  padding: "8px 8px 8px 35px",
                   border: `2px solid ${errors.fullName ? "#f44336" : "#e0e0e0"}`,
                   borderRadius: "10px",
                   fontSize: "14px",
@@ -180,7 +180,7 @@ const RegisterPage = () => {
           </div>
 
           {/* Email */}
-          <div style={{ marginBottom: "20px" }}>
+          <div style={{ marginBottom: "12px" }}>
             <label style={{
               display: "block",
               marginBottom: "8px",
@@ -192,7 +192,7 @@ const RegisterPage = () => {
             </label>
             <div style={{ position: "relative" }}>
               <Mail 
-                size={20} 
+                size={16} 
                 style={{
                   position: "absolute",
                   left: "12px",
@@ -209,7 +209,7 @@ const RegisterPage = () => {
                 placeholder="Nhập email"
                 style={{
                   width: "100%",
-                  padding: "12px 12px 12px 45px",
+                  padding: "8px 8px 8px 35px",
                   border: `2px solid ${errors.email ? "#f44336" : "#e0e0e0"}`,
                   borderRadius: "10px",
                   fontSize: "14px",
@@ -238,7 +238,7 @@ const RegisterPage = () => {
           </div>
 
           {/* Phone */}
-          <div style={{ marginBottom: "20px" }}>
+          <div style={{ marginBottom: "12px" }}>
             <label style={{
               display: "block",
               marginBottom: "8px",
@@ -250,7 +250,7 @@ const RegisterPage = () => {
             </label>
             <div style={{ position: "relative" }}>
               <Phone 
-                size={20} 
+                size={16} 
                 style={{
                   position: "absolute",
                   left: "12px",
@@ -267,7 +267,7 @@ const RegisterPage = () => {
                 placeholder="Nhập số điện thoại"
                 style={{
                   width: "100%",
-                  padding: "12px 12px 12px 45px",
+                  padding: "8px 8px 8px 35px",
                   border: `2px solid ${errors.phone ? "#f44336" : "#e0e0e0"}`,
                   borderRadius: "10px",
                   fontSize: "14px",
@@ -296,7 +296,7 @@ const RegisterPage = () => {
           </div>
 
           {/* Address */}
-          <div style={{ marginBottom: "20px" }}>
+          <div style={{ marginBottom: "12px" }}>
             <label style={{
               display: "block",
               marginBottom: "8px",
@@ -308,7 +308,7 @@ const RegisterPage = () => {
             </label>
             <div style={{ position: "relative" }}>
               <MapPin 
-                size={20} 
+                size={16} 
                 style={{
                   position: "absolute",
                   left: "12px",
@@ -325,7 +325,7 @@ const RegisterPage = () => {
                 placeholder="Nhập địa chỉ"
                 style={{
                   width: "100%",
-                  padding: "12px 12px 12px 45px",
+                  padding: "8px 8px 8px 35px",
                   border: `2px solid ${errors.address ? "#f44336" : "#e0e0e0"}`,
                   borderRadius: "10px",
                   fontSize: "14px",
@@ -354,7 +354,7 @@ const RegisterPage = () => {
           </div>
 
           {/* Password */}
-          <div style={{ marginBottom: "20px" }}>
+          <div style={{ marginBottom: "12px" }}>
             <label style={{
               display: "block",
               marginBottom: "8px",
@@ -366,7 +366,7 @@ const RegisterPage = () => {
             </label>
             <div style={{ position: "relative" }}>
               <Lock 
-                size={20} 
+                size={16} 
                 style={{
                   position: "absolute",
                   left: "12px",
@@ -440,7 +440,7 @@ const RegisterPage = () => {
             </label>
             <div style={{ position: "relative" }}>
               <Lock 
-                size={20} 
+                size={16} 
                 style={{
                   position: "absolute",
                   left: "12px",
@@ -507,7 +507,7 @@ const RegisterPage = () => {
             className="btn btn-primary"
             style={{
               width: "100%",
-              marginBottom: "1rem"
+              marginBottom: "12px"
             }}
             onMouseEnter={(e) => {
               e.target.style.background = "#007A4B";
@@ -524,7 +524,7 @@ const RegisterPage = () => {
           </button>
 
           {/* Back to Home Link - Link quay về trang chủ */}
-          <div style={{ textAlign: "center" }}>
+          <div style={{ textAlign: "center", marginTop: "10px" }}>
             <Link to="/" style={{ 
               color: "#00A86B", 
               textDecoration: "none",

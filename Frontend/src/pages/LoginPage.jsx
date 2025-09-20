@@ -294,7 +294,7 @@ const LoginPage = ({ onLogin }) => {
     <div
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #00A86B 0%, #4CAF50 100%)",
+        background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
