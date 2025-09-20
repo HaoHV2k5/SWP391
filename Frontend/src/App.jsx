@@ -3,8 +3,10 @@ import { useState, useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 import AdminPage from "./pages/AdminPage";
 import "./App.css";
 
@@ -45,8 +47,10 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="/admin" element={<AdminPage user={user} />} />
         </Routes>
+        <Footer />
 
         {/* Toast Container */}
         <ToastContainer
