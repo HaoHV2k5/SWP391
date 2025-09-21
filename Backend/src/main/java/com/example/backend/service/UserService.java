@@ -120,5 +120,15 @@ public class UserService {
 
     }
 
+    public User getUserByUsername(String username){
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        return user;
+    }
+
+    public UserDetailResponse getUserDetailByUsername(String username){
+        User user = getUserByUsername(username);
+        return userMapper.toUserDetailResponse(user);
+    }
+
 
 }
