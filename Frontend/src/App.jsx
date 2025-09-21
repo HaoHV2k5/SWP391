@@ -1,32 +1,107 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "./components/Navbar";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import AdminPage from "./pages/AdminPage";
+import OTPVerificationPage from "./pages/OTPVerificationPage";
 import "./App.css";
 
 function App() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Kiểm tra user data trong localStorage
-    const userData = localStorage.getItem("userData");
-    if (userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
-      } catch (error) {
-        console.error("Error parsing user data:", error);
-        localStorage.removeItem("userData");
-        localStorage.removeItem("token");
-      }
+    // Kiểm tra token từ URL (Google login)
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
+    const email = urlParams.get("email");
+    const name = urlParams.get("name");
+
+    if (token && email && name) {
+      console.log("=== Google Login detected from URL ===");
+      console.log("Token:", token);
+      console.log("Email:", email);
+      console.log("Name:", name);
+
+      // Tạo user data từ URL params
+      const userData = {
+        id: email,
+        email: email,
+        fullName: name,
+        avatar: "", // Có thể lấy từ backend sau
+        role: "member",
+        token: token, // Sử dụng token thật từ backend
+      };
+
+      console.log("=== Setting user data ===");
+      console.log("UserData:", userData);
+      console.log("UserData type:", typeof userData);
+      console.log("UserData keys:", Object.keys(userData));
+
+      // Lưu vào localStorage
+      localStorage.setItem("token", token);
+      localStorage.setItem("userData", JSON.stringify(userData));
+
+      // Set user state
+      setUser(userData);
+
+      // Hiển thị thông báo thành công
+      console.log("=== Showing notification ===");
+
+      // Delay toast để đảm bảo component đã render xong
+      setTimeout(() => {
+        // Toast chính
+        toast.success(`Chào mừng ${name}! Đăng nhập Google thành công!`);
+        console.log("=== react-toastify called ===");
+      }, 100);
+
+      // Xóa URL params
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      return;
     }
+
+    // Kiểm tra user data trong localStorage (login thường)
+    const checkUserData = () => {
+      console.log("=== Checking localStorage ===");
+      const userData = localStorage.getItem("userData");
+      const token = localStorage.getItem("token");
+
+      console.log("Token:", token);
+      console.log("UserData:", userData);
+
+      if (userData) {
+        try {
+          const parsedUser = JSON.parse(userData);
+          console.log("Parsed user data:", parsedUser);
+
+          // Kiểm tra token trong userData nếu không có token riêng
+          if (!token && parsedUser.token) {
+            console.log("Using token from userData:", parsedUser.token);
+            localStorage.setItem("token", parsedUser.token);
+          }
+
+          setUser(parsedUser);
+        } catch (error) {
+          console.error("Error parsing user data:", error);
+          localStorage.removeItem("userData");
+          localStorage.removeItem("token");
+        }
+      }
+    };
+
+    // Check ngay lập tức
+    checkUserData();
   }, []);
 
   const handleLogin = (userData) => {
+    console.log("=== handleLogin called ===");
+    console.log("UserData received:", userData);
+    console.log("UserData type:", typeof userData);
+    console.log("UserData keys:", Object.keys(userData));
+
     setUser(userData);
     localStorage.setItem("token", userData.token);
     localStorage.setItem("userData", JSON.stringify(userData));
@@ -36,24 +111,45 @@ function App() {
     setUser(null);
     localStorage.removeItem("token");
     localStorage.removeItem("userData");
+
+    // Hiển thị thông báo đăng xuất thành công
+    toast.success("Đăng xuất thành công!");
   };
+
+  console.log("Current user state:", user);
 
   return (
     <Router>
       <div className="App">
-        <Navbar user={user} onLogout={handleLogout} />
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route
+            path="/"
+            element={
+              <>
+                <Navbar user={user} onLogout={handleLogout} />
+                <HomePage />
+              </>
+            }
+          />
           <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
           <Route path="/admin" element={<AdminPage user={user} />} />
+          <Route
+            path="/verify-otp"
+            element={
+              <>
+                <Navbar user={user} onLogout={handleLogout} />
+                <OTPVerificationPage />
+              </>
+            }
+          />
         </Routes>
 
         {/* Toast Container */}
         <ToastContainer
           position="top-right"
-          autoClose={3000}
+          autoClose={5000}
           hideProgressBar={false}
-          newestOnTop={false}
+          newestOnTop={true}
           closeOnClick
           rtl={false}
           pauseOnFocusLoss
