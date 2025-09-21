@@ -8,7 +8,7 @@
 }
 
 /* FPTShop Hero Section */
- .fpt-hero input[type="text"] {
+.fpt-hero input[type="text"] {
   border: 2px solid #2196f3;
   background: #fff;
   color: #222;
@@ -16,20 +16,20 @@
   font-weight: 500;
   transition: border 0.2s, box-shadow 0.2s;
 }
- .fpt-hero input[type="text"]:focus {
+.fpt-hero input[type="text"]:focus {
   border: 2px solid #222;
   box-shadow: 0 0 0 2px #2196f388;
 }
 
 /* Section titles */
- .homepage h2 {
+.homepage h2 {
   color: #2196f3 !important;
   font-weight: 900;
   letter-spacing: 1px;
 }
 
 /* Card highlight for FPTShop style */
- .card {
+.card {
   border: 2px solid #2196f3;
   box-shadow: 0 4px 16px #2196f322;
 }
@@ -58,7 +58,7 @@ body {
   color: #fff;
   background: #222;
   padding: 0.5rem 0;
-  box-shadow: 0 4px 18px 0 rgba(0,0,0,0.10);
+  box-shadow: 0 4px 18px 0 rgba(0, 0, 0, 0.1);
   border-bottom: 3px solid #2196f3;
   position: sticky;
   top: 0;
@@ -66,7 +66,7 @@ body {
   box-shadow: 0 4px 16px #2196f322;
 }
 
- .fpt-nav-container {
+.fpt-nav-container {
   max-width: 1300px;
   margin: 0 auto;
   padding: 0 2rem;
@@ -75,7 +75,7 @@ body {
   align-items: center;
 }
 
- .fpt-logo {
+.fpt-logo {
   font-size: 2rem;
   font-weight: 900;
   text-decoration: none;
@@ -88,7 +88,7 @@ body {
   align-items: center;
 }
 
- .fpt-nav-links {
+.fpt-nav-links {
   display: flex;
   list-style: none;
   gap: 1.2rem;
@@ -99,7 +99,7 @@ body {
   align-items: center;
 }
 
- .fpt-nav-links a {
+.fpt-nav-links a {
   color: #fff;
   text-decoration: none;
   padding: 0.5rem 1.2rem;
@@ -112,14 +112,14 @@ body {
   background: none;
 }
 
- .fpt-nav-links a:hover {
+.fpt-nav-links a:hover {
   background: #2196f3;
   color: #fff;
   box-shadow: 0 2px 8px #2196f344;
 }
 
 /* FPTShop Button style */
- .fpt-btn-login {
+.fpt-btn-login {
   background: #fff !important;
   color: #2196f3 !important;
   border: 2px solid #2196f3;
@@ -129,11 +129,11 @@ body {
   margin-left: 0.5rem;
   transition: background 0.2s, color 0.2s;
 }
- .fpt-btn-login:hover {
+.fpt-btn-login:hover {
   background: #2196f3 !important;
   color: #fff !important;
 }
- .fpt-btn-logout {
+.fpt-btn-logout {
   background: #222 !important;
   color: #fff !important;
   border: 2px solid #2196f3;
@@ -143,7 +143,7 @@ body {
   font-weight: 700;
   transition: background 0.2s, color 0.2s;
 }
- .fpt-btn-logout:hover {
+.fpt-btn-logout:hover {
   background: #2196f3 !important;
   color: #fff !important;
 }
@@ -159,7 +159,7 @@ body {
   display: inline-block;
   text-align: center;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(60,72,100,0.10);
+  box-shadow: 0 2px 8px rgba(60, 72, 100, 0.1);
 }
 
 .btn-primary {
@@ -187,7 +187,7 @@ body {
   background: linear-gradient(90deg, #b0bec5 0%, #e3e6f0 100%);
   color: #0d47a1;
   transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 4px 16px rgba(60,72,100,0.12);
+  box-shadow: 0 4px 16px rgba(60, 72, 100, 0.12);
 }
 
 /* Card Styles */
@@ -195,7 +195,7 @@ body {
   background: linear-gradient(120deg, #f8fafc 0%, #e3e6f0 100%);
   border-radius: 18px;
   padding: 2rem 2.5rem;
-  box-shadow: 0 8px 32px rgba(60,72,100,0.10);
+  box-shadow: 0 8px 32px rgba(60, 72, 100, 0.1);
   margin-bottom: 2rem;
   border: 1.5px solid #e3e6f0;
 }
@@ -222,7 +222,7 @@ body {
   font-size: 1rem;
   background: #f8fafc;
   transition: border-color 0.3s, box-shadow 0.3s;
-  box-shadow: 0 2px 8px rgba(60,72,100,0.06);
+  box-shadow: 0 2px 8px rgba(60, 72, 100, 0.06);
 }
 
 .form-group input:focus,
@@ -300,12 +300,12 @@ body {
   border: 2px solid #2196f3 !important;
   font-weight: 700 !important;
   border-radius: 10px !important;
-  box-shadow: 0 2px 8px rgba(33,150,243,.16) !important;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.16) !important;
 }
 .fpt-btn-login:hover {
   background: #e3f2fd !important;
   color: #0e1b2b !important;
-  box-shadow: 0 6px 16px rgba(33,150,243,.22) !important;
+  box-shadow: 0 6px 16px rgba(33, 150, 243, 0.22) !important;
 }
 
 /* Search input emphasis */
