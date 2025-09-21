@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Star, Heart, ShoppingCart, Phone, Truck, Shield, RotateCcw } from "lucide-react";
+import FilterBar from "../components/FilterBar";
 
 const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState([]);
 
   // Hero banners data
   const heroBanners = [
@@ -109,8 +111,112 @@ const HomePage = () => {
       installment: "Trả góp 0%",
       isNew: false,
       type: "Pin"
+    },
+    {
+      id: 7,
+      name: "VinFast VF8 2023 - Xe điện SUV đã qua sử dụng",
+      originalPrice: "890.000.000đ",
+      salePrice: "750.000.000đ",
+      discount: "16%",
+      rating: 4.7,
+      image: "https://banggiavinfast.vn/wp-content/uploads/2022/08/Vinfast-vf8-2023-mau-do.jpg",
+      installment: "Trả góp 0%",
+      isNew: false,
+      type: "Xe hơi điện"
+    },
+    {
+      id: 8,
+      name: "Tesla Model 3 2022 - Sedan điện đã qua sử dụng",
+      originalPrice: "1.200.000.000đ",
+      salePrice: "980.000.000đ",
+      discount: "18%",
+      rating: 4.9,
+      image: "https://mkt-vehicleimages-prd.autotradercdn.ca/photos/chrome/Expanded/White/2022TSC030022/2022TSC03002201.jpg",
+      installment: "Trả góp 0%",
+      isNew: false,
+      type: "Xe hơi điện"
+    },
+    {
+      id: 9,
+      name: "VinFast VF9 2023 - Xe điện 7 chỗ đã qua sử dụng",
+      originalPrice: "1.100.000.000đ",
+      salePrice: "920.000.000đ",
+      discount: "16%",
+      rating: 4.6,
+      image: "https://vinfastgialam.com/wp-content/uploads/2022/06/VF9-IMAGE-2-1024x1024-1.jpg",
+      installment: "Trả góp 0%",
+      isNew: true,
+      type: "Xe hơi điện"
     }
   ];
+
+  // Hàm xử lý thay đổi bộ lọc
+  const handleFilterChange = (filters) => {
+    let filtered = [...products];
+
+    // Lọc theo thương hiệu
+    if (filters.brand) {
+      filtered = filtered.filter(product => 
+        product.name.toLowerCase().includes(filters.brand.toLowerCase())
+      );
+    }
+
+    // Lọc theo khoảng giá
+    if (filters.priceRange) {
+      filtered = filtered.filter(product => {
+        const price = parseInt(product.salePrice.replace(/[^\d]/g, ''));
+        switch (filters.priceRange) {
+          case 'under10m': return price < 10000000;
+          case '10m-20m': return price >= 10000000 && price < 20000000;
+          case '20m-30m': return price >= 20000000 && price < 30000000;
+          case '30m-50m': return price >= 30000000 && price < 50000000;
+          case '50m-100m': return price >= 50000000 && price < 100000000;
+          case '100m-500m': return price >= 100000000 && price < 500000000;
+          case '500m-1b': return price >= 500000000 && price < 1000000000;
+          case 'over1b': return price >= 1000000000;
+          default: return true;
+        }
+      });
+    }
+
+    // Lọc theo tình trạng
+    if (filters.condition) {
+      if (filters.condition === 'new') {
+        filtered = filtered.filter(product => product.isNew);
+      }
+    }
+
+    // Lọc theo loại xe
+    if (filters.vehicleType) {
+      filtered = filtered.filter(product => {
+        switch (filters.vehicleType) {
+          case 'xe-dien': return product.type === "Xe điện";
+          case 'xe-hoi-dien': return product.type === "Xe hơi điện";
+          case 'pin': return product.type === "Pin";
+          default: return true;
+        }
+      });
+    }
+
+    // Lọc theo loại pin
+    if (filters.batteryType) {
+      filtered = filtered.filter(product => 
+        product.name.toLowerCase().includes(filters.batteryType.toLowerCase())
+      );
+    }
+
+    // Lọc theo dung lượng pin
+    if (filters.batteryCapacity) {
+      filtered = filtered.filter(product => 
+        product.name.toLowerCase().includes(filters.batteryCapacity.toLowerCase())
+      );
+    }
+
+    setFilteredProducts(filtered);
+  };
+
+  // Sử dụng filteredProducts nếu có, ngược lại dùng products
+  const displayProducts = filteredProducts.length > 0 ? filteredProducts : products;
 
   return (
     <div style={{ width: "100%", overflowX: "hidden", background: "#f5f5f5" }}>
@@ -185,6 +291,9 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* Filter Bar Section */}
+      <FilterBar onFilterChange={handleFilterChange} />
+
       {/* Products Section */}
       <section style={{ padding: "30px 0", background: "#fff" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}>
@@ -195,6 +304,16 @@ const HomePage = () => {
             color: "#333"
           }}>
             Xe điện & Pin nổi bật
+            {filteredProducts.length > 0 && (
+              <span style={{ 
+                fontSize: "16px", 
+                fontWeight: "normal", 
+                color: "#666",
+                marginLeft: "10px"
+              }}>
+                ({filteredProducts.length} sản phẩm)
+              </span>
+            )}
           </h2>
           
           <div style={{ 
@@ -203,7 +322,7 @@ const HomePage = () => {
             gap: "25px",
             padding: "20px 0"
           }}>
-            {products.map((product) => (
+            {displayProducts.map((product) => (
               <div
                 key={product.id}
                 style={{
@@ -265,7 +384,8 @@ const HomePage = () => {
                   position: "absolute",
                   top: "10px",
                   right: product.isNew ? "60px" : "10px",
-                  background: product.type === "Pin" ? "#00AA00" : "#0066CC",
+                  background: product.type === "Pin" ? "#00AA00" : 
+                              product.type === "Xe hơi điện" ? "#8B4513" : "#0066CC",
                   color: "white",
                   padding: "4px 8px",
                   borderRadius: "4px",
