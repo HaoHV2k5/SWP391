@@ -1,21 +1,18 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.request.CreationUserRequest;
 import com.example.backend.dto.request.RegisterRequest;
 import com.example.backend.dto.request.ResendOtpRequest;
 import com.example.backend.dto.request.VerifyOtpRequest;
 import com.example.backend.dto.response.ApiResponse;
-import com.example.backend.dto.response.CreationUserResponse;
-import com.example.backend.dto.response.RegisterResponse;
+import com.example.backend.dto.response.UserDetailResponse;
 import com.example.backend.entity.User;
 import com.example.backend.service.OtpService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.example.backend.service.UserService;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -49,7 +46,15 @@ public class UserController {
 
     }
 
-
+    @GetMapping("/me")
+    public ApiResponse<UserDetailResponse> getCurrentUser(Authentication authentication) {
+        String username = authentication.getName();
+        UserDetailResponse userDetail = userService.getUserDetailByUsername(username);
+        return ApiResponse.<UserDetailResponse>builder()
+                .data(userDetail)
+                .message("User information retrieved successfully")
+                .build();
+    }
 
 
 
