@@ -27,6 +27,7 @@ public class AuthController {
     private final JwtService  jwtService;
     private final UserService userService;
 
+
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@RequestBody LoginRequest request) {
         LoginResponse result = authService.login(request);
@@ -42,17 +43,23 @@ public class AuthController {
 
 
 
-    @GetMapping("/google/success")
-    public ApiResponse< Map<String,Object>> loginGoogle(OAuth2AuthenticationToken request) {
-        Map<String,Object> result = authService.googleLogin(request);
-        return ApiResponse.< Map<String,Object>>builder().data(result).build();
-    }
 
     @PostMapping("/refresh")
     public ApiResponse<RefreshResponse> refreshToken(@RequestBody  RefreshRequest request) throws ParseException, JOSEException {
         RefreshResponse refreshResponse = authService.refresh(request);
         return  ApiResponse.<RefreshResponse>builder().data(refreshResponse).build();
+    }
 
+    @GetMapping("/google/success")
+    public ApiResponse<Map<String, Object>> googleSuccess(OAuth2AuthenticationToken token) {
+        if (token == null) {
+            return ApiResponse.<Map<String, Object>>builder()
+                    .code(400)
+                    .message("OAuth2AuthenticationToken is null")
+                    .build();
+        }
+        Map<String, Object> result = authService.googleLogin(token);
+        return ApiResponse.<Map<String, Object>>builder().data(result).build();
     }
 
 

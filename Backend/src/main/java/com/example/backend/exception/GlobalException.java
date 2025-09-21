@@ -28,7 +28,7 @@ public class GlobalException {
     }
 
     @ExceptionHandler(value = Exception.class)
-    public ResponseEntity<ApiResponse> handleException(AppException ex) {
+    public ResponseEntity<ApiResponse> handleException(Exception ex) {
 
         ApiResponse apiResponse = new ApiResponse<>();
         apiResponse.setCode(ErrorCode.UNCATEGORIZED.getCode());

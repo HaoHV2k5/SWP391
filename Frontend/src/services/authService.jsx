@@ -1,6 +1,7 @@
 import axios from "axios";
+axios.defaults.withCredentials = true;
 
-const API_BASE_URL = "http://localhost:8080/api";
+const API_BASE_URL = "http://localhost:3979";
 
 // Tạo instance axios với config mặc định
 const apiClient = axios.create({
@@ -95,7 +96,7 @@ export const authService = {
       await apiClient.post("/auth/logout");
       localStorage.removeItem("token");
       return { success: true };
-    } catch (error) {
+    } catch {
       // Vẫn xóa token local dù API call thất bại
       localStorage.removeItem("token");
       return { success: true };
@@ -118,5 +119,35 @@ export const authService = {
     }
   },
 };
+export const googleAuthService = {
+  // Bước 1: Redirect qua Google login
+  loginWithGoogle() {
+    window.location.href = `${API_BASE_URL}/oauth2/authorization/google`;
+  },
+
+  // Bước 2: Sau khi Google redirect về BE -> BE redirect về /oauth2/success
+  async handleGoogleCallback() {
+    try {
+      const response = await apiClient.get("/oauth2/success");
+      const data = response.data.data;
+
+      // Lưu token vào localStorage
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || "Google login failed",
+      };
+    }
+  },
+};
 
 export default authService;
+export { apiClient };

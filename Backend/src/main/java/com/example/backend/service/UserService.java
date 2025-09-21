@@ -96,16 +96,18 @@ public class UserService {
 
         User user = userSupplier.get();
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setVerified(true); // Set user được verify khi admin tạo
         HashSet<Role> roles = new HashSet<>();
         roleRepository.findById(Roles.USER.name()).ifPresent(roles::add);
         user.setRoles(roles);
         userRepository.save(user);
 
-        try {
-            mailService.sendEmail(user.getEmail(), LOGIN_URL, user.getFullname());
-        } catch (MessagingException e) {
-            throw new AppException(ErrorCode.EMAIL_SEND_UNSUCCESS);
-        }
+        // Không gửi email ở đây, để OtpService gửi OTP
+        // try {
+        //     mailService.sendEmail(user.getEmail(), LOGIN_URL, user.getFullname());
+        // } catch (MessagingException e) {
+        //     throw new AppException(ErrorCode.EMAIL_SEND_UNSUCCESS);
+        // }
 
         return user;
     }

@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -21,6 +22,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.util.ArrayList;
@@ -58,7 +62,15 @@ public class SecurityConfig  {
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(  jwtDecoder() ).jwtAuthenticationConverter(jwtAuthenticationConverter())))
                 .oauth2Login(oauth2 ->
-                        oauth2.defaultSuccessUrl("/auth/google/success",true))
+                        oauth2.defaultSuccessUrl("/oauth2/success",true)
+                                .failureUrl("/login?error")
+                                .redirectionEndpoint(redir -> redir.baseUri("/login/oauth2/code/google"))
+                                .successHandler((HttpServletRequest request, HttpServletResponse response, Authentication authentication) -> {
+                                    System.out.println("=== OAuth2 Success Handler Called ===");
+                                    System.out.println("Authentication: " + authentication);
+                                    response.sendRedirect("/oauth2/success");
+                                }))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         ;
 
 
@@ -83,7 +95,7 @@ public class SecurityConfig  {
     @Bean
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000" ));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000", "http://localhost:3979" ));
         configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(Arrays.asList("Authorization","Cache-Control","Content-Type"));
