@@ -2,10 +2,13 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.request.CreationUserRequest;
 import com.example.backend.dto.request.RegisterRequest;
+import com.example.backend.dto.request.ResendOtpRequest;
+import com.example.backend.dto.request.VerifyOtpRequest;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.CreationUserResponse;
 import com.example.backend.dto.response.RegisterResponse;
 import com.example.backend.entity.User;
+import com.example.backend.service.OtpService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,31 +19,39 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/admin")
+@RequestMapping("/users")
 @Slf4j
 public class UserController {
     private final UserService userService;
-//    @PostMapping("/register")
-//    public ApiResponse<RegisterResponse> register(@RequestBody @Valid  RegisterRequest request){
-//
-//        RegisterResponse registerResponse = userService.createUser(request);
-//        return ApiResponse.<RegisterResponse>builder().data(registerResponse).build();
-//    }
+    private final OtpService otpService;
+    @PostMapping("/register")
+    public ApiResponse<Void> register(@RequestBody @Valid  RegisterRequest request){
 
-
-    @GetMapping("/users")
-    public ApiResponse<List<User>> getUsers(){
-        List<User> users = userService.getUsers();
-        return ApiResponse.<List<User>>builder()
-                .data(users)
-                .build();
+        User user = userService.registerUser(request);
+        otpService.generateOtpCode(user);
+        return ApiResponse.<Void>builder().message("Check your email for the OTP to finish signing up.").build();
     }
 
-    @PostMapping("/createUser")
-    public ApiResponse<CreationUserResponse> register(@RequestBody @Valid CreationUserRequest request){
 
-        CreationUserResponse creationUserResponse = userService.createUser(request);
-        return ApiResponse.<CreationUserResponse>builder().data(creationUserResponse).build();
+    @PostMapping("/verify-otp")
+    public ApiResponse<Void> verifyOtp(@RequestBody  VerifyOtpRequest request){
+        User user = userService.getUser(request.getEmail());
+        boolean check = otpService.verifyOtpCode(user,request.getOtp());
+        String message = check ? "Verification successful. Your account is now activated" : "Invalid or expired OTP";
+        return ApiResponse.<Void>builder().message(message).build();
     }
+
+    @PostMapping("/resend-otp")
+    public ApiResponse<Void> resendOtp(@RequestBody ResendOtpRequest request){
+        User user = userService.getUser(request.getEmail());
+        otpService.generateOtpCode(user);
+        return ApiResponse.<Void>builder().message("A new OTP has been sent to your email.").build();
+
+    }
+
+
+
+
+
 
 }

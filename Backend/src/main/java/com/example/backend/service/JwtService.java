@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+import com.example.backend.entity.Role;
 import com.example.backend.entity.User;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
@@ -11,11 +12,16 @@ import com.nimbusds.jwt.SignedJWT;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Set;
+import java.util.StringJoiner;
 import java.util.UUID;
 
 @Service
@@ -40,6 +46,7 @@ public class JwtService {
                 .issueTime(new Date())
                 .expirationTime(Date.from(Instant.now().plus(jwtexpiration, ChronoUnit.MINUTES)))
                 .jwtID(UUID.randomUUID().toString())
+                .claim("scope", buidScope(user.getRoles()))
                 .build();
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
@@ -54,6 +61,24 @@ public class JwtService {
         }
         return  jwsObject.serialize();
 
+    }
+
+    public String buidScope(Set<Role> roles){
+        StringJoiner stringJoiner = new StringJoiner(" ");
+        if(!CollectionUtils.isEmpty(roles)){
+            roles.forEach(role -> {
+                stringJoiner.add("ROLE_"+role.getName());
+                if(!CollectionUtils.isEmpty(role.getPermissions())){
+                    role.getPermissions().forEach(permission -> {
+                        stringJoiner.add(permission.getName());
+                    });
+                }
+            });
+        }
+        
+        
+        
+        return stringJoiner.toString();
     }
 
 

@@ -44,6 +44,11 @@ public class User {
     @ManyToMany
     private Set<Role>  roles;
 
+    private boolean isVerified = false;
+    @Column(name = "locked",nullable = false)
+
+    private boolean locked = false;
+
 
 
 }

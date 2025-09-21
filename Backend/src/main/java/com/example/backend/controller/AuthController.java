@@ -38,11 +38,7 @@ public class AuthController {
         IntrospectResponse result = authService.introspectToken(request);
         return ApiResponse.<IntrospectResponse>builder().data(result).build();
     }
-//   test login by gg
-    @GetMapping("/me")
-    public Object getCurrentUser(Authentication authentication) {
-        return authentication.getPrincipal();
-    }
+
 
 
 

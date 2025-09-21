@@ -30,6 +30,23 @@ public class MailService {
 
     }
 
+    public void sendOTP(String to, String name,String otp) throws MessagingException {
+        Context context = new Context();
+        context.setVariable("name", name);
+        context.setVariable("otp",otp);
+        String html = templateEngine.process("email/otp-email.html",context);
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
+        messageHelper.setTo(to);
+        messageHelper.setSubject("🎉 Xác thực OTP của bạn");
+        messageHelper.setText(html,true);
+        javaMailSender.send(mimeMessage);
+    }
+
+
+
+
+
 
 
 }
