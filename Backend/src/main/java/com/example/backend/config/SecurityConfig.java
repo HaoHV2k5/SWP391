@@ -35,7 +35,9 @@ public class SecurityConfig  {
 
     private static final String[] WHITE_LIST = {
             "/auth/**",
-            "/users/**",
+            "/users/register",
+            "/users/verify-otp",
+            "/users/resend-otp",
             "/permissions/**",
             "/roles/**",
             "/admin/**"
