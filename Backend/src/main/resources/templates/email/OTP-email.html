@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f0f8f5;
+            margin: 0;
+            padding: 0;
+        }
+        .wrapper {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            border: 2px solid #e0f5e9;
+        }
+        .header {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: #fff;
+            padding: 24px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .content {
+            padding: 28px;
+            text-align: center;
+        }
+        .content h2 {
+            color: #2c3e50;
+            margin-bottom: 12px;
+            font-size: 22px;
+        }
+        .content p {
+            color: #444;
+            font-size: 15px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .otp-box {
+            display: inline-block;
+            font-size: 32px;
+            letter-spacing: 10px;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            padding: 18px 36px;
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 4px 10px rgba(46, 204, 113, 0.4);
+        }
+        .cta-btn {
+            display: inline-block;
+            background: #2980b9;
+            color: #fff !important;
+            text-decoration: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-top: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(41,128,185,0.3);
+        }
+        .cta-btn:hover {
+            background: #1f6391;
+            transform: translateY(-2px);
+        }
+        .footer {
+            background: #f4fdf7;
+            padding: 18px;
+            font-size: 13px;
+            color: #666;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <!-- Header -->
+    <div class="header">
+        <h1>⚡ Xác Thực OTP Tài Khoản EV ⚡</h1>
+    </div>
+
+    <!-- Nội dung -->
+    <div class="content">
+        <h2>Xin chào <span th:text="${name}">Thành viên</span> 🚗</h2>
+        <p>Cảm ơn bạn đã đăng ký tham gia nền tảng xe điện.
+            Đây là mã OTP của bạn để hoàn tất xác thực email:</p>
+
+        <div class="otp-box" th:text="${otp}">123456</div>
+
+        <p>Mã OTP có hiệu lực trong vòng <strong>5 phút</strong>.
+            Vui lòng không chia sẻ mã này với bất kỳ ai 🔋</p>
+
+        <a href="#" class="cta-btn">Xác thực ngay</a>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này.<br>
+        © 2025 EV Trading Platform ⚡
+    </div>
+</div>
+</body>
+</html>

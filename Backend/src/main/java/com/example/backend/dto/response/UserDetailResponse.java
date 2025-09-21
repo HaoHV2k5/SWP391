@@ -14,7 +14,7 @@ public class UserDetailResponse {
     private String username;
     private String email;
     private String phone;
-    private String fullName;
+    private String fullname;
     private String gender;
 
     @JsonFormat(pattern = "dd/MM/yyyy")
