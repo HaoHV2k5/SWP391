@@ -10,6 +10,7 @@ import com.example.backend.exception.ErrorCode;
 import com.example.backend.repository.KycSubmissionRepository;
 import com.example.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,7 +34,7 @@ public class KycService {
         KycSubmission saved = kycSubmissionRepository.save(sub);
         return toResponse(saved);
     }
-
+    @PreAuthorize("hasAuthority('APPROVE')")
     public KycDetailResponse approve(Long kycId){
         KycSubmission sub = kycSubmissionRepository.findById(kycId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         sub.setStatus(KycStatus.APPROVED);
