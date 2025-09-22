@@ -34,7 +34,7 @@ public class KycService {
         KycSubmission saved = kycSubmissionRepository.save(sub);
         return toResponse(saved);
     }
-    @PreAuthorize("hasAuthority('APPROVE')")
+//    @PreAuthorize("hasAuthority('APPROVE')")
     public KycDetailResponse approve(Long kycId){
         KycSubmission sub = kycSubmissionRepository.findById(kycId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         sub.setStatus(KycStatus.APPROVED);
