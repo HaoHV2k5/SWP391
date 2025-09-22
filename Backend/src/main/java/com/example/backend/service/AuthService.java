@@ -44,20 +44,20 @@ public class AuthService {
 
     public LoginResponse login(LoginRequest loginRequest) {
         // Hardcode admin login
-        if ("admin@electricrade.com".equals(loginRequest.getUsername()) && "admin123".equals(loginRequest.getPassword())) {
-            // Tạo admin user tạm thời
-            User adminUser = new User();
-            adminUser.setId(999L);
-            adminUser.setEmail("admin@electricrade.com");
-            adminUser.setFullname("Administrator");
-            adminUser.setVerified(true);
-            adminUser.setLocked(false);
-            
-            String token = jwtService.generateToken(adminUser);
-            String refreshToken = jwtService.generateRefreshToken(adminUser);
-            
-            return LoginResponse.builder().authenticated(true).token(token).refreshToken(refreshToken).build();
-        }
+//        if ("admin@electricrade.com".equals(loginRequest.getUsername()) && "admin123".equals(loginRequest.getPassword())) {
+//            // Tạo admin user tạm thời
+//            User adminUser = new User();
+//            adminUser.setId(999L);
+//            adminUser.setEmail("admin@electricrade.com");
+//            adminUser.setFullname("Administrator");
+//            adminUser.setVerified(true);
+//            adminUser.setLocked(false);
+//
+//            String token = jwtService.generateToken(adminUser);
+//            String refreshToken = jwtService.generateRefreshToken(adminUser);
+//
+//            return LoginResponse.builder().authenticated(true).token(token).refreshToken(refreshToken).build();
+//        }
         
         // Tìm user bằng email (vì admin tạo user với email)
         User user = userRepository.findByEmail(loginRequest.getUsername())
@@ -65,10 +65,9 @@ public class AuthService {
         if(user.isLocked()){
             throw new AppException(ErrorCode.ACCOUNT_LOCKED);
         }
-        // Bỏ verify check hoàn toàn (tạm thời để test)
-        // if(!user.isVerified()){
-        //     throw new AppException(ErrorCode.OTP_NOT_VERIFY);
-        // }
+         if(!user.isVerified()){
+             throw new AppException(ErrorCode.OTP_NOT_VERIFY);
+         }
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         boolean auth = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
         if(!auth){
