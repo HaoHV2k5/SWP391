@@ -440,11 +440,12 @@ const LoginPage = ({ onLogin }) => {
           {isLogin && (
             <div
               style={{
-                backgroundColor: "#e3f2fd",
+                backgroundColor: "#e8f5e8",
                 padding: "1rem",
-                borderRadius: "5px",
+                borderRadius: "8px",
                 marginTop: "1rem",
                 fontSize: "0.9rem",
+                border: "1px solid #c8e6c9"
               }}
             >
               <strong>Tài khoản Admin:</strong>
@@ -469,7 +470,7 @@ const LoginPage = ({ onLogin }) => {
               backgroundColor: "#f8d7da",
               color: "#721c24",
               padding: "1rem",
-              borderRadius: "5px",
+              borderRadius: "8px",
               marginBottom: "1rem",
               border: "1px solid #f5c6cb",
             }}
@@ -857,7 +858,14 @@ const LoginPage = ({ onLogin }) => {
         </div>
 
         <div style={{ textAlign: "center", marginTop: "2rem" }}>
-          <Link to="/" style={{ color: "#667eea", textDecoration: "none" }}>
+          <Link to="/" style={{ 
+            color: "#00A86B", 
+            textDecoration: "none",
+            fontWeight: "500",
+            transition: "color 0.3s ease"
+          }}
+          onMouseEnter={(e) => e.target.style.color = "#007A4B"}
+          onMouseLeave={(e) => e.target.style.color = "#00A86B"}>
             ← Quay về trang chủ
           </Link>
         </div>

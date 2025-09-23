@@ -1,16 +1,19 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 import AdminPage from "./pages/AdminPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
 import "./App.css";
 
-function App() {
+function AppContent() {
   const [user, setUser] = useState(null);
+  const location = useLocation();
 
   useEffect(() => {
     // Kiểm tra token từ URL (Google login)
@@ -116,48 +119,46 @@ function App() {
     toast.success("Đăng xuất thành công!");
   };
 
-  console.log("Current user state:", user);
+  // Kiểm tra xem có phải trang đăng nhập hoặc đăng ký không
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
 
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <Navbar user={user} onLogout={handleLogout} />
-                <HomePage />
-              </>
-            }
-          />
-          <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
-          <Route path="/admin" element={<AdminPage user={user} />} />
-          <Route
-            path="/verify-otp"
-            element={
-              <>
-                <Navbar user={user} onLogout={handleLogout} />
-                <OTPVerificationPage />
-              </>
-            }
-          />
-        </Routes>
+    <div className="App">
+      {/* Chỉ hiển thị Navbar cho trang chủ, admin và OTP */}
+      {!isAuthPage && <Navbar user={user} onLogout={handleLogout} />}
+      
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/admin" element={<AdminPage user={user} />} />
+        <Route path="/verify-otp" element={<OTPVerificationPage />} />
+      </Routes>
+      
+      {/* Chỉ hiển thị Footer cho trang chủ và admin */}
+      {!isAuthPage && <Footer />}
 
-        {/* Toast Container */}
-        <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={true}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
-      </div>
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }
