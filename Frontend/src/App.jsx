@@ -123,30 +123,20 @@ function AppContent() {
   const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
 
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <Navbar user={user} onLogout={handleLogout} />
-                <HomePage />
-              </>
-            }
-          />
-          <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
-          <Route path="/admin" element={<AdminPage user={user} />} />
-          <Route
-            path="/verify-otp"
-            element={
-              <>
-                <Navbar user={user} onLogout={handleLogout} />
-                <OTPVerificationPage />
-              </>
-            }
-          />
-        </Routes>
+    <div className="App">
+      {/* Chỉ hiển thị Navbar cho trang chủ, admin và OTP */}
+      {!isAuthPage && <Navbar user={user} onLogout={handleLogout} />}
+      
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/admin" element={<AdminPage user={user} />} />
+        <Route path="/verify-otp" element={<OTPVerificationPage />} />
+      </Routes>
+      
+      {/* Chỉ hiển thị Footer cho trang chủ và admin */}
+      {!isAuthPage && <Footer />}
 
       {/* Toast Container */}
       <ToastContainer
