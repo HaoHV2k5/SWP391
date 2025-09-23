@@ -4,10 +4,10 @@ import com.example.backend.dto.response.ApiResponse;
 import jakarta.validation.ConstraintViolation;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -28,7 +28,7 @@ public class GlobalException {
     }
 
     @ExceptionHandler(value = Exception.class)
-    public ResponseEntity<ApiResponse> handleException(AppException ex) {
+    public ResponseEntity<ApiResponse> handleException(Exception ex) {
 
         ApiResponse apiResponse = new ApiResponse<>();
         apiResponse.setCode(ErrorCode.UNCATEGORIZED.getCode());
@@ -36,14 +36,14 @@ public class GlobalException {
         return ResponseEntity.status(ErrorCode.UNCATEGORIZED.getHttpStatusCode()).body(apiResponse);
     }
 
-//    @ExceptionHandler(value = AuthorizationDeniedException.class)
-//    public ResponseEntity<ApiResponse> handleAuthorException(AuthorizationDeniedException ex){
-//        ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
-//        ApiResponse apiResponse = new ApiResponse<>();
-//        apiResponse.setCode(errorCode.getCode());
-//        apiResponse.setMessage(errorCode.getMessage());
-//        return ResponseEntity.status(errorCode.getCode()).body(apiResponse);
-//    }
+    @ExceptionHandler(value = AuthorizationDeniedException.class)
+    public ResponseEntity<ApiResponse> handleAuthorException(AuthorizationDeniedException ex){
+        ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
+        ApiResponse apiResponse = new ApiResponse<>();
+        apiResponse.setCode(errorCode.getCode());
+        apiResponse.setMessage(errorCode.getMessage());
+        return ResponseEntity.status(errorCode.getHttpStatusCode()).body(apiResponse);
+    }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse> handleArguementException(MethodArgumentNotValidException e) {

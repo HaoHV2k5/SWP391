@@ -7,9 +7,11 @@ import com.example.backend.dto.response.IntrospectResponse;
 import com.example.backend.dto.response.LoginResponse;
 import com.example.backend.dto.response.RefreshResponse;
 import com.example.backend.entity.User;
+import com.example.backend.entity.Role;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
 import com.example.backend.repository.UserRepository;
+import com.example.backend.repository.RoleRepository;
 import com.nimbusds.jose.*;
  
 import com.nimbusds.jwt.SignedJWT;
@@ -26,6 +28,7 @@ import java.text.ParseException;
  
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
  
 
 @Service
@@ -33,20 +36,38 @@ import java.util.Map;
 @Slf4j
 public class AuthService {
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final JwtService jwtService;
     @Value("${jwt.secret}")
     private  String jwtSecret;
 
 
     public LoginResponse login(LoginRequest loginRequest) {
-        User user = userRepository.findByUsername(loginRequest.getUsername())
+        // Hardcode admin login
+//        if ("admin@electricrade.com".equals(loginRequest.getUsername()) && "admin123".equals(loginRequest.getPassword())) {
+//            // Tạo admin user tạm thời
+//            User adminUser = new User();
+//            adminUser.setId(999L);
+//            adminUser.setEmail("admin@electricrade.com");
+//            adminUser.setFullname("Administrator");
+//            adminUser.setVerified(true);
+//            adminUser.setLocked(false);
+//
+//            String token = jwtService.generateToken(adminUser);
+//            String refreshToken = jwtService.generateRefreshToken(adminUser);
+//
+//            return LoginResponse.builder().authenticated(true).token(token).refreshToken(refreshToken).build();
+//        }
+        
+        // Tìm user bằng email (vì admin tạo user với email)
+        User user = userRepository.findByEmail(loginRequest.getUsername())
                 .orElseThrow( () -> new AppException(ErrorCode.USER_NOT_EXISTED));
         if(user.isLocked()){
             throw new AppException(ErrorCode.ACCOUNT_LOCKED);
         }
-        if(!user.isVerified()){
-            throw new AppException(ErrorCode.OTP_NOT_VERIFY);
-        }
+         if(!user.isVerified()){
+             throw new AppException(ErrorCode.OTP_NOT_VERIFY);
+         }
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         boolean auth = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
         if(!auth){
@@ -85,19 +106,37 @@ public class AuthService {
         map.put("email",email);
         map.put("name",name);
         map.put("picture",picture);
-        // dang phan van co can tao user nay trong database khong
-        var user = userRepository.findByEmail(email);
-        if(user.isPresent()){
-            throw  new AppException(ErrorCode.USER_EXISTED);
+        
+        // Tìm user đã tồn tại hoặc tạo mới
+        var existingUser = userRepository.findByEmail(email);
+        User user;
+        
+        if(existingUser.isPresent()){
+            // User đã tồn tại, cho phép đăng nhập
+            user = existingUser.get();
+        } else {
+            // Tạo user mới
+            user = new User();
+            user.setUsername(email);
+            user.setEmail(email);
+            user.setFullname(name);
+            user.setPassword(""); // Google user không cần password
+            user.setVerified(true); // Google user đã verified
+            user.setLocked(false);
+            
+            // Set role member cho Google user
+            Role memberRole = roleRepository.findById("member").orElse(null);
+            if (memberRole != null) {
+                user.setRoles(Set.of(memberRole));
+            }
+            
+            userRepository.save(user);
         }
-        User newUser = new User();
-        newUser.setUsername(email);
 
-
-        String token = jwtService.generateToken(newUser);
+        String token = jwtService.generateToken(user);
         map.put("token",token);
-        String freshToken = jwtService.generateToken(newUser);
-        map.put("refreshToken",freshToken);
+        String refreshToken = jwtService.generateRefreshToken(user);
+        map.put("refreshToken",refreshToken);
         return map;
     }
 

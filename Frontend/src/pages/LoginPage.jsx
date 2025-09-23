@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin } from "@react-oauth/google";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, User, Mail, Lock, Phone, Calendar } from "lucide-react";
 import { toast } from "react-toastify";
-
 
 const LoginPage = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -42,10 +41,10 @@ const LoginPage = ({ onLogin }) => {
       return "Họ và tên không được chứa ký tự đặc biệt";
     }
 
-    // Kiểm tra số điện thoại phải là số và đủ 10 số
-    const phoneRegex = /^[0-9]{10}$/;
+    // Kiểm tra số điện thoại theo format Việt Nam
+    const phoneRegex = /^(84|0[35789])[0-9]{8}$/;
     if (!phoneRegex.test(data.phone)) {
-      return "Số điện thoại phải là số và đủ 10 chữ số";
+      return "Số điện thoại phải bắt đầu bằng 84 hoặc 0[3,5,7,8,9] và có 10 chữ số";
     }
 
     // Kiểm tra mật khẩu trên 5 ký tự, có chữ hoa và ký tự đặc biệt
@@ -158,32 +157,7 @@ const LoginPage = ({ onLogin }) => {
 
     try {
       if (isLogin) {
-        // Tài khoản admin mặc định
-        if (
-          formData.email === "admin@electricrade.com" &&
-          formData.password === "admin123"
-        ) {
-          const adminUser = {
-            token: "admin-token-123",
-            user: {
-              id: 1,
-              email: "admin@electricrade.com",
-              fullName: "Administrator",
-              role: "admin",
-            },
-          };
-
-          console.log("Admin login data:", adminUser);
-          onLogin(adminUser);
-          toast.success("Đăng nhập admin thành công!");
-
-          // Thêm delay để đảm bảo state được cập nhật
-          setTimeout(() => {
-            console.log("Navigating to admin page...");
-            navigate("/admin");
-          }, 100);
-          return;
-        }
+        // Admin login sẽ được xử lý bởi backend API
 
         // Tài khoản guest mặc định
         if (
@@ -204,83 +178,129 @@ const LoginPage = ({ onLogin }) => {
           return;
         }
 
-        // Đăng nhập thông thường - kiểm tra localStorage
-        const existingUsers = JSON.parse(localStorage.getItem("users") || "[]");
-        const user = existingUsers.find(
-          (u) => u.email === formData.email && u.password === formData.password
-        );
-
-        if (user) {
-          onLogin({
-            token: `user-token-${user.id}`,
-            user: {
-              id: user.id,
-              email: user.email,
-              fullName: user.fullName,
-              role: user.role,
+        // Đăng nhập thông thường - gọi API backend
+        try {
+          const response = await fetch("http://localhost:3979/auth/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
             },
+            body: JSON.stringify({
+              username: formData.email, // Gửi email như username
+              password: formData.password,
+            }),
           });
-          toast.success(`Chào mừng ${user.fullName}! Đăng nhập thành công!`);
 
-          // Chuyển hướng dựa trên role
-          if (user.role === "admin") {
-            navigate("/admin");
+          const data = await response.json();
+          console.log("🔍 Login response:", data);
+          console.log("🔍 Response status:", response.status);
+
+          if (data.code === 1000 && data.data.authenticated) {
+            // Kiểm tra nếu là admin
+            if (formData.email === "admin@electricrade.com") {
+              // Admin user
+              const userData = {
+                token: data.data.token,
+                user: {
+                  id: 999,
+                  email: formData.email,
+                  fullName: "Quản trị viên",
+                  role: "admin",
+                },
+              };
+              onLogin(userData);
+              toast.success("Đăng nhập admin thành công!");
+              navigate("/admin");
+            } else {
+              // User thường
+              const userData = {
+                token: data.data.token,
+                user: {
+                  id: data.data.user?.id || 0,
+                  email: formData.email,
+                  fullName: data.data.user?.fullname || "Người dùng",
+                  role: "member",
+                },
+              };
+              onLogin(userData);
+              toast.success("Đăng nhập thành công!");
+              navigate("/");
+            }
           } else {
-            navigate("/");
+            console.error("❌ Login failed:", data);
+            toast.error(data.message || "Email hoặc mật khẩu không đúng");
           }
-        } else {
-          toast.error("Email hoặc mật khẩu không đúng");
+        } catch (error) {
+          console.error("Login error:", error);
+          toast.error("Lỗi kết nối server");
         }
       } else {
-        // Đăng ký - hoạt động hoàn toàn ở frontend
-        // Validation tất cả các trường
-        const validationError = validateRegistration(formData);
-        if (validationError) {
-          toast.error(validationError);
-          setLoading(false);
-          return;
-        }
-
-        // Kiểm tra email đã tồn tại chưa (trong localStorage)
-        const existingUsers = JSON.parse(localStorage.getItem("users") || "[]");
-        const userExists = existingUsers.find(
-          (user) => user.email === formData.email
-        );
-
-        if (userExists) {
-          toast.error("Email này đã được sử dụng");
-          setLoading(false);
-          return;
-        }
-
-        // Tạo user mới
-        const newUser = {
-          id: Date.now(),
-          email: formData.email,
-          fullName: formData.fullName,
-          phone: formData.phone,
-          dateOfBirth: formData.dateOfBirth,
-          password: formData.password, // Trong thực tế nên hash password
-          role: "guest", // Mặc định role guest
-          createdAt: new Date().toISOString(),
-        };
-
-        // Lưu user vào localStorage
-        existingUsers.push(newUser);
-        localStorage.setItem("users", JSON.stringify(existingUsers));
-
-        toast.success(`Chào mừng ${formData.fullName}! Đăng ký thành công!`);
-        setTimeout(() => {
-          setIsLogin(true);
-          setFormData({
-            email: formData.email,
-            password: "",
-            fullName: "",
-            phone: "",
-            dateOfBirth: "",
-            confirmPassword: "",
+        // Đăng ký - gọi API backend
+        try {
+          const response = await fetch("http://localhost:3979/users/register", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: formData.email,
+              password: formData.password,
+              confirmPassword: formData.confirmPassword,
+              fullname: formData.fullName,
+              phone: formData.phone,
+              yob: formData.dateOfBirth
+                ? (() => {
+                    const date = new Date(formData.dateOfBirth);
+                    const day = String(date.getDate()).padStart(2, "0");
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const year = date.getFullYear();
+                    return `${day}/${month}/${year}`;
+                  })()
+                : "01/01/1990",
+              gender: "Nam", // Giá trị mặc định
+              address: "Địa chỉ mặc định", // Giá trị mặc định
+            }),
           });
-        }, 1500);
+
+          const data = await response.json();
+          console.log("🔍 Register response:", data);
+          console.log("🔍 Response status:", response.status);
+          console.log("🔍 Response headers:", response.headers);
+          console.log("🔍 Request body:", {
+            email: formData.email,
+            password: formData.password,
+            confirmPassword: formData.confirmPassword,
+            fullname: formData.fullName,
+            phone: formData.phone,
+            yob: formData.dateOfBirth
+              ? new Date(formData.dateOfBirth).toISOString().split("T")[0]
+              : "1990-01-01",
+            gender: "Nam",
+            address: "Địa chỉ mặc định",
+          });
+
+          if (
+            response.ok &&
+            data.message &&
+            data.message.includes("Check your email")
+          ) {
+            toast.success(
+              "Đăng ký thành công! Vui lòng kiểm tra email để xác thực OTP."
+            );
+            // Redirect đến trang OTP verification
+            navigate("/verify-otp", {
+              state: { email: formData.email },
+            });
+          } else {
+            console.error("❌ Register failed:", data);
+            toast.error(
+              data.message || `Đăng ký thất bại! (${response.status})`
+            );
+          }
+        } catch (error) {
+          console.error("❌ Register error:", error);
+          toast.error("Lỗi kết nối server");
+        }
       }
     } catch (error) {
       toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
@@ -294,21 +314,125 @@ const LoginPage = ({ onLogin }) => {
     <div
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+        backgroundImage:
+          "url('/src/assets/images/background_den_7_6268ebdce9.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        position: "relative",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         padding: "2rem",
       }}
     >
-      <div className="card" style={{ width: "100%", maxWidth: "500px" }}>
+      <style>
+        {`
+          .card input, .card select {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: white !important;
+            backdrop-filter: blur(10px);
+          }
+          
+          .card input::placeholder {
+            color: rgba(255, 255, 255, 0.6) !important;
+          }
+          
+          .card label {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+          }
+          
+          .card .error {
+            color: #ff6b6b !important;
+          }
+          
+          .card button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            border: none !important;
+            color: white !important;
+            font-weight: 600;
+          }
+          
+          .card button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+          }
+          
+          .card .google-login {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: white !important;
+          }
+          
+          .card .google-login:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
+          }
+          
+          .card .divider {
+            color: rgba(255, 255, 255, 0.6) !important;
+          }
+          
+          .card .divider::before,
+          .card .divider::after {
+            background: rgba(255, 255, 255, 0.3) !important;
+          }
+          
+          .card .link {
+            color: #667eea !important;
+          }
+          
+          .card .link:hover {
+            color: #764ba2 !important;
+          }
+        `}
+      </style>
+      {/* Overlay để làm mờ background */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0, 0, 0, 0.4)",
+          backdropFilter: "blur(2px)",
+        }}
+      />
+      <div
+        className="card"
+        style={{
+          width: "100%",
+          maxWidth: "500px",
+          position: "relative",
+          zIndex: 10,
+          background: "rgba(26, 26, 46, 0.9)",
+          backdropFilter: "blur(20px)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
+          borderRadius: "20px",
+        }}
+      >
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
           <h1
-            style={{ fontSize: "2rem", marginBottom: "0.5rem", color: "#333" }}
+            style={{
+              fontSize: "2rem",
+              marginBottom: "0.5rem",
+              color: "#ffffff",
+              fontWeight: "700",
+              textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+            }}
           >
             {isLogin ? "Đăng nhập" : "Đăng ký"}
           </h1>
-          <p style={{ color: "#666" }}>
+          <p
+            style={{
+              color: "rgba(255, 255, 255, 0.8)",
+              fontSize: "1rem",
+              fontWeight: "500",
+            }}
+          >
             {isLogin
               ? "Chào mừng bạn quay trở lại!"
               : "Tạo tài khoản mới để bắt đầu"}
@@ -340,7 +464,7 @@ const LoginPage = ({ onLogin }) => {
           )}
         </div>
 
-  {error && (
+        {error && (
           <div
             style={{
               backgroundColor: "#f8d7da",
@@ -355,7 +479,7 @@ const LoginPage = ({ onLogin }) => {
           </div>
         )}
 
-  <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
           {!isLogin && (
             <div className="form-group">
               <label htmlFor="fullName">
@@ -373,6 +497,13 @@ const LoginPage = ({ onLogin }) => {
                 style={{
                   borderColor: fieldErrors.fullName ? "#e74c3c" : "#ddd",
                   borderWidth: fieldErrors.fullName ? "2px" : "1px",
+                  color: "#333",
+                  backgroundColor: "#fff",
+                  padding: "12px 16px",
+                  borderRadius: "8px",
+                  fontSize: "16px",
+                  outline: "none",
+                  transition: "border-color 0.3s ease",
                 }}
               />
               {fieldErrors.fullName && (
@@ -402,6 +533,17 @@ const LoginPage = ({ onLogin }) => {
               onChange={handleInputChange}
               required
               placeholder="Nhập email"
+              style={{
+                color: "#333",
+                backgroundColor: "#fff",
+                padding: "12px 16px",
+                borderRadius: "8px",
+                fontSize: "16px",
+                border: "1px solid #ddd",
+                outline: "none",
+                transition: "border-color 0.3s ease",
+                width: "100%",
+              }}
             />
           </div>
 
@@ -422,6 +564,14 @@ const LoginPage = ({ onLogin }) => {
                 style={{
                   borderColor: fieldErrors.phone ? "#e74c3c" : "#ddd",
                   borderWidth: fieldErrors.phone ? "2px" : "1px",
+                  color: "#333",
+                  backgroundColor: "#fff",
+                  padding: "12px 16px",
+                  borderRadius: "8px",
+                  fontSize: "16px",
+                  outline: "none",
+                  transition: "border-color 0.3s ease",
+                  width: "100%",
                 }}
               />
               {fieldErrors.phone && (
@@ -451,6 +601,17 @@ const LoginPage = ({ onLogin }) => {
                 value={formData.dateOfBirth}
                 onChange={handleInputChange}
                 required={!isLogin}
+                style={{
+                  color: "#333",
+                  backgroundColor: "#fff",
+                  padding: "12px 16px",
+                  borderRadius: "8px",
+                  fontSize: "16px",
+                  border: "1px solid #ddd",
+                  outline: "none",
+                  transition: "border-color 0.3s ease",
+                  width: "100%",
+                }}
               />
             </div>
           )}
@@ -473,6 +634,14 @@ const LoginPage = ({ onLogin }) => {
                   paddingRight: "3rem",
                   borderColor: fieldErrors.password ? "#e74c3c" : "#ddd",
                   borderWidth: fieldErrors.password ? "2px" : "1px",
+                  color: "#333",
+                  backgroundColor: "#fff",
+                  padding: "12px 16px",
+                  borderRadius: "8px",
+                  fontSize: "16px",
+                  outline: "none",
+                  transition: "border-color 0.3s ease",
+                  width: "100%",
                 }}
               />
               {fieldErrors.password && (
@@ -532,6 +701,14 @@ const LoginPage = ({ onLogin }) => {
                       ? "#e74c3c"
                       : "#ddd",
                     borderWidth: fieldErrors.confirmPassword ? "2px" : "1px",
+                    color: "#333",
+                    backgroundColor: "#fff",
+                    padding: "12px 16px",
+                    borderRadius: "8px",
+                    fontSize: "16px",
+                    outline: "none",
+                    transition: "border-color 0.3s ease",
+                    width: "100%",
                   }}
                 />
                 <button
@@ -597,58 +774,87 @@ const LoginPage = ({ onLogin }) => {
         </form>
 
         <div style={{ textAlign: "center", margin: "1.5rem 0 0.5rem 0" }}>
-          <GoogleLogin
-            onSuccess={(credentialResponse) => {
-              try {
-                const credential = credentialResponse?.credential;
-                if (!credential) {
-                  toast.error("Không nhận được thông tin Google");
-                  return;
-                }
-                const payload = JSON.parse(atob(credential.split('.')[1] || ''));
-                const googleUser = {
-                  id: payload.sub,
-                  email: payload.email,
-                  fullName: payload.name,
-                  avatar: payload.picture,
-                  role: 'user',
-                };
-                // Auto-register to local users store if not exists
-                const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
-                const found = existingUsers.find(u => u.email === googleUser.email);
-                if (!found) {
-                  existingUsers.push({
-                    id: googleUser.id,
-                    email: googleUser.email,
-                    fullName: googleUser.fullName,
-                    password: '',
-                    role: 'user',
-                    createdAt: new Date().toISOString(),
-                    provider: 'google'
-                  });
-                  localStorage.setItem('users', JSON.stringify(existingUsers));
-                }
-                const loginData = {
-                  token: credential,
-                  user: googleUser,
-                };
-                onLogin(loginData);
-                toast.success("Đăng nhập Google thành công!");
-                setTimeout(() => navigate('/'), 400);
-              } catch (e) {
-                toast.error("Không thể xử lý thông tin Google");
-                console.error(e);
-              }
+          <button
+            onClick={() => {
+              // Redirect đến BE để xử lý Google OAuth2
+              window.location.href =
+                "http://localhost:3979/oauth2/authorization/google";
             }}
-            onError={() => {
-              toast.error("Đăng nhập Google thất bại!");
+            style={{
+              width: "100%",
+              padding: "12px 24px",
+              backgroundColor: "#4285f4",
+              color: "white",
+              border: "none",
+              borderRadius: "25px",
+              fontSize: "16px",
+              fontWeight: "500",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              transition: "all 0.3s ease",
             }}
-            width="100%"
-            text={isLogin ? "signin_with" : "signup_with"}
-            shape="pill"
-            theme="filled_black"
-            locale="vi"
-          />
+            onMouseOver={(e) => {
+              e.target.style.backgroundColor = "#3367d6";
+            }}
+            onMouseOut={(e) => {
+              e.target.style.backgroundColor = "#4285f4";
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path
+                fill="currentColor"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              />
+              <path
+                fill="currentColor"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              />
+              <path
+                fill="currentColor"
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+              />
+              <path
+                fill="currentColor"
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              />
+            </svg>
+            {isLogin ? "Đăng nhập với Google" : "Đăng ký với Google"}
+          </button>
+          <div style={{ margin: "1rem 0", color: "#aaa", fontWeight: 500 }}>
+            Hoặc
+          </div>
+          <p style={{ color: "#666" }}>
+            {isLogin ? "Chưa có tài khoản?" : "Đã có tài khoản?"}
+            <button
+              type="button"
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setError("");
+                setFieldErrors({});
+                setFormData({
+                  email: "",
+                  password: "",
+                  fullName: "",
+                  phone: "",
+                  dateOfBirth: "",
+                  confirmPassword: "",
+                });
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#667eea",
+                cursor: "pointer",
+                textDecoration: "underline",
+                marginLeft: "0.5rem",
+              }}
+            >
+              {isLogin ? "Đăng ký ngay" : "Đăng nhập"}
+            </button>
+          </p>
         </div>
 
         <div style={{ textAlign: "center", marginTop: "2rem" }}>

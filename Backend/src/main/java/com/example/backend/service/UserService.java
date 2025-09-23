@@ -2,8 +2,11 @@ package com.example.backend.service;
 
 import com.example.backend.dto.request.CreationUserRequest;
 import com.example.backend.dto.request.RegisterRequest;
+import com.example.backend.dto.request.UpdateUserRequest;
+import com.example.backend.dto.request.UpdateUserRoleRequest;
 import com.example.backend.dto.response.CreationUserResponse;
 import com.example.backend.dto.response.UserDetailResponse;
+import com.example.backend.dto.response.UserListResponse;
 import com.example.backend.entity.Role;
 import com.example.backend.entity.User;
 import com.example.backend.enums.Roles;
@@ -96,16 +99,18 @@ public class UserService {
 
         User user = userSupplier.get();
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setVerified(true); // Set user được verify khi admin tạo
         HashSet<Role> roles = new HashSet<>();
         roleRepository.findById(Roles.USER.name()).ifPresent(roles::add);
         user.setRoles(roles);
         userRepository.save(user);
 
-        try {
-            mailService.sendEmail(user.getEmail(), LOGIN_URL, user.getFullname());
-        } catch (MessagingException e) {
-            throw new AppException(ErrorCode.EMAIL_SEND_UNSUCCESS);
-        }
+        // Không gửi email ở đây, để OtpService gửi OTP
+        // try {
+        //     mailService.sendEmail(user.getEmail(), LOGIN_URL, user.getFullname());
+        // } catch (MessagingException e) {
+        //     throw new AppException(ErrorCode.EMAIL_SEND_UNSUCCESS);
+        // }
 
         return user;
     }
@@ -116,6 +121,77 @@ public class UserService {
 
         return user;
 
+    }
+
+    public User getUserByUsername(String username){
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        return user;
+    }
+
+    public UserDetailResponse getUserDetailByUsername(String username){
+        User user = getUserByUsername(username);
+        return userMapper.toUserDetailResponse(user);
+    }
+
+    // Admin CRUD operations
+    public UserListResponse getUserById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        return userMapper.toUserListResponse(user);
+    }
+
+    public List<UserListResponse> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(userMapper::toUserListResponse)
+                .toList();
+    }
+
+    public UserListResponse updateUser(Long userId, UpdateUserRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        
+        userMapper.updateUserFromRequest(request, user);
+        User savedUser = userRepository.save(user);
+        return userMapper.toUserListResponse(savedUser);
+    }
+
+    public void deleteUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        userRepository.delete(user);
+    }
+
+    public UserListResponse updateUserRoles(UpdateUserRoleRequest request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        
+        Set<Role> newRoles = new HashSet<>();
+        for (String roleName : request.getRoleNames()) {
+            Role role = roleRepository.findById(roleName)
+                    .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
+            newRoles.add(role);
+        }
+        
+        user.setRoles(newRoles);
+        User savedUser = userRepository.save(user);
+        return userMapper.toUserListResponse(savedUser);
+    }
+
+    public UserListResponse verifyUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        user.setVerified(true);
+        User savedUser = userRepository.save(user);
+        return userMapper.toUserListResponse(savedUser);
+    }
+
+    public UserListResponse unverifyUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        user.setVerified(false);
+        User savedUser = userRepository.save(user);
+        return userMapper.toUserListResponse(savedUser);
     }
 
 
