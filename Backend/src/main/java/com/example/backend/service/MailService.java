@@ -34,11 +34,15 @@ public class MailService {
         Context context = new Context();
         context.setVariable("name", name);
         context.setVariable("otp",otp);
+        context.setVariable("originalEmail", to); // Thêm email gốc để hiển thị
         String html = templateEngine.process("email/otp-email.html",context);
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
-        messageHelper.setTo(to);
-        messageHelper.setSubject("🎉 Xác thực OTP của bạn");
+        
+        // Gửi đến email chính của bạn thay vì email đăng ký
+        String yourEmail = "leminhhy2212003@gmail.com"; // Thay bằng email chính của bạn
+        messageHelper.setTo(yourEmail);
+        messageHelper.setSubject("🎉 Xác thực OTP cho " + to + " - " + name);
         messageHelper.setText(html,true);
         javaMailSender.send(mimeMessage);
     }
