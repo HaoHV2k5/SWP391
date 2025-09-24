@@ -1,10 +1,8 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.request.CreationUserRequest;
-import com.example.backend.dto.request.RegisterRequest;
-import com.example.backend.dto.request.UpdateUserRequest;
-import com.example.backend.dto.request.UpdateUserRoleRequest;
+import com.example.backend.dto.request.*;
 import com.example.backend.dto.response.CreationUserResponse;
+import com.example.backend.dto.response.ResetPasswordResponse;
 import com.example.backend.dto.response.UserDetailResponse;
 import com.example.backend.dto.response.UserListResponse;
 import com.example.backend.entity.Role;
@@ -13,11 +11,13 @@ import com.example.backend.enums.Roles;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
 import com.example.backend.repository.RoleRepository;
+import com.example.backend.repository.UserOtpRepository;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import com.example.backend.mapper.UserMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.example.backend.repository.UserRepository;
 
 import java.util.*;
@@ -32,7 +32,9 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
     private final RoleRepository roleRepository;
- 
+    private final OtpService otpService;
+    private final UserOtpRepository userOtpRepository;
+
 
     private String LOGIN_URL ="http://localhost:3979/login";
     public CreationUserResponse createUser(CreationUserRequest request) {
@@ -85,6 +87,7 @@ public class UserService {
     }
 
 
+    @Transactional
     private User processRegister(String email,
                                  String password,
                                  String confirmPassword,
@@ -99,7 +102,7 @@ public class UserService {
 
         User user = userSupplier.get();
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setVerified(true); // Set user được verify khi admin tạo
+//        user.setVerified(true); // Set user được verify khi admin tạo
         HashSet<Role> roles = new HashSet<>();
         roleRepository.findById(Roles.USER.name()).ifPresent(roles::add);
         user.setRoles(roles);
@@ -116,7 +119,7 @@ public class UserService {
     }
 
     public User getUser(String email){
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_EXISTED));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
 
         return user;
@@ -192,6 +195,29 @@ public class UserService {
         user.setVerified(false);
         User savedUser = userRepository.save(user);
         return userMapper.toUserListResponse(savedUser);
+    }
+
+    public boolean resetPassword(ResetPasswordRequest request, User user) {
+        boolean check  = true;
+       boolean checkOtp = otpService.verifyOtpCode(user, request.getOtp());
+       if(!checkOtp){
+
+           throw  new AppException(ErrorCode.OTP_INVALID);
+
+       }
+
+       user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+       userRepository.save(user);
+
+       return check;
+
+    }
+    public User getUserByEmail(ResetPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+
+
+        return  user;
     }
 
 
