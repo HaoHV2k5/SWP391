@@ -14,6 +14,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class KycService {
@@ -34,13 +37,14 @@ public class KycService {
         KycSubmission saved = kycSubmissionRepository.save(sub);
         return toResponse(saved);
     }
-//    @PreAuthorize("hasAuthority('APPROVE')")
+    @PreAuthorize("hasAuthority('APPROVE_KYC')")
     public KycDetailResponse approve(Long kycId){
         KycSubmission sub = kycSubmissionRepository.findById(kycId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         sub.setStatus(KycStatus.APPROVED);
         sub.setRejectionReason(null);
         return toResponse(kycSubmissionRepository.save(sub));
     }
+    @PreAuthorize("hasAuthority('REJECT_KYC')")
 
     public KycDetailResponse reject(Long kycId, KycDecisionRequest request){
         KycSubmission sub = kycSubmissionRepository.findById(kycId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
@@ -60,6 +64,17 @@ public class KycService {
                 .createdAt(sub.getCreatedAt())
                 .updatedAt(sub.getUpdatedAt())
                 .build();
+    }
+    @PreAuthorize("hasAuthority('GET_KYC')")
+
+    public List<KycDetailResponse> getAllKyc(){
+        List<KycSubmission> subs = kycSubmissionRepository.findByStatus(KycStatus.PENDING);
+        List<KycDetailResponse> response = new ArrayList<>();
+        for(KycSubmission sub : subs){
+            response.add(toResponse(sub));
+        }
+
+        return response;
     }
 }
 
