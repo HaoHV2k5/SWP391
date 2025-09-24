@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface KycSubmissionRepository extends JpaRepository<KycSubmission, Long> {
     Optional<KycSubmission> findFirstByUserOrderByCreatedAtDesc(User user);
     List<KycSubmission> findByStatus(KycStatus status);
+
+    List<KycSubmission> findAllByStatus(KycStatus status);
 }
 
 
