@@ -30,6 +30,7 @@ public enum ErrorCode {
     ROLE_NOT_EXISTED(1020, "Vai trò không tồn tại", HttpStatus.NOT_FOUND),
     OTP_NOT_VERIFY (1021, "Tài khoản chưa được xác thực bằng OTP", HttpStatus.BAD_REQUEST),
     ACCOUNT_LOCKED(1022, "Tài khoản đã bị khóa", HttpStatus.FORBIDDEN),
+    OTP_INVALID (1023, "OTP không đúng!, hãy thử lại", HttpStatus.BAD_REQUEST),
 
     ;
     private int code;

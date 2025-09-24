@@ -1,9 +1,8 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.request.RegisterRequest;
-import com.example.backend.dto.request.ResendOtpRequest;
-import com.example.backend.dto.request.VerifyOtpRequest;
+import com.example.backend.dto.request.*;
 import com.example.backend.dto.response.ApiResponse;
+import com.example.backend.dto.response.ResetPasswordResponse;
 import com.example.backend.dto.response.UserDetailResponse;
 import com.example.backend.entity.User;
 import com.example.backend.service.MailService;
@@ -66,6 +65,26 @@ public class UserController {
                 .data(userDetail)
                 .message("User information retrieved successfully")
                 .build();
+    }
+    @PostMapping("/forgot-password")
+    public ApiResponse<String> forgotPassword(@RequestBody @Valid ForgotPassword request){
+        User user = userService.getUser(request.getEmail());
+        otpService.generateOtpCode(user);
+        return ApiResponse.<String>builder().message("Đã gửi otp để xác thực").data(user.getEmail()).build();
+    }
+
+    @PostMapping("/reset-password")
+    public ApiResponse<ResetPasswordResponse> handleResetPassword(@RequestBody @Valid ResetPasswordRequest request){
+        User user = userService.getUser(request.getEmail());
+
+        boolean result  = userService.resetPassword(request, user);
+        try {
+            mailService.sendRegisterNotice(user.getEmail(), user.getFullname());
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
+        return ApiResponse.<ResetPasswordResponse>builder().message("Reset Password successfully")
+                .data(ResetPasswordResponse.builder().success(result).build()).build();
     }
 
 
