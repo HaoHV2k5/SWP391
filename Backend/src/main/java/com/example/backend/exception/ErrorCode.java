@@ -31,6 +31,9 @@ public enum ErrorCode {
     OTP_NOT_VERIFY (1021, "Tài khoản chưa được xác thực bằng OTP", HttpStatus.BAD_REQUEST),
     ACCOUNT_LOCKED(1022, "Tài khoản đã bị khóa", HttpStatus.FORBIDDEN),
     OTP_INVALID (1023, "OTP không đúng!, hãy thử lại", HttpStatus.BAD_REQUEST),
+    USER_ROLE_NOT_FOUND (1023, "Không tìm thấy User role trong hệ thống!", HttpStatus.BAD_REQUEST),
+
+    ACCOUNT_EXISTED (1023, "Email này đã được sử dụng", HttpStatus.BAD_REQUEST),
 
     ;
     private int code;

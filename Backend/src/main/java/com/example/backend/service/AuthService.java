@@ -113,7 +113,12 @@ public class AuthService {
         
         if(existingUser.isPresent()){
             // User đã tồn tại, cho phép đăng nhập
-            user = existingUser.get();
+            if(existingUser.get().getPassword().isEmpty()){
+                user = existingUser.get();
+            }else {
+                throw  new AppException(ErrorCode.ACCOUNT_EXISTED);
+            }
+
         } else {
             // Tạo user mới
             user = new User();
@@ -125,10 +130,8 @@ public class AuthService {
             user.setLocked(false);
             
             // Set role member cho Google user
-            Role memberRole = roleRepository.findById("member").orElse(null);
-            if (memberRole != null) {
-                user.setRoles(Set.of(memberRole));
-            }
+            Role userRole = roleRepository.findById("ROLE_USER").orElseThrow(() -> new AppException(ErrorCode.USER_ROLE_NOT_FOUND));
+            user.setRoles(Set.of(userRole));
             
             userRepository.save(user);
         }
