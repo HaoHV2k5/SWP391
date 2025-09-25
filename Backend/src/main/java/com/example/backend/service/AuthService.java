@@ -131,7 +131,7 @@ public class AuthService {
             
             // Set role member cho Google user
             Role userRole = roleRepository.findById("ROLE_USER").orElseThrow(() -> new AppException(ErrorCode.USER_ROLE_NOT_FOUND));
-
+            user.setRoles(Set.of(userRole));
             
             userRepository.save(user);
         }
