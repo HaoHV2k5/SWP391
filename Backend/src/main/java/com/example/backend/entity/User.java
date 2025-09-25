@@ -33,21 +33,16 @@ public class User {
 
     @Column(columnDefinition = "NVARCHAR(100)")
     private String fullname;
-
     private String avatar;
     private String gender;
     private LocalDate yob;
-
     @Column(nullable = false)
     private String email;
     private String phone;
-
     @Column(columnDefinition = "NVARCHAR(255)")
     private String address;
-
     @ManyToMany
     private Set<Role>  roles;
-
     private boolean isVerified = false;
     @Column(name = "locked",nullable = false)
 
