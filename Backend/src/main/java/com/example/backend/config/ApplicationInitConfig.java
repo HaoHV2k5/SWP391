@@ -1,8 +1,10 @@
 package com.example.backend.config;
 
+import com.example.backend.entity.Permission;
 import com.example.backend.entity.Role;
 import com.example.backend.entity.User;
 import com.example.backend.enums.Roles;
+import com.example.backend.repository.PermissionRepository;
 import com.example.backend.repository.RoleRepository;
 import com.example.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,19 +24,35 @@ import java.util.Set;
 public class ApplicationInitConfig {
     private final PasswordEncoder passwordEncoder;
     @Bean
-    public ApplicationRunner  init(UserRepository userRepository, RoleRepository roleRepository) {
+    public ApplicationRunner  init(UserRepository userRepository, RoleRepository roleRepository, PermissionRepository permissionRepository) {
         log.info("Initializing application.....");
 
         return args -> {
            if (userRepository.findByUsername("admin@gmail.com").isEmpty()) {
-               roleRepository.save(Role.builder().name(Roles.ADMIN.name()).description("ADMIN role").build());
-               roleRepository.save(Role.builder().name(Roles.USER.name()).description("USER role").build());
-                Role adminRole = Role.builder().name(Roles.ADMIN.name()).description("ADMIN role").build();
-                Set<Role> roles = new HashSet<>();
-                roles.add(adminRole);
+               // Tạo permissions
+               Permission sellProductPermission = Permission.builder()
+                       .name("SELL_PRODUCT")
+                       .description("Permission to sell products")
+                       .build();
+               permissionRepository.save(sellProductPermission);
+               
+               // Tạo roles
+               Role adminRole = Role.builder().name(Roles.ADMIN.name()).description("ADMIN role").build();
+               Role userRole = Role.builder().name(Roles.USER.name()).description("USER role").build();
+               
+               // Gán permission SELL_PRODUCT cho role USER
+               Set<Permission> userPermissions = new HashSet<>();
+               userPermissions.add(sellProductPermission);
+               userRole.setPermissions(userPermissions);
+               
+               roleRepository.save(adminRole);
+               roleRepository.save(userRole);
+               
+               // Tạo admin user
+               Set<Role> roles = new HashSet<>();
+               roles.add(adminRole);
                User user = User.builder()
                        .username("admin@gmail.com")
-
                        .password(passwordEncoder.encode("admin"))
                        .isVerified(true)
                        .locked(false)

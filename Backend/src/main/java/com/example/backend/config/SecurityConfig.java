@@ -40,7 +40,9 @@ public class SecurityConfig  {
             "/users/resend-otp",
             "/permissions/**",
             "/roles/**",
-            "/admin/**"
+            "/admin/**",
+            "/api/v1/products/active",
+            "/api/v1/products/{id}"
     };
     
 

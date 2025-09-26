@@ -37,15 +37,22 @@ public class KycService {
         KycSubmission saved = kycSubmissionRepository.save(sub);
         return toResponse(saved);
     }
-    @PreAuthorize("hasAuthority('APPROVE_KYC')")
-    public KycDetailResponse approve(Long kycId){
+
+    public KycDetailResponse staffApprove(Long kycId){
         KycSubmission sub = kycSubmissionRepository.findById(kycId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        sub.setStatus(KycStatus.APPROVED);
+        sub.setStatus(KycStatus.STAFF_APPROVED);
         sub.setRejectionReason(null);
 
         return toResponse(kycSubmissionRepository.save(sub));
     }
-    @PreAuthorize("hasAuthority('REJECT_KYC')")
+    public KycDetailResponse adminApprove(Long kycId){
+        KycSubmission sub = kycSubmissionRepository.findById(kycId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        sub.setStatus(KycStatus.ADMIN_APPROVED);
+        sub.setRejectionReason(null);
+
+        return toResponse(kycSubmissionRepository.save(sub));
+    }
+
 
     public KycDetailResponse reject(Long kycId, KycDecisionRequest request){
         KycSubmission sub = kycSubmissionRepository.findById(kycId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
@@ -68,7 +75,7 @@ public class KycService {
     }
     @PreAuthorize("hasAuthority('GET_KYC')")
 
-    public List<KycDetailResponse> getAllKyc(){
+    public List<KycDetailResponse> getAllKycByStaff(){
         List<KycSubmission> subs = kycSubmissionRepository.findByStatus(KycStatus.PENDING);
         List<KycDetailResponse> response = new ArrayList<>();
         for(KycSubmission sub : subs){
@@ -76,6 +83,26 @@ public class KycService {
         }
 
         return response;
+    }
+
+
+
+    public List<KycDetailResponse> getAllKycByAdmin(){
+        List<KycSubmission> subs = kycSubmissionRepository.findByStatus(KycStatus.STAFF_APPROVED);
+        List<KycDetailResponse> response = new ArrayList<>();
+        for(KycSubmission sub : subs){
+            response.add(toResponse(sub));
+        }
+
+        return response;
+    }
+
+    public KycDetailResponse getAllKYC(Long id){
+        User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        KycSubmission subs = kycSubmissionRepository.findFirstByUserOrderByCreatedAtDesc(user).orElseThrow(() -> new AppException(ErrorCode.KYC_NOT_EXISTED));
+
+
+        return toResponse(subs);
     }
 }
 
