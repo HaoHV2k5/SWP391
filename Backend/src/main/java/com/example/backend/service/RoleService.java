@@ -4,6 +4,8 @@ import com.example.backend.dto.request.RoleRequest;
 import com.example.backend.dto.response.RoleResponse;
 import com.example.backend.entity.Permission;
 import com.example.backend.entity.Role;
+import com.example.backend.exception.AppException;
+import com.example.backend.exception.ErrorCode;
 import com.example.backend.mapper.RoleMapper;
 import com.example.backend.repository.PermissionRepository;
 import com.example.backend.repository.RoleRepository;
@@ -41,4 +43,13 @@ public class RoleService {
         roleRepository.deleteById(role);
 
     }
+    public void addPermissionForRole(String roleName, String permission) {
+        Role role = roleRepository.findById(roleName).orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
+       Permission per = permissionRepository.findById(permission).orElseThrow(() -> new AppException(ErrorCode.PERMISSION_NOT_EXISTED));
+
+        role.getPermissions().add(per);
+        roleRepository.save(role);
+    }
+
+
 }

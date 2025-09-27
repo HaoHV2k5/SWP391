@@ -49,7 +49,8 @@ public enum ErrorCode {
     MODEL_TOO_LONG (1034, "Tên model không được vượt quá 255 ký tự", HttpStatus.BAD_REQUEST),
     YEAR_MANUFACTURED_INVALID (1035, "Năm sản xuất phải từ 1900 đến 2030", HttpStatus.BAD_REQUEST),
     BATTERY_LEVEL_INVALID (1036, "Mức pin phải từ 0 đến 100", HttpStatus.BAD_REQUEST),
-    KYC_NOT_EXISTED (1037, "Chưa có KYC nào tồn tại", HttpStatus.BAD_REQUEST),
+    KYC_NOT_EXISTED (1037, "không có KYC nào tồn tại", HttpStatus.BAD_REQUEST),
+    PERMISSION_NOT_EXISTED (1038, "Permission này tồn tại", HttpStatus.BAD_REQUEST),
 
     ;
     private int code;
