@@ -1,6 +1,10 @@
 package com.example.backend.dto.request;
 
 import com.example.backend.enums.ProductType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.JoinColumn;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,7 +47,7 @@ public class CreateProductRequest {
     @Min(value = 0, message = "BATTERY_LEVEL_INVALID")
     @Max(value = 100, message = "BATTERY_LEVEL_INVALID")
     private Integer batteryLevel;
-    
+
     private List<String> imageUrls;
 }
 
