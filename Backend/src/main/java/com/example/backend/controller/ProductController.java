@@ -58,6 +58,15 @@ public class ProductController {
                 .data(list).build();
 
     }
+    @GetMapping("/{id}")
+    public ApiResponse<ProductResponse> getProductById(@PathVariable Long id) {
+        ProductResponse response = productService.getProductById(id);
+        return  ApiResponse.<ProductResponse>builder()
+                .data(response)
+                .message("lấy thông tin chi tiết product thành công")
+                .build();
+    }
+
     
 
 }
