@@ -62,7 +62,7 @@ public class SecurityConfig  {
                 .oauth2Login(oauth2 ->
                         oauth2      //.defaultSuccessUrl("/oauth2/success",true)
                                 .failureUrl("/login?error")
-                                .redirectionEndpoint(redir -> redir.baseUri("/login/oauth2/code/google"))
+                                .redirectionEndpoint(redir -> redir.baseUri("/login/oauth2/code/*"))
                                 .successHandler((HttpServletRequest request, HttpServletResponse response, Authentication authentication) -> {
                                     System.out.println("=== OAuth2 Success Handler Called ===");
                                     System.out.println("Authentication: " + authentication);
