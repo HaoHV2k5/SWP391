@@ -39,31 +39,31 @@ public class ProductService {
         
         return productMapper.toProductResponse(savedProduct);
     }
-    
-//    public List<ProductResponse> getProductsBySeller(String username) {
-//        User seller = userRepository.findByUsername(username)
-//                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-//
-//        List<Product> products = productRepository.findBySellerId(seller.getId());
-//        return productMapper.toResponseList(products);
-//    }
-    
+    // lay product dua tren thong tin seller
+    public List<ProductResponse> getProductsBySeller(String username) {
+        User seller = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        List<Product> products = productRepository.findBySellerId(seller.getId());
+        return productMapper.toResponseList(products);
+    }
+    // lay cac san pham pending
 //    public List<ProductResponse> getPendingProducts() {
 //        List<Product> products = productRepository.findPendingProducts();
 //        return productMapper.toResponseList(products);
 //    }
-    
+    // lay cac san pham approved
 //    public Page<ProductResponse> getActiveProducts(Pageable pageable) {
 //        Page<Product> products = productRepository.findActiveProducts(pageable);
 //        return products.map(productMapper::toResponse);
 //    }
-    
+    // xem chi tiet thong tin san pham
 //    public ProductResponse getProductById(Long id) {
 //        Product product = productRepository.findById(id)
 //                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 //        return productMapper.toResponse(product);
 //    }
-    
+    // update trang thai product
 //    @Transactional
 //    public ProductResponse updateProductStatus(Long id, ProductStatus status) {
 //        Product product = productRepository.findById(id)
