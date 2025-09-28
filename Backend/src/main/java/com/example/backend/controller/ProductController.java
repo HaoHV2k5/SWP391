@@ -49,6 +49,15 @@ public class ProductController {
                 .data(list).build();
 
     }
+    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    @GetMapping("/pending/seller")
+    public ApiResponse<List<ProductResponse>> getPendingProduct() {
+        List<ProductResponse> list = productService.getPendingProducts();
+        return  ApiResponse.<List<ProductResponse>>builder()
+                .message("lấy danh sách product pending thành công")
+                .data(list).build();
+
+    }
     
 
 }
