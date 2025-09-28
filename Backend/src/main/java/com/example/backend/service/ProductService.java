@@ -48,10 +48,10 @@ public class ProductService {
         return productMapper.toResponseList(products);
     }
     // lay cac san pham pending
-//    public List<ProductResponse> getPendingProducts() {
-//        List<Product> products = productRepository.findPendingProducts();
-//        return productMapper.toResponseList(products);
-//    }
+    public List<ProductResponse> getPendingProducts() {
+        List<Product> products = productRepository.findPendingProducts();
+        return productMapper.toResponseList(products);
+    }
     // lay cac san pham approved
 //    public Page<ProductResponse> getActiveProducts(Pageable pageable) {
 //        Page<Product> products = productRepository.findActiveProducts(pageable);
