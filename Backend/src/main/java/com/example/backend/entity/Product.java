@@ -37,9 +37,12 @@ public class Product {
     private ProductType productType;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false , length = 50)
     @Builder.Default
     private ProductStatus status = ProductStatus.PENDING;
+
+    @Column(length = 50, name = "reason")
+    private String reason;
 
     private boolean isPosted = false;
 

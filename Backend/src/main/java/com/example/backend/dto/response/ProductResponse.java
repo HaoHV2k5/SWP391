@@ -32,5 +32,6 @@ public class ProductResponse {
     private String sellerName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String reason;
 }
 

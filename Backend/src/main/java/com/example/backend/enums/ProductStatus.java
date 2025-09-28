@@ -2,7 +2,8 @@ package com.example.backend.enums;
 
 public enum ProductStatus {
     PENDING,
-    ACTIVE,
+    STAFF_APPROVED,
+    ADMIN_APPROVED,
     SOLD,
     INACTIVE,
     REJECTED
