@@ -58,11 +58,11 @@ public class ProductService {
 //        return products.map(productMapper::toResponse);
 //    }
     // xem chi tiet thong tin san pham
-//    public ProductResponse getProductById(Long id) {
-//        Product product = productRepository.findById(id)
-//                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-//        return productMapper.toResponse(product);
-//    }
+    public ProductResponse getProductById(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        return productMapper.toProductResponse(product);
+    }
     // update trang thai product
 //    @Transactional
 //    public ProductResponse updateProductStatus(Long id, ProductStatus status) {
