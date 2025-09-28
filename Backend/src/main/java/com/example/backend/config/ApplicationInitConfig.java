@@ -27,25 +27,22 @@ public class ApplicationInitConfig {
 
         return args -> {
            if (userRepository.findByUsername("admin@gmail.com").isEmpty()) {
-               // Tạo permissions
-               Permission sellProductPermission = Permission.builder()
-                       .name("SELL_PRODUCT")
-                       .description("Permission to sell products")
-                       .build();
-               permissionRepository.save(sellProductPermission);
+
+
                
                // Tạo roles
                Role adminRole = Role.builder().name(Roles.ADMIN.name()).description("ADMIN role").build();
                Role userRole = Role.builder().name(Roles.USER.name()).description("USER role").build();
-               
-               // Gán permission SELL_PRODUCT cho role USER
-               Set<Permission> userPermissions = new HashSet<>();
-               userPermissions.add(sellProductPermission);
-               userRole.setPermissions(userPermissions);
+               Role staffRole = Role.builder().name(Roles.USER.name()).description("STAFF role").build();
+               Role sellerRole = Role.builder().name(Roles.USER.name()).description("SELLER role").build();
+
+
                
                roleRepository.save(adminRole);
                roleRepository.save(userRole);
-               
+               roleRepository.save(sellerRole);
+               roleRepository.save(staffRole);
+
                // Tạo admin user
                Set<Role> roles = new HashSet<>();
                roles.add(adminRole);

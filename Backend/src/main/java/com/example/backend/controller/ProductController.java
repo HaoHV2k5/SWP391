@@ -39,6 +39,16 @@ public class ProductController {
         return ApiResponse.<ProductResponse>builder().message("Đã Tạo Product Thành Công").data(productResponse).build();
 
     }
+
+
+    @GetMapping("/seller")
+    public ApiResponse<List<ProductResponse>> sellerProducts(@RequestParam String username) {
+        List<ProductResponse> list = productService.getProductsBySeller(username);
+        return  ApiResponse.<List<ProductResponse>>builder()
+                .message("lấy danh sách product của seller thành công")
+                .data(list).build();
+
+    }
     
 
 }
