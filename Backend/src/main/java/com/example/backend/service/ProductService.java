@@ -39,39 +39,85 @@ public class ProductService {
         
         return productMapper.toProductResponse(savedProduct);
     }
-    // lay product dua tren thong tin seller
-    public List<ProductResponse> getProductsBySeller(String username) {
+    // lay product da duoc seller dang tin
+    public List<ProductResponse> getProductsBySellerPost(String username) {
         User seller = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        List<Product> products = productRepository.findBySellerId(seller.getId());
+        List<Product> products = productRepository.findBySellerIdAndIsPostedTrue(seller.getId());
         return productMapper.toResponseList(products);
     }
-    // lay cac san pham pending
+    // lay cac san pham pending staff
     public List<ProductResponse> getPendingProducts() {
         List<Product> products = productRepository.findPendingProducts();
         return productMapper.toResponseList(products);
     }
-    // lay cac san pham approved
-//    public Page<ProductResponse> getActiveProducts(Pageable pageable) {
-//        Page<Product> products = productRepository.findActiveProducts(pageable);
-//        return products.map(productMapper::toResponse);
-//    }
+    // tu choi post boi admin va staff
+    public ProductResponse rejectProduct(Long id,  String reason) {
+        Product product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        product.setStatus(ProductStatus.REJECTED);
+        product.setReason(reason);
+        Product saved = productRepository.save(product);
+        return productMapper.toProductResponse(saved);
+    }
+    // chap nhan post boi staff
+    public ProductResponse approveProductByStaff(Long id){
+        Product product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        product.setStatus(ProductStatus.STAFF_APPROVED);
+        product.setReason(null);
+        productRepository.save(product);
+        return productMapper.toProductResponse(product);
+    }
+// chap nhan post boi admin
+    public ProductResponse approveProductByAdmin(Long id){
+        Product product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        product.setStatus(ProductStatus.ADMIN_APPROVED);
+        product.setReason(null);
+        productRepository.save(product);
+        return productMapper.toProductResponse(product);
+
+
+    }
+
+
+// lay danh sach post duoc staff approve cho admin
+    public List<ProductResponse> getPostApproveByStaff(){
+        List<Product> list = productRepository.findStaffApproveProducts();
+        return productMapper.toResponseList(list);
+    }
+
+
+
+
     // xem chi tiet thong tin san pham
     public ProductResponse getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         return productMapper.toProductResponse(product);
     }
-    // update trang thai product
-//    @Transactional
-//    public ProductResponse updateProductStatus(Long id, ProductStatus status) {
-//        Product product = productRepository.findById(id)
-//                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-//
-//        product.setStatus(status);
-//        Product updatedProduct = productRepository.save(product);
-//
-//        return productMapper.toResponse(updatedProduct);
-//    }
+
+
+    // seller post bai dang
+
+    //seller lay cac bai dang approve cua minh
+
+    // seller lay tat ca bai cua minh da gui len staff/admin de kiem
+
+    // seller lay cac bai bi reject cua minh
+
+    // seller lay cac bai pending cua minh
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
