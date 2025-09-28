@@ -42,10 +42,11 @@ public class User {
     @Column(columnDefinition = "NVARCHAR(255)")
     private String address;
     @ManyToMany
-    private Set<Role>  roles;
+    private Set<Role> roles;
+    @Builder.Default
     private boolean isVerified = false;
     @Column(name = "locked",nullable = false)
-
+    @Builder.Default
     private boolean locked = false;
 
 
