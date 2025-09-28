@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -25,7 +26,7 @@ public class Product {
     @Column(nullable = false, columnDefinition = "NVARCHAR(255)")
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "NVARCHAR(255)")
     private String description;
 
     @Column(nullable = false, precision = 15, scale = 2)
@@ -38,22 +39,25 @@ public class Product {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private ProductStatus status = ProductStatus.ACTIVE;
+    private ProductStatus status = ProductStatus.PENDING;
+
+    private boolean isPosted = false;
 
     @Column(columnDefinition = "NVARCHAR(255)")
     private String brand;
 
     @Column(columnDefinition = "NVARCHAR(255)")
-    private String model;
+    private String model; // tenn chi tiet trong brand
 
     @Column(name = "year_manufactured")
     private Integer yearManufactured;
 
     @Column(name = "battery_level")
     private Integer batteryLevel; // % pin đã sử dụng hoặc còn lại
-
-    @Column(name = "image_urls", columnDefinition = "TEXT")
-    private String imageUrls;
+    @ElementCollection
+    @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "image_url")
+    private List<String> imageUrls;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id", nullable = false)
