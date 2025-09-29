@@ -598,6 +598,61 @@ const Navbar = ({ user, onLogout }) => {
             {/* User Actions - Các hành động của người dùng */}
           {user ? (
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                {/* Member Link - Link dành cho member */}
+                {(user.role === "member" || !user.role) && (
+                  <Link to="/member" style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: "6px",
+                    textDecoration: "none",
+                    color: "#333",
+                    fontSize: "14px",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    transition: "all 0.3s ease",
+                    backgroundColor: "#f0f9f0",
+                    border: "1px solid #e8f5e8"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = "#e8f5e8";
+                    e.target.style.borderColor = "#00A86B";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = "#f0f9f0";
+                    e.target.style.borderColor = "#e8f5e8";
+                  }}>
+                    {user?.role === "member" ? (
+                      <>
+                        <div 
+                          style={{
+                            width: "32px",
+                            height: "32px",
+                            borderRadius: "50%",
+                            background: "linear-gradient(135deg, #00A86B 0%, #2BB673 100%)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "white",
+                            fontSize: "14px",
+                            fontWeight: "bold",
+                            flexShrink: 0
+                          }}
+                        >
+                          {(user?.fullName || user?.fullname || user?.user?.fullname || "Member").charAt(0).toUpperCase()}
+                        </div>
+                        <span style={{ fontSize: "14px", fontWeight: "500" }}>
+                          {user?.fullName || user?.fullname || user?.user?.fullname || "Member"}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <User size={16} />
+                        <span>Tài khoản</span>
+                      </>
+                    )}
+                  </Link>
+                )}
+                
                 {/* Admin Link - Link dành cho admin */}
               {user.role === "admin" && (
                   <Link to="/admin" style={{ 

@@ -8,6 +8,7 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AdminPage from "./pages/AdminPage";
+import MemberPage from "./pages/MemberPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
 import "./App.css";
 
@@ -132,6 +133,7 @@ function AppContent() {
         <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/admin" element={<AdminPage user={user} />} />
+        <Route path="/member" element={<MemberPage user={user} />} />
         <Route path="/verify-otp" element={<OTPVerificationPage />} />
       </Routes>
       
