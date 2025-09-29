@@ -34,8 +34,6 @@ public class RegisterRequest {
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate yob;
 
-
-
     @Pattern(regexp = "^(84|0[35789])[0-9]{8}\\b", message = "PHONE_INVALID" )
     private String phone;
 

@@ -1,5 +1,7 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.request.AddPermissionRequest;
+import com.example.backend.service.RoleService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.example.backend.dto.request.CreationUserRequest;
 import com.example.backend.dto.request.UpdateUserRequest;
@@ -22,6 +24,7 @@ import java.util.List;
 @Slf4j
 public class AdminController {
     private final UserService userService;
+    private final RoleService roleService;
 
     // Get all users
     @GetMapping("/users")
@@ -112,6 +115,16 @@ public class AdminController {
                 .message("User roles updated successfully")
                 .build();
     }
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PostMapping("/add/role")
+    public ApiResponse<Void> addPermissionForRole(@RequestBody AddPermissionRequest request){
+        roleService.addPermissionForRole(request.getRoleName(), request.getPermissionName());
+        return  ApiResponse.<Void>builder()
+                .message("Permission added successfully")
+                .build();
+    }
+
+
 
 
 }

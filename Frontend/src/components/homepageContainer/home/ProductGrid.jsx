@@ -1,0 +1,50 @@
+import React from 'react';
+import { Row, Col } from 'react-bootstrap';
+import ProductCard from './ProductCard';
+
+const ProductGrid = ({ products, filteredProducts = [], hasActiveFilters = false }) => {
+  // Logic display products:
+  // - Nếu không có active filters: hiển thị tất cả products
+  // - Nếu có active filters nhưng không có kết quả: hiển thị thông báo "Không tìm thấy"
+  // - Nếu có active filters và có kết quả: hiển thị kết quả
+  const displayProducts = hasActiveFilters ? filteredProducts : products;
+  const showEmptyState = hasActiveFilters && filteredProducts.length === 0;
+
+  return (
+    <section style={{ padding: "30px 0", background: "#fff" }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}>
+        <h2 style={{ 
+          fontSize: "24px", 
+          fontWeight: "bold", 
+          marginBottom: "20px",
+          color: "#333"
+        }}>
+          {showEmptyState ? "Không tìm thấy sản phẩm" : "Sản phẩm nổi bật"}
+          {hasActiveFilters && filteredProducts.length > 0 && (
+            <span style={{ 
+              fontSize: "16px", 
+              fontWeight: "normal", 
+              color: "#666",
+              marginLeft: "10px"
+            }}>
+              ({filteredProducts.length} sản phẩm)
+            </span>
+          )}
+        </h2>
+        
+        <div style={{ 
+          display: "grid", 
+          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", 
+          gap: "25px",
+          padding: "20px 0"
+        }}>
+          {displayProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default ProductGrid;

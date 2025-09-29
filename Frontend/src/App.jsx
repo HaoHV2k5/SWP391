@@ -11,6 +11,7 @@ import AdminPage from "./pages/AdminPage";
 import MemberPage from "./pages/MemberPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
 import "./App.css";
+import CategoryPage from "./components/homepageContainer/layout/CategoryPage";
 
 function AppContent() {
   const [user, setUser] = useState(null);
@@ -135,6 +136,7 @@ function AppContent() {
         <Route path="/admin" element={<AdminPage user={user} />} />
         <Route path="/member" element={<MemberPage user={user} />} />
         <Route path="/verify-otp" element={<OTPVerificationPage />} />
+        <Route path="/products/:type" element={<CategoryPage />} />
       </Routes>
       
       {/* Chỉ hiển thị Footer cho trang chủ và admin */}
