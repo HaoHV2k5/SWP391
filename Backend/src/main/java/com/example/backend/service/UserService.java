@@ -2,7 +2,6 @@ package com.example.backend.service;
 
 import com.example.backend.dto.request.*;
 import com.example.backend.dto.response.CreationUserResponse;
-import com.example.backend.dto.response.ResetPasswordResponse;
 import com.example.backend.dto.response.UserDetailResponse;
 import com.example.backend.dto.response.UserListResponse;
 import com.example.backend.entity.Role;
@@ -12,7 +11,6 @@ import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
 import com.example.backend.repository.RoleRepository;
 import com.example.backend.repository.UserOtpRepository;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import com.example.backend.mapper.UserMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -219,6 +217,10 @@ public class UserService {
 
         return  user;
     }
+
+
+
+    
 
 
 }
