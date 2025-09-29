@@ -43,7 +43,7 @@ public class RedirectController {
             
             System.out.println("Principal: " + token.getPrincipal());
             System.out.println("Authorities: " + token.getAuthorities());
-            
+            // check user
             Map<String, Object> result = authService.googleLogin(token);
             System.out.println("AuthService result: " + result);
             

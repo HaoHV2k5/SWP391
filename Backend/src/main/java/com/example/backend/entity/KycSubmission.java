@@ -23,7 +23,7 @@ public class KycSubmission {
     private String backImageUrl;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false,  length = 50)
     private KycStatus status = KycStatus.PENDING;
 
     private String rejectionReason;
