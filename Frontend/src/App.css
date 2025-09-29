@@ -116,6 +116,7 @@ body {
   background: #2196f3;
   color: #fff;
   box-shadow: 0 2px 8px #2196f344;
+}
 
 /* ElectricStore Color Scheme - Recycling Green */
 :root {
@@ -152,6 +153,7 @@ body {
   margin-left: 0.5rem;
   font-weight: 700;
   transition: background 0.2s, color 0.2s;
+}
 /* Google Login Button custom style */
 .google-login-btn,
 .google-login-btn > div {
