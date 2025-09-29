@@ -99,8 +99,11 @@ public class ProductService {
 
     // seller post bai dang
 
-    //seller lay cac bai dang approve cua minh
-
+    //seller lay cac bai dang  duoc admin approve cua minh
+    public List<ProductResponse> getApprovePostOfSeller(Long id){
+        List<Product> list =productRepository.findBySellerIdAndStatus(id, ProductStatus.ADMIN_APPROVED);
+        return productMapper.toResponseList(list);
+    }
     // seller lay tat ca bai cua minh da gui len staff/admin de kiem
 
     // seller lay cac bai bi reject cua minh
