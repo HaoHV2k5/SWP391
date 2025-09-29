@@ -159,22 +159,29 @@ const LoginPage = ({ onLogin }) => {
       if (isLogin) {
         // Admin login sẽ được xử lý bởi backend API
 
-        // Tài khoản guest mặc định
+        // Tài khoản test member
         if (
-          formData.email === "guest@electricrade.com" &&
-          formData.password === "guest123"
+          formData.email === "member@test.com" &&
+          formData.password === "123456"
         ) {
           onLogin({
-            token: "guest-token-123",
+            token: "member-test-token",
             user: {
-              id: 0,
-              email: "guest@electricrade.com",
-              fullName: "Guest User",
-              role: "user",
+              id: 1,
+              email: "member@test.com",
+              fullName: "Nguyễn Văn Test",
+              fullname: "Nguyễn Văn Test",
+              phone: "0901234567",
+              address: "123 Test Street, Quận 1, TP.HCM",
+              gender: "Nam",
+              yob: "15/05/1995",
+              dateOfBirth: "1995-05-15",
+              joinDate: "15/01/2024",
+              role: "member",
             },
           });
-          toast.success("Đăng nhập guest thành công!");
-          setTimeout(() => navigate("/"), 1000);
+          toast.success("Đăng nhập thành công!");
+          setTimeout(() => navigate("/member"), 1000);
           return;
         }
 
@@ -224,7 +231,7 @@ const LoginPage = ({ onLogin }) => {
               };
               onLogin(userData);
               toast.success("Đăng nhập thành công!");
-              navigate("/");
+              navigate("/member");
             }
           } else {
             console.error("❌ Login failed:", data);
