@@ -111,6 +111,17 @@ public class ProductController {
                 .message("Đã approve product thành công bởi Admin")
                 .build();
     }
+    // seller lay cac san pham dc admin approve
+    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    @GetMapping("/seller/{id}")
+    public ApiResponse<List<ProductResponse>> getProductApproveSeller(@PathVariable Long id) {
+        List<ProductResponse> responses = productService.getApprovePostOfSeller(id);
+        return ApiResponse.<List<ProductResponse>>builder()
+                .data(responses)
+                .message("lấy danh sách product được admin approve thành công") 
+                .build();
+
+    }
 
 
 
