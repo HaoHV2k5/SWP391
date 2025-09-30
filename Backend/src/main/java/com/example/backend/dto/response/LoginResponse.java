@@ -1,5 +1,6 @@
 package com.example.backend.dto.response;
 
+import com.example.backend.entity.User;
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,4 +11,5 @@ public class LoginResponse {
     private String token;
     private String refreshToken;
     private boolean authenticated;
+    private User user;
 }

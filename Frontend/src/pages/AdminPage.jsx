@@ -176,7 +176,7 @@ const AdminPage = ({ user }) => {
 
     console.log("🔍 Detected user role:", userRole);
 
-    if (userRole !== "admin") {
+    if (userRole !== "ROLE_ADMIN") {
       console.log("❌ User role is not admin:", userRole);
       navigate("/");
       toast.error("Bạn không có quyền truy cập trang admin!");
