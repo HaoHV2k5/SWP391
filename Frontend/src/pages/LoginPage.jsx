@@ -205,7 +205,7 @@ const LoginPage = ({ onLogin }) => {
                   id: 999,
                   email: formData.email,
                   fullName: "Quản trị viên",
-                  role: "admin",
+                  role: "ROLE_ADMIN",
                 },
               };
               onLogin(userData);
