@@ -118,7 +118,7 @@ public class ProductController {
         List<ProductResponse> responses = productService.getApprovePostOfSeller(id);
         return ApiResponse.<List<ProductResponse>>builder()
                 .data(responses)
-                .message("lấy danh sách product được admin approve thành công") 
+                .message("lấy danh sách product được admin approve thành công")
                 .build();
 
     }

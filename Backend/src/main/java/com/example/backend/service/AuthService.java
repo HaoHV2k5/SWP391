@@ -10,6 +10,7 @@ import com.example.backend.entity.User;
 import com.example.backend.entity.Role;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
+import com.example.backend.mapper.UserMapper;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.repository.RoleRepository;
 import com.nimbusds.jose.*;
@@ -38,6 +39,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final JwtService jwtService;
+    private final UserMapper userMapper;
     @Value("${jwt.secret}")
     private  String jwtSecret;
 
@@ -80,7 +82,7 @@ public class AuthService {
                 .authenticated(true)
                 .token(token)
                 .refreshToken(refreshToken)
-                .user(user)
+                .user(userMapper.toUserDetailResponse(user))
                 .build();
     }
 
