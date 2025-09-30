@@ -76,7 +76,12 @@ public class AuthService {
         String token = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        return LoginResponse.builder().authenticated(true).token(token).refreshToken(refreshToken).build();
+        return LoginResponse.builder()
+                .authenticated(true)
+                .token(token)
+                .refreshToken(refreshToken)
+                .user(user)
+                .build();
     }
 
 

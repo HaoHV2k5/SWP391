@@ -93,6 +93,8 @@
         <h2>Xin chào <span th:text="${name}">Thành viên</span> 🚗</h2>
         <p>Cảm ơn bạn đã đăng ký tham gia nền tảng xe điện.
             Đây là mã OTP của bạn để hoàn tất xác thực email:</p>
+        
+        <p><strong>Email đăng ký:</strong> <span th:text="${originalEmail}">user@example.com</span></p>
 
         <div class="otp-box" th:text="${otp}">123456</div>
 

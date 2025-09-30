@@ -203,33 +203,64 @@ const LoginPage = ({ onLogin }) => {
           console.log("🔍 Response status:", response.status);
 
           if (data.code === 1000 && data.data.authenticated) {
-            // Kiểm tra nếu là admin
-            if (formData.email === "admin@electricrade.com") {
-              // Admin user
-              const userData = {
-                token: data.data.token,
-                user: {
-                  id: 999,
-                  email: formData.email,
-                  fullName: "Quản trị viên",
-                  role: "admin",
-                },
-              };
-              onLogin(userData);
+            // Sử dụng thông tin user từ backend
+            const backendUser = data.data.user;
+            console.log("🔍 Backend user data:", backendUser);
+
+            // Xác định role từ backend
+            let userRole = "member"; // default role
+            console.log("🔍 Backend user roles:", backendUser?.roles);
+            console.log("🔍 Backend user role field:", backendUser?.role);
+
+            if (backendUser?.roles && backendUser.roles.length > 0) {
+              // Lấy role đầu tiên từ roles array
+              const role = backendUser.roles[0];
+              userRole = role.name || role; // role có thể là string hoặc object
+              console.log("🔍 Detected role from roles array:", userRole);
+              console.log("🔍 Role object details:", role);
+            } else if (backendUser?.role) {
+              userRole = backendUser.role;
+              console.log("🔍 Detected role from role field:", userRole);
+            } else {
+              console.log("🔍 No roles found, using default:", userRole);
+            }
+
+            // Chuẩn hóa role name
+            if (userRole === "ADMIN" || userRole === "ROLE_ADMIN") {
+              userRole = "ROLE_ADMIN";
+            } else if (formData.email === "admin@gmail.com") {
+              // Fallback: nếu là admin email nhưng role không được detect đúng
+              console.log(
+                "🔍 Fallback: Admin email detected, forcing admin role"
+              );
+              userRole = "ROLE_ADMIN";
+            } else {
+              userRole = "member";
+            }
+
+            console.log("🔍 Final user role:", userRole);
+
+            const userData = {
+              token: data.data.token,
+              user: {
+                id: backendUser?.id || 0,
+                email: backendUser?.email || formData.email,
+                fullName:
+                  backendUser?.fullname ||
+                  backendUser?.fullName ||
+                  "Người dùng",
+                role: userRole,
+                roles: backendUser?.roles || [],
+              },
+            };
+
+            onLogin(userData);
+
+            // Navigate dựa trên role thực tế từ backend
+            if (userRole === "ROLE_ADMIN") {
               toast.success("Đăng nhập admin thành công!");
               navigate("/admin");
             } else {
-              // User thường
-              const userData = {
-                token: data.data.token,
-                user: {
-                  id: data.data.user?.id || 0,
-                  email: formData.email,
-                  fullName: data.data.user?.fullname || "Người dùng",
-                  role: "member",
-                },
-              };
-              onLogin(userData);
               toast.success("Đăng nhập thành công!");
               navigate("/member");
             }
@@ -452,7 +483,7 @@ const LoginPage = ({ onLogin }) => {
                 borderRadius: "8px",
                 marginTop: "1rem",
                 fontSize: "0.9rem",
-                border: "1px solid #c8e6c9"
+                border: "1px solid #c8e6c9",
               }}
             >
               <strong>Tài khoản Admin:</strong>
@@ -865,14 +896,17 @@ const LoginPage = ({ onLogin }) => {
         </div>
 
         <div style={{ textAlign: "center", marginTop: "2rem" }}>
-          <Link to="/" style={{ 
-            color: "#00A86B", 
-            textDecoration: "none",
-            fontWeight: "500",
-            transition: "color 0.3s ease"
-          }}
-          onMouseEnter={(e) => e.target.style.color = "#007A4B"}
-          onMouseLeave={(e) => e.target.style.color = "#00A86B"}>
+          <Link
+            to="/"
+            style={{
+              color: "#00A86B",
+              textDecoration: "none",
+              fontWeight: "500",
+              transition: "color 0.3s ease",
+            }}
+            onMouseEnter={(e) => (e.target.style.color = "#007A4B")}
+            onMouseLeave={(e) => (e.target.style.color = "#00A86B")}
+          >
             ← Quay về trang chủ
           </Link>
         </div>
