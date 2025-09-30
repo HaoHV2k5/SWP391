@@ -32,7 +32,7 @@ public class ProductController {
     
     private final ProductService productService;
 
-// dang tin ban
+//  tao tin dang
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
     @PostMapping("/create")
     public ApiResponse<ProductResponse> createProduct(@Valid @RequestBody CreateProductRequest createProductRequest, @RequestParam String username) {
@@ -41,15 +41,7 @@ public class ProductController {
 
     }
 
-    //lay danh sach cac san pham da dang ban
-    @GetMapping("/seller")
-    public ApiResponse<List<ProductResponse>> sellerProductsPost(@RequestParam String username) {
-        List<ProductResponse> list = productService.getProductsBySellerPost(username);
-        return  ApiResponse.<List<ProductResponse>>builder()
-                .message("lấy danh sách product của seller thành công")
-                .data(list).build();
 
-    }
     // staff lay cac product pending
     @PreAuthorize("hasAuthority('ROLE_STAFF')")
     @GetMapping("/pending/seller/staff")
@@ -81,6 +73,7 @@ public class ProductController {
                 .message("lấy các bài đăng staff_approved thành công")
                 .build();
     }
+    // staff / admin reject product
     @PreAuthorize("hasAuthority('REJECT_POST')")
     @PostMapping("/{id}/reject")
     public ApiResponse<ProductResponse>  rejectProduct(@PathVariable Long id,@RequestBody ProductDecisionRequest request) {
@@ -90,7 +83,7 @@ public class ProductController {
                     .message("Đã reject product thành công")
                     .build();
     }
-
+// staff approve product
     @PreAuthorize("hasAuthority('ROLE_STAFF')")
     @PostMapping("/{id}/approve/staff")
     public ApiResponse<ProductResponse>  approveProductStaff(@PathVariable Long id) {
@@ -100,7 +93,7 @@ public class ProductController {
                 .message("Đã approve product thành công bởi Staff")
                 .build();
     }
-
+// admi approve post
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
 
     @PostMapping("/{id}/approve/admin")
@@ -123,6 +116,65 @@ public class ProductController {
 
     }
 
+    //seller lay cac bai dang reject cua minh
+
+    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    @GetMapping("/reject/seller/{id}")
+    public ApiResponse<List<ProductResponse>> getProductRejectSeller(@PathVariable Long id) {
+        List<ProductResponse> responses = productService.getRejectPostOfSeller(id);
+        return ApiResponse.<List<ProductResponse>>builder()
+                .data(responses)
+                .message("lấy danh sách product bị reject của seller")
+                .build();
+
+    }
+
+    // seller lay cac bai dang pending cua minh
 
 
+    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    @GetMapping("pending/seller/{id}")
+    public ApiResponse<List<ProductResponse>> getProductPendingSeller(@PathVariable Long id) {
+        List<ProductResponse> responses = productService.getPedingPostOfSeller(id);
+        return ApiResponse.<List<ProductResponse>>builder()
+                .data(responses)
+                .message("lấy danh sách product pendig của seller")
+                .build();
+
+    }
+
+
+    //seller lay tat ca  bai dang cua minh
+
+    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    @GetMapping("history/seller/{id}")
+    public ApiResponse<List<ProductResponse>> getAllProductSeller(@PathVariable Long id) {
+        List<ProductResponse> responses = productService.getAllPostOfSeller(id);
+        return ApiResponse.<List<ProductResponse>>builder()
+                .data(responses)
+                .message("lấy danh sách tất cả product của seller")
+                .build();
+
+    }
+
+    //lay danh sach cac san pham da dang ban của seller
+    @GetMapping("/seller")
+    public ApiResponse<List<ProductResponse>> sellerProductsPost(@RequestParam String username) {
+        List<ProductResponse> list = productService.getProductsBySellerPost(username);
+        return  ApiResponse.<List<ProductResponse>>builder()
+                .message("lấy danh sách produc đăng bán")
+                .data(list).build();
+
+    }
+
+    // seller chuyen bai dang sang trang thai public
+
+    @PostMapping("/post/seller")
+    public ApiResponse<ProductResponse> sellerProductsPost(@RequestParam Long productId) {
+        ProductResponse response = productService.postProduct(productId);
+        return  ApiResponse.<ProductResponse>builder()
+                .message("chuyển bài đăng sang trạng thái public thành công")
+                .data(response).build();
+
+    }
 }
