@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Service
 @RequiredArgsConstructor
 public class MailService {
@@ -40,11 +43,35 @@ public class MailService {
         MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
         
         // Gửi đến email chính của bạn thay vì email đăng ký
-        String yourEmail = "leminhhy2212003@gmail.com"; // Thay bằng email chính của bạn
-        messageHelper.setTo(yourEmail);
+//        String yourEmail = "leminhhy2212003@gmail.com"; // Thay bằng email chính của bạn
+        messageHelper.setTo(to);
         messageHelper.setSubject("🎉 Xác thực OTP cho " + to + " - " + name);
         messageHelper.setText(html,true);
         javaMailSender.send(mimeMessage);
+    }
+
+    public void sendRegisterNotice(String to,String name) throws MessagingException {
+        LocalDateTime time =  LocalDateTime.now();
+        String format = time.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+        Context context = new Context();
+        context.setVariable("username", name);
+
+        context.setVariable("changeType", "đổi mật khẩu");
+        context.setVariable("changedAt",format );
+        context.setVariable("supportLink","format");
+
+        String html =  templateEngine.process("email/ResetPassword-notice.html",context);
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
+        messageHelper.setTo(to);
+        messageHelper.setSubject("\uD83D\uDD14 [EV System] Tài khoản của bạn đã được cập nhật\n");
+        messageHelper.setText(html,true);
+        javaMailSender.send(mimeMessage);
+
+
+
+
     }
 
 

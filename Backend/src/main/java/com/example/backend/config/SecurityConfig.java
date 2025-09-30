@@ -1,11 +1,8 @@
 package com.example.backend.config;
 
-import com.nimbusds.jose.crypto.MACSigner;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -27,12 +24,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import javax.crypto.spec.SecretKeySpec;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig  {
     @Value("${jwt.secret}")
     private String secretKey;
@@ -44,7 +40,9 @@ public class SecurityConfig  {
             "/users/resend-otp",
             "/permissions/**",
             "/roles/**",
-            "/admin/**"
+            "/admin/**",
+            "/api/v1/products/active",
+            "/api/v1/products/{id}"
     };
     
 
@@ -62,9 +60,9 @@ public class SecurityConfig  {
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(  jwtDecoder() ).jwtAuthenticationConverter(jwtAuthenticationConverter())))
                 .oauth2Login(oauth2 ->
-                        oauth2.defaultSuccessUrl("/oauth2/success",true)
+                        oauth2      //.defaultSuccessUrl("/oauth2/success",true)
                                 .failureUrl("/login?error")
-                                .redirectionEndpoint(redir -> redir.baseUri("/login/oauth2/code/google"))
+                                .redirectionEndpoint(redir -> redir.baseUri("/login/oauth2/code/*"))
                                 .successHandler((HttpServletRequest request, HttpServletResponse response, Authentication authentication) -> {
                                     System.out.println("=== OAuth2 Success Handler Called ===");
                                     System.out.println("Authentication: " + authentication);

@@ -29,7 +29,7 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
- 
+
 
 @Service
 @RequiredArgsConstructor
@@ -44,20 +44,20 @@ public class AuthService {
 
     public LoginResponse login(LoginRequest loginRequest) {
         // Hardcode admin login
-        if ("admin@electricrade.com".equals(loginRequest.getUsername()) && "admin123".equals(loginRequest.getPassword())) {
-            // Tạo admin user tạm thời
-            User adminUser = new User();
-            adminUser.setId(999L);
-            adminUser.setEmail("admin@electricrade.com");
-            adminUser.setFullname("Administrator");
-            adminUser.setVerified(true);
-            adminUser.setLocked(false);
-            
-            String token = jwtService.generateToken(adminUser);
-            String refreshToken = jwtService.generateRefreshToken(adminUser);
-            
-            return LoginResponse.builder().authenticated(true).token(token).refreshToken(refreshToken).build();
-        }
+//        if ("admin@electricrade.com".equals(loginRequest.getUsername()) && "admin123".equals(loginRequest.getPassword())) {
+//            // Tạo admin user tạm thời
+//            User adminUser = new User();
+//            adminUser.setId(999L);
+//            adminUser.setEmail("admin@electricrade.com");
+//            adminUser.setFullname("Administrator");
+//            adminUser.setVerified(true);
+//            adminUser.setLocked(false);
+//
+//            String token = jwtService.generateToken(adminUser);
+//            String refreshToken = jwtService.generateRefreshToken(adminUser);
+//
+//            return LoginResponse.builder().authenticated(true).token(token).refreshToken(refreshToken).build();
+//        }
         
         // Tìm user bằng email (vì admin tạo user với email)
         User user = userRepository.findByEmail(loginRequest.getUsername())
@@ -65,10 +65,9 @@ public class AuthService {
         if(user.isLocked()){
             throw new AppException(ErrorCode.ACCOUNT_LOCKED);
         }
-        // Bỏ verify check hoàn toàn (tạm thời để test)
-        // if(!user.isVerified()){
-        //     throw new AppException(ErrorCode.OTP_NOT_VERIFY);
-        // }
+         if(!user.isVerified()){
+             throw new AppException(ErrorCode.OTP_NOT_VERIFY);
+         }
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         boolean auth = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
         if(!auth){
@@ -114,7 +113,12 @@ public class AuthService {
         
         if(existingUser.isPresent()){
             // User đã tồn tại, cho phép đăng nhập
-            user = existingUser.get();
+            if(existingUser.get().getPassword().isEmpty()){
+                user = existingUser.get();
+            }else {
+                throw  new AppException(ErrorCode.ACCOUNT_EXISTED);
+            }
+
         } else {
             // Tạo user mới
             user = new User();
@@ -126,10 +130,8 @@ public class AuthService {
             user.setLocked(false);
             
             // Set role member cho Google user
-            Role memberRole = roleRepository.findById("member").orElse(null);
-            if (memberRole != null) {
-                user.setRoles(Set.of(memberRole));
-            }
+            Role userRole = roleRepository.findById("ROLE_USER").orElseThrow(() -> new AppException(ErrorCode.USER_ROLE_NOT_FOUND));
+            user.setRoles(Set.of(userRole));
             
             userRepository.save(user);
         }
