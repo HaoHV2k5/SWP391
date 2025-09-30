@@ -29,6 +29,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p WHERE p.status = 'STAFF_APPROVED' ORDER BY p.createdAt DESC")
     List<Product> findStaffApproveProducts();
 
+    List<Product> findAllBySellerId(Long id);
+
 
 
     // Tìm sản phẩm active để hiển thị

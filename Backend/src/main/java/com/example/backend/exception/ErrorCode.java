@@ -51,6 +51,7 @@ public enum ErrorCode {
     BATTERY_LEVEL_INVALID (1036, "Mức pin phải từ 0 đến 100", HttpStatus.BAD_REQUEST),
     KYC_NOT_EXISTED (1037, "không có KYC nào tồn tại", HttpStatus.BAD_REQUEST),
     PERMISSION_NOT_EXISTED (1038, "Permission này tồn tại", HttpStatus.BAD_REQUEST),
+    PRODUCT_NOT_ACCEPT_BY_ADMIN (1039, "Product này vẫn chưa được admin chấp nhận", HttpStatus.BAD_REQUEST),
 
     ;
     private int code;
