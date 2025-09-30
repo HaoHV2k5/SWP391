@@ -97,18 +97,46 @@ public class ProductService {
     }
 
 
-    // seller post bai dang
+    // seller post bai dang public
+    public ProductResponse postProduct(Long producId){
+        Product product = productRepository.findById(producId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        String status = ProductStatus.ADMIN_APPROVED.name();
+        if(!ProductStatus.ADMIN_APPROVED.equals(product.getStatus())){
+            throw new AppException(ErrorCode.PRODUCT_NOT_ACCEPT_BY_ADMIN);
+        }
+        product.setStatus(ProductStatus.ACTIVE);
+        product.setPosted(true);
+        productRepository.save(product);
+        return productMapper.toProductResponse(product);
+    }
+
+
 
     //seller lay cac bai dang  duoc admin approve cua minh
     public List<ProductResponse> getApprovePostOfSeller(Long id){
         List<Product> list =productRepository.findBySellerIdAndStatus(id, ProductStatus.ADMIN_APPROVED);
         return productMapper.toResponseList(list);
     }
-    // seller lay tat ca bai cua minh da gui len staff/admin de kiem
+
 
     // seller lay cac bai bi reject cua minh
-
+    public List<ProductResponse> getRejectPostOfSeller(Long id){
+        List<Product> list =productRepository.findBySellerIdAndStatus(id, ProductStatus.REJECTED);
+        return productMapper.toResponseList(list);
+    }
     // seller lay cac bai pending cua minh
+    public List<ProductResponse> getPedingPostOfSeller(Long id){
+        List<Product> list =productRepository.findBySellerIdAndStatus(id, ProductStatus.PENDING);
+        return productMapper.toResponseList(list);
+    }
+
+    //seller lay het tat ca bai dang cua minh
+    public List<ProductResponse> getAllPostOfSeller(Long id){
+        List<Product> list =productRepository.findAllBySellerId(id);
+        return productMapper.toResponseList(list);
+    }
+
+
 
 
 
