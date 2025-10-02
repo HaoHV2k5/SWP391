@@ -1,0 +1,38 @@
+# Ignore Backend application config
+Backend/src/main/resources/application.properties
+Backend/src/main/resources/application.yml
+
+# Logs
+*.log
+Backend/logs/
+
+# Build
+Backend/target/
+Backend/build/
+
+# IntelliJ IDEA
+Backend/.idea/
+Backend/*.iml
+Backend/out/
+
+# VS Code
+Backend/.vscode/
+
+# Gradle
+Backend/.gradle/
+!Backend/gradle/wrapper/gradle-wrapper.jar
+
+# Maven
+Backend/.mvn/
+Backend/.settings/
+Backend/.classpath
+Backend/.project
+
+# Temporary files
+Backend/*.tmp
+Backend/*.bak
+Backend/*.swp
+
+# OS specific
+.DS_Store
+Thumbs.db

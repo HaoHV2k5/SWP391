@@ -42,7 +42,8 @@ public class SecurityConfig  {
             "/roles/**",
             "/admin/**",
             "/api/v1/products/active",
-            "/api/v1/products/{id}"
+            "/api/v1/products/{id}",
+            "/api/payment/create"
     };
     
 
