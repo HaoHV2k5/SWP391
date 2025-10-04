@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -48,6 +49,7 @@ public class CreateProductRequest {
     @Max(value = 100, message = "BATTERY_LEVEL_INVALID")
     private Integer batteryLevel;
 
-    private List<String> imageUrls;
+    private List<MultipartFile> images;
+
 }
 
