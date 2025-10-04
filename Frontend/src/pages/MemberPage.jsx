@@ -24,7 +24,8 @@ const MemberPage = ({ user }) => {
       price: 18500000,
       status: "completed",
       date: "2024-01-20",
-      image: "https://files01.danhgiaxe.com/E5ymWrMde4anYgID6PhKW8Gdw6g=/fit-in/1280x0/20230912/klara-xanh-154835.jpg",
+      image:
+        "https://files01.danhgiaxe.com/E5ymWrMde4anYgID6PhKW8Gdw6g=/fit-in/1280x0/20230912/klara-xanh-154835.jpg",
     },
     {
       id: 2,
@@ -32,7 +33,8 @@ const MemberPage = ({ user }) => {
       price: 3200000,
       status: "shipping",
       date: "2024-01-22",
-      image: "https://bizweb.dktcdn.net/thumb/grande/100/433/676/products/pin-xe-may-dien-3-fe7c9482-c1df-4f57-8ac2-e0f227fca542.jpg",
+      image:
+        "https://bizweb.dktcdn.net/thumb/grande/100/433/676/products/pin-xe-may-dien-3-fe7c9482-c1df-4f57-8ac2-e0f227fca542.jpg",
     },
     {
       id: 3,
@@ -40,7 +42,8 @@ const MemberPage = ({ user }) => {
       price: 28000000,
       status: "pending",
       date: "2024-01-25",
-      image: "https://www.checkraka.com/uploaded/logo/f7/f78a308ee33cc49223ef59e78aade972.webp",
+      image:
+        "https://www.checkraka.com/uploaded/logo/f7/f78a308ee33cc49223ef59e78aade972.webp",
     },
   ]);
 
@@ -50,14 +53,16 @@ const MemberPage = ({ user }) => {
       id: 1,
       name: "Yamaha E01 2023",
       price: 35000000,
-      image: "https://vn.e-scooter.co/i/ya/ma/yamaha-e01/full/yamaha-e01-front-left-angle-view.webp",
+      image:
+        "https://vn.e-scooter.co/i/ya/ma/yamaha-e01/full/yamaha-e01-front-left-angle-view.webp",
       addedDate: "2024-01-15",
     },
     {
       id: 2,
       name: "Tesla Model 3 2022",
       price: 980000000,
-      image: "https://mkt-vehicleimages-prd.autotradercdn.ca/photos/chrome/Expanded/White/2022TSC030022/2022TSC03002201.jpg",
+      image:
+        "https://mkt-vehicleimages-prd.autotradercdn.ca/photos/chrome/Expanded/White/2022TSC030022/2022TSC03002201.jpg",
       addedDate: "2024-01-18",
     },
   ]);
@@ -113,7 +118,11 @@ const MemberPage = ({ user }) => {
 
   if (isCheckingAuth) {
     return (
-      <Container fluid className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
+      <Container
+        fluid
+        className="d-flex justify-content-center align-items-center"
+        style={{ minHeight: "100vh" }}
+      >
         <div className="text-center">
           <Spinner animation="border" variant="success" className="mb-3" />
           <p className="text-muted">Đang kiểm tra quyền truy cập...</p>
@@ -131,7 +140,11 @@ const MemberPage = ({ user }) => {
       <Row className="g-0">
         {/* Sidebar */}
         <Col xs="auto">
-          <MemberSidebar user={user} activeTab={activeTab} setActiveTab={setActiveTab} />
+          <MemberSidebar
+            user={user}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
         </Col>
 
         {/* Main Content */}
@@ -142,11 +155,11 @@ const MemberPage = ({ user }) => {
 
             {/* Dashboard Tab */}
             {activeTab === "dashboard" && (
-              <DashboardTab 
-                orders={orders} 
-                wishlist={wishlist} 
-                formatCurrency={formatCurrency} 
-                setActiveTab={setActiveTab} 
+              <DashboardTab
+                orders={orders}
+                wishlist={wishlist}
+                formatCurrency={formatCurrency}
+                setActiveTab={setActiveTab}
               />
             )}
 
@@ -157,13 +170,14 @@ const MemberPage = ({ user }) => {
 
             {/* Wishlist Tab */}
             {activeTab === "wishlist" && (
-              <WishlistTab wishlist={wishlist} formatCurrency={formatCurrency} />
+              <WishlistTab
+                wishlist={wishlist}
+                formatCurrency={formatCurrency}
+              />
             )}
 
             {/* Profile Tab */}
-            {activeTab === "profile" && (
-              <ProfileTab user={user} />
-            )}
+            {activeTab === "profile" && <ProfileTab user={user} />}
           </div>
         </Col>
       </Row>

@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -9,6 +14,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AdminPage from "./pages/AdminPage";
 import MemberPage from "./pages/MemberPage";
+import StaffPage from "./pages/StaffPage"; // 📝 STAFF PAGE - Trang dành cho nhân viên
 import OTPVerificationPage from "./pages/OTPVerificationPage";
 import "./App.css";
 import CategoryPage from "./components/homepageContainer/layout/CategoryPage";
@@ -122,23 +128,25 @@ function AppContent() {
   };
 
   // Kiểm tra xem có phải trang đăng nhập hoặc đăng ký không
-  const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
+  const isAuthPage =
+    location.pathname === "/login" || location.pathname === "/register";
 
   return (
     <div className="App">
       {/* Chỉ hiển thị Navbar cho trang chủ, admin và OTP */}
       {!isAuthPage && <Navbar user={user} onLogout={handleLogout} />}
-      
+
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/admin" element={<AdminPage user={user} />} />
         <Route path="/member" element={<MemberPage user={user} />} />
+        <Route path="/staff" element={<StaffPage user={user} />} />
         <Route path="/verify-otp" element={<OTPVerificationPage />} />
         <Route path="/products/:type" element={<CategoryPage />} />
       </Routes>
-      
+
       {/* Chỉ hiển thị Footer cho trang chủ và admin */}
       {!isAuthPage && <Footer />}
 
