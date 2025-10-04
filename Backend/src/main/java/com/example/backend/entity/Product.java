@@ -45,18 +45,14 @@ public class Product {
     private String reason;
 
     private boolean isPosted = false;
-
-    @Column(columnDefinition = "NVARCHAR(255)")
-    private String brand;
-
-    @Column(columnDefinition = "NVARCHAR(255)")
-    private String model; // tenn chi tiet trong brand
-
-    @Column(name = "year_manufactured")
-    private Integer yearManufactured;
-
-    @Column(name = "battery_level")
-    private Integer batteryLevel; // % pin đã sử dụng hoặc còn lại
+    
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "vehicle_id")
+    private Vehicle vehicle;
+    
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "battery_id")
+    private Battery battery;
     @ElementCollection
     @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "image_url")
