@@ -4,6 +4,7 @@ import com.example.backend.config.Config;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -139,5 +140,49 @@ public class PaymentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
+
+    @GetMapping("/vnpay-return000000")
+    public ResponseEntity<String> handleVnpayReturn(HttpServletRequest request) {
+        // Lấy tất cả params trả về từ VNPAY
+        Map<String, String> fields = new HashMap<>();
+        request.getParameterMap().forEach((key, values) -> {
+            if (values.length > 0 && values[0] != null && !values[0].isEmpty()) {
+                fields.put(key, values[0]);
+            }
+        });
+
+        // Lấy secure hash từ VNPAY trả về
+        String vnp_SecureHash = request.getParameter("vnp_SecureHash");
+
+        // Xóa các field không cần trước khi ký
+        fields.remove("vnp_SecureHashType");
+        fields.remove("vnp_SecureHash");
+
+        // Tính lại hash từ dữ liệu trả về
+        String signValue = Config.hashAllFields(fields);
+
+        // Kiểm tra chữ ký hợp lệ
+        if (signValue.equals(vnp_SecureHash)) {
+            // Kiểm tra mã phản hồi giao dịch
+            String responseCode = request.getParameter("vnp_ResponseCode");
+            if ("00".equals(responseCode)) {
+                return ResponseEntity.ok("GD Thanh cong");
+            } else {
+                return ResponseEntity.ok("GD Khong thanh cong");
+            }
+        } else {
+            return ResponseEntity.ok("Chu ky khong hop le");
+        }
+    }
+
+
+    @GetMapping("/payment-return")
+    public Map<String, Object> testReturn(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Đã nhận callback từ VNPAY");
+        response.put("params", request.getParameterMap()); // in ra hết param callback
+        return response;
+    }
+
 }
 

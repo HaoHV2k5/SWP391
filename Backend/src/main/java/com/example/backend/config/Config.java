@@ -6,13 +6,14 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.*;
 
 public class Config {
     // Cấu hình VNPAY
     public static String vnp_TmnCode = "O7R3VFFO";
     public static String vnp_HashSecret = "TL90PNLIXZ551OOIF16HOCT0ISW4LENS";
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    public static String vnp_Returnurl = "http://localhost:8080/payment-return";
+    public static String vnp_Returnurl = "http://localhost:3979/api/payment/payment-return";
 
     // Sinh chuỗi HMAC SHA512
     public static String hmacSHA512(String key, String data) {
@@ -50,5 +51,23 @@ public class Config {
             sb.append(chars.charAt(index));
         }
         return sb.toString();
+    }
+
+    public  static String hashAllFields(Map<String, String> fields) {
+        List<String> fieldNames = new ArrayList<>(fields.keySet());
+        Collections.sort(fieldNames);
+        StringBuilder sb = new StringBuilder();
+
+        for (Iterator<String> itr = fieldNames.iterator(); itr.hasNext();) {
+            String fieldName = itr.next();
+            String fieldValue = fields.get(fieldName);
+            if (fieldValue != null && fieldValue.length() > 0) {
+                sb.append(fieldName).append("=").append(fieldValue);
+                if (itr.hasNext()) {
+                    sb.append("&");
+                }
+            }
+        }
+        return hmacSHA512(vnp_HashSecret, sb.toString());
     }
 }

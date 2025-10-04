@@ -181,7 +181,7 @@ const LoginPage = ({ onLogin }) => {
             },
           });
           toast.success("Đăng nhập thành công!");
-          setTimeout(() => navigate("/member"), 1000);
+          setTimeout(() => navigate("/"), 1000);
           return;
         }
 
@@ -288,7 +288,7 @@ const LoginPage = ({ onLogin }) => {
               navigate("/admin");
             } else {
               toast.success("Đăng nhập thành công!");
-              navigate("/member");
+              navigate("/");
             }
           } else {
             console.error("❌ Login failed:", data);
