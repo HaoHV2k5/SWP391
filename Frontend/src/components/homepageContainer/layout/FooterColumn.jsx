@@ -1,6 +1,6 @@
-import React from 'react';
-import { Col } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Col } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 const FooterColumn = ({ title, links }) => {
   return (
@@ -9,10 +9,7 @@ const FooterColumn = ({ title, links }) => {
       <ul className="list-unstyled">
         {links.map((link, index) => (
           <li key={index} className="mb-2">
-            <Link 
-              to={link.to} 
-              className="text-decoration-none text-muted"
-            >
+            <Link to={link.to} className="text-decoration-none text-muted">
               {link.text}
             </Link>
           </li>

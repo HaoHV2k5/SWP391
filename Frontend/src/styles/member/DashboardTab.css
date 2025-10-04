@@ -15,15 +15,15 @@
 }
 
 .dashboard-stat-card.primary {
-  background: linear-gradient(135deg, #00A86B 0%, #2BB673 100%);
+  background: linear-gradient(135deg, #00a86b 0%, #2bb673 100%);
 }
 
 .dashboard-stat-card.secondary {
-  background: linear-gradient(135deg, #2BB673 0%, #66D9A8 100%);
+  background: linear-gradient(135deg, #2bb673 0%, #66d9a8 100%);
 }
 
 .dashboard-stat-card.success {
-  background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+  background: linear-gradient(135deg, #4caf50 0%, #8bc34a 100%);
 }
 
 .dashboard-stat-icon {
