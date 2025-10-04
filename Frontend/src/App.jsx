@@ -13,8 +13,13 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AdminPage from "./pages/AdminPage";
-import MemberPage from "./pages/MemberPage";
-import StaffPage from "./pages/StaffPage"; // 📝 STAFF PAGE - Trang dành cho nhân viên
+import StaffPage from "./pages/StaffPage"; //STAFF PAGE - Trang dành cho nhân viên
+import MemberOrders from "./pages/member/MemberOrders";
+import PostAd from "./pages/member/PostAd";
+import MyPosts from "./pages/member/MyPosts";
+import SavedPosts from "./pages/member/SavedPosts";
+import ViewHistory from "./pages/member/ViewHistory";
+import AccountPage from "./pages/AccountPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
 import "./App.css";
 import CategoryPage from "./components/homepageContainer/layout/CategoryPage";
@@ -141,8 +146,14 @@ function AppContent() {
         <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/admin" element={<AdminPage user={user} />} />
-        <Route path="/member" element={<MemberPage user={user} />} />
         <Route path="/staff" element={<StaffPage user={user} />} />
+        {/* Các route riêng biệt cho từng field */}
+        <Route path="/account" element={<AccountPage user={user} />} />
+        <Route path="/my-posts" element={<MyPosts user={user} />} />
+        <Route path="/saved-posts" element={<SavedPosts user={user} />} />
+        <Route path="/orders" element={<MemberOrders user={user} />} />
+        <Route path="/view-history" element={<ViewHistory user={user} />} />
+        <Route path="/post-ad" element={<PostAd user={user} />} />
         <Route path="/verify-otp" element={<OTPVerificationPage />} />
         <Route path="/products/:type" element={<CategoryPage />} />
       </Routes>

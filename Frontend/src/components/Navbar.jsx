@@ -2,24 +2,29 @@ import { Link } from "react-router-dom";
 import { User, LogOut, Search, ShoppingCart, PhoneCall, Menu, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
 import { categoryData } from '../data/homepagedata';
+import MemberDropdown from "./MemberDropdown";
 
 const logoImage = '/logo_removeBg.png';
 
 const Navbar = ({ user, onLogout }) => {
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showCategoryDropdown && !event.target.closest('.category-dropdown')) {
         setShowCategoryDropdown(false);
       }
+      if (showUserDropdown && !event.target.closest('.user-dropdown')) {
+        setShowUserDropdown(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showCategoryDropdown]);
+  }, [showCategoryDropdown, showUserDropdown]);
 
   return (
     <>
@@ -254,115 +259,399 @@ const Navbar = ({ user, onLogout }) => {
                     Admin
                   </Link>
                 )}
-                <div style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  color: "#333",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  cursor: "pointer",
-                  position: "relative"
-                }}>
-                  <User size={18} color="#00A86B" />
-                  <span>{user.fullName || user.email}</span>
-                  <div style={{
-                    position: "absolute",
-                    top: "100%",
-                    right: "0",
-                    background: "white",
-                    border: "1px solid #e0e0e0",
+                <div 
+                  className="user-dropdown"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    color: "#333",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    cursor: "pointer",
+                    position: "relative",
+                    padding: "8px 12px",
                     borderRadius: "8px",
-                    boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
-                    zIndex: 1001,
-                    minWidth: "150px",
-                    padding: "10px 0",
-                    marginTop: "10px"
+                    transition: "all 0.3s ease",
+                    backgroundColor: showUserDropdown ? "#f0f9f0" : "transparent"
+                  }}
+                  onClick={() => setShowUserDropdown(!showUserDropdown)}
+                  onMouseEnter={(e) => {
+                    if (!showUserDropdown) {
+                      e.currentTarget.style.backgroundColor = "#f8f9fa";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!showUserDropdown) {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }
+                  }}
+                >
+                  <div style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg, #00A86B 0%, #2BB673 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "white",
+                    fontSize: "14px",
+                    fontWeight: "bold"
                   }}>
-                    <Link to="/profile" style={{
-                      display: "block",
-                      padding: "8px 15px",
-                      color: "#333",
-                      textDecoration: "none",
-                      fontSize: "14px",
-                      transition: "background-color 0.2s"
-                    }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = "#f8f9fa"}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                    >
-                      Tài khoản
-                    </Link>
-                    <Link to="/settings" style={{
-                      display: "block",
-                      padding: "8px 15px",
-                      color: "#333",
-                      textDecoration: "none",
-                      fontSize: "14px",
-                      transition: "background-color 0.2s"
-                    }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = "#f8f9fa"}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                    >
-                      Cài đặt
-                    </Link>
-                    <div
-                      onClick={onLogout}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        padding: "8px 15px",
-                        color: "#dc3545",
+                    {(user.fullName || user.fullname || user.user?.fullname || user.email || "U").charAt(0).toUpperCase()}
+                  </div>
+                  <span>{user.fullName || user.fullname || user.user?.fullname || user.email}</span>
+                  <span style={{
+                    fontSize: "10px",
+                    transform: showUserDropdown ? "rotate(180deg)" : "rotate(0deg)",
+                    transition: "transform 0.3s ease"
+                  }}>
+                    ▼
+                  </span>
+
+                  {/* User Dropdown Menu */}
+                  {showUserDropdown && (
+                    <div style={{
+                      position: "absolute",
+                      top: "100%",
+                      right: "0",
+                      background: "white",
+                      border: "1px solid #e0e0e0",
+                      borderRadius: "8px",
+                      boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
+                      zIndex: 1001,
+                      minWidth: "200px",
+                      padding: "8px 0",
+                      marginTop: "8px"
+                    }}>
+                      <Link to="/account" style={{
+                        display: "block",
+                        padding: "10px 15px",
+                        color: "#333",
+                        textDecoration: "none",
                         fontSize: "14px",
-                        cursor: "pointer",
                         transition: "background-color 0.2s"
                       }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = "#f8f9fa"}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                    >
-                      <LogOut size={16} />
-                      Đăng xuất
+                        onMouseEnter={(e) => e.target.style.backgroundColor = "#f8f9fa"}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                      >
+                        Tài khoản
+                      </Link>
+                      
+                      <Link to="/my-posts" style={{
+                        display: "block",
+                        padding: "10px 15px",
+                        color: "#333",
+                        textDecoration: "none",
+                        fontSize: "14px",
+                        transition: "background-color 0.2s"
+                      }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = "#f8f9fa"}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                      >
+                        Tin đăng của tôi
+                      </Link>
+
+                      <Link to="/saved-posts" style={{
+                        display: "block",
+                        padding: "10px 15px",
+                        color: "#333",
+                        textDecoration: "none",
+                        fontSize: "14px",
+                        transition: "background-color 0.2s"
+                      }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = "#f8f9fa"}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                      >
+                        Tin đã lưu
+                      </Link>
+
+                      <Link to="/orders" style={{
+                        display: "block",
+                        padding: "10px 15px",
+                        color: "#333",
+                        textDecoration: "none",
+                        fontSize: "14px",
+                        transition: "background-color 0.2s"
+                      }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = "#f8f9fa"}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                      >
+                        Đơn hàng
+                      </Link>
+
+                      <Link to="/view-history" style={{
+                        display: "block",
+                        padding: "10px 15px",
+                        color: "#333",
+                        textDecoration: "none",
+                        fontSize: "14px",
+                        transition: "background-color 0.2s"
+                      }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = "#f8f9fa"}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                      >
+                        Lịch sử xem tin
+                      </Link>
+
+                      <div style={{ height: "1px", background: "#e0e0e0", margin: "8px 0" }}></div>
+
+                      <Link to="/post-ad" style={{
+                        display: "block",
+                        padding: "10px 15px",
+                        color: "#00A86B",
+                        textDecoration: "none",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        transition: "background-color 0.2s"
+                      }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = "#f0f9f0"}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                      >
+                        Đăng tin ngay
+                      </Link>
+
+                      <div style={{ height: "1px", background: "#e0e0e0", margin: "8px 0" }}></div>
+                      
+                      <div
+                        onClick={() => {
+                          setShowUserDropdown(false);
+                          onLogout();
+                        }}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                          padding: "10px 15px",
+                          color: "#dc3545",
+                          fontSize: "14px",
+                          cursor: "pointer",
+                          transition: "background-color 0.2s"
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = "#fef2f2"}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                      >
+                        <LogOut size={16} />
+                        Đăng xuất
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             ) : (
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <Link to="/login" style={{
-                  color: "#00A86B",
-                  textDecoration: "none",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  padding: "8px 12px",
-                  borderRadius: "6px",
-                  transition: "all 0.3s"
-                }}>
-                  Đăng nhập
-                </Link>
-                <Link to="/register" style={{
-                  background: "#00A86B",
-                  color: "white",
-                  padding: "8px 16px",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  textDecoration: "none",
-                  transition: "all 0.3s ease",
-                  boxShadow: "0 2px 8px rgba(0, 168, 107, 0.2)"
-                }}
+                <div
+                  className="user-dropdown"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    color: "#333",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    cursor: "pointer",
+                    position: "relative",
+                    padding: "8px 16px",
+                    borderRadius: "25px",
+                    transition: "all 0.3s ease",
+                    backgroundColor: "white",
+                    border: "1px solid #e0e0e0"
+                  }}
+                  onClick={() => setShowUserDropdown(!showUserDropdown)}
                   onMouseEnter={(e) => {
-                    e.target.style.background = "#007A4B";
-                    e.target.style.transform = "translateY(-1px)";
-                    e.target.style.boxShadow = "0 4px 12px rgba(0, 168, 107, 0.3)";
+                    e.currentTarget.style.backgroundColor = "#f8f9fa";
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.background = "#00A86B";
-                    e.target.style.transform = "translateY(0)";
-                    e.target.style.boxShadow = "0 2px 8px rgba(0, 168, 107, 0.2)";
+                    e.currentTarget.style.backgroundColor = "white";
+                  }}
+                >
+                  <div style={{
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: "50%",
+                    background: "transparent",
+                    border: "2px solid black",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "black",
+                    fontSize: "16px",
+                    fontWeight: "normal"
+                  }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                  </div>
+                  <span style={{
+                    fontSize: "12px",
+                    color: "black",
+                    transform: showUserDropdown ? "rotate(180deg)" : "rotate(0deg)",
+                    transition: "transform 0.3s ease"
+                  }}>
+                    ▼
+                  </span>
+
+                  {/* User Dropdown Menu for non-logged in users */}
+                  {showUserDropdown && (
+                    <div style={{
+                      position: "absolute",
+                      top: "100%",
+                      right: "0",
+                      background: "white",
+                      border: "1px solid #e0e0e0",
+                      borderRadius: "8px",
+                      boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
+                      zIndex: 1001,
+                      minWidth: "250px",
+                      padding: "8px 0",
+                      marginTop: "8px"
+                    }}>
+                      <Link to="/account" style={{
+                        display: "block",
+                        padding: "10px 15px",
+                        color: "#333",
+                        textDecoration: "none",
+                        fontSize: "14px",
+                        transition: "background-color 0.2s"
+                      }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = "#f8f9fa"}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                      >
+                        Tài khoản
+                      </Link>
+                      
+                      <Link to="/my-posts" style={{
+                        display: "block",
+                        padding: "10px 15px",
+                        color: "#333",
+                        textDecoration: "none",
+                        fontSize: "14px",
+                        transition: "background-color 0.2s"
+                      }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = "#f8f9fa"}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                      >
+                        Tin đăng của tôi
+                      </Link>
+
+                      <Link to="/saved-posts" style={{
+                        display: "block",
+                        padding: "10px 15px",
+                        color: "#333",
+                        textDecoration: "none",
+                        fontSize: "14px",
+                        transition: "background-color 0.2s"
+                      }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = "#f8f9fa"}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                      >
+                        Tin đã lưu
+                      </Link>
+
+                      <Link to="/orders" style={{
+                        display: "block",
+                        padding: "10px 15px",
+                        color: "#333",
+                        textDecoration: "none",
+                        fontSize: "14px",
+                        transition: "background-color 0.2s"
+                      }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = "#f8f9fa"}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                      >
+                        Đơn hàng
+                      </Link>
+
+                      <Link to="/view-history" style={{
+                        display: "block",
+                        padding: "10px 15px",
+                        color: "#333",
+                        textDecoration: "none",
+                        fontSize: "14px",
+                        transition: "background-color 0.2s"
+                      }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = "#f8f9fa"}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                      >
+                        Lịch sử xem tin
+                      </Link>
+
+                      <div style={{ height: "1px", background: "#e0e0e0", margin: "8px 0" }}></div>
+
+                      <Link to="/post-ad" style={{
+                        display: "block",
+                        padding: "10px 15px",
+                        color: "#00A86B",
+                        textDecoration: "none",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        transition: "background-color 0.2s"
+                      }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = "#f0f9f0"}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                      >
+                        Đăng tin ngay
+                      </Link>
+
+                      <div style={{ height: "1px", background: "#e0e0e0", margin: "8px 0" }}></div>
+                      
+                      {/* Login/Register buttons on same row */}
+                      <div style={{
+                        display: "flex",
+                        padding: "0 15px 10px 15px",
+                        gap: "8px"
+                      }}>
+                        <Link to="/login" style={{
+                          flex: 1,
+                          padding: "8px 12px",
+                          color: "#00A86B",
+                          textDecoration: "none",
+                          fontSize: "13px",
+                          fontWeight: "500",
+                          textAlign: "center",
+                          border: "1px solid #00A86B",
+                          borderRadius: "6px",
+                          transition: "all 0.2s"
+                        }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "#00A86B";
+                            e.target.style.color = "white";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "transparent";
+                            e.target.style.color = "#00A86B";
+                          }}
+                        >
+                          Đăng nhập
+                        </Link>
+                        
+                        <Link to="/register" style={{
+                          flex: 1,
+                          padding: "8px 12px",
+                          background: "#00A86B",
+                          color: "white",
+                          textDecoration: "none",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                          textAlign: "center",
+                          borderRadius: "6px",
+                          transition: "all 0.2s"
+                        }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "#007A4B";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "#00A86B";
                   }}
                 >
                   Đăng ký
                 </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
