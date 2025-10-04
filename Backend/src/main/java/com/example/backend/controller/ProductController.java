@@ -35,7 +35,7 @@ public class ProductController {
 //  tao tin dang
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
     @PostMapping("/create")
-    public ApiResponse<ProductResponse> createProduct(@Valid @RequestBody CreateProductRequest createProductRequest, @RequestParam String username) {
+    public ApiResponse<ProductResponse> createProduct(@Valid @ModelAttribute CreateProductRequest createProductRequest, @RequestParam String username) {
         ProductResponse productResponse = productService.createProduct(createProductRequest, username);
         return ApiResponse.<ProductResponse>builder().message("Đã Tạo Product Thành Công").data(productResponse).build();
 
