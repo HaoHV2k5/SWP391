@@ -4,16 +4,18 @@ import { Bell } from "lucide-react";
 const MemberHeader = ({ activeTab }) => {
   const getTabTitle = (tab) => {
     switch (tab) {
-      case "dashboard":
-        return "Tổng quan";
+      case "post-ad":
+        return "Đăng tin bán hàng";
+      case "my-posts":
+        return "Tin đăng của tôi";
+      case "saved-posts":
+        return "Tin đã lưu";
+      case "view-history":
+        return "Lịch sử xem tin";
       case "orders":
         return "Đơn hàng của tôi";
-      case "wishlist":
-        return "Danh sách yêu thích";
-      case "profile":
-        return "Hồ sơ cá nhân";
       default:
-        return "Tổng quan";
+        return "Trang chủ";
     }
   };
 
