@@ -5,6 +5,7 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.JoinColumn;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,19 +36,11 @@ public class CreateProductRequest {
     @NotNull(message = "PRODUCT_TYPE_REQUIRED")
     private ProductType productType;
     
-    @Size(max = 255, message = "BRAND_TOO_LONG")
-    private String brand;
+    @Valid
+    private VehicleRequest vehicle;
     
-    @Size(max = 255, message = "MODEL_TOO_LONG")
-    private String model;
-    
-    @Min(value = 1900, message = "YEAR_MANUFACTURED_INVALID")
-    @Max(value = 2030, message = "YEAR_MANUFACTURED_INVALID")
-    private Integer yearManufactured;
-    
-    @Min(value = 0, message = "BATTERY_LEVEL_INVALID")
-    @Max(value = 100, message = "BATTERY_LEVEL_INVALID")
-    private Integer batteryLevel;
+    @Valid
+    private BatteryRequest battery;
 
     private List<MultipartFile> images;
 

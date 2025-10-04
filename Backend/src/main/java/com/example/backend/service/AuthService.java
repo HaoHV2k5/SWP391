@@ -15,7 +15,7 @@ import com.example.backend.mapper.UserMapper;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.repository.RoleRepository;
 import com.nimbusds.jose.*;
- 
+
 import com.nimbusds.jwt.SignedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
- 
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -62,16 +62,16 @@ public class AuthService {
 //
 //            return LoginResponse.builder().authenticated(true).token(token).refreshToken(refreshToken).build();
 //        }
-        
+
         // Tìm user bằng email (vì admin tạo user với email)
         User user = userRepository.findByEmail(loginRequest.getUsername())
                 .orElseThrow( () -> new AppException(ErrorCode.USER_NOT_EXISTED));
         if(user.isLocked()){
             throw new AppException(ErrorCode.ACCOUNT_LOCKED);
         }
-         if(!user.isVerified()){
-             throw new AppException(ErrorCode.OTP_NOT_VERIFY);
-         }
+        if(!user.isVerified()){
+            throw new AppException(ErrorCode.OTP_NOT_VERIFY);
+        }
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         boolean auth = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
         if(!auth){
@@ -99,7 +99,7 @@ public class AuthService {
         } catch (Exception e) {
             isValid = false;
         }
-    return IntrospectResponse.builder().authenticated(isValid).build();
+        return IntrospectResponse.builder().authenticated(isValid).build();
 
     }
 
@@ -121,7 +121,7 @@ public class AuthService {
         // Tìm user đã tồn tại hoặc tạo mới
         var existingUser = userRepository.findByEmail(email);
         User user;
-        
+
         if(existingUser.isPresent()){
             // User đã tồn tại, cho phép đăng nhập
             if(existingUser.get().getPassword().equals(passwordUser)){
@@ -139,13 +139,13 @@ public class AuthService {
             user.setPassword(passwordUser); // Google user không cần password
             user.setVerified(true); // Google user đã verified
             user.setLocked(false);
-            
+
             // Set role member cho Google user
             HashSet<Role> roles = new HashSet<>();
             roleRepository.findById(Roles.USER.name()).ifPresent(roles::add);
             //Role userRole = roleRepository.findById("USER").orElseThrow(() -> new AppException(ErrorCode.USER_ROLE_NOT_FOUND));
             user.setRoles(roles);
-            
+
             userRepository.save(user);
         }
 
