@@ -11,10 +11,11 @@ import com.example.backend.entity.Role;
 import com.example.backend.enums.Roles;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
+import com.example.backend.mapper.UserMapper;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.repository.RoleRepository;
 import com.nimbusds.jose.*;
- 
+
 import com.nimbusds.jwt.SignedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +27,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
- 
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -40,10 +41,11 @@ public class AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final JwtService jwtService;
+    private final UserMapper userMapper;
     @Value("${jwt.secret}")
     private  String jwtSecret;
-
-
+    @Value("${password.secrect}")
+    private String passwordUser;
     public LoginResponse login(LoginRequest loginRequest) {
         // Hardcode admin login
 //        if ("admin@electricrade.com".equals(loginRequest.getUsername()) && "admin123".equals(loginRequest.getPassword())) {
@@ -60,16 +62,16 @@ public class AuthService {
 //
 //            return LoginResponse.builder().authenticated(true).token(token).refreshToken(refreshToken).build();
 //        }
-        
+
         // Tìm user bằng email (vì admin tạo user với email)
         User user = userRepository.findByEmail(loginRequest.getUsername())
                 .orElseThrow( () -> new AppException(ErrorCode.USER_NOT_EXISTED));
         if(user.isLocked()){
             throw new AppException(ErrorCode.ACCOUNT_LOCKED);
         }
-         if(!user.isVerified()){
-             throw new AppException(ErrorCode.OTP_NOT_VERIFY);
-         }
+        if(!user.isVerified()){
+            throw new AppException(ErrorCode.OTP_NOT_VERIFY);
+        }
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         boolean auth = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
         if(!auth){
@@ -78,7 +80,12 @@ public class AuthService {
         String token = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        return LoginResponse.builder().authenticated(true).token(token).refreshToken(refreshToken).build();
+        return LoginResponse.builder()
+                .authenticated(true)
+                .token(token)
+                .refreshToken(refreshToken)
+                .user(userMapper.toUserDetailResponse(user))
+                .build();
     }
 
 
@@ -92,7 +99,7 @@ public class AuthService {
         } catch (Exception e) {
             isValid = false;
         }
-    return IntrospectResponse.builder().authenticated(isValid).build();
+        return IntrospectResponse.builder().authenticated(isValid).build();
 
     }
 
@@ -101,21 +108,23 @@ public class AuthService {
 
     public Map<String,Object> googleLogin(OAuth2AuthenticationToken auth){
         OAuth2User oAuth2User = auth.getPrincipal();
-        String email = oAuth2User.getAttribute("email");
+        String email = oAuth2User.getName();
         String name = oAuth2User.getAttribute("name");
         String picture = oAuth2User.getAttribute("picture");
         Map<String,Object> map = new HashMap<>();
         map.put("email",email);
         map.put("name",name);
-        map.put("picture",picture);
-        
+//        map.put("picture",picture);
+        if(!email.contains("@")){
+            email = email.concat("@gmail.com");
+        }
         // Tìm user đã tồn tại hoặc tạo mới
         var existingUser = userRepository.findByEmail(email);
         User user;
-        
+
         if(existingUser.isPresent()){
             // User đã tồn tại, cho phép đăng nhập
-            if(existingUser.get().getPassword().isEmpty()){
+            if(existingUser.get().getPassword().equals(passwordUser)){
                 user = existingUser.get();
             }else {
                 throw  new AppException(ErrorCode.ACCOUNT_EXISTED);
@@ -127,16 +136,16 @@ public class AuthService {
             user.setUsername(email);
             user.setEmail(email);
             user.setFullname(name);
-            user.setPassword(""); // Google user không cần password
+            user.setPassword(passwordUser); // Google user không cần password
             user.setVerified(true); // Google user đã verified
             user.setLocked(false);
-            
+
             // Set role member cho Google user
             HashSet<Role> roles = new HashSet<>();
             roleRepository.findById(Roles.USER.name()).ifPresent(roles::add);
-//            Role userRole = roleRepository.findById("ROLE_USER").orElseThrow(() -> new AppException(ErrorCode.USER_ROLE_NOT_FOUND));
+            //Role userRole = roleRepository.findById("USER").orElseThrow(() -> new AppException(ErrorCode.USER_ROLE_NOT_FOUND));
             user.setRoles(roles);
-            
+
             userRepository.save(user);
         }
 
