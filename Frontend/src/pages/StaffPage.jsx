@@ -19,7 +19,7 @@ const StaffPage = ({ user }) => {
   const navigate = useNavigate();
 
   // ========================================
-  // 📊 STATE MANAGEMENT
+  // STATE MANAGEMENT
   // ========================================
   const [activeTab, setActiveTab] = useState("dashboard"); // Tab hiện tại: dashboard, orders, customers, products
   const [searchQuery, setSearchQuery] = useState(""); // Từ khóa tìm kiếm
@@ -89,7 +89,7 @@ const StaffPage = ({ user }) => {
     },
   ]);
 
-  // 🔐 AUTHENTICATION & AUTHORIZATION
+  // AUTHENTICATION & AUTHORIZATION
   useEffect(() => {
     // Kiểm tra nếu không có user -> redirect về login
     if (!user) {
@@ -120,7 +120,7 @@ const StaffPage = ({ user }) => {
     }
   }, [user, navigate]);
 
-  // 🛠️ UTILITY FUNCTIONS - Các hàm tiện ích
+  //UTILITY FUNCTIONS - Các hàm tiện ích
 
   // Format tiền tệ theo định dạng Việt Nam
   const formatCurrency = (amount) => {
@@ -180,7 +180,7 @@ const StaffPage = ({ user }) => {
   };
 
   // ========================================
-  // 🎨 RENDER LOGIC - Logic hiển thị
+  // RENDER LOGIC - Logic hiển thị
   // ========================================
 
   // Hiển thị loading spinner khi đang kiểm tra authentication
@@ -200,9 +200,7 @@ const StaffPage = ({ user }) => {
     return null;
   }
 
-  // ========================================
-  // 🎨 MAIN RENDER - Giao diện chính
-  // ========================================
+  // MAIN RENDER - Giao diện chính
   return (
     <div className="staff-page">
       <style>
@@ -252,13 +250,10 @@ const StaffPage = ({ user }) => {
           }
         `}
       </style>
-      {/* ======================================== */}
-      {/* 🏗️ LAYOUT STRUCTURE - Cấu trúc layout */}
-      {/* ======================================== */}
+      {/* LAYOUT STRUCTURE - Cấu trúc layout */}
       <div style={{ display: "flex" }}>
-        {/* ======================================== */}
-        {/* 🧭 SIDEBAR - Thanh điều hướng bên trái */}
-        {/* ======================================== */}
+        {/*SIDEBAR - Thanh điều hướng bên trái */}
+
         <StaffSidebar
           user={user}
           activeTab={activeTab}
@@ -272,23 +267,16 @@ const StaffPage = ({ user }) => {
             }, 1000);
           }}
         />
+        {/*MAIN CONTENT - Nội dung chính */}
 
-        {/* ======================================== */}
-        {/* 📄 MAIN CONTENT - Nội dung chính */}
-        {/* ======================================== */}
         <div className="staff-main-content">
-          {/* ======================================== */}
-          {/* 🔝 HEADER - Thanh header với search và notifications */}
-          {/* ======================================== */}
           <StaffHeader
             activeTab={activeTab}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
           />
 
-          {/* ======================================== */}
-          {/* 📊 DASHBOARD TAB - Tab tổng quan */}
-          {/* ======================================== */}
+          {/*DASHBOARD TAB - Tab tổng quan */}
           {activeTab === "dashboard" && (
             <DashboardTab
               stats={stats}
