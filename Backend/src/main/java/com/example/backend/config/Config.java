@@ -61,7 +61,7 @@ public class Config {
         for (Iterator<String> itr = fieldNames.iterator(); itr.hasNext();) {
             String fieldName = itr.next();
             String fieldValue = fields.get(fieldName);
-            if (fieldValue != null && fieldValue.length() > 0) {
+            if (fieldValue != null && !fieldValue.isEmpty()) {
                 sb.append(fieldName).append("=").append(fieldValue);
                 if (itr.hasNext()) {
                     sb.append("&");

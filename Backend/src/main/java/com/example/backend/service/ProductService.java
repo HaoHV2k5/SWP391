@@ -15,7 +15,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -25,15 +27,24 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final ProductMapper productMapper;
-    
+    private final CloudinaryService cloudinaryService;
     @Transactional
     public ProductResponse createProduct(CreateProductRequest request, String username) {
         // Tìm user theo username
         User seller = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        List<String> imgUrls = new ArrayList<>();
+        if(request.getImages() != null && !request.getImages().isEmpty() ) {
+                for (MultipartFile file : request.getImages()) {
+                    String url  = cloudinaryService.upload(file);
+                    imgUrls.add(url);
+                }
+        }
+
         // Tạo product entity
         Product product = productMapper.toProduct(request);
         product.setSeller(seller);
+        product.setImageUrls(imgUrls);
         // Lưu product
         Product savedProduct = productRepository.save(product);
         
