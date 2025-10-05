@@ -79,21 +79,21 @@ public class PaymentController {
                 vnp_Params.put("vnp_Bill_LastName", lastName);
             }
 
-            vnp_Params.put("vnp_Bill_Address", req.getParameter("txt_inv_addr1"));
-            vnp_Params.put("vnp_Bill_City", req.getParameter("txt_bill_city"));
-            vnp_Params.put("vnp_Bill_Country", req.getParameter("txt_bill_country"));
-            if (req.getParameter("txt_bill_state") != null && !req.getParameter("txt_bill_state").isEmpty()) {
-                vnp_Params.put("vnp_Bill_State", req.getParameter("txt_bill_state"));
-            }
+//            vnp_Params.put("vnp_Bill_Address", req.getParameter("txt_inv_addr1"));
+//            vnp_Params.put("vnp_Bill_City", req.getParameter("txt_bill_city"));
+//            vnp_Params.put("vnp_Bill_Country", req.getParameter("txt_bill_country"));
+//            if (req.getParameter("txt_bill_state") != null && !req.getParameter("txt_bill_state").isEmpty()) {
+//                vnp_Params.put("vnp_Bill_State", req.getParameter("txt_bill_state"));
+//            }
 
             // Invoice
-            vnp_Params.put("vnp_Inv_Phone", req.getParameter("txt_inv_mobile"));
-            vnp_Params.put("vnp_Inv_Email", req.getParameter("txt_inv_email"));
-            vnp_Params.put("vnp_Inv_Customer", req.getParameter("txt_inv_customer"));
-            vnp_Params.put("vnp_Inv_Address", req.getParameter("txt_inv_addr1"));
-            vnp_Params.put("vnp_Inv_Company", req.getParameter("txt_inv_company"));
-            vnp_Params.put("vnp_Inv_Taxcode", req.getParameter("txt_inv_taxcode"));
-            vnp_Params.put("vnp_Inv_Type", req.getParameter("cbo_inv_type"));
+//            vnp_Params.put("vnp_Inv_Phone", req.getParameter("txt_inv_mobile"));
+//            vnp_Params.put("vnp_Inv_Email", req.getParameter("txt_inv_email"));
+//            vnp_Params.put("vnp_Inv_Customer", req.getParameter("txt_inv_customer"));
+//            vnp_Params.put("vnp_Inv_Address", req.getParameter("txt_inv_addr1"));
+//            vnp_Params.put("vnp_Inv_Company", req.getParameter("txt_inv_company"));
+//            vnp_Params.put("vnp_Inv_Taxcode", req.getParameter("txt_inv_taxcode"));
+//            vnp_Params.put("vnp_Inv_Type", req.getParameter("cbo_inv_type"));
 
             // Build data
             List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
@@ -105,13 +105,13 @@ public class PaymentController {
             while (itr.hasNext()) {
                 String fieldName = itr.next();
                 String fieldValue = vnp_Params.get(fieldName);
-                if ((fieldValue != null) && (fieldValue.length() > 0)) {
+                if ((fieldValue != null) && (!fieldValue.isEmpty())) {
                     hashData.append(fieldName).append('=')
-                            .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                            .append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8));
 
-                    query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString()))
+                    query.append(URLEncoder.encode(fieldName, StandardCharsets.UTF_8))
                             .append('=')
-                            .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                            .append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8));
 
                     if (itr.hasNext()) {
                         query.append('&');
