@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, ListGroup, Button } from 'react-bootstrap';
 import { MapPin, Phone } from 'lucide-react';
-import { storeLocations } from '../../../data/homepagedata';
+import { storeLocations } from '../../../data/homepageData';
 
 const StoreLocationModal = ({ show, onHide }) => {
   return (
@@ -32,12 +32,6 @@ const StoreLocationModal = ({ show, onHide }) => {
           ))}
         </ListGroup>
       </Modal.Body>
-      
-      <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
-          Đóng
-        </Button>
-      </Modal.Footer>
     </Modal>
   );
 };

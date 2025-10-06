@@ -1,9 +1,9 @@
 import FilterBar from "../components/FilterBar";
 import Banner from "../components/Banner";
 import ProductGrid from "../components/homepageContainer/home/ProductGrid";
-import ServicesSection from "../components/homepageContainer/home/ServicesSection";
 import useProductFilter from "../hooks/useProductFilter";
-import { products } from "../data/productsdata";
+import { vehicleListings } from "../data/productsData";
+import "../components/homepageContainer/styles/HomePage.css";
 
 const HomePage = () => {
   // Sử dụng useProductFilter hook
@@ -75,9 +75,9 @@ const HomePage = () => {
       {/* Filter Bar Section */}
       <FilterBar onFilterChange={handleFilterChange} />
 
-      {/* Products Section */}
+      {/* Vehicle Listings Section */}
       <ProductGrid
-        products={products}
+        products={activeListings}
         filteredProducts={filteredProducts}
         hasActiveFilters={Object.values(filters).some(
           (filter) =>
@@ -86,9 +86,6 @@ const HomePage = () => {
             (Array.isArray(filter) ? filter.length > 0 : true)
         )}
       />
-
-      {/* Services Section */}
-      <ServicesSection />
     </div>
   );
 };
