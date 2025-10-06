@@ -1,39 +1,3 @@
-/**
- * ========================================
- * 📝 STAFF SIDEBAR - Thanh điều hướng bên trái
- * ========================================
- *
- * 🎯 MỤC ĐÍCH:
- * - Sidebar navigation cho trang staff
- * - Hiển thị menu items: Dashboard, Orders, Customers, Products
- * - User profile và logout functionality
- * - Responsive design với hover effects
- *
- * 🏗️ KIẾN TRÚC:
- * - Header: Logo và title
- * - Navigation: Menu items với icons
- * - User Info: Avatar, name, role
- * - Logout: Button đăng xuất
- *
- * 🎨 UI/UX:
- * - Dark theme với glass morphism
- * - Active state cho tab hiện tại
- * - Hover effects cho menu items
- * - Gradient background cho active item
- * - Smooth transitions
- *
- * 📱 RESPONSIVE:
- * - Fixed width 250px trên desktop
- * - Flexbox layout
- * - Hover states cho desktop
- *
- * 🔧 PROPS:
- * - user: Thông tin user hiện tại
- * - activeTab: Tab đang được chọn
- * - setActiveTab: Function để thay đổi tab
- * - onLogout: Function xử lý logout
- */
-
 import {
   TrendingUp,
   ClipboardList,
@@ -43,9 +7,7 @@ import {
 } from "lucide-react";
 
 const StaffSidebar = ({ user, activeTab, setActiveTab, onLogout }) => {
-  // ========================================
-  // 📋 MENU ITEMS - Danh sách menu items
-  // ========================================
+  //MENU ITEMS - Danh sách menu items
   const menuItems = [
     {
       id: "dashboard",
@@ -68,10 +30,7 @@ const StaffSidebar = ({ user, activeTab, setActiveTab, onLogout }) => {
       icon: <Package size={20} />,
     },
   ];
-
-  // ========================================
-  // 🎨 RENDER - Giao diện sidebar
-  // ========================================
+  // RENDER - Giao diện sidebar
   return (
     <div
       style={{
@@ -85,7 +44,7 @@ const StaffSidebar = ({ user, activeTab, setActiveTab, onLogout }) => {
         flexDirection: "column",
       }}
     >
-      {/* 🏷️ HEADER - Logo và title */}
+      {/* HEADER - Logo và title */}
       <div style={{ padding: "0 2rem", marginBottom: "2rem" }}>
         <h2
           style={{
@@ -108,7 +67,7 @@ const StaffSidebar = ({ user, activeTab, setActiveTab, onLogout }) => {
         </p>
       </div>
 
-      {/* 🧭 NAVIGATION - Menu items */}
+      {/* NAVIGATION - Menu items */}
       <nav style={{ flex: 1 }}>
         {menuItems.map((item) => (
           <button
@@ -150,7 +109,7 @@ const StaffSidebar = ({ user, activeTab, setActiveTab, onLogout }) => {
         ))}
       </nav>
 
-      {/* 👤 USER INFO & LOGOUT - Thông tin user và đăng xuất */}
+      {/* USER INFO & LOGOUT - Thông tin user và đăng xuất */}
       <div
         style={{
           padding: "1rem 2rem",

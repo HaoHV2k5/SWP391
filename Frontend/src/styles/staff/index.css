@@ -30,9 +30,8 @@
  * - .staff-table: Tables
  */
 
-/* ======================================== */
 /* 🏠 MAIN PAGE - Trang chính */
-/* ======================================== */
+
 .staff-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
@@ -40,9 +39,7 @@
     sans-serif;
 }
 
-/* ======================================== */
 /* 🧭 SIDEBAR - Thanh điều hướng bên trái */
-/* ======================================== */
 .staff-sidebar {
   width: 250px;
   background-color: rgba(26, 26, 46, 0.9);

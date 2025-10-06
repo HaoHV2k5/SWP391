@@ -2,30 +2,30 @@
  * ========================================
  * 📝 DASHBOARD TAB - Tab tổng quan với thống kê
  * ========================================
- * 
+ *
  * 🎯 MỤC ĐÍCH:
  * - Tab dashboard cho trang staff
  * - Hiển thị thống kê tổng quan: đơn hàng, doanh thu
  * - Bảng đơn hàng gần đây với trạng thái và ưu tiên
  * - Responsive grid layout cho stats cards
- * 
+ *
  * 🏗️ KIẾN TRÚC:
  * - Stats Cards: 4 cards hiển thị thống kê
  * - Recent Orders Table: Bảng đơn hàng gần đây
  * - Hover effects cho table rows
- * 
+ *
  * 🎨 UI/UX:
  * - Dark theme với glass morphism
  * - Grid layout cho stats cards
  * - Status badges với màu sắc phù hợp
  * - Priority badges cho orders
  * - Hover effects và transitions
- * 
+ *
  * 📱 RESPONSIVE:
  * - Auto-fit grid cho stats cards
  * - Horizontal scroll cho table
  * - Mobile-friendly layout
- * 
+ *
  * 🔧 PROPS:
  * - stats: Object chứa thống kê
  * - orders: Array đơn hàng
@@ -43,12 +43,17 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-const DashboardTab = ({ stats, orders, formatCurrency, getStatusColor, getStatusText, getPriorityColor }) => {
+const DashboardTab = ({
+  stats,
+  orders,
+  formatCurrency,
+  getStatusColor,
+  getStatusText,
+  getPriorityColor,
+}) => {
   return (
     <div>
-      {/* ======================================== */}
-      {/* 📊 STATS CARDS - Cards thống kê */}
-      {/* ======================================== */}
+      {/* STATS CARDS - Cards thống kê */}
       <div
         style={{
           display: "grid",
@@ -100,10 +105,7 @@ const DashboardTab = ({ stats, orders, formatCurrency, getStatusColor, getStatus
             boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
           }}
         >
-          <Clock
-            size={48}
-            style={{ color: "#ffc107", marginBottom: "1rem" }}
-          />
+          <Clock size={48} style={{ color: "#ffc107", marginBottom: "1rem" }} />
           <h3
             style={{
               fontSize: "2rem",
@@ -231,7 +233,9 @@ const DashboardTab = ({ stats, orders, formatCurrency, getStatusColor, getStatus
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ borderBottom: "2px solid rgba(255, 255, 255, 0.1)" }}>
+              <tr
+                style={{ borderBottom: "2px solid rgba(255, 255, 255, 0.1)" }}
+              >
                 <th
                   style={{
                     padding: "1rem",
@@ -313,13 +317,16 @@ const DashboardTab = ({ stats, orders, formatCurrency, getStatusColor, getStatus
                     transition: "all 0.3s ease",
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = "rgba(255, 255, 255, 0.05)";
+                    e.target.style.backgroundColor =
+                      "rgba(255, 255, 255, 0.05)";
                   }}
                   onMouseLeave={(e) => {
                     e.target.style.backgroundColor = "transparent";
                   }}
                 >
-                  <td style={{ padding: "1rem", color: "white" }}>#{order.id}</td>
+                  <td style={{ padding: "1rem", color: "white" }}>
+                    #{order.id}
+                  </td>
                   <td style={{ padding: "1rem", color: "white" }}>
                     {order.customer}
                   </td>
@@ -349,7 +356,8 @@ const DashboardTab = ({ stats, orders, formatCurrency, getStatusColor, getStatus
                         padding: "0.25rem 0.75rem",
                         borderRadius: "15px",
                         fontSize: "0.8rem",
-                        backgroundColor: getPriorityColor(order.priority) + "20",
+                        backgroundColor:
+                          getPriorityColor(order.priority) + "20",
                         color: getPriorityColor(order.priority),
                         fontWeight: "500",
                       }}
