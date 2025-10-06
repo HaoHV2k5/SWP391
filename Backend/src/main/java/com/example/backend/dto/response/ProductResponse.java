@@ -23,10 +23,8 @@ public class ProductResponse {
     private BigDecimal price;
     private ProductType productType;
     private ProductStatus status;
-    private String brand;
-    private String model;
-    private Integer yearManufactured;
-    private Integer batteryLevel;
+    private VehicleResponse vehicle;
+    private BatteryResponse battery;
     private List<String> imageUrls;
     private Long sellerId;
     private String sellerName;
