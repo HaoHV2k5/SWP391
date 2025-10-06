@@ -1,0 +1,32 @@
+:root {
+  --speed: 40s; /* chỉnh tốc độ */
+}
+
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); } /* vì track có 2 lần lặp */
+}
+
+.announcement-bar {
+  background: #f8f9fa;
+  padding: 8px 0;
+  font-size: 13px;
+  color: #6c757d;
+  border-bottom: 1px solid #e9ecef;
+  overflow: hidden; /* ẩn chữ thừa */
+  position: relative;
+  width: 70%; /* giới hạn chiều rộng */
+  max-width: 600px; /* giới hạn tối đa */
+  margin: 0 auto; /* căn giữa */
+}
+
+.announcement-track {
+  display: flex;                 /* quan trọng */
+  width: max-content;            /* để track rộng theo nội dung */
+  animation: scroll var(--speed) linear infinite;
+}
+
+.announcement-text {
+  white-space: nowrap;
+  padding-right: 20px;
+}

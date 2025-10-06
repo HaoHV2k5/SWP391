@@ -4,22 +4,20 @@ const useProductFilter = (initialProducts = []) => {
   const [filters, setFilters] = useState({
     priceRange: '',
     brand: '',
-    condition: '',
-    batteryType: '',
-    batteryCapacity: '',
     vehicleType: '',
-    usage: '',
-    specialFeatures: []
+    year: '' // Thêm bộ lọc năm sản xuất
   });
 
-  // Filter products based on current filters
+  // Lọc sản phẩm dựa trên bộ lọc hiện tại
   const filteredProducts = useMemo(() => {
     try {
       console.log('useProductFilter - Filtering with filters:', filters);
       const result = initialProducts.filter(product => {
-        // Price range filter
+        // Bộ lọc phạm vi giá
         if (filters.priceRange) {
-          const price = parseInt(product.salePrice.replace(/[^\d]/g, ''));
+          const price = parseInt(product.price.replace(/[^\d]/g, ''));
+          console.log(`Product: ${product.name}, Price: ${price}, Filter: ${filters.priceRange}`);
+
           switch (filters.priceRange) {
             case 'under10m':
               if (price >= 10000000) return false;
@@ -50,17 +48,13 @@ const useProductFilter = (initialProducts = []) => {
           }
         }
 
-        // Brand filter (tìm kiếm theo tên sản phẩm)
+        // Brand filter (tìm kiếm theo thương hiệu)
         if (filters.brand) {
-          if (!product.name.toLowerCase().includes(filters.brand.toLowerCase())) {
+          if (product.brand.toLowerCase() !== filters.brand.toLowerCase()) {
             return false;
           }
         }
 
-        // Condition filter
-        if (filters.condition) {
-          if (filters.condition === 'new' && !product.isNew) return false;
-        }
 
         // Vehicle type filter
         if (filters.vehicleType) {
@@ -79,44 +73,25 @@ const useProductFilter = (initialProducts = []) => {
           }
         }
 
-        // Battery type filter (tìm kiếm theo tên sản phẩm)
-        if (filters.batteryType) {
-          if (!product.name.toLowerCase().includes(filters.batteryType.toLowerCase())) {
+        // Bộ lọc năm sản xuất
+        if (filters.year) {
+          if (product.vehicleInfo?.year !== filters.year) {
             return false;
           }
-        }
-
-        // Battery capacity filter (tìm kiếm theo tên sản phẩm)
-        if (filters.batteryCapacity) {
-          if (!product.name.toLowerCase().includes(filters.batteryCapacity.toLowerCase())) {
-            return false;
-          }
-        }
-
-        // Usage filter
-        if (filters.usage) {
-          // This would need to be implemented based on product data structure
-          // For now, we'll skip this filter
-        }
-
-        // Special features filter
-        if (filters.specialFeatures.length > 0) {
-          // This would need to be implemented based on product data structure
-          // For now, we'll skip this filter
         }
 
         return true;
       });
 
-      console.log('useProductFilter - Filtered result:', result.length, 'products');
+      console.log('useProductFilter - Kết quả lọc:', result.length, 'sản phẩm');
       return result;
     } catch (error) {
       console.error('useProductFilter - Error filtering products:', error);
-      return initialProducts; // Return all products on error
+      return initialProducts; // Trả về tất cả sản phẩm trên lỗi
     }
   }, [initialProducts, filters]);
 
-  // Handle filter changes
+  // Xử lý thay đổi bộ lọc
   const handleFilterChange = (filterType, value) => {
     setFilters(prev => ({
       ...prev,
@@ -124,20 +99,16 @@ const useProductFilter = (initialProducts = []) => {
     }));
   };
 
-  // Handle multiple filter changes at once (for FilterBar compatibility)
+  // Xử lý nhiều thay đổi bộ lọc cùng lúc (tương thích với FilterBar)
   const handleFiltersChange = (newFilters) => {
-    console.log('useProductFilter - Received newFilters:', newFilters);
+    console.log('useProductFilter - Nhận bộ lọc mới:', newFilters);
 
     // Reset tất cả filters về empty trước
     const resetFilters = {
       priceRange: '',
       brand: '',
-      condition: '',
-      batteryType: '',
-      batteryCapacity: '',
       vehicleType: '',
-      usage: '',
-      specialFeatures: []
+      year: ''
     };
 
     // Set filters mới từ newFilters (chỉ những filter có giá trị khác null)
@@ -147,25 +118,21 @@ const useProductFilter = (initialProducts = []) => {
       }
     });
 
-    console.log('useProductFilter - Final filters:', resetFilters);
+    console.log('useProductFilter - Bộ lọc cuối cùng:', resetFilters);
     setFilters(resetFilters);
   };
 
-  // Reset all filters
+  // Đặt lại tất cả bộ lọc
   const resetFilters = () => {
     setFilters({
       priceRange: '',
       brand: '',
-      condition: '',
-      batteryType: '',
-      batteryCapacity: '',
       vehicleType: '',
-      usage: '',
-      specialFeatures: []
+      year: ''
     });
   };
 
-  // Get unique brands from products
+  // Lấy danh sách thương hiệu duy nhất từ sản phẩm
   const getUniqueBrands = () => {
     return [...new Set(initialProducts.map(product => product.brand))];
   };

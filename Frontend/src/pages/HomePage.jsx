@@ -1,17 +1,20 @@
 import FilterBar from "../components/FilterBar";
 import Banner from "../components/Banner";
 import ProductGrid from "../components/homepageContainer/home/ProductGrid";
-import ServicesSection from "../components/homepageContainer/home/ServicesSection";
 import useProductFilter from "../hooks/useProductFilter";
-import { products } from "../data/productsdata";
+import { vehicleListings } from "../data/productsData";
+import "../components/homepageContainer/styles/HomePage.css";
 
 const HomePage = () => {
-  // Sử dụng useProductFilter hook
+  // Lấy tất cả tin đăng xe điện đang hoạt động
+  const activeListings = vehicleListings.filter(listing => listing.isActive);
+
+  // Sử dụng useProductFilter hook với tin đăng xe điện
   const {
     filteredProducts,
     handleFiltersChange,
     filters
-  } = useProductFilter(products);
+  } = useProductFilter(activeListings);
 
   // Đơn giản chỉ gọi hook với filters từ FilterBar
   const handleFilterChange = (filters) => {
@@ -24,7 +27,7 @@ const HomePage = () => {
       width: "100%",
       overflowX: "hidden",
       background: "#f5f5f5",
-      minWidth: "320px" // Prevent too narrow layout
+      minWidth: "320px" // Ngăn chặn bố cục quá hẹp
     }}>
       {/* Banner Section */}
       <section style={{
@@ -58,7 +61,7 @@ const HomePage = () => {
             margin: 0,
             textShadow: "1px 1px 2px rgba(0,0,0,0.3)"
           }}>
-            Ngày hội Xe điện 2025 - Săn deal ngay!
+            Marketplace Xe điện 2025 - Mua bán uy tín!
           </h2>
         </div>
       </section>
@@ -66,16 +69,12 @@ const HomePage = () => {
       {/* Filter Bar Section */}
       <FilterBar onFilterChange={handleFilterChange} />
 
-      {/* Products Section */}
+      {/* Vehicle Listings Section */}
       <ProductGrid
-        products={products}
+        products={activeListings}
         filteredProducts={filteredProducts}
-        hasActiveFilters={Object.values(filters).some(filter => filter !== null && filter !== ''
-          && (Array.isArray(filter) ? filter.length > 0 : true))}
+        hasActiveFilters={Object.values(filters).some(filter => filter !== null && filter !== '')}
       />
-
-      {/* Services Section */}
-      <ServicesSection />
     </div>
   );
 };
