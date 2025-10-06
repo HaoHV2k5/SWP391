@@ -1,318 +1,163 @@
-// Products data
-export const products = [
+// Vehicle listings data - Tin đăng xe điện
+export const vehicleListings = [
   {
     id: 1,
     name: "VinFast Klara S 2023",
     type: "electric-scooter",
     brand: "VinFast",
-    image: "https://via.placeholder.com/300x200/00AA00/ffffff?text=VinFast+Klara+S",
-    originalPrice: "25.000.000₫",
-    salePrice: "18.500.000₫",
-    discount: 26,
-    rating: 4.8,
-    reviews: 124,
-    featured: true,
-    inStock: true,
-    description: "Xe máy điện VinFast Klara S 2023, đã qua sử dụng 1 năm, tình trạng tốt"
+    image: "https://img.tinxe.vn/resize/1000x-/2021/08/26/XForF7yt/vinfast-klara-a2-2-024a.png",
+    price: "18.500.000₫",
+    description: "Xe máy điện VinFast Klara S 2023, đã qua sử dụng 1 năm, tình trạng tốt",
+
+    // Thông tin chi tiết xe
+    vehicleInfo: {
+      year: "2023", // Năm sản xuất
+      engineDisplacement: "50kW", // Dung tích xe
+      origin: "Việt Nam", // Xuất xứ
+      mileage: "5000", // Số Km đã đi
+    },
+
+    // Thông tin tin đăng
+    listingInfo: {
+      title: "VinFast Klara S 2023 - Xe điện tiết kiệm",
+      detailedDescription: "- Xuất xứ: Việt Nam, tình trạng xe còn rất tốt\n- Bảo hành chính hãng còn 1 năm\n- Địa chỉ giao nhận: Hà Nội\n- Thời gian sử dụng: 8 tháng\n- Bảo trì định kỳ tại VinFast",
+      sellerAddress: "Hà Nội"
+    },
+
+    createdAt: "2024-01-15",
+    isActive: true
   },
+
   {
     id: 2,
     name: "Honda PCX Electric 2024",
     type: "electric-scooter",
     brand: "Honda",
-    image: "https://via.placeholder.com/300x200/FF0000/ffffff?text=Honda+PCX",
-    originalPrice: "45.000.000₫",
-    salePrice: "42.000.000₫",
-    discount: 7,
-    rating: 4.9,
-    reviews: 89,
-    featured: true,
-    inStock: true,
-    description: "Xe máy điện Honda PCX Electric 2024, mới 100%, bảo hành chính hãng"
+    image: "https://xexangchaydien.com/wp-content/uploads/2023/07/Honda-PCX-Electric.png",
+    price: "42.000.000₫",
+    description: "Xe máy điện Honda PCX Electric 2024, mới 100%, bảo hành chính hãng",
+
+    vehicleInfo: {
+      year: "2024",
+      engineDisplacement: "75kW",
+      origin: "Nhật Bản",
+      mileage: "0",
+    },
+
+    listingInfo: {
+      title: "Honda PCX Electric 2024 - Xe điện cao cấp",
+      detailedDescription: "- Xuất xứ: Nhật Bản, xe mới 100%\n- Bảo hành chính hãng 2 năm\n- Địa chỉ giao nhận: TP.HCM\n- Xe mới chưa sử dụng\n- Bảo trì tại Honda Service Center",
+      sellerAddress: "TP.HCM"
+    },
+
+    createdAt: "2024-01-20",
+    isActive: true
   },
+
   {
     id: 3,
     name: "Tesla Model 3 2023",
     type: "electric-car",
     brand: "Tesla",
-    image: "https://via.placeholder.com/300x200/000000/ffffff?text=Tesla+Model+3",
-    originalPrice: "1.200.000.000₫",
-    salePrice: "1.100.000.000₫",
-    discount: 8,
-    rating: 4.7,
-    reviews: 156,
-    featured: true,
-    inStock: true,
-    description: "Xe hơi điện Tesla Model 3 2023, đã qua sử dụng, tình trạng tốt"
+    image: "https://giaxedien.com/wp-content/uploads/2023/11/tesla-model-3-thumb.png",
+    price: "1.100.000.000₫",
+    description: "Xe hơi điện Tesla Model 3 2023, đã qua sử dụng, tình trạng tốt",
+
+    vehicleInfo: {
+      year: "2023",
+      engineDisplacement: "283kW",
+      origin: "Mỹ",
+      mileage: "15000",
+    },
+
+    listingInfo: {
+      title: "Tesla Model 3 2023 - Xe điện cao cấp",
+      detailedDescription: "- Xuất xứ: Mỹ, tình trạng xe rất tốt\n- Bảo hành chính hãng còn 2 năm\n- Địa chỉ giao nhận: TP.HCM\n- Thời gian sử dụng: 1 năm\n- Bảo trì tại Tesla Service Center",
+      sellerAddress: "TP.HCM"
+    },
+
+    createdAt: "2024-01-25",
+    isActive: true
   },
+
   {
     id: 4,
     name: "VinFast VF3 2024",
     type: "electric-car",
     brand: "VinFast",
-    image: "https://via.placeholder.com/300x200/0066CC/ffffff?text=VinFast+VF3",
-    originalPrice: "320.000.000₫",
-    salePrice: "299.000.000₫",
-    discount: 7,
-    rating: 4.6,
-    reviews: 203,
-    featured: true,
-    inStock: true,
-    description: "Xe hơi điện VinFast VF3 2024, mới 100%, bảo hành chính hãng"
+    image: "https://xevinfastvn.com/wp-content/uploads/2024/05/download-2.png",
+    price: "299.000.000₫",
+    description: "Xe hơi điện VinFast VF3 2024, mới 100%, bảo hành chính hãng",
+
+    vehicleInfo: {
+      year: "2024",
+      engineDisplacement: "150kW",
+      origin: "Việt Nam",
+      mileage: "0",
+    },
+
+    listingInfo: {
+      title: "VinFast VF3 2024 - Xe điện Việt Nam",
+      detailedDescription: "- Xuất xứ: Việt Nam, xe mới 100%\n- Bảo hành chính hãng 3 năm\n- Địa chỉ giao nhận: Hà Nội\n- Xe mới chưa sử dụng\n- Bảo trì tại VinFast Service Center",
+      sellerAddress: "Hà Nội"
+    },
+
+    createdAt: "2024-02-01",
+    isActive: true
   },
+
   {
     id: 5,
-    name: "Pin Lithium 48V 20Ah",
-    type: "battery-charger",
-    brand: "Samsung",
-    image: "https://via.placeholder.com/300x200/FFD700/000000?text=Pin+48V",
-    originalPrice: "3.500.000₫",
-    salePrice: "2.800.000₫",
-    discount: 20,
-    rating: 4.5,
-    reviews: 67,
-    featured: true,
-    inStock: true,
-    description: "Pin Lithium 48V 20Ah cho xe máy điện, bảo hành 2 năm"
+    name: "VinFast Feliz Bike 2024",
+    type: "electric-bicycle",
+    brand: "VinFast",
+    image: "https://vinfastthienan.vn/wp-content/uploads/2023/07/Xe-may-dien-Vinfast-Feliz-xanh.png",
+    price: "19.500.000₫",
+    description: "Xe đạp điện VinFast Feliz Bike 2024, pin Lithium 48V, mới 100%",
+
+    vehicleInfo: {
+      year: "2024",
+      engineDisplacement: "48V",
+      origin: "Việt Nam",
+      mileage: "0",
+    },
+
+    listingInfo: {
+      title: "VinFast Feliz Bike 2024 - Xe đạp điện thông minh",
+      detailedDescription: "- Xuất xứ: Việt Nam, xe mới 100%\n- Bảo hành chính hãng 2 năm\n- Địa chỉ giao nhận: TP.HCM\n- Xe mới chưa sử dụng\n- Bảo trì tại VinFast Service Center",
+      sellerAddress: "TP.HCM"
+    },
+
+    createdAt: "2024-02-05",
+    isActive: true
   },
+
   {
     id: 6,
-    name: "Sạc nhanh 48V 5A",
-    type: "battery-charger",
-    brand: "LG",
-    image: "https://via.placeholder.com/300x200/00FF00/000000?text=Sac+48V",
-    originalPrice: "1.200.000₫",
-    salePrice: "950.000₫",
-    discount: 21,
-    rating: 4.4,
-    reviews: 45,
-    featured: true,
-    inStock: true,
-    description: "Sạc nhanh 48V 5A, tương thích với hầu hết xe máy điện"
-  },
-  {
-    id: 7,
-    name: "Mũ bảo hiểm Full Face",
-    type: "accessories",
-    brand: "AGV",
-    image: "https://via.placeholder.com/300x200/FF4500/ffffff?text=Mu+AGV",
-    originalPrice: "2.500.000₫",
-    salePrice: "1.800.000₫",
-    discount: 28,
-    rating: 4.6,
-    reviews: 78,
-    featured: true,
-    inStock: true,
-    description: "Mũ bảo hiểm full face AGV, đạt chuẩn DOT, ECE"
-  },
-  {
-    id: 8,
-    name: "Áo mưa 2 lớp",
-    type: "accessories",
-    brand: "Raincoat Pro",
-    image: "https://via.placeholder.com/300x200/4169E1/ffffff?text=Ao+Mua",
-    originalPrice: "450.000₫",
-    salePrice: "320.000₫",
-    discount: 29,
-    rating: 4.3,
-    reviews: 34,
-    featured: true,
-    inStock: true,
-    description: "Áo mưa 2 lớp chống thấm nước, dành cho người đi xe máy"
-  },
-  {
-    id: 9,
-    name: "Dịch vụ bảo dưỡng",
-    type: "service",
-    brand: "ElectricStore",
-    image: "https://via.placeholder.com/300x200/32CD32/ffffff?text=Bao+Duong",
-    originalPrice: "500.000₫",
-    salePrice: "350.000₫",
-    discount: 30,
-    rating: 4.7,
-    reviews: 112,
-    featured: true,
-    inStock: true,
-    description: "Dịch vụ bảo dưỡng xe điện chuyên nghiệp, bảo hành 6 tháng"
-  },
-  {
-    id: 10,
-    name: "Yamaha NMAX Electric 2024",
+    name: "Yamaha E01 2024",
     type: "electric-scooter",
     brand: "Yamaha",
-    image: "https://via.placeholder.com/300x200/0000FF/ffffff?text=Yamaha+NMAX",
-    originalPrice: "38.000.000₫",
-    salePrice: "35.000.000₫",
-    discount: 8,
-    rating: 4.5,
-    reviews: 92,
-    featured: false,
-    inStock: true,
-    description: "Xe máy điện Yamaha NMAX Electric 2024, mới 100%"
-  },
-  {
-    id: 11,
-    name: "BMW i3 2023",
-    type: "electric-car",
-    brand: "BMW",
-    image: "https://via.placeholder.com/300x200/000080/ffffff?text=BMW+i3",
-    originalPrice: "800.000.000₫",
-    salePrice: "750.000.000₫",
-    discount: 6,
-    rating: 4.8,
-    reviews: 134,
-    featured: false,
-    inStock: true,
-    description: "Xe hơi điện BMW i3 2023, đã qua sử dụng, tình trạng tốt"
-  },
-  {
-    id: 12,
-    name: "Pin Lithium 72V 30Ah",
-    type: "battery-charger",
-    brand: "Panasonic",
-    image: "https://via.placeholder.com/300x200/FF6347/ffffff?text=Pin+72V",
-    originalPrice: "5.200.000₫",
-    salePrice: "4.500.000₫",
-    discount: 13,
-    rating: 4.6,
-    reviews: 56,
-    featured: false,
-    inStock: true,
-    description: "Pin Lithium 72V 30Ah cho xe máy điện công suất lớn"
-  },
-  {
-    id: 13,
-    name: "Găng tay chống nước",
-    type: "accessories",
-    brand: "Alpinestars",
-    image: "https://via.placeholder.com/300x200/8B0000/ffffff?text=Gang+Tay",
-    originalPrice: "680.000₫",
-    salePrice: "480.000₫",
-    discount: 29,
-    rating: 4.4,
-    reviews: 41,
-    featured: false,
-    inStock: true,
-    description: "Găng tay chống nước Alpinestars, bảo vệ tay khi đi xe"
-  },
-  {
-    id: 14,
-    name: "Dịch vụ sửa chữa",
-    type: "service",
-    brand: "ElectricStore",
-    image: "https://via.placeholder.com/300x200/FF8C00/ffffff?text=Sua+Chua",
-    originalPrice: "300.000₫",
-    salePrice: "250.000₫",
-    discount: 17,
-    rating: 4.5,
-    reviews: 89,
-    featured: false,
-    inStock: true,
-    description: "Dịch vụ sửa chữa xe điện, thay thế phụ tùng chính hãng"
-  },
-  {
-    id: 15,
-    name: "Suzuki Burgman Electric 2024",
-    type: "electric-scooter",
-    brand: "Suzuki",
-    image: "https://via.placeholder.com/300x200/FF1493/ffffff?text=Suzuki+Burgman",
-    originalPrice: "42.000.000₫",
-    salePrice: "39.000.000₫",
-    discount: 7,
-    rating: 4.7,
-    reviews: 76,
-    featured: false,
-    inStock: true,
-    description: "Xe máy điện Suzuki Burgman Electric 2024, mới 100%"
-  },
-  {
-    id: 16,
-    name: "Audi e-tron 2023",
-    type: "electric-car",
-    brand: "Audi",
-    image: "https://via.placeholder.com/300x200/C0C0C0/000000?text=Audi+e-tron",
-    originalPrice: "1.500.000.000₫",
-    salePrice: "1.350.000.000₫",
-    discount: 10,
-    rating: 4.9,
-    reviews: 167,
-    featured: false,
-    inStock: true,
-    description: "Xe hơi điện Audi e-tron 2023, đã qua sử dụng, tình trạng tốt"
-  },
-  {
-    id: 17,
-    name: "Sạc nhanh 72V 10A",
-    type: "battery-charger",
-    brand: "Bosch",
-    image: "https://via.placeholder.com/300x200/228B22/ffffff?text=Sac+72V",
-    originalPrice: "2.800.000₫",
-    salePrice: "2.200.000₫",
-    discount: 21,
-    rating: 4.5,
-    reviews: 38,
-    featured: false,
-    inStock: true,
-    description: "Sạc nhanh 72V 10A, sạc nhanh cho xe điện công suất lớn"
-  },
-  {
-    id: 18,
-    name: "Kính bảo hộ chống UV",
-    type: "accessories",
-    brand: "Oakley",
-    image: "https://via.placeholder.com/300x200/000000/ffffff?text=Kinh+Oakley",
-    originalPrice: "1.800.000₫",
-    salePrice: "1.200.000₫",
-    discount: 33,
-    rating: 4.6,
-    reviews: 63,
-    featured: false,
-    inStock: true,
-    description: "Kính bảo hộ chống UV Oakley, bảo vệ mắt khi đi xe"
-  },
-  {
-    id: 19,
-    name: "Dịch vụ thay pin",
-    type: "service",
-    brand: "ElectricStore",
-    image: "https://via.placeholder.com/300x200/DC143C/ffffff?text=Thay+Pin",
-    originalPrice: "1.000.000₫",
-    salePrice: "800.000₫",
-    discount: 20,
-    rating: 4.7,
-    reviews: 95,
-    featured: false,
-    inStock: true,
-    description: "Dịch vụ thay pin xe điện, bảo hành pin 2 năm"
-  },
-  {
-    id: 20,
-    name: "Kymco Like 150i Electric 2024",
-    type: "electric-scooter",
-    brand: "Kymco",
-    image: "https://via.placeholder.com/300x200/FF69B4/ffffff?text=Kymco+Like",
-    originalPrice: "35.000.000₫",
-    salePrice: "32.000.000₫",
-    discount: 9,
-    rating: 4.4,
-    reviews: 58,
-    featured: false,
-    inStock: true,
-    description: "Xe máy điện Kymco Like 150i Electric 2024, mới 100%"
-  },
-  {
-    id: 21,
-    name: "Mercedes EQC 2023",
-    type: "electric-car",
-    brand: "Mercedes",
-    image: "https://via.placeholder.com/300x200/000000/ffffff?text=Mercedes+EQC",
-    originalPrice: "1.800.000.000₫",
-    salePrice: "1.650.000.000₫",
-    discount: 8,
-    rating: 4.8,
-    reviews: 142,
-    featured: false,
-    inStock: true,
-    description: "Xe hơi điện Mercedes EQC 2023, đã qua sử dụng, tình trạng tốt"
+    image: "https://thanhnienviet.mediacdn.vn/zoom/700_438/uploads/2022_05/yamaha-e01-front-left-angle-view-7018.jpg",
+    price: "35.000.000₫",
+    description: "Xe máy điện Yamaha E01 2024, công nghệ tiên tiến, tiết kiệm điện",
+
+    vehicleInfo: {
+      year: "2024",
+      engineDisplacement: "65kW",
+      origin: "Nhật Bản",
+      mileage: "2000",
+    },
+
+    listingInfo: {
+      title: "Yamaha E01 2024 - Xe điện công nghệ cao",
+      detailedDescription: "- Xuất xứ: Nhật Bản, xe đã sử dụng 6 tháng\n- Bảo hành chính hãng còn 1.5 năm\n- Địa chỉ giao nhận: Đà Nẵng\n- Tình trạng xe rất tốt, ít sử dụng\n- Bảo trì tại Yamaha Service Center",
+      sellerAddress: "Đà Nẵng"
+    },
+
+    createdAt: "2024-02-10",
+    isActive: true
   }
 ];
+
+// Backward compatibility - giữ tên cũ để không break code hiện tại
+export const products = vehicleListings;

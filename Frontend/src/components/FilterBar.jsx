@@ -1,36 +1,16 @@
 import { useState, useEffect } from "react";
+import { ChevronDown } from "lucide-react";
+import { priceOptions, brandOptions, simpleOptions } from '../data/filterOptions';
+import './homepageContainer/styles/HomePage.css';
 
 const FilterBar = ({ onFilterChange }) => {
     const [activeFilters, setActiveFilters] = useState({
-        condition: null,
         priceRange: null,
         brand: null,
         vehicleType: null
     });
     const [showPriceDropdown, setShowPriceDropdown] = useState(false);
     const [showBrandDropdown, setShowBrandDropdown] = useState(false);
-
-    const priceOptions = [
-        { label: 'Dưới 10 triệu', value: 'under10m' },
-        { label: 'Dưới 20 triệu', value: 'under20m' },
-        { label: '20-50 triệu', value: '20m-50m' },
-        { label: 'Trên 50 triệu', value: 'over50m' }
-    ];
-
-    const brandOptions = [
-        { label: 'VinFast', value: 'vinfast' },
-        { label: 'Tesla', value: 'tesla' },
-        { label: 'Honda', value: 'honda' },
-        { label: 'Yamaha', value: 'yamaha' },
-        { label: 'Piaggio', value: 'piaggio' }
-    ];
-
-    const simpleOptions = [
-        { type: 'condition', label: 'Hàng mới', value: 'new' },
-        { type: 'vehicleType', label: 'Xe điện', value: 'xe-dien' },
-        { type: 'vehicleType', label: 'Xe hơi điện', value: 'xe-hoi-dien' },
-        { type: 'vehicleType', label: 'Pin', value: 'pin' }
-    ];
 
     const handleFilterClick = (type, value) => {
         const isCurrentlyActive = activeFilters[type] === value;
@@ -47,14 +27,18 @@ const FilterBar = ({ onFilterChange }) => {
                     cleanFilters[key] = newFilters[key];
                 }
             });
-            onFilterChange(cleanFilters);
+            if (typeof onFilterChange === "function") {
+                onFilterChange(cleanFilters);
+            }
         } else {
             // Nếu filter chưa active thì set nó
             const newFilters = { ...activeFilters, [type]: value };
             setActiveFilters(newFilters);
 
             // Gọi onFilterChange với danh sách filters
-            onFilterChange(newFilters);
+            if (typeof onFilterChange === "function") {
+                onFilterChange(newFilters);
+            }
         }
 
         setShowPriceDropdown(false);
@@ -63,14 +47,15 @@ const FilterBar = ({ onFilterChange }) => {
 
     const resetAll = () => {
         setActiveFilters({
-            condition: null,
             priceRange: null,
             brand: null,
             vehicleType: null
         });
         setShowPriceDropdown(false);
         setShowBrandDropdown(false);
-        onFilterChange({});
+        if (typeof onFilterChange === "function") {
+            onFilterChange({});
+        }
     };
 
     useEffect(() => {
@@ -89,79 +74,36 @@ const FilterBar = ({ onFilterChange }) => {
     }, [showPriceDropdown, showBrandDropdown]);
 
     return (
-        <div style={{ 
-          padding: '15px', 
-          background: '#fff', 
-          borderBottom: '1px solid #eee',
-        }}>
-            <div style={{ 
-              display: 'flex', 
-              gap: '10px', 
-              flexWrap: 'wrap', 
-              alignItems: 'center', 
-              justifyContent: 'flex-start',
-              minWidth: 'fit-content'
-            }}>
+        <div className="filter-bar-container">
+            <div className="filter-bar-content">
                 {/* Reset button */}
                 <button
                     onClick={resetAll}
-                    style={{
-                        padding: '8px 16px',
-                        background: '#2BB673',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '20px',
-                        cursor: 'pointer'
-                    }}
+                    className="filter-button"
                 >
                     Bộ lọc
                 </button>
 
                 {/* Price dropdown */}
-                <div style={{ position: 'relative' }} data-dropdown>
+                <div className="filter-dropdown-container" data-dropdown>
                     <button
                         onClick={() => {
                             setShowPriceDropdown(!showPriceDropdown);
                             setShowBrandDropdown(false);
                         }}
-                        style={{
-                            padding: '8px 16px',
-                            background: activeFilters.priceRange ? '#2BB673' : '#f5f5f5',
-                            color: activeFilters.priceRange ? 'white' : '#333',
-                            border: 'none',
-                            borderRadius: '20px',
-                            cursor: 'pointer',
-                            fontSize: '14px'
-                        }}
+                        className={`filter-button ${!activeFilters.priceRange ? 'filter-button-inactive' : ''}`}
                     >
-                        Giá tiền ▼
+                        Giá tiền
+                        <ChevronDown size={16} className="ms-2" />
                     </button>
 
                     {showPriceDropdown && (
-                        <div style={{
-                            position: 'absolute',
-                            top: '100%',
-                            left: '0',
-                            background: 'white',
-                            border: '1px solid #ddd',
-                            borderRadius: '8px',
-                            boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                            zIndex: 1000,
-                            minWidth: '150px'
-                        }}>
+                        <div className="filter-dropdown-menu">
                             {priceOptions.map((option, index) => (
                                 <button
                                     key={index}
                                     onClick={() => handleFilterClick('priceRange', option.value)}
-                                    style={{
-                                        width: '100%',
-                                        padding: '8px 12px',
-                                        border: 'none',
-                                        background: 'transparent',
-                                        cursor: 'pointer',
-                                        fontSize: '14px',
-                                        textAlign: 'left'
-                                    }}
+                                    className="filter-dropdown-item"
                                 >
                                     {option.label}
                                 </button>
@@ -171,50 +113,25 @@ const FilterBar = ({ onFilterChange }) => {
                 </div>
 
                 {/* Brand dropdown */}
-                <div style={{ position: 'relative' }} data-dropdown>
+                <div className="filter-dropdown-container" data-dropdown>
                     <button
                         onClick={() => {
                             setShowBrandDropdown(!showBrandDropdown);
                             setShowPriceDropdown(false);
                         }}
-                        style={{
-                            padding: '8px 16px',
-                            background: activeFilters.brand ? '#2BB673' : '#f5f5f5',
-                            color: activeFilters.brand ? 'white' : '#333',
-                            border: 'none',
-                            borderRadius: '20px',
-                            cursor: 'pointer',
-                            fontSize: '14px'
-                        }}
+                        className={`filter-button ${!activeFilters.brand ? 'filter-button-inactive' : ''}`}
                     >
-                        Hãng xe ▼
+                        Hãng xe
+                        <ChevronDown size={16} className="ms-2" />
                     </button>
 
                     {showBrandDropdown && (
-                        <div style={{
-                            position: 'absolute',
-                            top: '100%',
-                            left: '0',
-                            background: 'white',
-                            border: '1px solid #ddd',
-                            borderRadius: '8px',
-                            boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                            zIndex: 1000,
-                            minWidth: '120px'
-                        }}>
+                        <div className="filter-dropdown-menu brand">
                             {brandOptions.map((option, index) => (
                                 <button
                                     key={index}
                                     onClick={() => handleFilterClick('brand', option.value)}
-                                    style={{
-                                        width: '100%',
-                                        padding: '8px 12px',
-                                        border: 'none',
-                                        background: 'transparent',
-                                        cursor: 'pointer',
-                                        fontSize: '14px',
-                                        textAlign: 'left'
-                                    }}
+                                    className="filter-dropdown-item"
                                 >
                                     {option.label}
                                 </button>
@@ -231,15 +148,7 @@ const FilterBar = ({ onFilterChange }) => {
                         <button
                             key={index}
                             onClick={() => handleFilterClick(option.type, option.value)}
-                            style={{
-                                padding: '8px 16px',
-                                background: isActive ? '#2BB673' : '#f5f5f5',
-                                color: isActive ? 'white' : '#333',
-                                border: 'none',
-                                borderRadius: '20px',
-                                cursor: 'pointer',
-                                fontSize: '14px'
-                            }}
+                            className={`filter-button ${!isActive ? 'filter-button-inactive' : ''}`}
                         >
                             {option.label}
                         </button>

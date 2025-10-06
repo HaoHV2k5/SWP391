@@ -1,3 +1,8 @@
+/* ===========================================
+   LOGIN PAGE STYLES
+   File: src/pages/LoginPage.jsx, RegisterPage.jsx
+   =========================================== */
+
 /* Google Login Button custom style */
 .google-login-btn,
 .google-login-btn > div {
@@ -7,32 +12,11 @@
   box-shadow: 0 2px 8px #2196f344;
 }
 
-/* FPTShop Hero Section */
-.fpt-hero input[type="text"] {
-  border: 2px solid #2196f3;
-  background: #fff;
-  color: #222;
-  font-size: 1.1rem;
-  font-weight: 500;
-  transition: border 0.2s, box-shadow 0.2s;
-}
-.fpt-hero input[type="text"]:focus {
-  border: 2px solid #222;
-  box-shadow: 0 0 0 2px #2196f388;
-}
+/* ===========================================
+   GLOBAL STYLES
+   File: src/main.jsx, src/App.jsx
+   =========================================== */
 
-/* Section titles */
-.homepage h2 {
-  color: #2196f3 !important;
-  font-weight: 900;
-  letter-spacing: 1px;
-}
-
-/* Card highlight for FPTShop style */
-.card {
-  border: 2px solid #2196f3;
-  box-shadow: 0 4px 16px #2196f322;
-}
 * {
   margin: 0;
   padding: 0;
@@ -51,10 +35,14 @@ body {
   width: 100%;
   overflow-x: hidden;
 }
-/* Navbar Styles */
 
-/* FPTShop-inspired Navbar */
-.navbar.fpt-navbar {
+/* ===========================================
+   NAVBAR STYLES
+   File: src/components/Navbar.jsx
+   =========================================== */
+
+/* Navbar */
+.navbar.main-navbar {
   color: #fff;
   background: #222;
   padding: 0.5rem 0;
@@ -66,7 +54,7 @@ body {
   box-shadow: 0 4px 16px #2196f322;
 }
 
-.fpt-nav-container {
+.nav-container {
   max-width: 1300px;
   margin: 0 auto;
   padding: 0 2rem;
@@ -75,7 +63,7 @@ body {
   align-items: center;
 }
 
-.fpt-logo {
+.nav-logo {
   font-size: 2rem;
   font-weight: 900;
   text-decoration: none;
@@ -88,7 +76,7 @@ body {
   align-items: center;
 }
 
-.fpt-nav-links {
+.nav-links {
   display: flex;
   list-style: none;
   gap: 1.2rem;
@@ -99,7 +87,7 @@ body {
   align-items: center;
 }
 
-.fpt-nav-links a {
+.nav-links a {
   color: #fff;
   text-decoration: none;
   padding: 0.5rem 1.2rem;
@@ -112,11 +100,16 @@ body {
   background: none;
 }
 
-.fpt-nav-links a:hover {
+.nav-links a:hover {
   background: #2196f3;
   color: #fff;
   box-shadow: 0 2px 8px #2196f344;
 }
+
+/* ===========================================
+   CSS VARIABLES & THEME
+   File: Global usage across all components
+   =========================================== */
 
 /* ElectricStore Color Scheme - Recycling Green */
 :root {
@@ -129,8 +122,13 @@ body {
   --dark-green: #007A4B;
 }
 
-/* FPTShop Button style */
-.fpt-btn-login {
+/* ===========================================
+   BUTTON STYLES
+   File: src/components/homepageContainer/navigation/UserActions.jsx
+   =========================================== */
+
+/* Button style */
+.btn-login {
   background: #fff !important;
   color: #2196f3 !important;
   border: 2px solid #2196f3;
@@ -140,11 +138,11 @@ body {
   margin-left: 0.5rem;
   transition: background 0.2s, color 0.2s;
 }
-.fpt-btn-login:hover {
+.btn-login:hover {
   background: #2196f3 !important;
   color: #fff !important;
 }
-.fpt-btn-logout {
+.btn-logout {
   background: #222 !important;
   color: #fff !important;
   border: 2px solid #2196f3;
@@ -154,18 +152,15 @@ body {
   font-weight: 700;
   transition: background 0.2s, color 0.2s;
 }
-/* Google Login Button custom style */
-.google-login-btn,
-.google-login-btn > div {
-  width: 100% !important;
-  border-radius: 8px !important;
-  margin-bottom: 0.5rem;
-  box-shadow: 0 2px 8px rgba(0, 168, 107, 0.2);
-}
-.fpt-btn-logout:hover {
+.btn-logout:hover {
   background: #2196f3 !important;
   color: #fff !important;
 }
+
+/* ===========================================
+   COMMON COMPONENT STYLES
+   File: Multiple components across the app
+   =========================================== */
 
 .btn {
   padding: 0.75rem 1.5rem;
@@ -206,22 +201,12 @@ body {
   transform: translateY(-2px);
 }
 
-/* Card Styles */
-.card {
-  background: #fff;
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: var(--shadow);
-  border: 1px solid var(--border-color);
-  transition: all 0.3s ease;
-}
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-}
+/* ===========================================
+   FORM COMPONENT STYLES
+   File: src/pages/LoginPage.jsx, RegisterPage.jsx
+   =========================================== */
 
-/* Form Styles */
 .form-group {
   margin-bottom: 1.5rem;
 }
@@ -256,59 +241,14 @@ body {
   color: #333 !important;
 }
 
-/* Grid Layout */
-.grid {
-  display: grid;
-  gap: 2rem;
-}
 
-.grid-2 {
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-}
-
-.grid-3 {
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-}
-
-/* Homepage specific styles */
-.homepage {
-  width: 100%;
-  overflow-x: hidden;
-}
-
-.homepage section {
-  width: 100%;
-  max-width: 100%;
-}
+/* ===========================================
+   RESPONSIVE DESIGN
+   File: Global responsive styles for all components
+   =========================================== */
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .grid-2,
-  .grid-3 {
-    grid-template-columns: 1fr;
-    gap: 1.2rem;
-  }
-  
-  .card {
-    padding: 1.2rem;
-    border-radius: 8px;
-  }
-}
-
-/* Emphasis overrides */
-.fpt-btn-login {
-  background: #ffffff !important;
-  color: #0e1b2b !important;
-  border: 2px solid #2196f3 !important;
-  font-weight: 700 !important;
-  border-radius: 10px !important;
-  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.16) !important;
-}
-.fpt-btn-login:hover {
-  background: #e3f2fd !important;
-  color: #0e1b2b !important;
-  box-shadow: 0 6px 16px rgba(33, 150, 243, 0.22) !important;
-  
   .btn {
     padding: 0.6rem 1.2rem;
     font-size: 0.9rem;
@@ -316,15 +256,16 @@ body {
 }
 
 @media (max-width: 480px) {
-  .card {
-    padding: 1rem;
-  }
-  
   .btn {
     padding: 0.5rem 1rem;
     font-size: 0.8rem;
   }
 }
+
+/* ===========================================
+   ANIMATION CLASSES
+   File: Global usage across all components
+   =========================================== */
 
 /* Animation Classes */
 .fade-in {
@@ -356,6 +297,11 @@ body {
     transform: translateY(0);
   }
 }
+
+/* ===========================================
+   UTILITY CLASSES
+   File: Global usage across all components
+   =========================================== */
 
 /* Utility Classes */
 .text-center {
@@ -389,6 +335,11 @@ body {
 .p-3 { padding: 1.5rem; }
 .p-4 { padding: 2rem; }
 
+/* ===========================================
+   LOADING COMPONENT STYLES
+   File: Global loading states
+   =========================================== */
+
 /* Loading Spinner */
 .spinner {
   border: 3px solid #f3f3f3;
@@ -404,6 +355,11 @@ body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* ===========================================
+   TOAST NOTIFICATION STYLES
+   File: Global toast notifications
+   =========================================== */
 
 /* Toast Notification Overrides */
 .Toastify__toast--success {
