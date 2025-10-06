@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { User, LogOut, Search, ShoppingCart, PhoneCall, Menu, MapPin } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { categoryData } from '../data/homepageData';
 import SearchBar from './homepageContainer/navigation/SearchBar';
 import CategoryDropdown from './homepageContainer/navigation/CategoryDropdown';
@@ -9,12 +9,14 @@ import UserActions from './homepageContainer/navigation/UserActions';
 import NavbarActions from './homepageContainer/navigation/NavbarActions';
 import TopBar from './TopBar';
 import './homepageContainer/styles/TopInfo.css';
+import LoginButton from "./member/LoginButton";
+import UserDropdown from "./member/UserDropdown";
+import GuestDropdown from "./member/GuestDropdown";
 
 const logoImage = '/logo_removeBg.png';
 
 const Navbar = ({ user, onLogout }) => {
   const [showLocationModal, setShowLocationModal] = useState(false);
-
 
   return (
     <>
@@ -54,6 +56,15 @@ const Navbar = ({ user, onLogout }) => {
           {/* Right Section - Icons and User Actions */}
           <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
             <NavbarActions />
+            
+            {/* Member Components - Chỉ thêm chức năng member */}
+            {!user && <LoginButton />}
+            {user ? (
+              <UserDropdown user={user} onLogout={onLogout} />
+            ) : (
+              <GuestDropdown />
+            )}
+            
             <UserActions />
           </div>
         </div>
