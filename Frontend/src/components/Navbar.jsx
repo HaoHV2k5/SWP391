@@ -3,6 +3,7 @@ import { User, LogOut, Search, ShoppingCart, PhoneCall, Menu, MapPin } from "luc
 import { useState, useEffect } from "react";
 import { categoryData } from '../data/homepagedata';
 import MemberDropdown from "./MemberDropdown";
+import LoginButton from "./member/LoginButton";
 
 const logoImage = '/logo_removeBg.png';
 
@@ -241,6 +242,9 @@ const Navbar = ({ user, onLogout }) => {
                 </div>
               )}
             </div>
+
+            {/* Login Button - Only show when user is not logged in */}
+            {!user && <LoginButton />}
 
             {/* User Profile/Login/Register */}
             {user ? (
