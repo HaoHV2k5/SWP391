@@ -1,7 +1,7 @@
 import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
-import { bannerData } from '../data/homepagedata';
+import { bannerData } from '../data/homepageData';
 
 // Import Swiper styles
 import 'swiper/css';
@@ -17,7 +17,7 @@ const Banner = () => {
         slidesPerView={1}
         navigation={true}
         pagination={{ clickable: true }}
-        autoplay={{delay: 3000}}
+        autoplay={{delay: 5000}}
         loop={true}
       >
         {bannerData.map((banner) => (

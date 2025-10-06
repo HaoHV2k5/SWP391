@@ -1,5 +1,5 @@
 import React from 'react';
-import { APP_CONSTANTS } from '../../../data/homepagedata';
+import { appConstants } from '../../../data/homepageData';
 
 const NavbarLogo = () => {
   return (
@@ -15,8 +15,8 @@ const NavbarLogo = () => {
       
       {/* Tên ứng dụng */}
       <div className="app-name">
-        <h4 className="mb-0 text-primary fw-bold">{APP_CONSTANTS.APP_NAME}</h4>
-        <small className="text-muted">{APP_CONSTANTS.TAGLINE}</small>
+        <h4 className="mb-0 text-primary fw-bold">{appConstants.APP_NAME}</h4>
+        <small className="text-muted">{appConstants.TAGLINE}</small>
       </div>
     </div>
   );

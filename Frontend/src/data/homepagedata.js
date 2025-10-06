@@ -24,46 +24,24 @@ export const bannerData = [
 
 // Category data cho dropdown menu
 export const categoryData = {
-  "electric-scooter": {
-    title: "🛵 Xe máy điện",
+  "xe-co": {
+    title: "🪪 Xe cộ",
+    children: {
+      "electric-scooter": { title: "🛵 Xe máy điện" },
+      "electric-car": { title: "🚗 Xe hơi điện" },
+      "electric-bicycle": { title: "🚴 Xe đạp điện" },
+    }
   },
-  "electric-car": {
-    title: "🚗 Xe hơi điện",
+  "phu-kien-&-dich-vu": {
+    title: "📦 Phụ kiện & dịch vụ",
+    children: {
+      "battery-charger": { title: "🔋 Ắc quy" },
+      "accessories": { title: "🛡️ Bảo vệ" },
+      "service": { title: "🔧 Dịch vụ" },
+    }
   },
-  "battery-charger": {
-    title: "🔋 Ắc quy",
-  },
-  "accessories": {
-    title: "🛡️ Phụ kiện & Bảo vệ",
-  },
-  "service": {
-    title: "🔧 Dịch vụ",
-  }
 };
 
-// Services data
-export const servicesData = [
-  { 
-    icon: "truck", 
-    title: "Giao hàng nhanh", 
-    description: "Miễn phí cho đơn từ 500k" 
-  },
-  { 
-    icon: "shield", 
-    title: "Bảo hành chính hãng", 
-    description: "1-2 năm tùy sản phẩm" 
-  },
-  { 
-    icon: "refresh-cw", 
-    title: "Đổi trả dễ dàng", 
-    description: "7 ngày đổi trả miễn phí" 
-  },
-  { 
-    icon: "headphones", 
-    title: "Hỗ trợ 24/7", 
-    description: "Hotline: 1900-xxxx" 
-  }
-];
 
 // Store locations data
 export const storeLocations = [
@@ -91,9 +69,17 @@ export const storeLocations = [
 ];
 
 // App constants
-export const APP_CONSTANTS = {
+export const appConstants = {
   APP_NAME: "ElectricStore",
   TAGLINE: "Xe điện & Pin chính hãng",
   PHONE: "1900-xxxx",
   EMAIL: "support@electricstore.com"
 };
+
+//TopInfo data
+export const messages = [
+  "⚡ Xe & Pin đã qua sử dụng — Kiểm tra kỹ, giá tốt",
+  "🔋 Pin còn tốt — Thay thế, bảo hành và test trước khi giao",
+  "🔁 Thu cũ giá hợp lý — Đổi mới tiết kiệm cho khách hàng",
+  "🚚 Giao dịch nhanh, hỗ trợ kiểm tra tại chỗ — Uy tín, an tâm"
+  ];
