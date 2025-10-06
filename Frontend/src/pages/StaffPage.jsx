@@ -27,7 +27,7 @@ const StaffPage = ({ user }) => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Kiểm tra authentication
 
   // ========================================
-  // 📊 MOCK DATA - Dữ liệu giả lập để demo
+  // MOCK DATA - Dữ liệu giả lập để demo
   // ========================================
   const [stats, setStats] = useState({
     totalOrders: 156, // Tổng số đơn hàng
@@ -287,10 +287,7 @@ const StaffPage = ({ user }) => {
               getPriorityColor={getPriorityColor}
             />
           )}
-
-          {/* ======================================== */}
-          {/* 📋 ORDERS TAB - Tab quản lý đơn hàng */}
-          {/* ======================================== */}
+          {/*ORDERS TAB - Tab quản lý đơn hàng */}
           {activeTab === "orders" && (
             <div className="staff-card">
               <div
@@ -408,9 +405,7 @@ const StaffPage = ({ user }) => {
             </div>
           )}
 
-          {/* ======================================== */}
-          {/* 👥 CUSTOMERS TAB - Tab quản lý khách hàng */}
-          {/* ======================================== */}
+          {/* CUSTOMERS TAB - Tab quản lý khách hàng */}
           {activeTab === "customers" && (
             <div className="staff-card">
               <div
@@ -507,9 +502,7 @@ const StaffPage = ({ user }) => {
             </div>
           )}
 
-          {/* ======================================== */}
-          {/* 📦 PRODUCTS TAB - Tab quản lý sản phẩm */}
-          {/* ======================================== */}
+          {/*PRODUCTS TAB - Tab quản lý sản phẩm */}
           {activeTab === "products" && (
             <div className="staff-card">
               <div

@@ -1,7 +1,7 @@
 import { Search, Bell, Settings } from "lucide-react";
 
 const StaffHeader = ({ activeTab, searchQuery, setSearchQuery }) => {
-  // 📋 PAGE TITLE - Lấy title theo activeTab
+  //PAGE TITLE - Lấy title theo activeTab
 
   const getPageTitle = () => {
     switch (activeTab) {
@@ -17,7 +17,7 @@ const StaffHeader = ({ activeTab, searchQuery, setSearchQuery }) => {
         return "Staff Panel";
     }
   };
-  // 🎨 RENDER - Giao diện header
+  //RENDER - Giao diện header
 
   return (
     <div
@@ -34,9 +34,7 @@ const StaffHeader = ({ activeTab, searchQuery, setSearchQuery }) => {
         alignItems: "center",
       }}
     >
-      {/* ======================================== */}
-      {/* 📝 PAGE TITLE - Tiêu đề trang */}
-      {/* ======================================== */}
+      {/* PAGE TITLE - Tiêu đề trang */}
       <h1
         style={{
           color: "#ffffff",
@@ -48,14 +46,10 @@ const StaffHeader = ({ activeTab, searchQuery, setSearchQuery }) => {
       >
         {getPageTitle()}
       </h1>
+      {/*HEADER ACTIONS - Các action buttons */}
 
-      {/* ======================================== */}
-      {/* 🔧 HEADER ACTIONS - Các action buttons */}
-      {/* ======================================== */}
       <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-        {/* ======================================== */}
-        {/* 🔍 SEARCH BAR - Thanh tìm kiếm */}
-        {/* ======================================== */}
+        {/*SEARCH BAR - Thanh tìm kiếm */}
         <div style={{ position: "relative" }}>
           <Search
             size={20}
@@ -84,10 +78,7 @@ const StaffHeader = ({ activeTab, searchQuery, setSearchQuery }) => {
             }}
           />
         </div>
-
-        {/* ======================================== */}
-        {/* 🔔 NOTIFICATIONS - Button thông báo */}
-        {/* ======================================== */}
+        {/* NOTIFICATIONS - Button thông báo */}
         <button
           style={{
             padding: "0.75rem",
@@ -127,7 +118,7 @@ const StaffHeader = ({ activeTab, searchQuery, setSearchQuery }) => {
           </div>
         </button>
 
-        {/* ⚙️ SETTINGS - Button cài đặt */}
+        {/* SETTINGS - Button cài đặt */}
         <button
           style={{
             padding: "0.75rem",
