@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Badge } from 'react-bootstrap';
-import { MapPin, Package, Bell, ShoppingCart } from 'lucide-react';
+import { MapPin, Package, Bell, Heart } from 'lucide-react';
 import StoreLocationModal from './StoreLocationModal';
 
 const NavbarActions = () => {
@@ -19,15 +19,6 @@ const NavbarActions = () => {
           <span className="d-none d-md-inline">Cửa hàng gần bạn</span>
         </Button>
 
-        {/* Tra cứu đơn hàng */}
-        <Button
-          variant="link"
-          className="text-decoration-none text-dark d-flex align-items-center"
-        >
-          <Package size={18} className="me-1" />
-          <span className="d-none d-md-inline">Tra cứu đơn hàng</span>
-        </Button>
-
         {/* Thông báo */}
         <Button
           variant="link"
@@ -43,12 +34,12 @@ const NavbarActions = () => {
           </Badge>
         </Button>
 
-        {/* Giỏ hàng */}
+        {/* Wishlist */}
         <Button
           variant="link"
           className="text-decoration-none text-dark position-relative"
         >
-          <ShoppingCart size={18} />
+          <Heart size={20} />
           <Badge 
             bg="danger" 
             className="position-absolute top-0 start-100 translate-middle rounded-pill"
