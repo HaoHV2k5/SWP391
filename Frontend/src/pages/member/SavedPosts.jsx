@@ -1,0 +1,352 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Container, Row, Col, Card, Button, Badge, Alert, Spinner } from "react-bootstrap";
+import { toast } from "react-toastify";
+import MemberHeader from "../../components/member/MemberHeader";
+import "../../styles/member/index.css";
+
+const SavedPosts = ({ user }) => {
+  const navigate = useNavigate();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  // Mock data for saved posts
+  const [savedPosts, setSavedPosts] = useState([
+    {
+      id: 1,
+      title: "Yamaha E01 2023 - Xe máy điện cao cấp",
+      price: 35000000,
+      category: "Xe máy điện",
+      seller: "Nguyễn Văn A",
+      location: "Quận 1, TP.HCM",
+      savedDate: "2024-01-15",
+      image: "https://vn.e-scooter.co/i/ya/ma/yamaha-e01/full/yamaha-e01-front-left-angle-view.webp",
+      isAvailable: true
+    },
+    {
+      id: 2,
+      title: "Tesla Model 3 2022 - Xe điện sang trọng",
+      price: 980000000,
+      category: "Ô tô điện",
+      seller: "Trần Thị B",
+      location: "Quận 7, TP.HCM",
+      savedDate: "2024-01-18",
+      image: "https://mkt-vehicleimages-prd.autotradercdn.ca/photos/chrome/Expanded/White/2022TSC030022/2022TSC03002201.jpg",
+      isAvailable: true
+    },
+    {
+      id: 3,
+      title: "BMW i3 2023 - Xe điện Đức",
+      price: 1200000000,
+      category: "Ô tô điện",
+      seller: "Lê Văn C",
+      location: "Quận 3, TP.HCM",
+      savedDate: "2024-01-20",
+      image: "https://www.bmw.com/content/dam/bmw/common/all-models/i-series/i3/2022/highlights/bmw-i3-highlights-01.jpg",
+      isAvailable: false // Tin đã bán hoặc hết hạn
+    },
+    {
+      id: 4,
+      title: "VinFast VF8 2023 - SUV điện Việt Nam",
+      price: 1200000000,
+      category: "Ô tô điện",
+      seller: "Phạm Thị D",
+      location: "Quận 2, TP.HCM",
+      savedDate: "2024-01-22",
+      image: "/logo.jpg",
+      isAvailable: true
+    }
+  ]);
+
+  useEffect(() => {
+    console.log("=== SavedPosts useEffect ===");
+    
+    if (!user) {
+      console.log("⏳ No user yet, waiting...");
+      setIsCheckingAuth(true);
+      const timer = setTimeout(() => {
+        if (!user) {
+          console.log("❌ Still no user after timeout, redirecting to login");
+          navigate("/login");
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+
+    setIsCheckingAuth(false);
+
+    // Kiểm tra role
+    let userRole = null;
+    if (user.user && user.user.role) {
+      userRole = user.user.role;
+    } else if (user.role) {
+      userRole = user.role;
+    }
+
+    if (userRole !== "member" && userRole !== "admin") {
+      console.log("❌ User role is not member or admin:", userRole);
+      navigate("/");
+      return;
+    }
+
+    console.log("✅ Saved posts access granted");
+  }, [user, navigate]);
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("vi-VN");
+  };
+
+  const handleRemoveFromSaved = async (postId) => {
+    setLoading(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setSavedPosts(savedPosts.filter(post => post.id !== postId));
+      toast.success("Đã bỏ lưu tin đăng!");
+    } catch (error) {
+      toast.error("Có lỗi xảy ra khi bỏ lưu tin đăng!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleContactSeller = (post) => {
+    if (!post.isAvailable) {
+      toast.warning("Tin đăng này không còn khả dụng!");
+      return;
+    }
+    toast.info(`Liên hệ với ${post.seller} về tin: ${post.title}`);
+  };
+
+  const handleViewPost = (post) => {
+    if (!post.isAvailable) {
+      toast.warning("Tin đăng này không còn khả dụng!");
+      return;
+    }
+    toast.info("Chuyển đến trang chi tiết tin đăng...");
+  };
+
+  const handleTabChange = (tabId) => {
+    switch (tabId) {
+      case "dashboard":
+        navigate("/account");
+        break;
+      case "my-posts":
+        navigate("/member/my-posts");
+        break;
+      case "saved-posts":
+        navigate("/member/saved-posts");
+        break;
+      case "search-history":
+        navigate("/member/search-history");
+        break;
+      case "view-history":
+        navigate("/member/view-history");
+        break;
+      case "orders":
+        navigate("/member/orders");
+        break;
+      case "profile":
+        navigate("/member/profile");
+        break;
+      default:
+        navigate("/account");
+    }
+  };
+
+  if (isCheckingAuth) {
+    return (
+      <Container fluid className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
+        <div className="text-center">
+          <Spinner animation="border" variant="success" className="mb-3" />
+          <p className="text-muted">Đang kiểm tra quyền truy cập...</p>
+        </div>
+      </Container>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <Container fluid className="p-0 bg-light" style={{ minHeight: "100vh" }}>
+      <div className="p-4">
+            {/* Header */}
+            <MemberHeader activeTab="saved-posts" />
+
+            {/* Stats Card */}
+            <Row className="g-4 mb-4">
+              <Col lg={3} md={6}>
+                <Card className="text-white border-0 h-100" style={{ background: "linear-gradient(135deg, #e91e63 0%, #c2185b 100%)" }}>
+                  <Card.Body className="text-center p-3">
+                    <h4 className="fw-bold mb-1">{savedPosts.length}</h4>
+                    <small className="opacity-75">Tin đã lưu</small>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col lg={3} md={6}>
+                <Card className="text-white border-0 h-100" style={{ background: "linear-gradient(135deg, #00A86B 0%, #2BB673 100%)" }}>
+                  <Card.Body className="text-center p-3">
+                    <h4 className="fw-bold mb-1">{savedPosts.filter(p => p.isAvailable).length}</h4>
+                    <small className="opacity-75">Tin còn khả dụng</small>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col lg={3} md={6}>
+                <Card className="text-white border-0 h-100" style={{ background: "linear-gradient(135deg, #6c757d 0%, #5a6268 100%)" }}>
+                  <Card.Body className="text-center p-3">
+                    <h4 className="fw-bold mb-1">{savedPosts.filter(p => !p.isAvailable).length}</h4>
+                    <small className="opacity-75">Tin hết hạn</small>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col lg={3} md={6}>
+                <Card className="text-white border-0 h-100" style={{ background: "linear-gradient(135deg, #ff9800 0%, #f57c00 100%)" }}>
+                  <Card.Body className="text-center p-3">
+                    <h4 className="fw-bold mb-1">{new Set(savedPosts.map(p => p.category)).size}</h4>
+                    <small className="opacity-75">Danh mục</small>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+
+            {/* Page Title */}
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h3 className="h5 mb-0 text-dark">Tin đã lưu ({savedPosts.length})</h3>
+              <Button 
+                variant="outline-success" 
+                onClick={() => navigate("/")}
+                className="px-4"
+              >
+                Tìm tin mới
+              </Button>
+            </div>
+
+            {/* Saved Posts List */}
+            {savedPosts.length === 0 ? (
+              <Alert variant="info" className="text-center py-5">
+                <h5>Bạn chưa lưu tin đăng nào</h5>
+                <p className="mb-3">Hãy lưu những tin đăng yêu thích để xem lại sau!</p>
+                <Button variant="success" onClick={() => navigate("/")}>
+                  Khám phá tin đăng
+                </Button>
+              </Alert>
+            ) : (
+              <Row className="g-4">
+                {savedPosts.map((post) => (
+                  <Col lg={6} key={post.id}>
+                    <Card className={`h-100 shadow-sm border-0 ${!post.isAvailable ? 'opacity-75' : ''}`}>
+                      <Row className="g-0 h-100">
+                        <Col md={4}>
+                          <div 
+                            className="h-100 bg-light d-flex align-items-center justify-content-center position-relative"
+                            style={{ 
+                              backgroundImage: `url(${post.image})`,
+                              backgroundSize: "cover",
+                              backgroundPosition: "center",
+                              minHeight: "200px"
+                            }}
+                          >
+                            {!post.image && <span className="text-muted">📷</span>}
+                            {!post.isAvailable && (
+                              <div className="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
+                                <Badge bg="secondary" className="px-3 py-2">
+                                  Không khả dụng
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+                        </Col>
+                        <Col md={8}>
+                          <Card.Body className="p-3 d-flex flex-column h-100">
+                            <div className="flex-grow-1">
+                              <div className="d-flex justify-content-between align-items-start mb-2">
+                                {post.isAvailable ? (
+                                  <Badge bg="success" className="mb-2">
+                                    Còn hàng
+                                  </Badge>
+                                ) : (
+                                  <Badge bg="secondary" className="mb-2">
+                                    Hết hạn
+                                  </Badge>
+                                )}
+                                <Button
+                                  variant="link"
+                                  className="text-danger p-0 border-0"
+                                  onClick={() => handleRemoveFromSaved(post.id)}
+                                  disabled={loading}
+                                  title="Bỏ lưu"
+                                >
+                                  ×
+                                </Button>
+                              </div>
+                              
+                              <h6 className="card-title text-truncate mb-2">{post.title}</h6>
+                              <p className="text-success fw-bold mb-2">{formatCurrency(post.price)}</p>
+                              <p className="text-muted small mb-2">
+                                {post.seller}
+                              </p>
+                              <p className="text-muted small mb-2">
+                                {post.location} • {post.category}
+                              </p>
+                              <p className="text-muted small">
+                                Lưu ngày: {formatDate(post.savedDate)}
+                              </p>
+                            </div>
+                            
+                            <div className="mt-3 pt-2 border-top">
+                              <div className="d-flex gap-2">
+                                <Button
+                                  variant="outline-success"
+                                  size="sm"
+                                  className="flex-fill"
+                                  onClick={() => handleViewPost(post)}
+                                  disabled={!post.isAvailable}
+                                >
+                                  Xem tin
+                                </Button>
+                                <Button
+                                  variant="success"
+                                  size="sm"
+                                  className="flex-fill"
+                                  onClick={() => handleContactSeller(post)}
+                                  disabled={!post.isAvailable}
+                                >
+                                  Liên hệ
+                                </Button>
+                              </div>
+                            </div>
+                          </Card.Body>
+                        </Col>
+                      </Row>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            )}
+
+            {/* Tips */}
+            <Alert variant="light" className="mt-4 border-success">
+              <h6 className="text-success mb-2">Mẹo sử dụng:</h6>
+              <ul className="mb-0 small">
+                <li>Lưu những tin đăng yêu thích để theo dõi thường xuyên</li>
+                <li>Kiểm tra tình trạng tin đăng định kỳ để không bỏ lỡ cơ hội</li>
+                <li>Liên hệ người bán sớm để có cơ hội mua được sản phẩm tốt</li>
+                <li>So sánh giá giữa các tin đăng tương tự trước khi quyết định</li>
+              </ul>
+            </Alert>
+          </div>
+    </Container>
+  );
+};
+
+export default SavedPosts;
