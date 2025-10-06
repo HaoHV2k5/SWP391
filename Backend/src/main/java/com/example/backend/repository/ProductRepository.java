@@ -31,6 +31,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findAllBySellerId(Long id);
 
+    @Query("select p from Product p where p.productType = 'VEHICLE' and p.vehicle.model = ?1 and p.vehicle.brand = ?2")
+    List<Product> findByBrandAndModel(String model, String brand);
 
 
     // Tìm sản phẩm active để hiển thị
