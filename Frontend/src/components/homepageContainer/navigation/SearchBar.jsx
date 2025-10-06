@@ -16,18 +16,14 @@ const SearchBar = () => {
       <InputGroup>
         <Form.Control
           type="text"
-          placeholder="Tìm kiếm xe điện, pin, thương hiệu..."
+          placeholder="Tìm kiếm..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="border-end-0"
         />
-        <Button 
-          variant="outline-secondary" 
-          type="submit"
-          className="border-start-0"
-        >
+        <InputGroup.Text className="bg-white border-end-0">
           <Search size={18} />
-        </Button>
+        </InputGroup.Text>
       </InputGroup>
     </Form>
   );

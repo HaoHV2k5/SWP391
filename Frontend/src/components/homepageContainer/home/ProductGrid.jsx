@@ -3,10 +3,7 @@ import { Row, Col } from 'react-bootstrap';
 import ProductCard from './ProductCard';
 
 const ProductGrid = ({ products, filteredProducts = [], hasActiveFilters = false }) => {
-  // Logic display products:
-  // - Nếu không có active filters: hiển thị tất cả products
-  // - Nếu có active filters nhưng không có kết quả: hiển thị thông báo "Không tìm thấy"
-  // - Nếu có active filters và có kết quả: hiển thị kết quả
+  // Logic display products: hiển thị sản phẩm đã lọc khi có filter, ngược lại hiển thị tất cả
   const displayProducts = hasActiveFilters ? filteredProducts : products;
   const showEmptyState = hasActiveFilters && filteredProducts.length === 0;
 
@@ -19,17 +16,15 @@ const ProductGrid = ({ products, filteredProducts = [], hasActiveFilters = false
           marginBottom: "20px",
           color: "#333"
         }}>
-          {showEmptyState ? "Không tìm thấy sản phẩm" : "Sản phẩm nổi bật"}
-          {hasActiveFilters && filteredProducts.length > 0 && (
-            <span style={{ 
-              fontSize: "16px", 
-              fontWeight: "normal", 
-              color: "#666",
-              marginLeft: "10px"
-            }}>
-              ({filteredProducts.length} sản phẩm)
-            </span>
-          )}
+          {showEmptyState ? "Không tìm thấy tin đăng" : "Tin đăng xe điện"}
+          <span style={{ 
+            fontSize: "16px", 
+            fontWeight: "normal", 
+            color: "#666",
+            marginLeft: "10px"
+          }}>
+            ({displayProducts.length} tin đăng)
+          </span>
         </h2>
         
         <div style={{ 
