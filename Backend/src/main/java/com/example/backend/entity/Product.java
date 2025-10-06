@@ -33,7 +33,7 @@ public class Product {
     private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 40)
     private ProductType productType;
 
     @Enumerated(EnumType.STRING)
