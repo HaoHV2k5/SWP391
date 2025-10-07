@@ -1,7 +1,5 @@
-import FilterBar from "../components/FilterBar";
 import Banner from "../components/Banner";
 import ProductGrid from "../components/homepageContainer/home/ProductGrid";
-import useProductFilter from "../hooks/useProductFilter";
 import { vehicleListings } from "../data/productsData";
 import "../components/homepageContainer/styles/HomePage.css";
 
@@ -75,17 +73,8 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Filter Bar Section */}
-      <FilterBar onFilterChange={handleFilterChange} />
-
       {/* Vehicle Listings Section */}
-      <ProductGrid
-        products={activeListings}
-        filteredProducts={filteredProducts}
-        hasActiveFilters={Object.values(filters).some(
-          (filter) => filter !== null && filter !== ""
-        )}
-      />
+      <ProductGrid products={activeListings} />
     </div>
   );
 };

@@ -9,6 +9,7 @@ import com.example.backend.service.TagsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -29,6 +30,13 @@ public class SearchController {
     public ApiResponse<List<ProductResponse>> findBySlugs(@PathVariable String slugs) {
         List<ProductResponse> list = searchService.getProductByTagSlug(slugs);
         return  ApiResponse.<List<ProductResponse>>builder().data(list).build();
+    }
+
+    @GetMapping("/vehicle/search")
+    public ApiResponse<List<ProductResponse>> searchByVehicle(@RequestParam String request) {
+        List<ProductResponse> list = searchService.searchVehicles(request);
+        return  ApiResponse.<List<ProductResponse>>builder().data(list).build();
+
     }
 
 

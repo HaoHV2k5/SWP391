@@ -1,14 +1,34 @@
-import React, { useState } from 'react';
-import { Button, Badge } from 'react-bootstrap';
-import { MapPin, Package, Bell, Heart } from 'lucide-react';
-import StoreLocationModal from './StoreLocationModal';
+import React, { useState, useEffect } from "react";
+import { Button, Badge } from "react-bootstrap";
+import { MapPin, Bell, Heart } from "lucide-react";
+import StoreLocationModal from "./StoreLocationModal";
+import SavedPopup from "../layout/SavedPopup";
+import { useSavedProducts } from "../contexts/SavedProductsContext";
 
 const NavbarActions = () => {
   const [showStoreModal, setShowStoreModal] = useState(false);
+  const [showSavedPopup, setShowSavedPopup] = useState(false);
+  const { savedProducts } = useSavedProducts();
+
+  // Toggle popup khi click trái tim
+  const handleToggleSaved = () => {
+    setShowSavedPopup((prev) => !prev);
+  };
+
+  // Ẩn popup khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest(".saved-popup") && !e.target.closest(".btn-heart")) {
+        setShowSavedPopup(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   return (
     <>
-      <div className="d-flex align-items-center gap-3">
+      <div className="d-flex align-items-center gap-3 position-relative">
         {/* Cửa hàng gần bạn */}
         <Button
           variant="link"
@@ -25,35 +45,44 @@ const NavbarActions = () => {
           className="text-decoration-none text-dark position-relative"
         >
           <Bell size={18} />
-          <Badge 
-            bg="danger" 
+          <Badge
+            bg="danger"
             className="position-absolute top-0 start-100 translate-middle rounded-pill"
-            style={{ fontSize: '10px' }}
+            style={{ fontSize: "10px" }}
           >
             0
           </Badge>
         </Button>
 
         {/* Wishlist */}
-        <Button
-          variant="link"
-          className="text-decoration-none text-dark position-relative"
-        >
-          <Heart size={20} />
-          <Badge 
-            bg="danger" 
-            className="position-absolute top-0 start-100 translate-middle rounded-pill"
-            style={{ fontSize: '10px' }}
+        <div className="position-relative">
+          <Button
+            variant="link"
+            className="text-decoration-none text-dark position-relative btn-heart"
+            onClick={handleToggleSaved}
           >
-            0
-          </Badge>
-        </Button>
+            <Heart size={20} />
+            <Badge
+              bg="danger"
+              className="position-absolute top-0 start-100 translate-middle rounded-pill"
+              style={{ fontSize: "10px" }}
+            >
+              {savedProducts.length}
+            </Badge>
+          </Button>
+
+          {showSavedPopup && (
+            <div className="saved-popup position-absolute mt-2" style={{ top: "100%", left: "50%", transform: "translateX(-50%)" }}>
+              <SavedPopup />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Modal cửa hàng gần bạn */}
-      <StoreLocationModal 
-        show={showStoreModal} 
-        onHide={() => setShowStoreModal(false)} 
+      <StoreLocationModal
+        show={showStoreModal}
+        onHide={() => setShowStoreModal(false)}
       />
     </>
   );
