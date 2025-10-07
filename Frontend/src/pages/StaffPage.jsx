@@ -15,7 +15,7 @@ import {
   UserCheck,
 } from "lucide-react";
 
-const StaffPage = ({ user }) => {
+const StaffPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
 
   // ========================================
@@ -258,14 +258,7 @@ const StaffPage = ({ user }) => {
           user={user}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          onLogout={() => {
-            localStorage.removeItem("token");
-            localStorage.removeItem("userData");
-            toast.success("Đăng xuất thành công!");
-            setTimeout(() => {
-              navigate("/login");
-            }, 1000);
-          }}
+          onLogout={onLogout}
         />
         {/*MAIN CONTENT - Nội dung chính */}
 
