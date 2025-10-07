@@ -2,25 +2,21 @@
 export const vehicleListings = [
   {
     id: 1,
-    name: "VinFast Klara S 2023",
-    type: "electric-scooter",
     brand: "VinFast",
-    image: "https://img.tinxe.vn/resize/1000x-/2021/08/26/XForF7yt/vinfast-klara-a2-2-024a.png",
+    year: "2023",
+    type: "electric-scooter",
+    mileage: "5000",
     price: "18.500.000₫",
-    description: "Xe máy điện VinFast Klara S 2023, đã qua sử dụng 1 năm, tình trạng tốt",
+    image: "https://img.tinxe.vn/resize/1000x-/2021/08/26/XForF7yt/vinfast-klara-a2-2-024a.png",
 
     // Thông tin chi tiết xe
     vehicleInfo: {
-      year: "2023", // Năm sản xuất
-      engineDisplacement: "50kW", // Dung tích xe
-      origin: "Việt Nam", // Xuất xứ
-      mileage: "5000", // Số Km đã đi
+      title: "VinFast Klara S 2023",
+      description: "Xe máy điện VinFast Klara S 2023, đã qua sử dụng 1 năm, tình trạng tốt",
     },
 
-    // Thông tin tin đăng
-    listingInfo: {
-      title: "VinFast Klara S 2023 - Xe điện tiết kiệm",
-      detailedDescription: "- Xuất xứ: Việt Nam, tình trạng xe còn rất tốt\n- Bảo hành chính hãng còn 1 năm\n- Địa chỉ giao nhận: Hà Nội\n- Thời gian sử dụng: 8 tháng\n- Bảo trì định kỳ tại VinFast",
+    // Thông tin người dùng
+    SellerInfo: {
       sellerAddress: "Hà Nội"
     },
 
@@ -30,23 +26,21 @@ export const vehicleListings = [
 
   {
     id: 2,
-    name: "Honda PCX Electric 2024",
-    type: "electric-scooter",
     brand: "Honda",
-    image: "https://xexangchaydien.com/wp-content/uploads/2023/07/Honda-PCX-Electric.png",
+    year: "2024",
+    type: "electric-scooter",
+    mileage: "0",
     price: "42.000.000₫",
-    description: "Xe máy điện Honda PCX Electric 2024, mới 100%, bảo hành chính hãng",
+    image: "https://xexangchaydien.com/wp-content/uploads/2023/07/Honda-PCX-Electric.png",
 
+    // Thông tin chi tiết xe
     vehicleInfo: {
-      year: "2024",
-      engineDisplacement: "75kW",
-      origin: "Nhật Bản",
-      mileage: "0",
+      title: "Honda PCX Electric 2024",
+      description: "Xe máy điện Honda PCX Electric 2024, mới 100%, bảo hành chính hãng",
     },
 
-    listingInfo: {
-      title: "Honda PCX Electric 2024 - Xe điện cao cấp",
-      detailedDescription: "- Xuất xứ: Nhật Bản, xe mới 100%\n- Bảo hành chính hãng 2 năm\n- Địa chỉ giao nhận: TP.HCM\n- Xe mới chưa sử dụng\n- Bảo trì tại Honda Service Center",
+    // Thông tin người dùng
+    SellerInfo: {
       sellerAddress: "TP.HCM"
     },
 
@@ -56,23 +50,21 @@ export const vehicleListings = [
 
   {
     id: 3,
-    name: "Tesla Model 3 2023",
-    type: "electric-car",
     brand: "Tesla",
-    image: "https://giaxedien.com/wp-content/uploads/2023/11/tesla-model-3-thumb.png",
+    year: "2023",
+    type: "electric-car",
+    mileage: "15000",
     price: "1.100.000.000₫",
-    description: "Xe hơi điện Tesla Model 3 2023, đã qua sử dụng, tình trạng tốt",
+    image: "https://giaxedien.com/wp-content/uploads/2023/11/tesla-model-3-thumb.png",
 
+    // Thông tin chi tiết xe
     vehicleInfo: {
-      year: "2023",
-      engineDisplacement: "283kW",
-      origin: "Mỹ",
-      mileage: "15000",
+      title: "Tesla Model 3 2023",
+      description: "Xe hơi điện Tesla Model 3 2023, đã qua sử dụng, tình trạng tốt",
     },
 
-    listingInfo: {
-      title: "Tesla Model 3 2023 - Xe điện cao cấp",
-      detailedDescription: "- Xuất xứ: Mỹ, tình trạng xe rất tốt\n- Bảo hành chính hãng còn 2 năm\n- Địa chỉ giao nhận: TP.HCM\n- Thời gian sử dụng: 1 năm\n- Bảo trì tại Tesla Service Center",
+    // Thông tin người dùng
+    SellerInfo: {
       sellerAddress: "TP.HCM"
     },
 
@@ -82,23 +74,21 @@ export const vehicleListings = [
 
   {
     id: 4,
-    name: "VinFast VF3 2024",
-    type: "electric-car",
     brand: "VinFast",
-    image: "https://xevinfastvn.com/wp-content/uploads/2024/05/download-2.png",
+    year: "2024",
+    type: "electric-car",
+    mileage: "0",
     price: "299.000.000₫",
-    description: "Xe hơi điện VinFast VF3 2024, mới 100%, bảo hành chính hãng",
+    image: "https://xevinfastvn.com/wp-content/uploads/2024/05/download-2.png",
 
+    // Thông tin chi tiết xe
     vehicleInfo: {
-      year: "2024",
-      engineDisplacement: "150kW",
-      origin: "Việt Nam",
-      mileage: "0",
+      title: "VinFast VF3 2024",
+      description: "Xe hơi điện VinFast VF3 2024, mới 100%, bảo hành chính hãng",
     },
 
-    listingInfo: {
-      title: "VinFast VF3 2024 - Xe điện Việt Nam",
-      detailedDescription: "- Xuất xứ: Việt Nam, xe mới 100%\n- Bảo hành chính hãng 3 năm\n- Địa chỉ giao nhận: Hà Nội\n- Xe mới chưa sử dụng\n- Bảo trì tại VinFast Service Center",
+    // Thông tin người dùng
+    SellerInfo: {
       sellerAddress: "Hà Nội"
     },
 
@@ -108,23 +98,21 @@ export const vehicleListings = [
 
   {
     id: 5,
-    name: "VinFast Feliz Bike 2024",
-    type: "electric-bicycle",
     brand: "VinFast",
-    image: "https://vinfastthienan.vn/wp-content/uploads/2023/07/Xe-may-dien-Vinfast-Feliz-xanh.png",
+    year: "2024",
+    type: "electric-bicycle",
+    mileage: "0",
     price: "19.500.000₫",
-    description: "Xe đạp điện VinFast Feliz Bike 2024, pin Lithium 48V, mới 100%",
+    image: "https://vinfastthienan.vn/wp-content/uploads/2023/07/Xe-may-dien-Vinfast-Feliz-xanh.png",
 
+    // Thông tin chi tiết xe
     vehicleInfo: {
-      year: "2024",
-      engineDisplacement: "48V",
-      origin: "Việt Nam",
-      mileage: "0",
+      title: "VinFast Feliz Bike 2024",
+      description: "Xe đạp điện VinFast Feliz Bike 2024, pin Lithium 48V, mới 100%",
     },
 
-    listingInfo: {
-      title: "VinFast Feliz Bike 2024 - Xe đạp điện thông minh",
-      detailedDescription: "- Xuất xứ: Việt Nam, xe mới 100%\n- Bảo hành chính hãng 2 năm\n- Địa chỉ giao nhận: TP.HCM\n- Xe mới chưa sử dụng\n- Bảo trì tại VinFast Service Center",
+    // Thông tin người dùng
+    SellerInfo: {
       sellerAddress: "TP.HCM"
     },
 
@@ -134,27 +122,94 @@ export const vehicleListings = [
 
   {
     id: 6,
-    name: "Yamaha E01 2024",
-    type: "electric-scooter",
     brand: "Yamaha",
-    image: "https://thanhnienviet.mediacdn.vn/zoom/700_438/uploads/2022_05/yamaha-e01-front-left-angle-view-7018.jpg",
+    year: "2024",
+    type: "electric-scooter",
+    mileage: "2000",
     price: "35.000.000₫",
-    description: "Xe máy điện Yamaha E01 2024, công nghệ tiên tiến, tiết kiệm điện",
+    image: "https://thanhnienviet.mediacdn.vn/zoom/700_438/uploads/2022_05/yamaha-e01-front-left-angle-view-7018.jpg",
 
+    // Thông tin chi tiết xe
     vehicleInfo: {
-      year: "2024",
-      engineDisplacement: "65kW",
-      origin: "Nhật Bản",
-      mileage: "2000",
+      title: "Yamaha E01 2024",
+      description: "Xe máy điện Yamaha E01 2024, công nghệ tiên tiến, tiết kiệm điện",
     },
 
-    listingInfo: {
-      title: "Yamaha E01 2024 - Xe điện công nghệ cao",
-      detailedDescription: "- Xuất xứ: Nhật Bản, xe đã sử dụng 6 tháng\n- Bảo hành chính hãng còn 1.5 năm\n- Địa chỉ giao nhận: Đà Nẵng\n- Tình trạng xe rất tốt, ít sử dụng\n- Bảo trì tại Yamaha Service Center",
+    // Thông tin người dùng
+    SellerInfo: {
       sellerAddress: "Đà Nẵng"
     },
 
     createdAt: "2024-02-10",
+    isActive: true
+  },
+  {
+    id: 7,
+    brand: "Yadea",
+    year: "2024",
+    type: "electric-bicycle",
+    mileage: "0",
+    price: "14.900.000₫",
+    image: "https://yadea.com.vn/wp-content/uploads/2023/07/yadea-s3-2023.png",
+
+    // Thông tin chi tiết xe
+    vehicleInfo: {
+      title: "Yadea S3 2024",
+      description: "Xe đạp điện Yadea S3 2024, pin Lithium, mới 100%, chính hãng",
+    },
+
+    // Thông tin người dùng
+    SellerInfo: {
+      sellerAddress: "Hà Nội"
+    },
+
+    createdAt: "2024-02-12",
+    isActive: true
+  },
+  {
+    id: 8,
+    brand: "Yadea",
+    year: "2024",
+    type: "electric-bicycle",
+    mileage: "0",
+    price: "16.500.000₫",
+    image: "https://yadea.com.vn/wp-content/uploads/2023/07/yadea-esh-2023.png",
+
+    // Thông tin chi tiết xe
+    vehicleInfo: {
+      title: "Yadea E3 2024",
+      description: "Xe đạp điện Yadea E3 2024, quãng đường 70km, mới 100%",
+    },
+
+    // Thông tin người dùng
+    SellerInfo: {
+      sellerAddress: "TP.HCM"
+    },
+
+    createdAt: "2024-02-15",
+    isActive: true
+  },
+  {
+    id: 9,
+    brand: "Yadea",
+    year: "2023",
+    type: "electric-bicycle",
+    mileage: "1200",
+    price: "11.900.000₫",
+    image: "https://yadea.com.vn/wp-content/uploads/2023/07/yadea-esh2-2023.png",
+
+    // Thông tin chi tiết xe
+    vehicleInfo: {
+      title: "Yadea ESH2 2023",
+      description: "Xe đạp điện Yadea ESH2 2023 đã qua sử dụng, tình trạng tốt",
+    },
+
+    // Thông tin người dùng
+    SellerInfo: {
+      sellerAddress: "Đà Nẵng"
+    },
+
+    createdAt: "2024-01-28",
     isActive: true
   }
 ];
