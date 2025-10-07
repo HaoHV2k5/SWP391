@@ -1,19 +1,19 @@
 import React from 'react';
 import { Button, Card } from 'react-bootstrap';
 import "bootstrap-icons/font/bootstrap-icons.css";
+import { useSavedProducts } from '../contexts/SavedProductsContext';
 
 
 const ProductCard = ({ product }) => {
-  const { vehicleInfo, listingInfo } = product;
+  const { vehicleInfo, SellerInfo } = product;
+  const { toggle, isSaved } = useSavedProducts();
+  const saved = isSaved(product.id);
 
   return (
     <Card style={{
       height: "100%",
-      transition: "transform 0.2s ease-in-out",
       cursor: "pointer"
-    }}
-      onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-5px)"}
-      onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}>
+    }}>
 
       <Card.Img
         variant="top"
@@ -26,18 +26,18 @@ const ProductCard = ({ product }) => {
           {/* Title */}
           <Card.Title style={{
             fontSize: "16px",
-            fontWeight: "bold",
             marginBottom: "8px",
-            color: "#333"
           }}>
-            {listingInfo?.title || product.name}
+            {vehicleInfo?.description || vehicleInfo?.title || product.name}
           </Card.Title>
 
           {/* Vehicle Info */}
           <div style={{ fontSize: "14px", color: "#666", marginBottom: "10px" }}>
-            <div> {vehicleInfo?.year}  
-              {product.brand}  
-              {vehicleInfo?.mileage ? `${vehicleInfo.mileage} km` : "Chưa có"}</div>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <span>{product.year}</span>
+              <span>{product.brand}</span>
+              <span>{product.mileage ? `${product.mileage}km` : "Chưa có"}</span>
+            </div>
           </div>
 
           {/* Price */}
@@ -52,7 +52,7 @@ const ProductCard = ({ product }) => {
 
           {/* Location */}
           <div style={{ fontSize: "12px", color: "#999" }}>
-            <i className="bi bi-geo-alt"></i> {listingInfo?.sellerAddress}
+            <i className="bi bi-geo-alt"></i> {SellerInfo?.sellerAddress}
           </div>
         </div>
 
@@ -65,8 +65,8 @@ const ProductCard = ({ product }) => {
           <Button variant="primary" size="sm" style={{ flex: 1 }}>
             <i className="bi bi-eye"></i> Xem chi tiết
           </Button>
-          <Button variant="light" size="sm">
-            <i className="bi bi-heart"></i>
+          <Button variant={saved ? "danger" : "light"} size="sm" onClick={() => toggle(product)}>
+            <i className={saved ? "bi bi-heart-fill" : "bi bi-heart"}></i>
           </Button>
         </div>
       </Card.Body>

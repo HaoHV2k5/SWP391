@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -34,7 +35,8 @@ public class ProductController {
 
 //  tao tin dang
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
-    @PostMapping("/create")
+
+    @PostMapping(value = "/create",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<ProductResponse> createProduct(@Valid @ModelAttribute CreateProductRequest createProductRequest, @RequestParam String username) {
         ProductResponse productResponse = productService.createProduct(createProductRequest, username);
         return ApiResponse.<ProductResponse>builder().message("Đã Tạo Product Thành Công").data(productResponse).build();
@@ -52,7 +54,7 @@ public class ProductController {
                 .data(list).build();
 
     }
-    //xem thong tin chi tiet cua 1 san pham
+    //xem thong tin chi tiet cua 1 san pham ===============================================
     @GetMapping("/{id}")
     public ApiResponse<ProductResponse> getDetailInfoProductById(@PathVariable Long id) {
         ProductResponse response = productService.getProductById(id);
@@ -177,4 +179,6 @@ public class ProductController {
                 .data(response).build();
 
     }
+
+
 }
