@@ -1,11 +1,11 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { QrCode, Youtube, Facebook, MessageCircle } from 'lucide-react';
+import React from "react";
+import { Link } from "react-router-dom";
+import { QrCode, Youtube, Facebook, MessageCircle } from "lucide-react";
 
 const FooterColumn = ({ title, type, data, className = "" }) => {
   const renderContent = () => {
     switch (type) {
-      case 'payment':
+      case "payment":
         return (
           <div>
             <h4 className="footer-subtitle">{title}</h4>
@@ -32,7 +32,7 @@ const FooterColumn = ({ title, type, data, className = "" }) => {
           </div>
         );
 
-      case 'links':
+      case "links":
         return (
           <div>
             <h4 className="footer-column-title">{title}</h4>
@@ -46,7 +46,7 @@ const FooterColumn = ({ title, type, data, className = "" }) => {
           </div>
         );
 
-      case 'large-links':
+      case "large-links":
         return (
           <div>
             <h4 className="footer-column-title-large">{title}</h4>
@@ -60,7 +60,7 @@ const FooterColumn = ({ title, type, data, className = "" }) => {
           </div>
         );
 
-      case 'social':
+      case "social":
         return (
           <div>
             <h4 className="footer-column-title-large">{title}</h4>
@@ -68,7 +68,10 @@ const FooterColumn = ({ title, type, data, className = "" }) => {
               <a href="https://www.youtube.com/" className="footer-social-link">
                 <Youtube size={24} />
               </a>
-              <a href="https://www.facebook.com/" className="footer-social-link">
+              <a
+                href="https://www.facebook.com/"
+                className="footer-social-link"
+              >
                 <Facebook size={24} />
               </a>
               <a href="#" className="footer-social-link">
@@ -90,11 +93,7 @@ const FooterColumn = ({ title, type, data, className = "" }) => {
     }
   };
 
-  return (
-    <div className={className}>
-      {renderContent()}
-    </div>
-  );
+  return <div className={className}>{renderContent()}</div>;
 };
 
 export default FooterColumn;
