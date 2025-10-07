@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, Card } from 'react-bootstrap';
 import "bootstrap-icons/font/bootstrap-icons.css";
 
+
 const ProductCard = ({ product }) => {
   const { vehicleInfo, listingInfo } = product;
 
