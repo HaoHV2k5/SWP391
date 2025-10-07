@@ -17,6 +17,7 @@ import AccountPage from "./pages/AccountPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
 import "./App.css";
 import CategoryPage from "./components/homepageContainer/layout/CategoryPage";
+import { SavedProductsProvider } from "./components/homepageContainer/contexts/SavedProductsContext";
 
 function AppContent() {
   const [user, setUser] = useState(null);
@@ -174,7 +175,9 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <AppContent />
+      <SavedProductsProvider>
+        <AppContent />
+      </SavedProductsProvider>
     </Router>
   );
 }
