@@ -2,7 +2,8 @@ package com.example.backend.enums;
 
 public enum ProductType {
     VEHICLE("VEHICLE"), // xe máy điện / xe tay ga điện
-    BATTERY("BATTERY");
+    BATTERY("BATTERY"),
+    POSTING_PACKAGE("POSTING_PACKAGE");
 
     private final String value;
 
