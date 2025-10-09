@@ -1,12 +1,20 @@
 package com.example.backend.service;
 
 import com.example.backend.config.Config;
+import com.example.backend.entity.Wallet;
+import com.example.backend.entity.WalletTransaction;
+import com.example.backend.enums.WalletTransactionStatus;
+import com.example.backend.exception.AppException;
+import com.example.backend.exception.ErrorCode;
+import com.example.backend.repository.WalletRepository;
+import com.example.backend.repository.WalletTransactionRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -15,8 +23,9 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
-
-    public Map<String,Object> generateLinkPayment(HttpServletRequest req){
+    private final WalletRepository walletRepository;
+    private final WalletTransactionRepository walletTransactionRepository;
+    public Map<String,Object> generateLinkPayment(HttpServletRequest req, Long userID){
         Map<String, Object> result = new HashMap<>();
         Map<String, Object> error = new HashMap<>();
         try {
@@ -111,6 +120,20 @@ public class PaymentService {
             result.put("code", "00");
             result.put("message", "success");
             result.put("data", paymentUrl);
+
+            Wallet wallet = walletRepository.findByUserId(userID)
+                    .orElseThrow(()->new AppException(ErrorCode.WALLET_NOT_EXIST));
+            WalletTransaction walletTransaction = WalletTransaction.builder()
+                    .wallet(wallet)
+                    .transactionCode(vnp_TxnRef)
+                    .amount(BigDecimal.valueOf(amount))
+                    .balanceBefore(wallet.getBalance())
+                    .balanceAfter(wallet.getBalance())
+                    .status(WalletTransactionStatus.PENDING.name())
+                    .description("Nạp tiền vào ví qua VNPAY")
+                    .build();
+            walletTransactionRepository.save(walletTransaction);
+
 
             return result;
 
