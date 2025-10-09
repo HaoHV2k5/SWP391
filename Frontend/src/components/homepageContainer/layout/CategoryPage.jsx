@@ -1,22 +1,18 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
-import { vehicleListings } from '../../../data/productsData';
 import { Col, Row } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import FilterBar from '../../FilterBar';
 import useProductFilter from '../../../hooks/useProductFilter';
 import ProductCard from '../home/ProductCard';
+import useProducts from '../../../hooks/useProducts';
 
 const CategoryPage = () => {
   const { type } = useParams();
 
-  // Lấy tất cả tin đăng xe điện đang hoạt động
-  const activeListings = vehicleListings.filter(listing => listing.isActive);
-
-  const {
-    filteredProducts,
-    handleFiltersChange,
-  } = useProductFilter(activeListings);
+  // Lấy sản phẩm từ BE qua hook dùng chung
+  const { products, loading, error } = useProducts();
+  const { filteredProducts, handleFiltersChange } = useProductFilter(products);
 
   // Lấy sản phẩm theo category
   const categoryProducts = filteredProducts.filter(p => p.type === type);
@@ -40,16 +36,22 @@ const CategoryPage = () => {
 
       <h2>Danh mục: {formatType(type)}</h2>
 
-      <p>Tìm thấy {categoryProducts.length} sản phẩm</p>
-
-      {/* Danh sách sản phẩm */}
-      <Row className='g-4'>
-        {categoryProducts.map((product) => (
-          <Col key={product.id} xs={12} md={6} lg={4}>
-            <ProductCard product={product} />
-          </Col>
-        ))}
-      </Row>
+      {loading ? (
+        <p>Đang tải dữ liệu…</p>
+      ) : error ? (
+        <p style={{ color: '#e74c3c' }}>{error}</p>
+      ) : (
+        <>
+          <p>Tìm thấy {categoryProducts.length} sản phẩm</p>
+          <Row className='g-4'>
+            {categoryProducts.map((product) => (
+              <Col key={product.id} xs={12} md={6} lg={4}>
+                <ProductCard product={product} />
+              </Col>
+            ))}
+          </Row>
+        </>
+      )}
     </div>
   )
 }
