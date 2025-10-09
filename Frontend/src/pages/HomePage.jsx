@@ -3,6 +3,7 @@ import ProductGrid from "../components/homepageContainer/home/ProductGrid";
 import { vehicleListings } from "../data/productsData";
 import "../components/homepageContainer/styles/HomePage.css";
 import useProducts from "../hooks/useProducts";
+import useProductFilter from "../hooks/useProductFilter";
 
 const HomePage = () => {
   const { products, loading, error } = useProducts();
