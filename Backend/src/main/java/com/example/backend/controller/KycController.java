@@ -54,7 +54,7 @@ public class KycController {
         return ApiResponse.<KycDetailResponse>builder().data(res).message("KYC rejected").build();
     }
     // get kyc for staff lay trang thai pending
-    @PreAuthorize("hasAuthority('GET_KYC')")
+//    @PreAuthorize("hasAuthority('GET_KYC')")
     @GetMapping("/staff")
     public ApiResponse<List<KycDetailResponse>> getKycByStaff(){
         List<KycDetailResponse> list = kycService.getAllKycByStaff();
