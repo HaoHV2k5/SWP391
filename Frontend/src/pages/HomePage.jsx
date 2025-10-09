@@ -2,6 +2,7 @@ import Banner from "../components/Banner";
 import ProductGrid from "../components/homepageContainer/home/ProductGrid";
 import { vehicleListings } from "../data/productsData";
 import "../components/homepageContainer/styles/HomePage.css";
+import useProductFilter from "../hooks/useProductFilter"
 
 const HomePage = () => {
   // Lấy tất cả tin đăng xe điện đang hoạt động
