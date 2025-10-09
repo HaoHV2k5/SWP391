@@ -1,5 +1,8 @@
 package com.example.backend.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum ComplaintCategory {
     PRODUCT_QUALITY("PRODUCT_QUALITY"),
     DAMAGED_ITEM("DAMAGED_ITEM"),
@@ -12,7 +15,4 @@ public enum ComplaintCategory {
         this.value = value;
     }
 
-    public String getValue() {
-        return value;
-    }
 }

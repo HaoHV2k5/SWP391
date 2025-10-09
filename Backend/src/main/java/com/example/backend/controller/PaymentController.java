@@ -5,12 +5,10 @@ import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.service.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -24,8 +22,8 @@ import java.util.*;
 public class PaymentController {
     private final PaymentService paymentService;
     @PostMapping("/create")
-    public ApiResponse<Map<String,Object>> createPayment(HttpServletRequest req) {
-        Map<String,Object> map = paymentService.generateLinkPayment(req);
+    public ApiResponse<Map<String,Object>> createPayment(HttpServletRequest req, @RequestParam Long userid) {
+        Map<String,Object> map = paymentService.generateLinkPayment(req, userid);
         return  ApiResponse.<Map<String, Object>>builder().data(map).build();
     }
 

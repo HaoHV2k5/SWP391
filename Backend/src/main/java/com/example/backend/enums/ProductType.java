@@ -1,5 +1,8 @@
 package com.example.backend.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum ProductType {
     VEHICLE("VEHICLE"), // xe máy điện / xe tay ga điện
     BATTERY("BATTERY"),
@@ -11,7 +14,4 @@ public enum ProductType {
         this.value = value;
     }
 
-    public String getValue() {
-        return value;
-    }
 }
