@@ -3,15 +3,15 @@ package com.example.backend.enums;
 import lombok.Getter;
 
 @Getter
-public enum OrderStatus {
+public enum WalletTransactionStatus {
     PENDING("PENDING"),
-    ACCEPTED("ACCEPTED"),
-    REJECTED("REJECTED"),
+    COMPLETED("COMPLETED"),
+    FAILED("FAILED"),
     CANCELLED("CANCELLED");
 
     private final String value;
 
-    OrderStatus(String value) {
+    WalletTransactionStatus(String value) {
         this.value = value;
     }
 

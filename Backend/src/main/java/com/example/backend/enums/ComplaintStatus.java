@@ -1,5 +1,8 @@
 package com.example.backend.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum ComplaintStatus {
     PENDING("PENDING"),
     UNDER_REVIEW("UNDER_REVIEW"),
@@ -13,7 +16,4 @@ public enum ComplaintStatus {
         this.value = value;
     }
 
-    public String getValue() {
-        return value;
-    }
 }
