@@ -1,22 +1,12 @@
 import Banner from "../components/Banner";
 import ProductGrid from "../components/homepageContainer/home/ProductGrid";
 import { vehicleListings } from "../data/productsData";
-import useProductFilter from "../hooks/useProductFilter";
 import "../components/homepageContainer/styles/HomePage.css";
+import useProducts from "../hooks/useProducts";
 
 const HomePage = () => {
-  // Lấy tất cả tin đăng xe điện đang hoạt động
-  const activeListings = vehicleListings.filter((listing) => listing.isActive);
-
-  // Sử dụng useProductFilter hook với tin đăng xe điện
-  const { filteredProducts, handleFiltersChange, filters } =
-    useProductFilter(activeListings);
-
-  // Đơn giản chỉ gọi hook với filters từ FilterBar
-  const handleFilterChange = (filters) => {
-    console.log("HomePage - Received filters:", filters);
-    handleFiltersChange(filters);
-  };
+  const { products, loading, error } = useProducts();
+  const { filteredProducts, handleFiltersChange } = useProductFilter(products);
 
   return (
     <div
@@ -75,7 +65,26 @@ const HomePage = () => {
       </section>
 
       {/* Vehicle Listings Section */}
-      <ProductGrid products={activeListings} />
+      {loading ? (
+        <div
+          style={{ maxWidth: "1200px", margin: "20px auto", padding: "0 15px" }}
+        >
+          Đang tải dữ liệu…
+        </div>
+      ) : error ? (
+        <div
+          style={{
+            maxWidth: "1200px",
+            margin: "20px auto",
+            padding: "0 15px",
+            color: "#e74c3c",
+          }}
+        >
+          {error}
+        </div>
+      ) : (
+        <ProductGrid products={products} />
+      )}
     </div>
   );
 };
