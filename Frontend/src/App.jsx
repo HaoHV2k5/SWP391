@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -8,6 +13,7 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AdminPage from "./pages/AdminPage";
+import StaffPage from "./pages/StaffPage"; //STAFF PAGE - Trang dành cho nhân viên
 import MemberOrders from "./pages/member/MemberOrders";
 import PostAd from "./pages/member/PostAd";
 import MyPosts from "./pages/member/MyPosts";
@@ -17,6 +23,7 @@ import AccountPage from "./pages/AccountPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
 import "./App.css";
 import CategoryPage from "./components/homepageContainer/layout/CategoryPage";
+import { SavedProductsProvider } from "./components/homepageContainer/contexts/SavedProductsContext";
 
 function AppContent() {
   const [user, setUser] = useState(null);
@@ -127,19 +134,49 @@ function AppContent() {
   };
 
   // Kiểm tra xem có phải trang đăng nhập hoặc đăng ký không
-  const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
+  const isAuthPage =
+    location.pathname === "/login" || location.pathname === "/register";
+
+  // Kiểm tra xem có phải trang staff không
+  const isStaffPage = location.pathname === "/staff";
+
+  // Kiểm tra xem user có role staff không
+  const isStaffUser =
+    user &&
+    (user.role === "staff" ||
+      user.role === "ROLE_STAFF" ||
+      (user.user &&
+        (user.user.role === "staff" || user.user.role === "ROLE_STAFF")));
+
+  // Kiểm tra quyền truy cập - staff chỉ có thể truy cập trang staff
+  useEffect(() => {
+    // Chỉ kiểm tra khi có user và không phải trang đăng nhập/đăng ký
+    if (isStaffUser && !isAuthPage && !isStaffPage) {
+      // Tự động đăng xuất staff khi cố gắng truy cập trang khác
+      toast.error("Staff không có quyền truy cập trang này! Đang đăng xuất...");
+      setTimeout(() => {
+        handleLogout();
+      }, 1000);
+    }
+  }, [isStaffUser, isAuthPage, isStaffPage, handleLogout]);
 
   return (
     <div className="App">
-      {/* Chỉ hiển thị Navbar cho trang chủ, admin và OTP */}
-      {!isAuthPage && <Navbar user={user} onLogout={handleLogout} />}
-      
+      {/* Chỉ hiển thị Navbar cho trang chủ, admin và OTP, không hiển thị cho staff */}
+      {!isAuthPage && !isStaffPage && (
+        <Navbar user={user} onLogout={handleLogout} />
+      )}
+
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/admin" element={<AdminPage user={user} />} />
-        
+        <Route
+          path="/staff"
+          element={<StaffPage user={user} onLogout={handleLogout} />}
+        />
+
         {/* Các route riêng biệt cho từng field */}
         <Route path="/account" element={<AccountPage user={user} />} />
         <Route path="/my-posts" element={<MyPosts user={user} />} />
@@ -150,9 +187,9 @@ function AppContent() {
         <Route path="/verify-otp" element={<OTPVerificationPage />} />
         <Route path="/products/:type" element={<CategoryPage />} />
       </Routes>
-      
-      {/* Chỉ hiển thị Footer cho trang chủ và admin */}
-      {!isAuthPage && <Footer />}
+
+      {/* Chỉ hiển thị Footer cho trang chủ và admin, không hiển thị cho staff */}
+      {!isAuthPage && !isStaffPage && <Footer />}
 
       {/* Toast Container */}
       <ToastContainer
@@ -174,7 +211,9 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <AppContent />
+      <SavedProductsProvider>
+        <AppContent />
+      </SavedProductsProvider>
     </Router>
   );
 }

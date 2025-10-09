@@ -185,6 +185,32 @@ const LoginPage = ({ onLogin }) => {
           return;
         }
 
+        //Tài khoản test cho staff
+        if (
+          formData.email === "staff@test.com" &&
+          formData.password === "123456"
+        ) {
+          onLogin({
+            token: "staff-test-token",
+            user: {
+              id: 2,
+              email: "staff@test.com",
+              fullName: "Trần Thị Staff",
+              fullname: "Trần Thị Staff",
+              phone: "0907654321",
+              address: "456 Staff Street, Quận 2, TP.HCM",
+              gender: "Nữ",
+              yob: "20/08/1990",
+              dateOfBirth: "1990-08-20",
+              joinDate: "10/01/2024",
+              role: "ROLE_STAFF",
+            },
+          });
+          toast.success("Đăng nhập staff thành công!");
+          setTimeout(() => navigate("/staff"), 1000);
+          return;
+        }
+
         // Đăng nhập thông thường - gọi API backend
         try {
           const response = await fetch("http://localhost:3979/auth/login", {
@@ -245,6 +271,7 @@ const LoginPage = ({ onLogin }) => {
               user: {
                 id: backendUser?.id || 0,
                 email: backendUser?.email || formData.email,
+                username: backendUser?.username || backendUser?.email || formData.email,
                 fullName:
                   backendUser?.fullname ||
                   backendUser?.fullName ||
@@ -486,18 +513,28 @@ const LoginPage = ({ onLogin }) => {
                 border: "1px solid #c8e6c9",
               }}
             >
-              <strong>Tài khoản Admin:</strong>
+              <strong>🔐 Tài khoản Test:</strong>
+              <br />
+              <br />
+              <strong>Admin:</strong>
               <br />
               Email: admin@electricrade.com
               <br />
               Password: admin123
               <br />
               <br />
-              {/* <strong>Tài khoản Guest:</strong>
+              <strong>Staff:</strong>
               <br />
-              Email: guest@electricrade.com
+              Email: staff@test.com
               <br />
-              Password: guest123 */}
+              Password: 123456
+              <br />
+              <br />
+              <strong>Member:</strong>
+              <br />
+              Email: member@test.com
+              <br />
+              Password: 123456
             </div>
           )}
         </div>
