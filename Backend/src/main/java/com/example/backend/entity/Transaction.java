@@ -37,13 +37,21 @@ public class Transaction {
     private BigDecimal amount;
 
     @Column(nullable = false, columnDefinition = "NVARCHAR(50)")
-    private String paymentMethod;
+    private String paymentMethod; // WALLET, CREDIT_CARD, BANK_TRANSFER, OTHER
 
     @Column(nullable = false, columnDefinition = "NVARCHAR(20)")
     private String status; // PENDING, COMPLETED, FAILED, REFUNDED
 
     @Column(columnDefinition = "NVARCHAR(255)")
     private String description;
+    
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean isWalletPayment = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "wallet_id")
+    private Wallet wallet;
 
     @Column(name = "payment_date")
     private LocalDateTime paymentDate;

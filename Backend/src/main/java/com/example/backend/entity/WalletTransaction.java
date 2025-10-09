@@ -26,7 +26,7 @@ public class WalletTransaction {
     private Wallet wallet;
 
     @Column(nullable = false, columnDefinition = "NVARCHAR(20)")
-    private String type; // DEPOSIT, WITHDRAWAL, TRANSFER, PAYMENT
+    private String type; // DEPOSIT, PAYMENT_PACKAGE, PAYMENT_PRODUCT
 
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
@@ -46,6 +46,10 @@ public class WalletTransaction {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reference_transaction_id")
     private Transaction referenceTransaction;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "posting_package_id")
+    private PostingPackage postingPackage;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
