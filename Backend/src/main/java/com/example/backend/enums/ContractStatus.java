@@ -1,5 +1,8 @@
 package com.example.backend.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum ContractStatus {
     PENDING("PENDING"),
     SIGNED("SIGNED"),
@@ -13,7 +16,4 @@ public enum ContractStatus {
         this.value = value;
     }
 
-    public String getValue() {
-        return value;
-    }
 }

@@ -26,7 +26,8 @@ public class WalletTransaction {
     private Wallet wallet;
 
     @Column(nullable = false, columnDefinition = "NVARCHAR(20)")
-    private String type; // DEPOSIT, PAYMENT_PACKAGE, PAYMENT_PRODUCT
+    @Builder.Default
+    private String type = "RECHARGE"; // DEPOSIT, PAYMENT_PACKAGE, PAYMENT_PRODUCT
 
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
