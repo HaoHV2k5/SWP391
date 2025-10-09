@@ -26,9 +26,6 @@ public class Wallet {
     @Builder.Default
     private BigDecimal balance = BigDecimal.ZERO;
 
-    @Column(nullable = false, unique = true)
-    private String walletNumber;
-
     @Column(nullable = false)
     @Builder.Default
     private Boolean isActive = true;
