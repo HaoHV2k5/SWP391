@@ -101,17 +101,115 @@
     padding: 1.2rem;
     border-radius: 8px;
   }
+  
+  /* Navbar spacing helpers on mobile */
+  .homepage {
+    padding-top: 0;
+  }
+  
+  /* Fix dropdown toggle spacing on small screens */
+  .dropdown-toggle.btn.btn-link {
+    padding-left: 0;
+  }
+  
+  /* Ensure navbar search occupies full width when stacked */
+  .navbar-inner {
+    row-gap: 10px;
+  }
+  .navbar-left,
+  .navbar-right {
+    flex: 1 1 100%;
+    justify-content: space-between;
+  }
+  .navbar-center {
+    order: 3;
+    flex: 1 1 100%;
+  }
 }
 
 @media (max-width: 480px) {
   .card {
     padding: 1rem;
   }
+  
+  /* Tighter paddings for very small screens */
+  .filter-bar-container {
+    padding: 10px;
+  }
+
+  .navbar-left span {
+    font-size: 18px;
+  }
+  .navbar-left img {
+    height: 32px;
+  }
 }
 
 /* Custom Category Dropdown Styles */
 .dropdown-toggle::after {
   display: none !important;
+}
+
+/* ===========================================
+   NAVBAR STYLES (moved from Navbar.jsx)
+   =========================================== */
+.main-navbar {
+  background: white;
+  padding: 15px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.navbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 240px;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.navbar-logo-img {
+  height: 40px;
+  margin-right: 10px;
+}
+
+.navbar-logo-text {
+  font-size: 22px;
+  font-weight: bold;
+  color: #00A86B;
+}
+
+.navbar-center {
+  flex: 1;
+  min-width: 240px;
+  max-width: 900px;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 240px;
+  justify-content: flex-end;
 }
 
 /* ===========================================

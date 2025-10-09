@@ -52,7 +52,7 @@ const ProductGrid = ({ products, filteredProducts = [], hasActiveFilters = false
         {!showEmptyState && hasMore && (
           <div style={{ textAlign: "center", marginTop: "20px" }}>
             <button
-              onClick={handleLoadMore} ư
+              onClick={handleLoadMore}
               style={{
                 cursor: "pointer",
               }}

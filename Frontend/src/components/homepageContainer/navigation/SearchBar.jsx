@@ -12,8 +12,8 @@ const SearchBar = () => {
   };
 
   return (
-    <Form onSubmit={handleSearch} className="flex-grow-1 mx-3">
-      <InputGroup>
+    <Form onSubmit={handleSearch} className="flex-grow-1 mx-3" style={{ width: '100%' }}>
+      <InputGroup style={{ width: '100%' }}>
         <Form.Control
           type="text"
           placeholder="Tìm kiếm..."
