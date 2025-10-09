@@ -271,6 +271,7 @@ const LoginPage = ({ onLogin }) => {
               user: {
                 id: backendUser?.id || 0,
                 email: backendUser?.email || formData.email,
+                username: backendUser?.username || backendUser?.email || formData.email,
                 fullName:
                   backendUser?.fullname ||
                   backendUser?.fullName ||
