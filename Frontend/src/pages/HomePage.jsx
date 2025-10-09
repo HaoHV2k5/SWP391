@@ -1,6 +1,7 @@
 import Banner from "../components/Banner";
 import ProductGrid from "../components/homepageContainer/home/ProductGrid";
 import { vehicleListings } from "../data/productsData";
+import useProductFilter from "../hooks/useProductFilter";
 import "../components/homepageContainer/styles/HomePage.css";
 
 const HomePage = () => {

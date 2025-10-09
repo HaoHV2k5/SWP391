@@ -141,11 +141,12 @@ function AppContent() {
   const isStaffPage = location.pathname === "/staff";
 
   // Kiểm tra xem user có role staff không
-  const isStaffUser = user && (
-    user.role === "staff" || 
-    user.role === "ROLE_STAFF" || 
-    (user.user && (user.user.role === "staff" || user.user.role === "ROLE_STAFF"))
-  );
+  const isStaffUser =
+    user &&
+    (user.role === "staff" ||
+      user.role === "ROLE_STAFF" ||
+      (user.user &&
+        (user.user.role === "staff" || user.user.role === "ROLE_STAFF")));
 
   // Kiểm tra quyền truy cập - staff chỉ có thể truy cập trang staff
   useEffect(() => {
@@ -155,21 +156,27 @@ function AppContent() {
       toast.error("Staff không có quyền truy cập trang này! Đang đăng xuất...");
       setTimeout(() => {
         handleLogout();
-      }, 2000);
+      }, 1000);
     }
   }, [isStaffUser, isAuthPage, isStaffPage, handleLogout]);
 
   return (
     <div className="App">
       {/* Chỉ hiển thị Navbar cho trang chủ, admin và OTP, không hiển thị cho staff */}
-      {!isAuthPage && !isStaffPage && <Navbar user={user} onLogout={handleLogout} />}
+      {!isAuthPage && !isStaffPage && (
+        <Navbar user={user} onLogout={handleLogout} />
+      )}
 
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/admin" element={<AdminPage user={user} />} />
-        <Route path="/staff" element={<StaffPage user={user} onLogout={handleLogout} />} />
+        <Route
+          path="/staff"
+          element={<StaffPage user={user} onLogout={handleLogout} />}
+        />
+
         {/* Các route riêng biệt cho từng field */}
         <Route path="/account" element={<AccountPage user={user} />} />
         <Route path="/my-posts" element={<MyPosts user={user} />} />

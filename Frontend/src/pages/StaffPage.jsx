@@ -1,22 +1,26 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import StaffSidebar from "../components/staff/StaffSidebar";
-import StaffHeader from "../components/staff/StaffHeader";
 import DashboardTab from "../components/staff/DashboardTab";
+import OrdersTab from "../components/staff/OrdersTab";
+import CustomersTab from "../components/staff/CustomersTab";
+import ProductsTab from "../components/staff/ProductsTab";
 import "../styles/staff/index.css";
-import {
-  Plus,
-  Edit,
-  Trash2,
-  Filter,
-  Download,
-  Eye,
-  UserCheck,
-} from "lucide-react";
+import { Layout, Menu, Breadcrumb, Avatar, Dropdown, Space, theme } from "antd";
+import { PieChartOutlined, AppstoreOutlined, TeamOutlined, UserOutlined, LogoutOutlined } from "@ant-design/icons";
+
+const { Header, Content, Footer, Sider } = Layout;
+
+function getItem(label, key, icon) {
+  return { key, icon, label };
+}
 
 const StaffPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
+  const [collapsed, setCollapsed] = useState(false);
+  const {
+    token: { colorBgContainer, borderRadiusLG },
+  } = theme.useToken();
 
   // ========================================
   // STATE MANAGEMENT
@@ -200,76 +204,61 @@ const StaffPage = ({ user, onLogout }) => {
     return null;
   }
 
-  // MAIN RENDER - Giao diện chính
+  // MAIN RENDER - Giao diện chính (Ant Design)
+  const items = [
+    getItem("Tổng quan", "dashboard", <PieChartOutlined />),
+    getItem("Đơn hàng", "orders", <AppstoreOutlined />),
+    getItem("Khách hàng", "customers", <TeamOutlined />),
+    getItem("Sản phẩm", "products", <AppstoreOutlined />),
+  ];
+
+  const dropdownItems = {
+    items: [
+      { key: "profile", label: "Hồ sơ", icon: <UserOutlined /> },
+      {
+        key: "logout",
+        label: (
+          <button
+            onClick={onLogout}
+            style={{ background: "transparent", border: 0, color: "#ef4444", cursor: "pointer" }}
+          >
+            Đăng xuất
+          </button>
+        ),
+        icon: <LogoutOutlined />,
+        danger: true,
+      },
+    ],
+  };
+
   return (
-    <div className="staff-page">
-      <style>
-        {`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          
-          .card {
-            background: rgba(26, 26, 46, 0.8) !important;
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 15px !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
-            color: white !important;
-          }
-          
-          .card h3, .card h4, .card p {
-            color: white !important;
-          }
-          
-          .card table {
-            color: white !important;
-          }
-          
-          .card th, .card td {
-            color: white !important;
-            border-color: rgba(255, 255, 255, 0.1) !important;
-          }
-          
-          .btn {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            color: white !important;
-            backdrop-filter: blur(10px);
-          }
-          
-          .btn:hover {
-            background: rgba(255, 255, 255, 0.2) !important;
-            transform: translateY(-2px);
-          }
-          
-          .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-            border: none !important;
-          }
-        `}
-      </style>
-      {/* LAYOUT STRUCTURE - Cấu trúc layout */}
-      <div style={{ display: "flex" }}>
-        {/*SIDEBAR - Thanh điều hướng bên trái */}
-
-        <StaffSidebar
-          user={user}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          onLogout={onLogout}
-        />
-        {/*MAIN CONTENT - Nội dung chính */}
-
-        <div className="staff-main-content">
-          <StaffHeader
-            activeTab={activeTab}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-          />
-
-          {/*DASHBOARD TAB - Tab tổng quan */}
+    <Layout style={{ minHeight: "100vh" }}>
+      <Sider collapsible collapsed={collapsed} onCollapse={(v) => setCollapsed(v)}>
+        <div className="demo-logo-vertical" />
+        <Menu theme="dark" mode="inline" items={items} selectedKeys={[activeTab]} onClick={(e) => setActiveTab(e.key)} />
+      </Sider>
+      <Layout>
+        <Header style={{ padding: "0 24px", background: colorBgContainer }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "100%" }}>
+            <div style={{ fontWeight: 800 }}>
+              {activeTab === "dashboard" && "📊 Tổng quan"}
+              {activeTab === "orders" && "📋 Quản lý đơn hàng"}
+              {activeTab === "customers" && "👥 Quản lý khách hàng"}
+              {activeTab === "products" && "📦 Quản lý sản phẩm"}
+            </div>
+            <Dropdown menu={dropdownItems} trigger={["click"]}>
+              <a onClick={(e) => e.preventDefault()}>
+                <Space>
+                  <Avatar icon={<UserOutlined />} />
+                  <span>{user?.user?.fullName || user?.fullname || "Staff"}</span>
+                </Space>
+              </a>
+            </Dropdown>
+          </div>
+        </Header>
+        <Content style={{ margin: "0 16px" }}>
+          <Breadcrumb style={{ margin: "16px 0" }} items={[{ title: "Staff" }, { title: items.find(i => i.key === activeTab)?.label }]} />
+          <div style={{ padding: 24, minHeight: 360, background: colorBgContainer, borderRadius: borderRadiusLG }}>
           {activeTab === "dashboard" && (
             <DashboardTab
               stats={stats}
@@ -280,312 +269,28 @@ const StaffPage = ({ user, onLogout }) => {
               getPriorityColor={getPriorityColor}
             />
           )}
-          {/*ORDERS TAB - Tab quản lý đơn hàng */}
           {activeTab === "orders" && (
-            <div className="staff-card">
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "2rem",
-                }}
-              >
-                <h3>Danh sách đơn hàng</h3>
-                <div style={{ display: "flex", gap: "1rem" }}>
-                  <button className="staff-btn staff-btn-secondary">
-                    <Filter size={16} />
-                    Lọc
-                  </button>
-                  <button className="staff-btn staff-btn-primary">
-                    <Download size={16} />
-                    Xuất báo cáo
-                  </button>
-                </div>
-              </div>
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead>
-                    <tr style={{ borderBottom: "2px solid #e9ecef" }}>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>ID</th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Khách hàng
-                      </th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Sản phẩm
-                      </th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Số tiền
-                      </th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Trạng thái
-                      </th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Ưu tiên
-                      </th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Ngày
-                      </th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Thao tác
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.map((order) => (
-                      <tr
-                        key={order.id}
-                        style={{ borderBottom: "1px solid #e9ecef" }}
-                      >
-                        <td style={{ padding: "1rem" }}>#{order.id}</td>
-                        <td style={{ padding: "1rem" }}>{order.customer}</td>
-                        <td style={{ padding: "1rem" }}>{order.product}</td>
-                        <td style={{ padding: "1rem" }}>
-                          {formatCurrency(order.amount)}
-                        </td>
-                        <td style={{ padding: "1rem" }}>
-                          <span
-                            style={{
-                              padding: "0.25rem 0.75rem",
-                              borderRadius: "15px",
-                              fontSize: "0.8rem",
-                              backgroundColor:
-                                getStatusColor(order.status) + "20",
-                              color: getStatusColor(order.status),
-                            }}
-                          >
-                            {getStatusText(order.status)}
-                          </span>
-                        </td>
-                        <td style={{ padding: "1rem" }}>
-                          <span
-                            style={{
-                              padding: "0.25rem 0.75rem",
-                              borderRadius: "15px",
-                              fontSize: "0.8rem",
-                              backgroundColor:
-                                getPriorityColor(order.priority) + "20",
-                              color: getPriorityColor(order.priority),
-                            }}
-                          >
-                            {order.priority === "high" && "Cao"}
-                            {order.priority === "medium" && "Trung bình"}
-                            {order.priority === "low" && "Thấp"}
-                          </span>
-                        </td>
-                        <td style={{ padding: "1rem" }}>{order.date}</td>
-                        <td style={{ padding: "1rem" }}>
-                          <div style={{ display: "flex", gap: "0.5rem" }}>
-                            <button
-                              className="staff-action-btn"
-                              title="Xem chi tiết"
-                            >
-                              <Eye size={16} />
-                            </button>
-                            <button
-                              className="staff-action-btn"
-                              title="Cập nhật trạng thái"
-                            >
-                              <Edit size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* CUSTOMERS TAB - Tab quản lý khách hàng */}
+              <OrdersTab
+                orders={orders}
+                formatCurrency={formatCurrency}
+                getStatusColor={getStatusColor}
+                getStatusText={getStatusText}
+                getPriorityColor={getPriorityColor}
+              />
+            )}
           {activeTab === "customers" && (
-            <div className="staff-card">
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "2rem",
-                }}
-              >
-                <h3>Danh sách khách hàng</h3>
-                <button className="staff-btn staff-btn-primary">
-                  <UserCheck size={16} />
-                  Thêm khách hàng
-                </button>
+              <CustomersTab
+                customers={customers}
+                getStatusColor={getStatusColor}
+                getStatusText={getStatusText}
+              />
+            )}
+            {activeTab === "products" && <ProductsTab formatCurrency={formatCurrency} />}
               </div>
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead>
-                    <tr style={{ borderBottom: "2px solid #e9ecef" }}>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>ID</th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Tên
-                      </th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Email
-                      </th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Số điện thoại
-                      </th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Trạng thái
-                      </th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Tổng đơn hàng
-                      </th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Ngày tham gia
-                      </th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Thao tác
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {customers.map((customer) => (
-                      <tr
-                        key={customer.id}
-                        style={{ borderBottom: "1px solid #e9ecef" }}
-                      >
-                        <td style={{ padding: "1rem" }}>#{customer.id}</td>
-                        <td style={{ padding: "1rem" }}>{customer.name}</td>
-                        <td style={{ padding: "1rem" }}>{customer.email}</td>
-                        <td style={{ padding: "1rem" }}>{customer.phone}</td>
-                        <td style={{ padding: "1rem" }}>
-                          <span
-                            style={{
-                              padding: "0.25rem 0.75rem",
-                              borderRadius: "15px",
-                              fontSize: "0.8rem",
-                              backgroundColor:
-                                getStatusColor(customer.status) + "20",
-                              color: getStatusColor(customer.status),
-                            }}
-                          >
-                            {getStatusText(customer.status)}
-                          </span>
-                        </td>
-                        <td style={{ padding: "1rem" }}>
-                          {customer.totalOrders}
-                        </td>
-                        <td style={{ padding: "1rem" }}>{customer.joinDate}</td>
-                        <td style={{ padding: "1rem" }}>
-                          <div style={{ display: "flex", gap: "0.5rem" }}>
-                            <button
-                              className="staff-action-btn"
-                              title="Xem chi tiết"
-                            >
-                              <Eye size={16} />
-                            </button>
-                            <button
-                              className="staff-action-btn"
-                              title="Chỉnh sửa"
-                            >
-                              <Edit size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/*PRODUCTS TAB - Tab quản lý sản phẩm */}
-          {activeTab === "products" && (
-            <div className="staff-card">
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "2rem",
-                }}
-              >
-                <h3>Danh sách sản phẩm</h3>
-                <button className="staff-btn staff-btn-primary">
-                  <Plus size={16} />
-                  Thêm sản phẩm
-                </button>
-              </div>
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead>
-                    <tr style={{ borderBottom: "2px solid #e9ecef" }}>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>ID</th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Tên sản phẩm
-                      </th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Giá
-                      </th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Danh mục
-                      </th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Tồn kho
-                      </th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Trạng thái
-                      </th>
-                      <th style={{ padding: "1rem", textAlign: "left" }}>
-                        Thao tác
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr style={{ borderBottom: "1px solid #e9ecef" }}>
-                      <td style={{ padding: "1rem" }}>#1</td>
-                      <td style={{ padding: "1rem" }}>
-                        Pin Lithium-ion 48V 20Ah
-                      </td>
-                      <td style={{ padding: "1rem" }}>
-                        {formatCurrency(2500000)}
-                      </td>
-                      <td style={{ padding: "1rem" }}>Pin</td>
-                      <td style={{ padding: "1rem" }}>15</td>
-                      <td style={{ padding: "1rem" }}>
-                        <span
-                          style={{
-                            padding: "0.25rem 0.75rem",
-                            borderRadius: "15px",
-                            fontSize: "0.8rem",
-                            backgroundColor: "#28a74520",
-                            color: "#28a745",
-                          }}
-                        >
-                          Hoạt động
-                        </span>
-                      </td>
-                      <td style={{ padding: "1rem" }}>
-                        <div style={{ display: "flex", gap: "0.5rem" }}>
-                          <button
-                            className="staff-action-btn"
-                            title="Xem chi tiết"
-                          >
-                            <Eye size={16} />
-                          </button>
-                          <button
-                            className="staff-action-btn"
-                            title="Chỉnh sửa"
-                          >
-                            <Edit size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+        </Content>
+        <Footer style={{ textAlign: "center" }}>Staff Console ©{new Date().getFullYear()}</Footer>
+      </Layout>
+    </Layout>
   );
 };
 
