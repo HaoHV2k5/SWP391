@@ -207,3 +207,76 @@
   bottom: -20px;
   right: 335px;
 }
+
+/* ===========================================
+   RESPONSIVE - FOOTER (Mobile & Tablet)
+   =========================================== */
+@media (max-width: 768px) {
+  .footer-container {
+    padding: 20px 0 10px 0;
+  }
+
+  .footer-content {
+    padding: 0 15px;
+  }
+
+  .footer-main {
+    gap: 16px;
+  }
+
+  .footer-payment-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .footer-app-container {
+    align-items: flex-start;
+  }
+
+  .footer-qr-code {
+    min-width: 50px;
+    height: 50px;
+    padding: 8px;
+  }
+
+  .footer-app-button {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+
+  .footer-social {
+    gap: 12px;
+  }
+
+  .footer-copyright-text {
+    margin-right: 0;
+  }
+
+  .footer-back-to-top {
+    position: static;
+    margin-top: 12px;
+    align-self: flex-start;
+  }
+
+  .footer-logo {
+    display: none; /* Tránh chồng chéo trên mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-payment-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .footer-column-title,
+  .footer-column-title-large,
+  .footer-subtitle {
+    font-size: 14px;
+  }
+
+  .footer-text,
+  .footer-link,
+  .footer-contact-link {
+    font-size: 12px;
+  }
+}
