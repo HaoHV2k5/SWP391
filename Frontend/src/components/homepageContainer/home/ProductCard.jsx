@@ -3,6 +3,7 @@ import { Button, Card } from 'react-bootstrap';
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useSavedProducts } from '../contexts/SavedProductsContext';
 
+
 const ProductCard = ({ product }) => {
   const { vehicleInfo, SellerInfo } = product;
   const { toggle, isSaved } = useSavedProducts();
