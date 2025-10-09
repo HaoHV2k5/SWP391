@@ -5,7 +5,6 @@ import { categoryData } from '../data/homepageData';
 import SearchBar from './homepageContainer/navigation/SearchBar';
 import CategoryDropdown from './homepageContainer/navigation/CategoryDropdown';
 import StoreLocationModal from './homepageContainer/navigation/StoreLocationModal';
-import UserActions from './homepageContainer/navigation/UserActions';
 import NavbarActions from './homepageContainer/navigation/NavbarActions';
 import TopBar from './TopBar';
 import './homepageContainer/styles/TopInfo.css';
@@ -24,39 +23,25 @@ const Navbar = ({ user, onLogout }) => {
       <TopBar />
 
       {/* Main Navbar */}
-      <nav style={{
-        background: "white",
-        padding: "15px 0",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-        position: "sticky",
-        top: 0,
-        zIndex: 1000,
-        borderBottom: "1px solid #e0e0e0"
-      }}>
-        <div style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          padding: "0 20px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
-        }}>
-          {/* Logo */}
-          <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", marginRight: "20px" }}>
-            <img src={logoImage} alt="ElectricStore Logo" style={{ height: "40px", marginRight: "10px" }} />
-            <span style={{ fontSize: "22px", fontWeight: "bold", color: "#00A86B" }}>ElectricStore</span>
-          </Link>
+      <nav className="main-navbar">
+        <div className="navbar-inner">
+          {/* Left: Logo + Category */}
+          <div className="navbar-left">
+            <Link to="/" className="navbar-logo">
+              <img src={logoImage} alt="ElectricStore Logo" className="navbar-logo-img" />
+              <span className="navbar-logo-text">ElectricStore</span>
+            </Link>
+            <CategoryDropdown />
+          </div>
 
-          {/* Category Menu */}
-          <CategoryDropdown />
+          {/* Center: Search (flexible) */}
+          <div className="navbar-center">
+            <SearchBar />
+          </div>
 
-          {/* Search Bar */}
-          <SearchBar />
-
-          {/* Right Section - Icons and User Actions */}
-          <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+          {/* Right: Actions + User */}
+          <div className="navbar-right">
             <NavbarActions />
-            
             {/* Member Components - Chỉ thêm chức năng member */}
             {!user && <LoginButton />}
             {user ? (
@@ -64,8 +49,6 @@ const Navbar = ({ user, onLogout }) => {
             ) : (
               <GuestDropdown />
             )}
-            
-            <UserActions />
           </div>
         </div>
       </nav>

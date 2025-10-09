@@ -1,5 +1,6 @@
 package com.example.backend.repository;
 
+import com.example.backend.entity.Battery;
 import com.example.backend.entity.Product;
 import com.example.backend.entity.Vehicle;
 import com.example.backend.enums.ProductStatus;
@@ -35,8 +36,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findAllBySellerId(Long id);
 
     @Query("select p from Product p where p.productType = 'VEHICLE' and p.vehicle.model = ?1 and p.vehicle.brand = ?2")
-    List<Product> findByBrandAndModel(String model, String brand);
+    List<Product> findByBrandAndModelAndProductTypeVEHICLE(String model, String brand);
 
+
+    @Query("select p from Product p where p.productType = 'BATTERY' and p.battery.model = ?1 and p.battery.brand = ?2")
+    List<Product> findByBrandAndModelAndProductTypeBATTERY(String model, String brand);
 
     // Tìm sản phẩm active để hiển thị
     @Query("SELECT p FROM Product p WHERE p.status = 'ACTIVE' ORDER BY p.createdAt DESC")
@@ -59,4 +63,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
 
     Optional<Product> findProductByVehicle(Vehicle vehicle);
+    Optional<Product> findProductByBattery(Battery battery);
+    @Query("SELECT p FROM Product p WHERE LOWER(p.title) LIKE LOWER(?1)")
+    List<Product> searchByTitle(String model);
+    @Query("SELECT p FROM Product p WHERE LOWER(p.description) LIKE LOWER(?1)")
+    List<Product> searchByDescription(String brand);
+
 }

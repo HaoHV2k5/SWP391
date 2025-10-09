@@ -1,22 +1,21 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.response.ProductResponse;
+import com.example.backend.entity.Battery;
 import com.example.backend.entity.Product;
 import com.example.backend.entity.Tags;
 import com.example.backend.entity.Vehicle;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
 import com.example.backend.mapper.ProductMapper;
+import com.example.backend.repository.BatteryRepository;
 import com.example.backend.repository.ProductRepository;
 import com.example.backend.repository.TagsRepository;
 import com.example.backend.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,13 +25,20 @@ public class SearchService {
    private final ProductRepository productRepository;
     private final ProductMapper productMapper;
     private final VehicleRepository vehicleRepository;
-    private static  final Set<String> REMOVE_WORDS = Set.of("xe", "mua", "bán", "cũ", "mới");
+    private final BatteryRepository batteryRepository;
+    private static  final Set<String> REMOVE_WORDS = Set.of( "mua", "bán", "cũ", "mới");
 
     public List<ProductResponse>  getProductByTagSlug(String slug){
         Tags tag = tagsRepository.findBySlugs(slug).orElseThrow(() -> new AppException(ErrorCode.TAG_NOT_EXIST));
         List<Product> list = new ArrayList<>();
+        if("VEHICLE".equals(tag.getType().name())){
+            list = productRepository.findByBrandAndModelAndProductTypeVEHICLE(tag.getModel(),tag.getBrand());
 
-        list = productRepository.findByBrandAndModel(tag.getModel(),tag.getBrand());
+        }
+        else{
+            list = productRepository.findByBrandAndModelAndProductTypeBATTERY(tag.getModel(),tag.getBrand());
+
+        }
 
 
         return  productMapper.toResponseList(list);
@@ -42,45 +48,71 @@ public class SearchService {
 
     public List<ProductResponse> searchVehicles(String request){
         List<String> keyword = extractWords(request);
-//        String brand = null;
-//        String model = null;
-//        for(String word : keyword){
-//            if(isBrand(word)){
-//                brand = word;
-//            }
-//            else{
-//                model = model == null? word: model+" "+word;
-//            }
-//        }
-//
-//
+
         String fullTextKeyWord = String.join(" ", keyword);
-//
-//        List<Product> list = productRepository.searchFullText(fullTextKeyWord);
-//        final String finalBrand = brand;
-//        if(brand != null){
-//            list = list.stream().filter(v ->
-//                            v.getVehicle() != null && v.getVehicle().getBrand() != null &&
-//                            v.getVehicle().getBrand().equalsIgnoreCase(finalBrand))
-//                    .toList();
-//        }
-//        final String finalModel = model;
-//        if(model != null){
-//            list = list.stream().filter(v -> v.getVehicle().getModel().toLowerCase().contains(finalModel.toLowerCase()))
-//                    .toList();
-//        }
 
-        List<Product> listProduct = productRepository.searchFullText(fullTextKeyWord);
-        List<Vehicle> listVehicle =vehicleRepository.searchFullText(fullTextKeyWord);
-        List<Product> list = new ArrayList<>(listProduct);
+        boolean searchBattery = keyword.stream()
+                .anyMatch(k -> k.equalsIgnoreCase("pin")
+                                || k.equalsIgnoreCase("battery")
+                                || k.equalsIgnoreCase("sạc"));
 
-        for (Vehicle vehicle : listVehicle) {
-            Product p = productRepository.findProductByVehicle(vehicle).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-            list.add(p);
+        boolean searchVehicle = keyword.stream()
+                .anyMatch(k -> k.equalsIgnoreCase("xe")
+                        || k.equalsIgnoreCase("vehicle")
+                        || k.equalsIgnoreCase("scooter"));
 
+
+
+
+        Set<Product> resultSet = new LinkedHashSet<>();
+
+
+
+
+        if(searchBattery){
+
+            List<Battery> listBattery =batteryRepository.searchFullText(fullTextKeyWord);
+
+            if (listBattery.isEmpty()) {
+                listBattery = batteryRepository.searchByModel("%" + fullTextKeyWord + "%");
+                listBattery.addAll(batteryRepository.searchByBrand(("%" + fullTextKeyWord + "%")));
+            }
+
+//            for (Battery battery : listBattery) {
+//                productRepository.findProductByBattery(battery).ifPresent(resultSet::add);
+//            }
+            for (Battery battery : listBattery) {
+                Product p = productRepository.findProductByBattery(battery).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+                resultSet.add(p);
+
+            }
+        }
+        if(searchVehicle){
+            List<Vehicle> listVehicle =vehicleRepository.searchFullText(fullTextKeyWord);
+
+            if (listVehicle.isEmpty()) {
+                listVehicle = vehicleRepository.searchByModel("%" + fullTextKeyWord + "%");
+                listVehicle.addAll(vehicleRepository.searchByBrand(("%" + fullTextKeyWord + "%")));
+            }
+            for (Vehicle vehicle : listVehicle) {
+                Product p = productRepository.findProductByVehicle(vehicle).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+                resultSet.add(p);
+
+            }
+        }
+        if (resultSet.isEmpty()) {
+            List<Product> list = productRepository.searchFullText(fullTextKeyWord);
+            if (list.isEmpty()) {
+                list = productRepository.searchByTitle("%" + fullTextKeyWord + "%");
+                list.addAll(productRepository.searchByDescription(("%" + fullTextKeyWord + "%")));
+            }
+
+            resultSet.addAll(list);
         }
 
-        return productMapper.toResponseList(list);
+
+
+        return productMapper.toResponseList(new ArrayList<>(resultSet));
 
 
     }
