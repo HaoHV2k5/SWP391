@@ -1,8 +1,9 @@
 import Banner from "../components/Banner";
 import ProductGrid from "../components/homepageContainer/home/ProductGrid";
-import useProductFilter from "../hooks/useProductFilter";
+import { vehicleListings } from "../data/productsData";
 import "../components/homepageContainer/styles/HomePage.css";
 import useProducts from "../hooks/useProducts";
+import useProductFilter from "../hooks/useProductFilter";
 
 const HomePage = () => {
   const { products, loading, error } = useProducts();
@@ -66,9 +67,22 @@ const HomePage = () => {
 
       {/* Vehicle Listings Section */}
       {loading ? (
-        <div style={{ maxWidth: "1200px", margin: "20px auto", padding: "0 15px" }}>Đang tải dữ liệu…</div>
+        <div
+          style={{ maxWidth: "1200px", margin: "20px auto", padding: "0 15px" }}
+        >
+          Đang tải dữ liệu…
+        </div>
       ) : error ? (
-        <div style={{ maxWidth: "1200px", margin: "20px auto", padding: "0 15px", color: "#e74c3c" }}>{error}</div>
+        <div
+          style={{
+            maxWidth: "1200px",
+            margin: "20px auto",
+            padding: "0 15px",
+            color: "#e74c3c",
+          }}
+        >
+          {error}
+        </div>
       ) : (
         <ProductGrid products={products} />
       )}
