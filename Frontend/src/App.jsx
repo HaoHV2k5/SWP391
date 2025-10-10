@@ -13,7 +13,7 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AdminPage from "./pages/AdminPage";
-import StaffPage from "./pages/StaffPage"; //STAFF PAGE - Trang dành cho nhân viên
+import StaffPage from "./pages/StaffPage";
 import MemberOrders from "./pages/member/MemberOrders";
 import PostAd from "./pages/member/PostAd";
 import MyPosts from "./pages/member/MyPosts";
