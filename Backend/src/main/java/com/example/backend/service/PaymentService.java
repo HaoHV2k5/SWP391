@@ -10,18 +10,22 @@ import com.example.backend.repository.WalletRepository;
 import com.example.backend.repository.WalletTransactionRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
+@Slf4j
 public class PaymentService {
     private final WalletRepository walletRepository;
     private final WalletTransactionRepository walletTransactionRepository;
@@ -54,6 +58,7 @@ public class PaymentService {
             vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
             vnp_Params.put("vnp_OrderInfo", vnp_OrderInfo);
             vnp_Params.put("vnp_OrderType", orderType);
+
 
             String locate = req.getParameter("language");
             if (locate != null && !locate.isEmpty()) {
@@ -126,7 +131,7 @@ public class PaymentService {
             WalletTransaction walletTransaction = WalletTransaction.builder()
                     .wallet(wallet)
                     .transactionCode(vnp_TxnRef)
-                    .amount(BigDecimal.valueOf(amount))
+                    .amount(BigDecimal.valueOf(amount).divide(BigDecimal.valueOf(100)))
                     .balanceBefore(wallet.getBalance())
                     .balanceAfter(wallet.getBalance())
                     .status(WalletTransactionStatus.PENDING.name())
@@ -147,39 +152,123 @@ public class PaymentService {
 
     }
 
-    public String vnpReturn(HttpServletRequest request){
-       String result = "";
-        // Lấy tất cả params trả về từ VNPAY
+    public String vnpReturn(HttpServletRequest request) {
+        String result;
+
         Map<String, String> fields = new HashMap<>();
+        // Lấy tất cả parameter từ VNPAY trả về
         request.getParameterMap().forEach((key, values) -> {
             if (values.length > 0 && values[0] != null && !values[0].isEmpty()) {
                 fields.put(key, values[0]);
             }
         });
 
-        // Lấy secure hash từ VNPAY trả về
         String vnp_SecureHash = request.getParameter("vnp_SecureHash");
 
-        // Xóa các field không cần trước khi ký
+        // Xóa 2 field này trước khi hash
         fields.remove("vnp_SecureHashType");
         fields.remove("vnp_SecureHash");
 
-        // Tính lại hash từ dữ liệu trả về
-        String signValue = Config.hashAllFields(fields);
+        // ⚠️ Bước quan trọng: URL encode toàn bộ các value trước khi build chuỗi
+        List<String> fieldNames = new ArrayList<>(fields.keySet());
+        Collections.sort(fieldNames);
+        StringBuilder hashData = new StringBuilder();
+        for (int i = 0; i < fieldNames.size(); i++) {
+            String fieldName = fieldNames.get(i);
+            String fieldValue = fields.get(fieldName);
+            if (fieldValue != null && !fieldValue.isEmpty()) {
+                hashData.append(fieldName)
+                        .append("=")
+                        .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
+                if (i < fieldNames.size() - 1) {
+                    hashData.append("&");
+                }
+            }
+        }
 
-        // Kiểm tra chữ ký hợp lệ
-        if (signValue.equals(vnp_SecureHash)) {
-            // Kiểm tra mã phản hồi giao dịch
+        // Hash bằng HMAC SHA512 với vnp_HashSecret
+        String signValue = Config.hmacSHA512(Config.vnp_HashSecret, hashData.toString());
+
+        if (signValue.equalsIgnoreCase(vnp_SecureHash)) {
+            // Nếu chữ ký hợp lệ, kiểm tra mã phản hồi
             String responseCode = request.getParameter("vnp_ResponseCode");
             if ("00".equals(responseCode)) {
-               result= "GD thành công";
+                result = "Giao dịch thành công";
             } else {
-                result = "GD Khong thanh cong";
+                result = "Giao dịch không thành công (mã: " + responseCode + ")";
             }
         } else {
-            result = "Chu ky khong hop le";
+            result = "Chữ ký không hợp lệ";
         }
-        return  result;
+
+        return result;
     }
+
+
+
+    public Map<String, String> handleVnpayIpn(Map<String, String> params) {
+        Map<String, String> response = new HashMap<>();
+        try {
+            Map<String, String> fields = new HashMap<>(params);
+            String vnp_SecureHash = fields.remove("vnp_SecureHash");
+            fields.remove("vnp_SecureHashType");
+
+            String signValue = Config.hashAllFields(fields);
+            if (!signValue.equals(vnp_SecureHash)) {
+                log.warn("khoa hash khong dung");
+                return Map.of("RspCode", "97", "Message", "Invalid Checksum");
+            }
+            log.warn("key đã đúng");
+
+            String txnRef = params.get("vnp_TxnRef");
+            log.warn("txnRef"+txnRef);
+            String responseCode = params.get("vnp_ResponseCode");
+            log.warn("responseCode"+responseCode);
+
+            BigDecimal amount = new BigDecimal(params.get("vnp_Amount")).divide(BigDecimal.valueOf(100))
+                            .setScale(2, BigDecimal.ROUND_HALF_UP);
+            WalletTransaction walletTx = walletTransactionRepository.findByTransactionCode(txnRef)
+                    .orElseThrow(() -> new RuntimeException("Order not found"));
+
+                if (walletTx.getAmount().compareTo(amount) != 0) {
+                    log.warn("amount khác");
+                    log.warn("walletTx: "+walletTx.getAmount());
+                    log.warn("amount: "+amount);
+
+                    return Map.of("RspCode", "04", "Message", "Invalid Amount");
+                }
+
+            if (!walletTx.getStatus().equals("PENDING")) {
+                log.warn("wallet khong ơ trạng thái pending");
+
+                return Map.of("RspCode", "02", "Message", "Order already confirmed");
+            }
+
+            if ("00".equals(responseCode)) {
+                walletTx.setStatus("COMPLETED");
+                walletTx.setCompletedAt(LocalDateTime.now());
+
+                Wallet wallet = walletRepository.findById(walletTx.getWallet().getId()).orElseThrow();
+                wallet.setBalance(wallet.getBalance().add(walletTx.getAmount()));
+                wallet.setLastTransactionAt(LocalDateTime.now());
+                walletRepository.save(wallet);
+            } else {
+                log.warn("giao dich thât bại");
+
+                walletTx.setStatus("FAILED");
+            }
+
+            walletTransactionRepository.save(walletTx);
+            response.put("RspCode", "00");
+            response.put("Message", "Confirm Success");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("RspCode", "99");
+            response.put("Message", "Unknown error");
+        }
+        return response;
+    }
+
 
 }
