@@ -168,17 +168,31 @@ public class ProductController {
                 .data(list).build();
 
     }
+// lay tat ca san pham product post
+    @GetMapping
+    public ApiResponse<List<ProductResponse>> getProductsActive() {
+        List<ProductResponse> list = productService.getAllProductPosted();
+        return  ApiResponse.<List<ProductResponse>>builder()
+                .message("lấy tất cả sản phẩm active")
+                .data(list).build();
+
+    }
+
+
 
     // seller chuyen bai dang sang trang thai public
 
     @PostMapping("/post/seller")
-    public ApiResponse<ProductResponse> sellerProductsPost(@RequestParam Long productId) {
+    public ApiResponse<ProductResponse> getSellerProductsPost(@RequestParam Long productId) {
         ProductResponse response = productService.postProduct(productId);
         return  ApiResponse.<ProductResponse>builder()
                 .message("chuyển bài đăng sang trạng thái public thành công")
                 .data(response).build();
 
     }
+
+
+
 
 
 }
