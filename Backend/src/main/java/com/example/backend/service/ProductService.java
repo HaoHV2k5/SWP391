@@ -147,6 +147,11 @@ public class ProductService {
         return productMapper.toResponseList(list);
     }
 
+    public List<ProductResponse> getAllProductPosted(){
+        List<Product> list = productRepository.findProductByIsPosted(true);
+        return productMapper.toResponseList(list);
+    }
+
 
 
 

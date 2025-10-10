@@ -4,6 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -14,6 +16,7 @@ public class Config {
     public static String vnp_HashSecret = "TL90PNLIXZ551OOIF16HOCT0ISW4LENS";
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
     public static String vnp_Returnurl = "http://localhost:3979/api/payment/payment-return";
+    public static String vnp_IpnUrl = "https://freddie-forestial-tiny.ngrok-free.dev/api/vnpay/callback";
 
     // Sinh chuỗi HMAC SHA512
     public static String hmacSHA512(String key, String data) {
@@ -53,16 +56,18 @@ public class Config {
         return sb.toString();
     }
 
-    public  static String hashAllFields(Map<String, String> fields) {
+    public static String hashAllFields(Map<String, String> fields) {
         List<String> fieldNames = new ArrayList<>(fields.keySet());
         Collections.sort(fieldNames);
         StringBuilder sb = new StringBuilder();
 
         for (Iterator<String> itr = fieldNames.iterator(); itr.hasNext();) {
-            String fieldName = itr.next();
+            String fieldName = itr.next().trim();
             String fieldValue = fields.get(fieldName);
             if (fieldValue != null && !fieldValue.isEmpty()) {
-                sb.append(fieldName).append("=").append(fieldValue);
+                sb.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII))
+                        .append("=")
+                        .append(URLEncoder.encode(fieldValue.trim(), StandardCharsets.US_ASCII));
                 if (itr.hasNext()) {
                     sb.append("&");
                 }
@@ -70,4 +75,5 @@ public class Config {
         }
         return hmacSHA512(vnp_HashSecret, sb.toString());
     }
+
 }
