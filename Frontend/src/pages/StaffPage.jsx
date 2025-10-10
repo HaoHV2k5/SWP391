@@ -7,7 +7,13 @@ import CustomersTab from "../components/staff/CustomersTab";
 import ProductsTab from "../components/staff/ProductsTab";
 import "../styles/staff/index.css";
 import { Layout, Menu, Breadcrumb, Avatar, Dropdown, Space, theme } from "antd";
-import { PieChartOutlined, AppstoreOutlined, TeamOutlined, UserOutlined, LogoutOutlined } from "@ant-design/icons";
+import {
+  PieChartOutlined,
+  AppstoreOutlined,
+  TeamOutlined,
+  UserOutlined,
+  LogoutOutlined,
+} from "@ant-design/icons";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -220,7 +226,12 @@ const StaffPage = ({ user, onLogout }) => {
         label: (
           <button
             onClick={onLogout}
-            style={{ background: "transparent", border: 0, color: "#ef4444", cursor: "pointer" }}
+            style={{
+              background: "transparent",
+              border: 0,
+              color: "#044107ff",
+              cursor: "pointer",
+            }}
           >
             Đăng xuất
           </button>
@@ -233,13 +244,30 @@ const StaffPage = ({ user, onLogout }) => {
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Sider collapsible collapsed={collapsed} onCollapse={(v) => setCollapsed(v)}>
+      <Sider
+        collapsible
+        collapsed={collapsed}
+        onCollapse={(v) => setCollapsed(v)}
+      >
         <div className="demo-logo-vertical" />
-        <Menu theme="dark" mode="inline" items={items} selectedKeys={[activeTab]} onClick={(e) => setActiveTab(e.key)} />
+        <Menu
+          theme="dark"
+          mode="inline"
+          items={items}
+          selectedKeys={[activeTab]}
+          onClick={(e) => setActiveTab(e.key)}
+        />
       </Sider>
       <Layout>
         <Header style={{ padding: "0 24px", background: colorBgContainer }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "100%" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              height: "100%",
+            }}
+          >
             <div style={{ fontWeight: 800 }}>
               {activeTab === "dashboard" && "📊 Tổng quan"}
               {activeTab === "orders" && "📋 Quản lý đơn hàng"}
@@ -250,26 +278,41 @@ const StaffPage = ({ user, onLogout }) => {
               <a onClick={(e) => e.preventDefault()}>
                 <Space>
                   <Avatar icon={<UserOutlined />} />
-                  <span>{user?.user?.fullName || user?.fullname || "Staff"}</span>
+                  <span>
+                    {user?.user?.fullName || user?.fullname || "Staff"}
+                  </span>
                 </Space>
               </a>
             </Dropdown>
           </div>
         </Header>
         <Content style={{ margin: "0 16px" }}>
-          <Breadcrumb style={{ margin: "16px 0" }} items={[{ title: "Staff" }, { title: items.find(i => i.key === activeTab)?.label }]} />
-          <div style={{ padding: 24, minHeight: 360, background: colorBgContainer, borderRadius: borderRadiusLG }}>
-          {activeTab === "dashboard" && (
-            <DashboardTab
-              stats={stats}
-              orders={orders}
-              formatCurrency={formatCurrency}
-              getStatusColor={getStatusColor}
-              getStatusText={getStatusText}
-              getPriorityColor={getPriorityColor}
-            />
-          )}
-          {activeTab === "orders" && (
+          <Breadcrumb
+            style={{ margin: "16px 0" }}
+            items={[
+              { title: "Staff" },
+              { title: items.find((i) => i.key === activeTab)?.label },
+            ]}
+          />
+          <div
+            style={{
+              padding: 24,
+              minHeight: 360,
+              background: colorBgContainer,
+              borderRadius: borderRadiusLG,
+            }}
+          >
+            {activeTab === "dashboard" && (
+              <DashboardTab
+                stats={stats}
+                orders={orders}
+                formatCurrency={formatCurrency}
+                getStatusColor={getStatusColor}
+                getStatusText={getStatusText}
+                getPriorityColor={getPriorityColor}
+              />
+            )}
+            {activeTab === "orders" && (
               <OrdersTab
                 orders={orders}
                 formatCurrency={formatCurrency}
@@ -278,17 +321,21 @@ const StaffPage = ({ user, onLogout }) => {
                 getPriorityColor={getPriorityColor}
               />
             )}
-          {activeTab === "customers" && (
+            {activeTab === "customers" && (
               <CustomersTab
                 customers={customers}
                 getStatusColor={getStatusColor}
                 getStatusText={getStatusText}
               />
             )}
-            {activeTab === "products" && <ProductsTab formatCurrency={formatCurrency} />}
-              </div>
+            {activeTab === "products" && (
+              <ProductsTab formatCurrency={formatCurrency} />
+            )}
+          </div>
         </Content>
-        <Footer style={{ textAlign: "center" }}>Staff Console ©{new Date().getFullYear()}</Footer>
+        <Footer style={{ textAlign: "center" }}>
+          Staff Console ©{new Date().getFullYear()}
+        </Footer>
       </Layout>
     </Layout>
   );
