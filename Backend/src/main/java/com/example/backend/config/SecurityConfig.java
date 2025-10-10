@@ -44,7 +44,8 @@ public class SecurityConfig  {
             "/api/v1/products/active",
             "/api/v1/products/{id}",
             "/api/payment/vnpay-return",
-            "/api/payment/create"
+            "/api/payment/create",
+            "https://freddie-forestial-tiny.ngrok-free.dev/api/payment/ipn"
     };
     
 
@@ -57,7 +58,7 @@ public class SecurityConfig  {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {//cogig chặn quyền truy cập ai mới có được quyền dùng
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request.requestMatchers(WHITE_LIST).permitAll()
-                        .requestMatchers("/api/payment/payment-return", "/api/payment/payment-ipn").permitAll()
+                        .requestMatchers("/api/payment/payment-return", "/api/payment/callback").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()   
                 )
