@@ -3,6 +3,7 @@ package com.example.backend.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -44,7 +45,8 @@ public class SecurityConfig  {
             "/api/v1/products/active",
             "/api/v1/products/{id}",
             "/api/payment/vnpay-return",
-            "/api/payment/create"
+            "/api/payment/create",
+            "https://freddie-forestial-tiny.ngrok-free.dev/api/payment/ipn"
     };
     
 
@@ -57,8 +59,9 @@ public class SecurityConfig  {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {//cogig chặn quyền truy cập ai mới có được quyền dùng
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request.requestMatchers(WHITE_LIST).permitAll()
-                        .requestMatchers("/api/payment/payment-return", "/api/payment/payment-ipn").permitAll()
+                        .requestMatchers("/api/payment/payment-return", "/api/payment/callback").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,"products").permitAll()
                         .anyRequest().authenticated()   
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(  jwtDecoder() ).jwtAuthenticationConverter(jwtAuthenticationConverter())))

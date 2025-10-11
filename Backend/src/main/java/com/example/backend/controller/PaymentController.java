@@ -5,6 +5,7 @@ import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.service.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,29 +19,39 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/payment")
 @RequiredArgsConstructor
+@Slf4j
 
 public class PaymentController {
     private final PaymentService paymentService;
     @PostMapping("/create")
-    public ApiResponse<Map<String,Object>> createPayment(HttpServletRequest req, @RequestParam Long userid) {
-        Map<String,Object> map = paymentService.generateLinkPayment(req, userid);
-        return  ApiResponse.<Map<String, Object>>builder().data(map).build();
-    }
-
-    @GetMapping("/vnpay-return000000")
-    public ApiResponse<String> handleVnpayReturn(HttpServletRequest request) {
-       String result = paymentService.vnpReturn(request);
-       return ApiResponse.<String>builder().data(result).build();
+    public ApiResponse<Map<String, Object>> createPayment(HttpServletRequest req, @RequestParam Long userId) {
+        Map<String, Object> map = paymentService.generateLinkPayment(req, userId);
+        return ApiResponse.<Map<String, Object>>builder().data(map).build();
     }
 
 
     @GetMapping("/payment-return")
-    public Map<String, Object> testReturn(HttpServletRequest request) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "Đã nhận callback từ VNPAY");
-        response.put("params", request.getParameterMap()); // in ra hết param callback
-        return response;
+    public ResponseEntity<String> handleVnpayReturn(HttpServletRequest request) {
+        String result = paymentService.vnpReturn(request);
+        return ResponseEntity.ok(result);
     }
+
+
+
+    //    @GetMapping("/payment-return")
+//    public Map<String, Object> testReturn(HttpServletRequest request) {
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("message", "Đã nhận callback từ VNPAY");
+//        response.put("params", request.getParameterMap()); // in ra hết param callback
+//        return response;
+//    }
+    @GetMapping("/callback")
+    public ResponseEntity<Map<String, String>> handleVnpayIpn(@RequestParam Map<String, String> requestParams) {
+    log.warn("đã callback");
+    Map<String, String> response = paymentService.handleVnpayIpn(requestParams);
+    return ResponseEntity.ok(response);
+}
+
 
 
 

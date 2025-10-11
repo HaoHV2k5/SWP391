@@ -19,7 +19,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     
     // Tìm sản phẩm theo seller
     List<Product> findBySellerId(Long sellerId);
-    
+    //tim tat ca san pham active
+    List<Product> findProductByIsPosted(Boolean isPosted);
     // Tìm sản phẩm theo status
     Page<Product> findByStatus(ProductStatus status, Pageable pageable);
 
