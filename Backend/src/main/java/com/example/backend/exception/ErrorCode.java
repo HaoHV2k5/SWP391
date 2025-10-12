@@ -53,7 +53,8 @@ public enum ErrorCode {
     PERMISSION_NOT_EXISTED (1038, "Permission này tồn tại", HttpStatus.BAD_REQUEST),
     PRODUCT_NOT_ACCEPT_BY_ADMIN (1039, "Product này vẫn chưa được admin chấp nhận", HttpStatus.BAD_REQUEST),
     TAG_NOT_EXIST (1040, "Tag không tồn tại", HttpStatus.BAD_REQUEST),
-    WALLET_NOT_EXIST (1040, "Wallet không tồn tại", HttpStatus.BAD_REQUEST),
+    WALLET_NOT_EXIST (1041, "Wallet không tồn tại", HttpStatus.BAD_REQUEST),
+    EMAIL_NULL (1042, "Tài khoản chưa liên kết email hãy liên kết tài khoản với email trước khi đăng nhập", HttpStatus.BAD_REQUEST),
 
     ;
     private int code;

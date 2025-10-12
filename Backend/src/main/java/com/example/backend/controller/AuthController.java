@@ -12,7 +12,6 @@ import com.example.backend.service.JwtService;
 import com.example.backend.service.UserService;
 import com.nimbusds.jose.JOSEException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,6 +60,7 @@ public class AuthController {
         Map<String, Object> result = authService.googleLogin(token);
         return ApiResponse.<Map<String, Object>>builder().data(result).build();
     }
+
 
 
 
