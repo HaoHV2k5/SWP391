@@ -1,13 +1,13 @@
 package com.example.backend.service;
 
 import com.example.backend.config.Config;
-import com.example.backend.entity.Wallet;
-import com.example.backend.entity.WalletTransaction;
+import com.example.backend.entity.*;
+import com.example.backend.enums.PaymentMethod;
+import com.example.backend.enums.TransactionStatus;
 import com.example.backend.enums.WalletTransactionStatus;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
-import com.example.backend.repository.WalletRepository;
-import com.example.backend.repository.WalletTransactionRepository;
+import com.example.backend.repository.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
@@ -29,6 +29,9 @@ import java.util.*;
 public class PaymentService {
     private final WalletRepository walletRepository;
     private final WalletTransactionRepository walletTransactionRepository;
+    private final UserRepository userRepository;
+    private final PostingPackageRepository postingPackageRepository;
+    private final TransactionRepository transactionRepository;
     public Map<String,Object> generateLinkPayment(HttpServletRequest req, Long userID){
         Map<String, Object> result = new HashMap<>();
         Map<String, Object> error = new HashMap<>();
@@ -125,19 +128,43 @@ public class PaymentService {
             result.put("code", "00");
             result.put("message", "success");
             result.put("data", paymentUrl);
-
+// purport for gen link
             Wallet wallet = walletRepository.findByUserId(userID)
                     .orElseThrow(()->new AppException(ErrorCode.WALLET_NOT_EXIST));
-            WalletTransaction walletTransaction = WalletTransaction.builder()
-                    .wallet(wallet)
-                    .transactionCode(vnp_TxnRef)
-                    .amount(BigDecimal.valueOf(amount).divide(BigDecimal.valueOf(100)))
-                    .balanceBefore(wallet.getBalance())
-                    .balanceAfter(wallet.getBalance())
-                    .status(WalletTransactionStatus.PENDING.name())
-                    .description("Nạp tiền vào ví qua VNPAY")
-                    .build();
-            walletTransactionRepository.save(walletTransaction);
+            if("recharge".equals(orderType)){
+
+
+                WalletTransaction walletTransaction = WalletTransaction.builder()
+                        .wallet(wallet)
+                        .transactionCode(vnp_TxnRef)
+                        .amount(BigDecimal.valueOf(amount).divide(BigDecimal.valueOf(100)))
+                        .balanceBefore(wallet.getBalance())
+                        .balanceAfter(wallet.getBalance())
+                        .status(WalletTransactionStatus.PENDING.name())
+                        .description("Nạp tiền vào ví qua VNPAY")
+                        .build();
+                walletTransactionRepository.save(walletTransaction);
+
+
+            }// quy dinh order infor ma so goi: ten goi
+            else if("buy".equals(orderType)){
+                long postingPackageId = Long.parseLong(vnp_OrderInfo.split(":")[0].trim());
+                User user = userRepository.findById(userID).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+                PostingPackage postingPackage1 = postingPackageRepository.findById(postingPackageId).orElseThrow(() -> new AppException(ErrorCode.POSTING_PACKAGE_NOT_FOUND));
+                Transaction transaction = Transaction.builder()
+                        .wallet(wallet)
+                        .transactionCode(vnp_TxnRef)
+                        .amount(BigDecimal.valueOf(amount).divide(BigDecimal.valueOf(100)))
+                        .user(user)
+                        .paymentMethod(PaymentMethod.WALLET)
+                        .description("mua gói đăng tin")
+                        .status(TransactionStatus.PENDING)
+                        .postingPackage(postingPackage1)
+                        .paymentDate(LocalDateTime.now())
+                        .build();
+                transactionRepository.save(transaction);
+            }
+
 
 
             return result;
@@ -245,11 +272,12 @@ public class PaymentService {
             }
 
             if ("00".equals(responseCode)) {
-                walletTx.setStatus("COMPLETED");
+                walletTx.setStatus(WalletTransactionStatus.COMPLETED.name());
                 walletTx.setCompletedAt(LocalDateTime.now());
 
                 Wallet wallet = walletRepository.findById(walletTx.getWallet().getId()).orElseThrow();
                 wallet.setBalance(wallet.getBalance().add(walletTx.getAmount()));
+                walletTx.setBalanceAfter(wallet.getBalance());
                 wallet.setLastTransactionAt(LocalDateTime.now());
                 walletRepository.save(wallet);
             } else {
@@ -268,6 +296,11 @@ public class PaymentService {
             response.put("Message", "Unknown error");
         }
         return response;
+    }
+
+
+    public void handBuyPostingPackage(Object object){
+
     }
 
 
