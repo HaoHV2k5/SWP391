@@ -55,6 +55,7 @@ public enum ErrorCode {
     TAG_NOT_EXIST (1040, "Tag không tồn tại", HttpStatus.BAD_REQUEST),
     WALLET_NOT_EXIST (1041, "Wallet không tồn tại", HttpStatus.BAD_REQUEST),
     EMAIL_NULL (1042, "Tài khoản chưa liên kết email hãy liên kết tài khoản với email trước khi đăng nhập", HttpStatus.BAD_REQUEST),
+    POSTING_PACKAGE_NOT_FOUND (1043, "không tìm thất gói nào!", HttpStatus.BAD_REQUEST),
 
     ;
     private int code;
