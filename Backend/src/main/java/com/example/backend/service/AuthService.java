@@ -46,6 +46,9 @@ public class AuthService {
     private  String jwtSecret;
     @Value("${password.secrect}")
     private String passwordUser;
+    @Value("${email.login.facebook}")
+    private String emailLoginFacebook;
+
     public LoginResponse login(LoginRequest loginRequest) {
         // Hardcode admin login
 //        if ("admin@electricrade.com".equals(loginRequest.getUsername()) && "admin123".equals(loginRequest.getPassword())) {
@@ -108,16 +111,36 @@ public class AuthService {
 
     public Map<String,Object> googleLogin(OAuth2AuthenticationToken auth){
         OAuth2User oAuth2User = auth.getPrincipal();
-        String email = oAuth2User.getName();
+        String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
-        String picture = oAuth2User.getAttribute("picture");
+        String picture = "";
+        String provider = null;
+        provider = auth.getAuthorizedClientRegistrationId(); // gg or fb
+
+
+        if(email == null ){
+           throw new AppException(ErrorCode.EMAIL_NULL);
+
+        }
+
+            if ("facebook".equalsIgnoreCase(provider)) {
+                Map<String, Object> pictureObj = oAuth2User.getAttribute("picture");
+                if (pictureObj != null && pictureObj.get("data") != null) {
+                    Map<String, Object> data = (Map<String, Object>) pictureObj.get("data");
+                    picture = (String) data.get("url");
+                }
+            } else if ("google".equalsIgnoreCase(provider)) {
+                picture = oAuth2User.getAttribute("picture");
+            } else {
+                // fallback cho các provider khác (github, linkedin, ...)
+                picture = oAuth2User.getAttribute("avatar_url");
+            }
+
         Map<String,Object> map = new HashMap<>();
         map.put("email",email);
         map.put("name",name);
-//        map.put("picture",picture);
-        if(!email.contains("@")){
-            email = email.concat("@gmail.com");
-        }
+        map.put("picture",picture);
+
         // Tìm user đã tồn tại hoặc tạo mới
         var existingUser = userRepository.findByEmail(email);
         User user;
@@ -136,6 +159,8 @@ public class AuthService {
             user.setUsername(email);
             user.setEmail(email);
             user.setFullname(name);
+
+            user.setAvatar(picture);
             user.setPassword(passwordUser); // Google user không cần password
             user.setVerified(true); // Google user đã verified
             user.setLocked(false);
