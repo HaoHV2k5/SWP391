@@ -1,6 +1,7 @@
 package com.example.backend.service;
 
 import com.example.backend.config.Config;
+import com.example.backend.dto.response.TransactionHistoryResponse;
 import com.example.backend.entity.*;
 import com.example.backend.enums.PaymentMethod;
 import com.example.backend.enums.TransactionStatus;
@@ -8,6 +9,7 @@ import com.example.backend.enums.WalletTransactionStatus;
 import com.example.backend.enums.WalletTransactionType;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
+import com.example.backend.mapper.TransactionMapper;
 import com.example.backend.repository.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,8 @@ public class PaymentService {
     private final PostingPackageRepository postingPackageRepository;
     private final TransactionRepository transactionRepository;
     private final UserPostingPackageRepository userPostingPackageRepository;
+    private final TransactionMapper transactionMapper;
+
     public Map<String, Object> generateLinkPayment(HttpServletRequest req, Long userId) {
         try {
             Map<String, String> vnpParams = buildVnpParams(req);
@@ -364,7 +368,18 @@ public class PaymentService {
             response.put("Message", "Unknown error");
         }
         return response;
+
+
+
+
+
+
+
+
+
+
     }
+
 
 
 
