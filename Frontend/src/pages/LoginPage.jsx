@@ -158,31 +158,6 @@ const LoginPage = ({ onLogin }) => {
       if (isLogin) {
         // Admin login sẽ được xử lý bởi backend API
 
-        // Tài khoản test member
-        if (
-          formData.email === "member@test.com" &&
-          formData.password === "123456"
-        ) {
-          onLogin({
-            token: "member-test-token",
-            user: {
-              id: 1,
-              email: "member@test.com",
-              fullName: "Nguyễn Văn Test",
-              fullname: "Nguyễn Văn Test",
-              phone: "0901234567",
-              address: "123 Test Street, Quận 1, TP.HCM",
-              gender: "Nam",
-              yob: "15/05/1995",
-              dateOfBirth: "1995-05-15",
-              joinDate: "15/01/2024",
-              role: "member",
-            },
-          });
-          toast.success("Đăng nhập thành công!");
-          setTimeout(() => navigate("/"), 1000);
-          return;
-        }
 
         //Tài khoản test cho staff
         if (
@@ -529,11 +504,6 @@ const LoginPage = ({ onLogin }) => {
               Password: 123456
               <br />
               <br />
-              <strong>Member:</strong>
-              <br />
-              Email: member@test.com
-              <br />
-              Password: 123456
             </div>
           )}
         </div>
