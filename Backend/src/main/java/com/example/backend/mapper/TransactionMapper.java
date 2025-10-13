@@ -9,8 +9,8 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface TransactionMapper {
-    @Mapping(target = "user", source = "user.id")
-    @Mapping(target = "wallet", source = "wallet.id")
+    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "walletId", source = "wallet.id")
     TransactionHistoryResponse toTransactionHistoryResponse(Transaction transaction);
 
     List<TransactionHistoryResponse> toTransactionHistoryList(List<Transaction> transactions);
