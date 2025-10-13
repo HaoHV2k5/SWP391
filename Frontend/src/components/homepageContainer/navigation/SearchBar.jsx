@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Form, InputGroup, Button } from 'react-bootstrap';
+import { useState } from 'react';
+import { Form, InputGroup } from 'react-bootstrap';
 import { Search } from 'lucide-react';
 
 const SearchBar = () => {
