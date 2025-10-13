@@ -1,6 +1,12 @@
 import { Filter, Download, Eye, Edit } from "lucide-react";
 
-const OrdersTab = ({ orders, formatCurrency, getStatusColor, getStatusText, getPriorityColor }) => {
+const OrdersTab = ({
+  orders,
+  formatCurrency,
+  getStatusColor,
+  getStatusText,
+  getPriorityColor,
+}) => {
   return (
     <div className="staff-card">
       <div
@@ -11,7 +17,7 @@ const OrdersTab = ({ orders, formatCurrency, getStatusColor, getStatusText, getP
           marginBottom: "2rem",
         }}
       >
-        <h3>Danh sách đơn hàng</h3>
+        <h3>Danh sách Tin đăng</h3>
         <div style={{ display: "flex", gap: "1rem" }}>
           <button className="staff-btn staff-btn-secondary">
             <Filter size={16} />
@@ -43,7 +49,9 @@ const OrdersTab = ({ orders, formatCurrency, getStatusColor, getStatusText, getP
                 <td style={{ padding: "1rem" }}>#{order.id}</td>
                 <td style={{ padding: "1rem" }}>{order.customer}</td>
                 <td style={{ padding: "1rem" }}>{order.product}</td>
-                <td style={{ padding: "1rem" }}>{formatCurrency(order.amount)}</td>
+                <td style={{ padding: "1rem" }}>
+                  {formatCurrency(order.amount)}
+                </td>
                 <td style={{ padding: "1rem" }}>
                   <span
                     style={{
@@ -78,7 +86,10 @@ const OrdersTab = ({ orders, formatCurrency, getStatusColor, getStatusText, getP
                     <button className="staff-action-btn" title="Xem chi tiết">
                       <Eye size={16} />
                     </button>
-                    <button className="staff-action-btn" title="Cập nhật trạng thái">
+                    <button
+                      className="staff-action-btn"
+                      title="Cập nhật trạng thái"
+                    >
                       <Edit size={16} />
                     </button>
                   </div>
@@ -93,6 +104,3 @@ const OrdersTab = ({ orders, formatCurrency, getStatusColor, getStatusText, getP
 };
 
 export default OrdersTab;
-
-
-
