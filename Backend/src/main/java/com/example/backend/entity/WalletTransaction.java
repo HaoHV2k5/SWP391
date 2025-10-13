@@ -28,8 +28,8 @@ public class WalletTransaction {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "NVARCHAR(20)")
-    @Builder.Default
-    private WalletTransactionType type = WalletTransactionType.RECHARGE; // DEPOSIT, PAYMENT_PACKAGE, PAYMENT_PRODUCT
+
+    private WalletTransactionType typeWalletTraction; // DEPOSIT, PAYMENT_PACKAGE, PAYMENT_PRODUCT
 
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;

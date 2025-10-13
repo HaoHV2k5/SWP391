@@ -48,7 +48,8 @@ public class User {
     @Column(name = "locked",nullable = false)
     @Builder.Default
     private boolean locked = false;
-
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<UserPostingPackage> userPostingPackages;
 
 
 }

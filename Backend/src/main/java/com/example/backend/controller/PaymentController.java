@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 
 import com.example.backend.config.Config;
+import com.example.backend.dto.request.BuyPackageRequest;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.service.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,12 +24,19 @@ import java.util.*;
 
 public class PaymentController {
     private final PaymentService paymentService;
-    @PostMapping("/create")
+    // nap vao vi
+    @PostMapping("/recharge")
     public ApiResponse<Map<String, Object>> createPayment(HttpServletRequest req, @RequestParam Long userId) {
         Map<String, Object> map = paymentService.generateLinkPayment(req, userId);
         return ApiResponse.<Map<String, Object>>builder().data(map).build();
     }
-
+// mua goi
+    @PostMapping("/buy-package")
+    public ApiResponse<Boolean> buyPackage(@RequestBody BuyPackageRequest request) {
+       boolean ans = paymentService.handleBuyTransaction(request.getUserId(),request.getPackageId());
+       String mess = ans? "mua thành công" : "mua thất bại! không đủ tiền trong ví";
+       return ApiResponse.<Boolean>builder().data(ans).message(mess).build();
+    }
 
     @GetMapping("/payment-return")
     public ResponseEntity<String> handleVnpayReturn(HttpServletRequest request) {
