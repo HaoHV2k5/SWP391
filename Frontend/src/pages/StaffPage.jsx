@@ -7,7 +7,13 @@ import CustomersTab from "../components/staff/CustomersTab";
 import ProductsTab from "../components/staff/ProductsTab";
 import "../styles/staff/index.css";
 import { Layout, Menu, Breadcrumb, Avatar, Dropdown, Space, theme } from "antd";
-import { PieChartOutlined, AppstoreOutlined, TeamOutlined, UserOutlined, LogoutOutlined } from "@ant-design/icons";
+import {
+  PieChartOutlined,
+  AppstoreOutlined,
+  TeamOutlined,
+  UserOutlined,
+  LogoutOutlined,
+} from "@ant-design/icons";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -25,7 +31,7 @@ const StaffPage = ({ user, onLogout }) => {
   // ========================================
   // STATE MANAGEMENT
   // ========================================
-  const [activeTab, setActiveTab] = useState("dashboard"); // Tab hiện tại: dashboard, orders, customers, products
+  const [activeTab, setActiveTab] = useState("products"); // Tab hiện tại: products, kyc, dashboard
   const [searchQuery, setSearchQuery] = useState(""); // Từ khóa tìm kiếm
   const [loading, setLoading] = useState(false); // Loading state cho các operations
   const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Kiểm tra authentication
@@ -34,62 +40,80 @@ const StaffPage = ({ user, onLogout }) => {
   // MOCK DATA - Dữ liệu giả lập để demo
   // ========================================
   const [stats, setStats] = useState({
-    totalOrders: 156, // Tổng số đơn hàng
-    pendingOrders: 23, // Đơn hàng chờ xử lý
-    completedOrders: 133, // Đơn hàng đã hoàn thành
-    totalRevenue: 2500000000, // Tổng doanh thu (VND)
+    totalProducts: 45, // Tổng số sản phẩm
+    pendingProducts: 12, // Sản phẩm chờ duyệt
+    approvedProducts: 28, // Sản phẩm đã duyệt
+    rejectedProducts: 5, // Sản phẩm bị từ chối
+    totalKyc: 23, // Tổng số KYC
+    pendingKyc: 8, // KYC chờ duyệt
+    approvedKyc: 15, // KYC đã duyệt
   });
 
-  // Mock data cho đơn hàng - bao gồm trạng thái và mức độ ưu tiên
-  const [orders, setOrders] = useState([
+  // Mock data cho sản phẩm chờ duyệt
+  const [products, setProducts] = useState([
     {
       id: 1,
-      customer: "Nguyễn Văn A",
-      product: "Pin Lithium-ion 48V 20Ah",
-      amount: 2500000,
-      status: "pending", // pending, processing, completed, cancelled
-      date: "2024-01-20",
-      priority: "high", // high, medium, low
+      title: "Pin Lithium-ion 48V 20Ah",
+      seller: "Nguyễn Văn A",
+      price: 2500000,
+      status: "PENDING", // PENDING, STAFF_APPROVED, ADMIN_APPROVED, REJECTED
+      category: "Pin xe điện",
+      description: "Pin lithium-ion chất lượng cao cho xe điện",
+      images: ["pin1.jpg", "pin2.jpg"],
+      createdAt: "2024-01-20",
+      reason: "", // Lý do từ chối nếu có
     },
     {
       id: 2,
-      customer: "Trần Thị B",
-      product: "Xe điện VinFast Klara S",
-      amount: 15000000,
-      status: "processing",
-      date: "2024-01-22",
-      priority: "medium",
+      title: "Xe điện VinFast Klara S",
+      seller: "Trần Thị B",
+      price: 15000000,
+      status: "PENDING",
+      category: "Xe điện",
+      description: "Xe điện VinFast Klara S mới 100%",
+      images: ["xe1.jpg", "xe2.jpg"],
+      createdAt: "2024-01-22",
+      reason: "",
     },
     {
       id: 3,
-      customer: "Lê Văn C",
-      product: "Pin sắt phosphate 60V 30Ah",
-      amount: 3200000,
-      status: "completed",
-      date: "2024-01-25",
-      priority: "low",
+      title: "Pin sắt phosphate 60V 30Ah",
+      seller: "Lê Văn C",
+      price: 3200000,
+      status: "STAFF_APPROVED",
+      category: "Pin xe điện",
+      description: "Pin sắt phosphate bền bỉ",
+      images: ["pin3.jpg"],
+      createdAt: "2024-01-25",
+      reason: "",
     },
   ]);
 
-  // Mock data cho khách hàng - thông tin cơ bản và thống kê
-  const [customers, setCustomers] = useState([
+  // Mock data cho KYC chờ duyệt
+  const [kycList, setKycList] = useState([
     {
       id: 1,
-      name: "Nguyễn Văn A",
+      userId: 101,
+      fullName: "Nguyễn Văn A",
       email: "nguyenvana@email.com",
       phone: "0123456789",
-      status: "active", // active, inactive
-      joinDate: "2024-01-15",
-      totalOrders: 5, // Tổng số đơn hàng đã mua
+      status: "PENDING", // PENDING, STAFF_APPROVED, ADMIN_APPROVED, REJECTED
+      frontImage: "cccd_front.jpg",
+      backImage: "cccd_back.jpg",
+      submittedAt: "2024-01-20",
+      reason: "", // Lý do từ chối nếu có
     },
     {
       id: 2,
-      name: "Trần Thị B",
+      userId: 102,
+      fullName: "Trần Thị B",
       email: "tranthib@email.com",
       phone: "0987654321",
-      status: "active",
-      joinDate: "2024-01-20",
-      totalOrders: 3,
+      status: "PENDING",
+      frontImage: "cccd_front2.jpg",
+      backImage: "cccd_back2.jpg",
+      submittedAt: "2024-01-22",
+      reason: "",
     },
   ]);
 
@@ -137,15 +161,14 @@ const StaffPage = ({ user, onLogout }) => {
   // Lấy màu sắc cho trạng thái (status)
   const getStatusColor = (status) => {
     switch (status) {
-      case "active":
-      case "completed":
-        return "#28a745"; // Xanh lá - Hoạt động/Hoàn thành
-      case "pending":
-        return "#ffc107"; // Vàng - Chờ xử lý
-      case "processing":
-        return "#17a2b8"; // Xanh dương - Đang xử lý
-      case "cancelled":
-        return "#dc3545"; // Đỏ - Đã hủy
+      case "PENDING":
+        return "#ffc107"; // Vàng - Chờ duyệt
+      case "STAFF_APPROVED":
+        return "#17a2b8"; // Xanh dương - Staff đã duyệt
+      case "ADMIN_APPROVED":
+        return "#28a745"; // Xanh lá - Admin đã duyệt
+      case "REJECTED":
+        return "#dc3545"; // Đỏ - Đã từ chối
       default:
         return "#6c757d"; // Xám - Mặc định
     }
@@ -154,6 +177,14 @@ const StaffPage = ({ user, onLogout }) => {
   // Lấy text hiển thị cho trạng thái
   const getStatusText = (status) => {
     switch (status) {
+      case "PENDING":
+        return "Chờ duyệt";
+      case "STAFF_APPROVED":
+        return "Staff đã duyệt";
+      case "ADMIN_APPROVED":
+        return "Admin đã duyệt";
+      case "REJECTED":
+        return "Đã từ chối";
       case "active":
         return "Hoạt động";
       case "pending":
@@ -206,10 +237,9 @@ const StaffPage = ({ user, onLogout }) => {
 
   // MAIN RENDER - Giao diện chính (Ant Design)
   const items = [
+    getItem("Tin Đăng", "products", <AppstoreOutlined />),
+    getItem("KYC", "kyc", <TeamOutlined />),
     getItem("Tổng quan", "dashboard", <PieChartOutlined />),
-    getItem("Đơn hàng", "orders", <AppstoreOutlined />),
-    getItem("Khách hàng", "customers", <TeamOutlined />),
-    getItem("Sản phẩm", "products", <AppstoreOutlined />),
   ];
 
   const dropdownItems = {
@@ -220,7 +250,12 @@ const StaffPage = ({ user, onLogout }) => {
         label: (
           <button
             onClick={onLogout}
-            style={{ background: "transparent", border: 0, color: "#ef4444", cursor: "pointer" }}
+            style={{
+              background: "transparent",
+              border: 0,
+              color: "#044107ff",
+              cursor: "pointer",
+            }}
           >
             Đăng xuất
           </button>
@@ -233,62 +268,99 @@ const StaffPage = ({ user, onLogout }) => {
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Sider collapsible collapsed={collapsed} onCollapse={(v) => setCollapsed(v)}>
+      <Sider
+        collapsible
+        collapsed={collapsed}
+        onCollapse={(v) => setCollapsed(v)}
+      >
         <div className="demo-logo-vertical" />
-        <Menu theme="dark" mode="inline" items={items} selectedKeys={[activeTab]} onClick={(e) => setActiveTab(e.key)} />
+        <Menu
+          theme="dark"
+          mode="inline"
+          items={items}
+          selectedKeys={[activeTab]}
+          onClick={(e) => setActiveTab(e.key)}
+        />
       </Sider>
       <Layout>
         <Header style={{ padding: "0 24px", background: colorBgContainer }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "100%" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              height: "100%",
+            }}
+          >
             <div style={{ fontWeight: 800 }}>
-              {activeTab === "dashboard" && "📊 Tổng quan"}
-              {activeTab === "orders" && "📋 Quản lý đơn hàng"}
-              {activeTab === "customers" && "👥 Quản lý khách hàng"}
-              {activeTab === "products" && "📦 Quản lý sản phẩm"}
+              {activeTab === "products" && " Duyệt Tin Đăng"}
+              {activeTab === "kyc" && "Duyệt KYC"}
+              {activeTab === "dashboard" && "Tổng quan"}
             </div>
             <Dropdown menu={dropdownItems} trigger={["click"]}>
               <a onClick={(e) => e.preventDefault()}>
                 <Space>
                   <Avatar icon={<UserOutlined />} />
-                  <span>{user?.user?.fullName || user?.fullname || "Staff"}</span>
+                  <span>
+                    {user?.user?.fullName || user?.fullname || "Staff"}
+                  </span>
                 </Space>
               </a>
             </Dropdown>
           </div>
         </Header>
         <Content style={{ margin: "0 16px" }}>
-          <Breadcrumb style={{ margin: "16px 0" }} items={[{ title: "Staff" }, { title: items.find(i => i.key === activeTab)?.label }]} />
-          <div style={{ padding: 24, minHeight: 360, background: colorBgContainer, borderRadius: borderRadiusLG }}>
-          {activeTab === "dashboard" && (
-            <DashboardTab
-              stats={stats}
-              orders={orders}
-              formatCurrency={formatCurrency}
-              getStatusColor={getStatusColor}
-              getStatusText={getStatusText}
-              getPriorityColor={getPriorityColor}
-            />
-          )}
-          {activeTab === "orders" && (
-              <OrdersTab
-                orders={orders}
+          <Breadcrumb
+            style={{ margin: "16px 0" }}
+            items={[
+              { title: "Staff" },
+              { title: items.find((i) => i.key === activeTab)?.label },
+            ]}
+          />
+          <div
+            style={{
+              padding: 24,
+              minHeight: 360,
+              background: colorBgContainer,
+              borderRadius: borderRadiusLG,
+            }}
+          >
+            {activeTab === "products" && (
+              <ProductsTab
+                products={products}
+                setProducts={setProducts}
                 formatCurrency={formatCurrency}
                 getStatusColor={getStatusColor}
                 getStatusText={getStatusText}
-                getPriorityColor={getPriorityColor}
+                loading={loading}
+                setLoading={setLoading}
               />
             )}
-          {activeTab === "customers" && (
+            {activeTab === "kyc" && (
               <CustomersTab
-                customers={customers}
+                kycList={kycList}
+                setKycList={setKycList}
+                getStatusColor={getStatusColor}
+                getStatusText={getStatusText}
+                loading={loading}
+                setLoading={setLoading}
+              />
+            )}
+            {activeTab === "dashboard" && (
+              <DashboardTab
+                stats={stats}
+                products={products}
+                kycList={kycList}
+                formatCurrency={formatCurrency}
                 getStatusColor={getStatusColor}
                 getStatusText={getStatusText}
               />
             )}
-            {activeTab === "products" && <ProductsTab formatCurrency={formatCurrency} />}
-              </div>
+          </div>
         </Content>
-        <Footer style={{ textAlign: "center" }}>Staff Console ©{new Date().getFullYear()}</Footer>
+        <Footer style={{ textAlign: "center" }}>
+          Staff Console ©{new Date().getFullYear()}
+        </Footer>
       </Layout>
     </Layout>
   );
