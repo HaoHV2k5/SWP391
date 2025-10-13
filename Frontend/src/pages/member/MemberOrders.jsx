@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Spinner } from "react-bootstrap";
 import MemberHeader from "../../components/member/MemberHeader";
 import OrdersTab from "../../components/member/OrdersTab";
+import productService from "../../services/productService";
 import "../../styles/member/index.css";
 
 const MemberOrders = ({ user }) => {
@@ -10,49 +11,40 @@ const MemberOrders = ({ user }) => {
   const [loading, setLoading] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  // Mock data for orders
-  const [orders, setOrders] = useState([
-    {
-      id: 1,
-      product: "VinFast Klara S 2023",
-      price: 18500000,
-      status: "completed",
-      date: "2024-01-20",
-      image: "/logo.jpg",
-    },
-    {
-      id: 2,
-      product: "Pin Lithium-ion 48V 20Ah",
-      price: 3200000,
-      status: "shipping",
-      date: "2024-01-22",
-      image: "https://bizweb.dktcdn.net/thumb/grande/100/433/676/products/pin-xe-may-dien-3-fe7c9482-c1df-4f57-8ac2-e0f227fca542.jpg",
-    },
-    {
-      id: 3,
-      product: "Honda PCX Electric 2022",
-      price: 28000000,
-      status: "pending",
-      date: "2024-01-25",
-      image: "https://www.checkraka.com/uploaded/logo/f7/f78a308ee33cc49223ef59e78aade972.webp",
-    },
-    {
-      id: 4,
-      product: "Sạc nhanh 60V 5A",
-      price: 850000,
-      status: "cancelled",
-      date: "2024-01-10",
-      image: "https://bizweb.dktcdn.net/thumb/grande/100/433/676/products/sac-nhanh-xe-may-dien.jpg",
-    },
-    {
-      id: 5,
-      product: "VinFast Evo200 2023",
-      price: 42000000,
-      status: "completed",
-      date: "2024-01-05",
-      image: "/logo.jpg",
-    },
-  ]);
+  // State for orders
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+
+  // Function to load orders from productService
+  const loadOrders = async () => {
+    setLoadingOrders(true);
+    try {
+      // Sử dụng getPublicList để lấy posts, sau đó convert thành orders format
+      // Hoặc có thể tạo endpoint riêng cho orders
+      const result = await productService.getPublicList();
+      if (result.success) {
+        // Tạm thời convert posts thành orders format
+        // Trong thực tế cần có endpoint riêng cho orders
+        const ordersData = result.data.map((post, index) => ({
+          id: post.id || index + 1,
+          product: post.title || post.productName || "Sản phẩm",
+          price: post.price || post.vehicle?.price || post.battery?.price || 0,
+          status: "completed", // Tạm thời set status mặc định
+          date: post.createdDate || post.createdAt || new Date().toISOString().split('T')[0],
+          image: post.image || post.vehicle?.image || post.battery?.image || post.images?.[0] || "/logo.jpg",
+        }));
+        setOrders(ordersData);
+      } else {
+        console.error("Failed to load orders:", result.message);
+        setOrders([]);
+      }
+    } catch (error) {
+      console.error("Error loading orders:", error);
+      setOrders([]);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
 
   useEffect(() => {
     console.log("=== MemberOrders useEffect ===");
@@ -93,6 +85,9 @@ const MemberOrders = ({ user }) => {
     }
 
     console.log("Member orders access granted");
+    
+    // Load orders when user is authenticated
+    loadOrders();
   }, [user, navigate]);
 
   const formatCurrency = (amount) => {
@@ -143,7 +138,7 @@ const MemberOrders = ({ user }) => {
         <MemberHeader activeTab="orders" />
 
         {/* Orders Content */}
-        <OrdersTab orders={orders} formatCurrency={formatCurrency} />
+        <OrdersTab orders={orders} formatCurrency={formatCurrency} loading={loadingOrders} />
       </div>
     </Container>
   );
