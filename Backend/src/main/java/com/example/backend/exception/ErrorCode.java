@@ -56,6 +56,8 @@ public enum ErrorCode {
     WALLET_NOT_EXIST (1041, "Wallet không tồn tại", HttpStatus.BAD_REQUEST),
     EMAIL_NULL (1042, "Tài khoản chưa liên kết email hãy liên kết tài khoản với email trước khi đăng nhập", HttpStatus.BAD_REQUEST),
     POSTING_PACKAGE_NOT_FOUND (1043, "không tìm thất gói nào!", HttpStatus.BAD_REQUEST),
+    INVALID_ORDER_TYPE (1044, "Order type chỉ có thể là recharge hoặc buy", HttpStatus.BAD_REQUEST),
+
 
     ;
     private int code;
