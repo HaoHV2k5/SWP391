@@ -8,11 +8,11 @@ import {
 
 const DashboardTab = ({
   stats,
-  orders,
+  products,
+  kycList,
   formatCurrency,
   getStatusColor,
   getStatusText,
-  getPriorityColor,
 }) => {
   return (
     <div>
@@ -49,10 +49,10 @@ const DashboardTab = ({
               fontWeight: "700",
             }}
           >
-            {stats.totalOrders}
+            {stats.totalProducts}
           </h3>
           <p style={{ color: "rgba(255, 255, 255, 0.7)", margin: 0 }}>
-            Tổng đơn hàng
+            Tổng Tin Đăng
           </p>
         </div>
 
@@ -77,10 +77,10 @@ const DashboardTab = ({
               fontWeight: "700",
             }}
           >
-            {stats.pendingOrders}
+            {stats.pendingProducts}
           </h3>
           <p style={{ color: "rgba(255, 255, 255, 0.7)", margin: 0 }}>
-            Chờ xử lý
+            Tin Đăng chờ duyệt
           </p>
         </div>
 
@@ -108,10 +108,10 @@ const DashboardTab = ({
               fontWeight: "700",
             }}
           >
-            {stats.completedOrders}
+            {stats.approvedProducts}
           </h3>
           <p style={{ color: "rgba(255, 255, 255, 0.7)", margin: 0 }}>
-            Đã hoàn thành
+            Tin Đăng đã duyệt
           </p>
         </div>
 
@@ -139,16 +139,16 @@ const DashboardTab = ({
               fontWeight: "700",
             }}
           >
-            {formatCurrency(stats.totalRevenue)}
+            {stats.totalKyc}
           </h3>
           <p style={{ color: "rgba(255, 255, 255, 0.7)", margin: 0 }}>
-            Doanh thu
+            Tổng KYC
           </p>
         </div>
       </div>
 
       {/* ======================================== */}
-      {/* 📋 RECENT ORDERS - Bảng đơn hàng gần đây */}
+      {/* 📦 RECENT PRODUCTS - Sản phẩm gần đây */}
       {/* ======================================== */}
       <div
         className="card"
@@ -159,6 +159,7 @@ const DashboardTab = ({
           borderRadius: "15px",
           boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
           padding: "2rem",
+          marginBottom: "2rem",
         }}
       >
         <div
@@ -177,7 +178,7 @@ const DashboardTab = ({
               fontWeight: "600",
             }}
           >
-            Đơn hàng gần đây
+            Tin Đăng chờ duyệt gần đây
           </h3>
           <div
             style={{
@@ -217,7 +218,7 @@ const DashboardTab = ({
                     fontWeight: "600",
                   }}
                 >
-                  Khách hàng
+                  Tên
                 </th>
                 <th
                   style={{
@@ -227,7 +228,7 @@ const DashboardTab = ({
                     fontWeight: "600",
                   }}
                 >
-                  Sản phẩm
+                  Người bán
                 </th>
                 <th
                   style={{
@@ -237,7 +238,7 @@ const DashboardTab = ({
                     fontWeight: "600",
                   }}
                 >
-                  Số tiền
+                  Giá
                 </th>
                 <th
                   style={{
@@ -257,7 +258,113 @@ const DashboardTab = ({
                     fontWeight: "600",
                   }}
                 >
-                  Ưu tiên
+                  Ngày tạo
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.slice(0, 5).map((product) => (
+                <tr
+                  key={product.id}
+                  style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.1)" }}
+                >
+                  <td style={{ padding: "1rem", color: "white" }}>
+                    #{product.id}
+                  </td>
+                  <td style={{ padding: "1rem", color: "white" }}>
+                    {product.title}
+                  </td>
+                  <td style={{ padding: "1rem", color: "white" }}>
+                    {product.seller}
+                  </td>
+                  <td style={{ padding: "1rem", color: "white" }}>
+                    {formatCurrency(product.price)}
+                  </td>
+                  <td style={{ padding: "1rem" }}>
+                    <span
+                      style={{
+                        padding: "0.25rem 0.75rem",
+                        borderRadius: "15px",
+                        fontSize: "0.8rem",
+                        backgroundColor: getStatusColor(product.status) + "20",
+                        color: getStatusColor(product.status),
+                        fontWeight: "500",
+                      }}
+                    >
+                      {getStatusText(product.status)}
+                    </span>
+                  </td>
+                  <td style={{ padding: "1rem", color: "white" }}>
+                    {product.createdAt}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ======================================== */}
+      {/* RECENT KYC - KYC gần đây */}
+      {/* ======================================== */}
+      <div
+        className="card"
+        style={{
+          background: "rgba(26, 26, 46, 0.8)",
+          backdropFilter: "blur(20px)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          borderRadius: "15px",
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+          padding: "2rem",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "1.5rem",
+          }}
+        >
+          <h3
+            style={{
+              margin: 0,
+              color: "white",
+              fontSize: "1.5rem",
+              fontWeight: "600",
+            }}
+          >
+            KYC chờ duyệt gần đây
+          </h3>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              color: "rgba(255, 255, 255, 0.7)",
+              fontSize: "0.9rem",
+            }}
+          >
+            <TrendingUp size={16} />
+            <span>Hiệu suất tốt</span>
+          </div>
+        </div>
+
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr
+                style={{ borderBottom: "2px solid rgba(255, 255, 255, 0.1)" }}
+              >
+                <th
+                  style={{
+                    padding: "1rem",
+                    textAlign: "left",
+                    color: "rgba(255, 255, 255, 0.8)",
+                    fontWeight: "600",
+                  }}
+                >
+                  ID
                 </th>
                 <th
                   style={{
@@ -267,37 +374,65 @@ const DashboardTab = ({
                     fontWeight: "600",
                   }}
                 >
-                  Ngày
+                  Họ tên
+                </th>
+                <th
+                  style={{
+                    padding: "1rem",
+                    textAlign: "left",
+                    color: "rgba(255, 255, 255, 0.8)",
+                    fontWeight: "600",
+                  }}
+                >
+                  Email
+                </th>
+                <th
+                  style={{
+                    padding: "1rem",
+                    textAlign: "left",
+                    color: "rgba(255, 255, 255, 0.8)",
+                    fontWeight: "600",
+                  }}
+                >
+                  Số điện thoại
+                </th>
+                <th
+                  style={{
+                    padding: "1rem",
+                    textAlign: "left",
+                    color: "rgba(255, 255, 255, 0.8)",
+                    fontWeight: "600",
+                  }}
+                >
+                  Trạng thái
+                </th>
+                <th
+                  style={{
+                    padding: "1rem",
+                    textAlign: "left",
+                    color: "rgba(255, 255, 255, 0.8)",
+                    fontWeight: "600",
+                  }}
+                >
+                  Ngày nộp
                 </th>
               </tr>
             </thead>
             <tbody>
-              {orders.slice(0, 5).map((order) => (
+              {kycList.slice(0, 5).map((kyc) => (
                 <tr
-                  key={order.id}
-                  style={{
-                    borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-                    transition: "all 0.3s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor =
-                      "rgba(255, 255, 255, 0.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "transparent";
-                  }}
+                  key={kyc.id}
+                  style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.1)" }}
                 >
+                  <td style={{ padding: "1rem", color: "white" }}>#{kyc.id}</td>
                   <td style={{ padding: "1rem", color: "white" }}>
-                    #{order.id}
+                    {kyc.fullName}
                   </td>
                   <td style={{ padding: "1rem", color: "white" }}>
-                    {order.customer}
+                    {kyc.email}
                   </td>
                   <td style={{ padding: "1rem", color: "white" }}>
-                    {order.product}
-                  </td>
-                  <td style={{ padding: "1rem", color: "white" }}>
-                    {formatCurrency(order.amount)}
+                    {kyc.phone}
                   </td>
                   <td style={{ padding: "1rem" }}>
                     <span
@@ -305,33 +440,16 @@ const DashboardTab = ({
                         padding: "0.25rem 0.75rem",
                         borderRadius: "15px",
                         fontSize: "0.8rem",
-                        backgroundColor: getStatusColor(order.status) + "20",
-                        color: getStatusColor(order.status),
+                        backgroundColor: getStatusColor(kyc.status) + "20",
+                        color: getStatusColor(kyc.status),
                         fontWeight: "500",
                       }}
                     >
-                      {getStatusText(order.status)}
-                    </span>
-                  </td>
-                  <td style={{ padding: "1rem" }}>
-                    <span
-                      style={{
-                        padding: "0.25rem 0.75rem",
-                        borderRadius: "15px",
-                        fontSize: "0.8rem",
-                        backgroundColor:
-                          getPriorityColor(order.priority) + "20",
-                        color: getPriorityColor(order.priority),
-                        fontWeight: "500",
-                      }}
-                    >
-                      {order.priority === "high" && "Cao"}
-                      {order.priority === "medium" && "Trung bình"}
-                      {order.priority === "low" && "Thấp"}
+                      {getStatusText(kyc.status)}
                     </span>
                   </td>
                   <td style={{ padding: "1rem", color: "white" }}>
-                    {order.date}
+                    {kyc.submittedAt}
                   </td>
                 </tr>
               ))}
