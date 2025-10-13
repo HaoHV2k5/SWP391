@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import com.example.backend.config.Config;
 import com.example.backend.dto.request.BuyPackageRequest;
 import com.example.backend.dto.response.ApiResponse;
+import com.example.backend.dto.response.TransactionHistoryResponse;
 import com.example.backend.service.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import java.util.*;
 
 public class PaymentController {
     private final PaymentService paymentService;
+
     // nap vao vi
     @PostMapping("/recharge")
     public ApiResponse<Map<String, Object>> createPayment(HttpServletRequest req, @RequestParam Long userId) {
@@ -55,10 +57,10 @@ public class PaymentController {
 //    }
     @GetMapping("/callback")
     public ResponseEntity<Map<String, String>> handleVnpayIpn(@RequestParam Map<String, String> requestParams) {
-    log.warn("đã callback");
-    Map<String, String> response = paymentService.handleVnpayIpn(requestParams);
-    return ResponseEntity.ok(response);
-}
+        log.warn("đã callback");
+        Map<String, String> response = paymentService.handleVnpayIpn(requestParams);
+        return ResponseEntity.ok(response);
+    }
 
 
 
