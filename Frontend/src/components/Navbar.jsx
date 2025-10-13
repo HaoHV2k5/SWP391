@@ -1,7 +1,5 @@
 import { Link } from "react-router-dom";
-import { User, LogOut, Search, ShoppingCart, PhoneCall, Menu, MapPin } from "lucide-react";
-import { useState, useEffect } from "react";
-import { categoryData } from '../data/homepageData';
+import { useState } from "react";
 import SearchBar from './homepageContainer/navigation/SearchBar';
 import CategoryDropdown from './homepageContainer/navigation/CategoryDropdown';
 import StoreLocationModal from './homepageContainer/navigation/StoreLocationModal';
