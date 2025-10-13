@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -35,6 +36,10 @@ public class PostingPackage {
 
     @Column(nullable = false)
     private Boolean isActive;
+
+    @OneToMany(mappedBy = "postingPackage", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<UserPostingPackage> userPostingPackages;
+
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
