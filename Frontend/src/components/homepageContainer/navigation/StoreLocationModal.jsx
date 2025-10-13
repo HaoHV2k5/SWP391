@@ -1,7 +1,9 @@
-import React from 'react';
-import { Modal, ListGroup, Button } from 'react-bootstrap';
+import { Modal, ListGroup } from 'react-bootstrap';
 import { MapPin, Phone } from 'lucide-react';
-import { storeLocations } from '../../../data/homepageData';
+const storeLocations = [
+  { id: 1, name: 'ElectricStore Q1', address: '123 Lê Lợi, Q1, TP.HCM', phone: '0900 000 001', distance: '1.2km' },
+  { id: 2, name: 'ElectricStore Q3', address: '45 Pasteur, Q3, TP.HCM', phone: '0900 000 002', distance: '2.8km' }
+];
 
 const StoreLocationModal = ({ show, onHide }) => {
   return (

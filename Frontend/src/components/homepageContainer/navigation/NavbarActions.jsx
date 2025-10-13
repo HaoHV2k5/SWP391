@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button, Badge } from "react-bootstrap";
 import { MapPin, Bell, Heart } from "lucide-react";
 import StoreLocationModal from "./StoreLocationModal";

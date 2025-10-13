@@ -1,13 +1,13 @@
 import Banner from "../components/Banner";
 import ProductGrid from "../components/homepageContainer/home/ProductGrid";
-import { vehicleListings } from "../data/productsData";
+import FilterBar from "../components/FilterBar";
 import "../components/homepageContainer/styles/HomePage.css";
 import useProducts from "../hooks/useProducts";
-import useProductFilter from "../hooks/useProductFilter";
+import { useFilter } from "../hooks/useFilter";
 
 const HomePage = () => {
   const { products, loading, error } = useProducts();
-  const { filteredProducts, handleFiltersChange } = useProductFilter(products);
+  const { filteredProducts, handleFiltersChange } = useFilter(products);
 
   return (
     <div
@@ -84,7 +84,29 @@ const HomePage = () => {
           {error}
         </div>
       ) : (
-        <ProductGrid products={products} />
+        <>
+          {/* Filter Section */}
+          <section
+            style={{
+              padding: "20px 0",
+              background: "#fff",
+              borderBottom: "1px solid #e0e0e0",
+            }}
+          >
+            <div
+              style={{
+                maxWidth: "1200px",
+                margin: "0 auto",
+                padding: "0 15px",
+              }}
+            >
+              <FilterBar onFilterChange={handleFiltersChange} />
+            </div>
+          </section>
+
+          {/* Products Grid */}
+          <ProductGrid products={filteredProducts} />
+        </>
       )}
     </div>
   );
