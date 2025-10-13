@@ -21,4 +21,9 @@ public class TransactionService {
         return transactionMapper.toTransactionHistoryList(responses);
     }
 
+    public List<TransactionHistoryResponse> getTranctionByUserid(Long userId){
+        List<Transaction> responses = transactionRepository.findByUserId(userId);
+        return transactionMapper.toTransactionHistoryList(responses);
+    }
+
 }
