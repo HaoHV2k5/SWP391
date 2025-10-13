@@ -1,5 +1,7 @@
 package com.example.backend.entity;
 
+import com.example.backend.enums.TransactionStatus;
+import com.example.backend.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,25 +31,25 @@ public class Transaction {
     @JoinColumn(name = "posting_package_id")
     private PostingPackage postingPackage;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
+    
 
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "NVARCHAR(50)")
-    private String paymentMethod; // WALLET, CREDIT_CARD, BANK_TRANSFER, OTHER
+    private PaymentMethod paymentMethod;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "NVARCHAR(20)")
-    private String status; // PENDING, COMPLETED, FAILED, REFUNDED
+    private TransactionStatus status; // PENDING, COMPLETED, FAILED, REFUNDED
 
     @Column(columnDefinition = "NVARCHAR(255)")
     private String description;
     
     @Column(nullable = false)
     @Builder.Default
-    private Boolean isWalletPayment = false;
+    private Boolean isWalletPayment = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wallet_id")

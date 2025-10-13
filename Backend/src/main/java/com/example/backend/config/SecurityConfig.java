@@ -71,7 +71,7 @@ public class SecurityConfig  {
                                 .redirectionEndpoint(redir -> redir.baseUri("/login/oauth2/code/*"))
                                 .successHandler((HttpServletRequest request, HttpServletResponse response, Authentication authentication) -> {
                                     System.out.println("=== OAuth2 Success Handler Called ===");
-                                    System.out.println("Authentication: " + authentication);
+                                    System.out.println(" o trong security config Authentication: " + authentication);
                                     response.sendRedirect("/oauth2/success");
                                 }))
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button, Card } from 'react-bootstrap';
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useSavedProducts } from '../contexts/SavedProductsContext';
@@ -8,6 +7,7 @@ const ProductCard = ({ product }) => {
   const { vehicleInfo, SellerInfo } = product;
   const { toggle, isSaved } = useSavedProducts();
   const saved = isSaved(product.id);
+  
 
   return (
     <Card style={{
@@ -17,8 +17,11 @@ const ProductCard = ({ product }) => {
 
       <Card.Img
         variant="top"
-        src={product.image}
+        src={product.image && String(product.image).trim() !== "" ? product.image : "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPi"}
         style={{ height: "200px", objectFit: "cover" }}
+        onError={(e) => {
+          e.currentTarget.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPi";
+        }}
       />
 
       <Card.Body style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
@@ -26,17 +29,33 @@ const ProductCard = ({ product }) => {
           {/* Title */}
           <Card.Title style={{
             fontSize: "16px",
-            marginBottom: "8px",
+            marginBottom: "4px",
+            fontWeight: "500",
+            lineHeight: "1.4",
+            color: "#333"
           }}>
-            {vehicleInfo?.description || vehicleInfo?.title || product.name}
+            {product.title || vehicleInfo?.title || product.name || "Không có tiêu đề"}
           </Card.Title>
+
+          {/* Description */}
+          <div style={{
+            fontSize: "14px",
+            color: "#666",
+            marginBottom: "8px",
+            lineHeight: "1.3",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden"
+          }}>
+            {product.description || vehicleInfo?.description || "Không có mô tả"}
+          </div>
 
           {/* Vehicle Info */}
           <div style={{ fontSize: "14px", color: "#666", marginBottom: "10px" }}>
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
               <span>{product.year}</span>
               <span>{product.brand}</span>
-              <span>{product.mileage ? `${product.mileage}km` : "Chưa có"}</span>
             </div>
           </div>
 
@@ -45,9 +64,20 @@ const ProductCard = ({ product }) => {
             fontSize: "18px",
             fontWeight: "bold",
             color: "#e74c3c",
-            marginBottom: "10px"
+            marginBottom: "10px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center"
           }}>
-            {product.price}
+            <span>{product.price}</span>
+            <Button 
+              variant={saved ? "danger" : "light"} 
+              size="sm" 
+              onClick={() => toggle(product)}
+              style={{ padding: "4px 8px" }}
+            >
+              <i className={saved ? "bi bi-heart-fill" : "bi bi-heart"}></i>
+            </Button>
           </div>
 
           {/* Location */}
@@ -56,19 +86,6 @@ const ProductCard = ({ product }) => {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div style={{
-          display: "flex",
-          gap: "8px",
-          marginTop: "15px"
-        }}>
-          <Button variant="primary" size="sm" style={{ flex: 1 }}>
-            <i className="bi bi-eye"></i> Xem chi tiết
-          </Button>
-          <Button variant={saved ? "danger" : "light"} size="sm" onClick={() => toggle(product)}>
-            <i className={saved ? "bi bi-heart-fill" : "bi bi-heart"}></i>
-          </Button>
-        </div>
       </Card.Body>
     </Card>
   );

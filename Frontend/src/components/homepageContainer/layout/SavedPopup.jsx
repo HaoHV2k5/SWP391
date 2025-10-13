@@ -1,4 +1,3 @@
-import React from "react";
 import { Card } from "react-bootstrap";
 import { useSavedProducts } from "../contexts/SavedProductsContext";
 
@@ -27,14 +26,17 @@ const SavedPopup = () => {
                     savedProducts.map((item) => (
                         <div key={item.id} className="d-flex mb-2 align-items-center">
                             <img
-                                src={item.image}
-                                alt={item.vehicleInfo?.title || item.name}
+                                src={item.image && item.image.trim() !== "" ? item.image : "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4="}
+                                alt={item.title || item.vehicleInfo?.title || item.name || "saved-item"}
                                 width="50"
                                 height="50"
                                 className="rounded me-2 object-fit-cover"
+                                onError={(e) => {
+                                    e.currentTarget.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=";
+                                }}
                             />
                             <div>
-                                <p className="mb-0 small">{item.vehicleInfo?.description}</p>
+                                <p className="mb-0 small">{item.title || item.vehicleInfo?.description}</p>
                             </div>
                         </div>
                     ))
