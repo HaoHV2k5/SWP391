@@ -1,6 +1,10 @@
 import { Link } from "react-router-dom";
 import { ArrowUp } from "lucide-react";
-import { appConstants } from '../data/homepageData';
+const appConstants = {
+  APP_NAME: 'ElectricStore',
+  EMAIL: 'support@electricstore.com',
+  PHONE: '1900-xxxx'
+};
 import { paymentData, supportLinks, aboutLinks, socialData } from '../data/footerData';
 import FooterColumn from './homepageContainer/layout/FooterColumn';
 import './homepageContainer/styles/Footer.css';

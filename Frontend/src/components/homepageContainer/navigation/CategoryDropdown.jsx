@@ -1,6 +1,24 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
+import { FaMotorcycle } from "react-icons/fa";
+import { MdElectricBike } from "react-icons/md";
+import { HiBattery100 } from "react-icons/hi2";
 import { Link } from "react-router-dom";
-import { categoryData } from "../../../data/homepageData";
+// Hardcode minimal categories to avoid mock data dependency
+const categoryData = {
+  vehicle: {
+    title: <i className="bi bi-ev-front"> Phương tiện điện</i>,
+    children: {
+      "electric-scooter": { title: <><FaMotorcycle /> Xe máy điện</> },
+      "electric-bicycle": { title: <><MdElectricBike /> Xe đạp điện</> }
+    }
+  },
+  battery: {
+    title: <><HiBattery100 /> Pin/Ắc quy</>,
+    children: {
+      "battery-charger": { title: <><i className="bi bi-battery-charging"></i> Pin/Ắc quy</> }
+    }
+  }
+};
 import { ChevronDown } from "lucide-react";
 
 const CategoryDropdown = () => {
@@ -40,7 +58,7 @@ const CategoryDropdown = () => {
   return (
     <div ref={dropdownRef} className="me-3 position-relative">
       {/* Button trigger */}
-      <button 
+      <button
         className="btn btn-link text-dark text-decoration-none"
         onClick={handleToggle}
       >
@@ -50,20 +68,20 @@ const CategoryDropdown = () => {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div 
+        <div
           className="position-absolute bg-white border shadow-lg d-flex"
-          style={{ 
-            top: '100%', 
-            left: 0, 
-            minWidth: activeParent ? "400px" : "200px", 
-            zIndex: 1050 
+          style={{
+            top: '100%',
+            left: 0,
+            minWidth: activeParent ? "400px" : "200px",
+            zIndex: 1050
           }}
           onMouseLeave={handleMenuLeave}
         >
           {/* Cột bên trái: cha */}
-          <div style={{ 
-            width: activeParent ? "40%" : "100%", 
-            borderRight: activeParent ? "1px solid #eee" : "none" 
+          <div style={{
+            width: activeParent ? "40%" : "100%",
+            borderRight: activeParent ? "1px solid #eee" : "none"
           }}>
             {Object.entries(categoryData).map(([key, cat]) => (
               <div

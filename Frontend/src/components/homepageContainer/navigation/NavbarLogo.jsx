@@ -1,5 +1,8 @@
 import React from 'react';
-import { appConstants } from '../../../data/homepageData';
+const appConstants = {
+  APP_NAME: 'ElectricStore',
+  TAGLINE: 'Marketplace xe điện uy tín'
+};
 
 const NavbarLogo = () => {
   return (
