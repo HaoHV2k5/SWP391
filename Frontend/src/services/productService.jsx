@@ -18,15 +18,25 @@ const productService = {
           const userData = JSON.parse(userDataRaw);
           const rolesRaw = userData?.roles || userData?.user?.roles || [];
           const roles = Array.isArray(rolesRaw)
-            ? rolesRaw.map((r) => (typeof r === "string" ? r : r?.name)).filter(Boolean)
+            ? rolesRaw
+                .map((r) => (typeof r === "string" ? r : r?.name))
+                .filter(Boolean)
             : [];
-          const isAdmin = roles.includes("ROLE_ADMIN") || userData?.user?.role === "ROLE_ADMIN";
-          const username = userData?.username || userData?.user?.username || userData?.email || userData?.user?.email;
+          const isAdmin =
+            roles.includes("ROLE_ADMIN") ||
+            userData?.user?.role === "ROLE_ADMIN";
+          const username =
+            userData?.username ||
+            userData?.user?.username ||
+            userData?.email ||
+            userData?.user?.email;
 
           if (isAdmin) {
             endpoint = "/products/seller/staff_approved/admin";
           } else if (username) {
-            endpoint = `/products/seller?username=${encodeURIComponent(username)}`;
+            endpoint = `/products/seller?username=${encodeURIComponent(
+              username
+            )}`;
           }
         } catch {}
       }
@@ -39,20 +49,32 @@ const productService = {
 
       const response = await apiClient.get(endpoint);
       // BE thường bọc dữ liệu trong ApiResponse { data, message }
-      const data = response?.data?.data ?? response?.data?.content ?? response?.data;
+      const data =
+        response?.data?.data ?? response?.data?.content ?? response?.data;
       return { success: true, data: Array.isArray(data) ? data : [] };
     } catch (error) {
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
-      console.error("getPublicList thất bại", { endpoint, status, backendMessage });
+      console.error("getPublicList thất bại", {
+        endpoint,
+        status,
+        backendMessage,
+      });
       // Nếu BE chưa mở endpoint công khai, trả danh sách rỗng để không vỡ UI
-      if (!localStorage.getItem("token") && (status === 404 || status === 401)) {
+      if (
+        !localStorage.getItem("token") &&
+        (status === 404 || status === 401)
+      ) {
         return { success: true, data: [] };
       }
-      return { success: false, message: `Lỗi tải sản phẩm (${status || "network"}): ${backendMessage || "Không rõ"}` };
+      return {
+        success: false,
+        message: `Lỗi tải sản phẩm (${status || "network"}): ${
+          backendMessage || "Không rõ"
+        }`,
+      };
     }
   },
 };
 
 export default productService;
-

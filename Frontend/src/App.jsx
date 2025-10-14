@@ -140,6 +140,9 @@ function AppContent() {
   // Kiểm tra xem có phải trang staff không
   const isStaffPage = location.pathname === "/staff";
 
+  // Kiểm tra xem có phải trang admin không
+  const isAdminPage = location.pathname === "/admin";
+
   // Kiểm tra xem user có role staff không
   const isStaffUser =
     user &&
@@ -162,8 +165,8 @@ function AppContent() {
 
   return (
     <div className="App">
-      {/* Chỉ hiển thị Navbar cho trang chủ, admin và OTP, không hiển thị cho staff */}
-      {!isAuthPage && !isStaffPage && (
+      {/* Chỉ hiển thị Navbar cho trang chủ và OTP, không hiển thị cho staff và admin */}
+      {!isAuthPage && !isStaffPage && !isAdminPage && (
         <Navbar user={user} onLogout={handleLogout} />
       )}
 
@@ -188,8 +191,8 @@ function AppContent() {
         <Route path="/products/:type" element={<CategoryPage />} />
       </Routes>
 
-      {/* Chỉ hiển thị Footer cho trang chủ và admin, không hiển thị cho staff */}
-      {!isAuthPage && !isStaffPage && <Footer />}
+      {/* Chỉ hiển thị Footer cho trang chủ và OTP, không hiển thị cho staff và admin */}
+      {!isAuthPage && !isStaffPage && !isAdminPage && <Footer />}
 
       {/* Toast Container */}
       <ToastContainer

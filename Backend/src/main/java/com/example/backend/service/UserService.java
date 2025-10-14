@@ -45,6 +45,16 @@ public class UserService {
         return userMapper.toCreationUserResponse(user);
     }
 
+    public CreationUserResponse createUserByAdmin(CreationUserRequest request) {
+        User user = processRegisterByAdmin(
+                request.getEmail(),
+                request.getPassword(),
+                request.getConfirmPassword(),
+                () -> userMapper.toUser(request)
+        );
+        return userMapper.toCreationUserResponse(user);
+    }
+
     public List<User> getUsers(){
         List<User> listUsers = userRepository.findAll();
         return listUsers;
@@ -116,6 +126,30 @@ public class UserService {
         return user;
     }
 
+    @Transactional
+    private User processRegisterByAdmin(String email,
+                                       String password,
+                                       String confirmPassword,
+                                       Supplier<User> userSupplier) {
+
+        if (userRepository.existsByEmail(email)) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
+        if (!password.equals(confirmPassword)) {
+            throw new AppException(ErrorCode.PASSWORD_NOT_MATCH);
+        }
+
+        User user = userSupplier.get();
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setVerified(true); // Admin tạo user thì tự động verify
+        HashSet<Role> roles = new HashSet<>();
+        roleRepository.findById(Roles.USER.name()).ifPresent(roles::add);
+        user.setRoles(roles);
+        userRepository.save(user);
+
+        return user;
+    }
+
     public User getUser(String email){
         User user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
@@ -179,21 +213,6 @@ public class UserService {
         return userMapper.toUserListResponse(savedUser);
     }
 
-    public UserListResponse verifyUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        user.setVerified(true);
-        User savedUser = userRepository.save(user);
-        return userMapper.toUserListResponse(savedUser);
-    }
-
-    public UserListResponse unverifyUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        user.setVerified(false);
-        User savedUser = userRepository.save(user);
-        return userMapper.toUserListResponse(savedUser);
-    }
 
     public boolean resetPassword(ResetPasswordRequest request, User user) {
         boolean check  = true;
