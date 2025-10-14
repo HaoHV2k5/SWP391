@@ -55,6 +55,7 @@ public class ApplicationInitConfig {
                        .roles(roles)
                        .build();
                userRepository.save(user);
+
                log.info("Application initialization completed .....");
            };
        };
