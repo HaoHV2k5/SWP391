@@ -22,7 +22,9 @@ public class Tags {
     private String model;
     private Integer yearModel;
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 40)
+    @Column(nullable = false, length = 40, name = "type_product")
     private ProductType type;
 
+    @OneToOne(mappedBy = "tags")
+    private Product product;
 }
