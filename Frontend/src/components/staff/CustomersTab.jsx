@@ -1,72 +1,34 @@
-import { Eye, Check, X, Clock } from "lucide-react";
-import { useState } from "react";
-import { toast } from "react-toastify";
+import { Eye, Check, X, Clock, RefreshCw } from "lucide-react";
+import { useState, useEffect } from "react";
+
+// Import custom hooks and components
+import { useKyc } from "../../hooks/useStaff";
+import { LoadingSpinner, ActionButtons, RefreshButton, Modal } from "./common/StaffComponents";
+import { showErrorNotification } from "../../utils/notificationManager";
 
 const CustomersTab = ({
-  kycList,
-  setKycList,
+  kycList: externalKycList,
+  setKycList: externalSetKycList,
   getStatusColor,
   getStatusText,
-  loading,
-  setLoading,
+  loading: externalLoading,
+  setLoading: externalSetLoading,
 }) => {
   const [selectedKyc, setSelectedKyc] = useState(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
 
-  // Hàm duyệt KYC
-  const handleApproveKyc = async (kycId) => {
-    setLoading(true);
-    try {
-      // Gọi API duyệt KYC
-      // await fetch(`http://localhost:3979/kyc/${kycId}/staff/approve`, {
-      //   method: 'POST',
-      //   headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      // });
+  // Use custom hook for KYC management
+  const kycHook = useKyc();
 
-      // Cập nhật state (mock)
-      setKycList(
-        kycList.map((k) =>
-          k.id === kycId ? { ...k, status: "STAFF_APPROVED" } : k
-        )
-      );
-      toast.success("Duyệt KYC thành công!");
-    } catch (error) {
-      toast.error("Có lỗi xảy ra khi duyệt KYC");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Hàm từ chối KYC
-  const handleRejectKyc = async (kycId, reason) => {
-    setLoading(true);
-    try {
-      // Gọi API từ chối KYC
-      // await fetch(`http://localhost:3979/kyc/${kycId}/reject`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify({ reason })
-      // });
-
-      // Cập nhật state (mock)
-      setKycList(
-        kycList.map((k) =>
-          k.id === kycId ? { ...k, status: "REJECTED", reason } : k
-        )
-      );
-      toast.success("Từ chối KYC thành công!");
-      setShowRejectModal(false);
-      setRejectReason("");
-    } catch (error) {
-      toast.error("Có lỗi xảy ra khi từ chối KYC");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Use external props if provided, otherwise use hook data
+  const kycList = externalKycList || kycHook.kycList;
+  const setKycList = externalSetKycList || kycHook.setKycList;
+  const loading = externalLoading || kycHook.loading;
+  const isInitialLoading = kycHook.isInitialLoading;
+  const handleRefresh = kycHook.loadKyc;
+  const handleApproveKyc = kycHook.approveKyc;
+  const handleRejectKyc = kycHook.rejectKyc;
 
   return (
     <div className="staff-card">
@@ -79,84 +41,86 @@ const CustomersTab = ({
         }}
       >
         <h3>Duyệt KYC chờ phê duyệt</h3>
-        <div style={{ display: "flex", gap: "1rem" }}>
+        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+          <RefreshButton 
+            onRefresh={handleRefresh}
+            loading={loading || isInitialLoading}
+          />
           <span style={{ color: "#666", fontSize: "0.9rem" }}>
             Tổng: {kycList.length} KYC
           </span>
         </div>
       </div>
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ borderBottom: "2px solid #e9ecef" }}>
-              <th style={{ padding: "1rem", textAlign: "left" }}>ID</th>
-              <th style={{ padding: "1rem", textAlign: "left" }}>Họ tên</th>
-              <th style={{ padding: "1rem", textAlign: "left" }}>Email</th>
-              <th style={{ padding: "1rem", textAlign: "left" }}>
-                Số điện thoại
-              </th>
-              <th style={{ padding: "1rem", textAlign: "left" }}>Trạng thái</th>
-              <th style={{ padding: "1rem", textAlign: "left" }}>Ngày nộp</th>
-              <th style={{ padding: "1rem", textAlign: "left" }}>Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {kycList.map((kyc) => (
-              <tr key={kyc.id} style={{ borderBottom: "1px solid #e9ecef" }}>
-                <td style={{ padding: "1rem" }}>#{kyc.id}</td>
-                <td style={{ padding: "1rem" }}>{kyc.fullName}</td>
-                <td style={{ padding: "1rem" }}>{kyc.email}</td>
-                <td style={{ padding: "1rem" }}>{kyc.phone}</td>
-                <td style={{ padding: "1rem" }}>
-                  <span
-                    style={{
-                      padding: "0.25rem 0.75rem",
-                      borderRadius: "15px",
-                      fontSize: "0.8rem",
-                      backgroundColor: getStatusColor(kyc.status) + "20",
-                      color: getStatusColor(kyc.status),
-                    }}
-                  >
-                    {getStatusText(kyc.status)}
-                  </span>
-                </td>
-                <td style={{ padding: "1rem" }}>{kyc.submittedAt}</td>
-                <td style={{ padding: "1rem" }}>
-                  <div style={{ display: "flex", gap: "0.5rem" }}>
-                    <button
-                      className="staff-btn staff-btn-secondary"
-                      style={{ padding: "0.25rem 0.5rem" }}
-                      onClick={() => setSelectedKyc(kyc)}
-                    >
-                      <Eye size={14} />
-                    </button>
-                    {kyc.status === "PENDING" && (
-                      <>
-                        <button
-                          className="staff-btn staff-btn-success"
-                          style={{ padding: "0.25rem 0.5rem" }}
-                          onClick={() => handleApproveKyc(kyc.id)}
-                          disabled={loading}
-                        >
-                          <Check size={14} />
-                        </button>
-                        <button
-                          className="staff-btn staff-btn-danger"
-                          style={{ padding: "0.25rem 0.5rem" }}
-                          onClick={() => setShowRejectModal(true)}
-                          disabled={loading}
-                        >
-                          <X size={14} />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </td>
+
+      {/* Loading state */}
+      {isInitialLoading && (
+        <LoadingSpinner text="Đang tải dữ liệu KYC..." />
+      )}
+
+      {/* Table */}
+      {!isInitialLoading && (
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ borderBottom: "2px solid #e9ecef" }}>
+                <th style={{ padding: "1rem", textAlign: "left" }}>ID</th>
+                <th style={{ padding: "1rem", textAlign: "left" }}>Họ tên</th>
+                <th style={{ padding: "1rem", textAlign: "left" }}>Email</th>
+                <th style={{ padding: "1rem", textAlign: "left" }}>
+                  Số điện thoại
+                </th>
+                <th style={{ padding: "1rem", textAlign: "left" }}>Trạng thái</th>
+                <th style={{ padding: "1rem", textAlign: "left" }}>Ngày nộp</th>
+                <th style={{ padding: "1rem", textAlign: "left" }}>Thao tác</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {kycList.length === 0 ? (
+                <tr>
+                  <td colSpan="7" style={{ padding: "2rem", textAlign: "center", color: "#666" }}>
+                    Chưa có dữ liệu KYC
+                  </td>
+                </tr>
+              ) : (
+                kycList.map((kyc) => (
+                  <tr key={kyc.id} style={{ borderBottom: "1px solid #e9ecef" }}>
+                    <td style={{ padding: "1rem" }}>#{kyc.id}</td>
+                    <td style={{ padding: "1rem" }}>{kyc.fullName}</td>
+                    <td style={{ padding: "1rem" }}>{kyc.email}</td>
+                    <td style={{ padding: "1rem" }}>{kyc.phone}</td>
+                    <td style={{ padding: "1rem" }}>
+                      <span
+                        style={{
+                          padding: "0.25rem 0.75rem",
+                          borderRadius: "15px",
+                          fontSize: "0.8rem",
+                          backgroundColor: getStatusColor(kyc.status) + "20",
+                          color: getStatusColor(kyc.status),
+                        }}
+                      >
+                        {getStatusText(kyc.status)}
+                      </span>
+                    </td>
+                    <td style={{ padding: "1rem" }}>{kyc.submittedAt}</td>
+                    <td style={{ padding: "1rem" }}>
+                      <ActionButtons
+                        onView={() => setSelectedKyc(kyc)}
+                        onApprove={() => handleApproveKyc(kyc.id)}
+                        onReject={() => {
+                          setSelectedKyc(kyc);
+                          setShowRejectModal(true);
+                        }}
+                        status={kyc.status}
+                        loading={loading}
+                      />
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Modal xem chi tiết KYC */}
       {selectedKyc && (
@@ -353,13 +317,13 @@ const CustomersTab = ({
               </button>
               <button
                 className="staff-btn staff-btn-danger"
-                onClick={() => {
-                  if (rejectReason.trim()) {
-                    handleRejectKyc(selectedKyc?.id || 1, rejectReason);
-                  } else {
-                    toast.error("Vui lòng nhập lý do từ chối");
-                  }
-                }}
+              onClick={() => {
+                if (rejectReason.trim()) {
+                  handleRejectKyc(selectedKyc?.id || 1, rejectReason);
+                } else {
+                  showErrorNotification("Vui lòng nhập lý do từ chối");
+                }
+              }}
                 disabled={loading}
               >
                 Từ chối
