@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.request.*;
 import com.example.backend.dto.response.ApiResponse;
+import com.example.backend.dto.response.LoginResponse;
 import com.example.backend.dto.response.ResetPasswordResponse;
 import com.example.backend.dto.response.UserDetailResponse;
 import com.example.backend.entity.User;
@@ -11,6 +12,7 @@ import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.example.backend.service.UserService;
@@ -23,6 +25,8 @@ public class UserController {
     private final UserService userService;
     private final OtpService otpService;
     private final MailService mailService;
+    @Value("${email.login.facebook}")
+    private String emailLoginFacebook;
 
     private  String LOGIN_URL = "http://localhost:5173/login.html";
     @PostMapping("/register")
@@ -36,6 +40,7 @@ public class UserController {
 
     @PostMapping("/verify-otp")
     public ApiResponse<Void> verifyOtp(@RequestBody  VerifyOtpRequest request){
+
         User user = userService.getUser(request.getEmail());
         boolean check = otpService.verifyOtpCode(user,request.getOtp());
         String message = check ? "Verification successful. Your account is now activated" : "Invalid or expired OTP";
@@ -46,6 +51,7 @@ public class UserController {
                 throw new RuntimeException(e);
             }
         }
+
         return ApiResponse.<Void>builder().message(message).build();
     }
 
@@ -85,6 +91,14 @@ public class UserController {
         }
         return ApiResponse.<ResetPasswordResponse>builder().message("Reset Password successfully")
                 .data(ResetPasswordResponse.builder().success(result).build()).build();
+    }
+
+    // nhap email khi dang nhap vao bang fb
+    @PostMapping("/phone/input")
+    public ApiResponse<UserDetailResponse> inputPhoneInfo(@RequestBody @Valid PhoneInfoRequest request) {
+        UserDetailResponse user =userService.updatePhoneNumber(request);
+        return ApiResponse.<UserDetailResponse>builder().data(user).build();
+
     }
 
 

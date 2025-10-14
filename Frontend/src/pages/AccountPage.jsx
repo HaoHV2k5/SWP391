@@ -1,4 +1,3 @@
-import React from 'react';
 import UserProfileCard from '../components/account/UserProfileCard';
 import PersonalInfo from '../components/account/PersonalInfo';
 import AccountStats from '../components/account/AccountStats';

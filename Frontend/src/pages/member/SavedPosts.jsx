@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Button, Badge, Alert, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
 import MemberHeader from "../../components/member/MemberHeader";
+import productService from "../../services/productService";
 import "../../styles/member/index.css";
 
 const SavedPosts = ({ user }) => {
@@ -10,53 +11,33 @@ const SavedPosts = ({ user }) => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  // Mock data for saved posts
-  const [savedPosts, setSavedPosts] = useState([
-    {
-      id: 1,
-      title: "Yamaha E01 2023 - Xe máy điện cao cấp",
-      price: 35000000,
-      category: "Xe máy điện",
-      seller: "Nguyễn Văn A",
-      location: "Quận 1, TP.HCM",
-      savedDate: "2024-01-15",
-      image: "https://vn.e-scooter.co/i/ya/ma/yamaha-e01/full/yamaha-e01-front-left-angle-view.webp",
-      isAvailable: true
-    },
-    {
-      id: 2,
-      title: "Tesla Model 3 2022 - Xe điện sang trọng",
-      price: 980000000,
-      category: "Ô tô điện",
-      seller: "Trần Thị B",
-      location: "Quận 7, TP.HCM",
-      savedDate: "2024-01-18",
-      image: "https://mkt-vehicleimages-prd.autotradercdn.ca/photos/chrome/Expanded/White/2022TSC030022/2022TSC03002201.jpg",
-      isAvailable: true
-    },
-    {
-      id: 3,
-      title: "BMW i3 2023 - Xe điện Đức",
-      price: 1200000000,
-      category: "Ô tô điện",
-      seller: "Lê Văn C",
-      location: "Quận 3, TP.HCM",
-      savedDate: "2024-01-20",
-      image: "https://www.bmw.com/content/dam/bmw/common/all-models/i-series/i3/2022/highlights/bmw-i3-highlights-01.jpg",
-      isAvailable: false // Tin đã bán hoặc hết hạn
-    },
-    {
-      id: 4,
-      title: "VinFast VF8 2023 - SUV điện Việt Nam",
-      price: 1200000000,
-      category: "Ô tô điện",
-      seller: "Phạm Thị D",
-      location: "Quận 2, TP.HCM",
-      savedDate: "2024-01-22",
-      image: "/logo.jpg",
-      isAvailable: true
+  // State for saved posts
+  const [savedPosts, setSavedPosts] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(false);
+
+  // Function to load saved posts from productService
+  const loadSavedPosts = async () => {
+    setLoadingPosts(true);
+    try {
+      // Sử dụng getPublicList để lấy tất cả posts, sau đó filter saved posts
+      // Hoặc có thể tạo endpoint riêng cho saved posts
+      const result = await productService.getPublicList();
+      if (result.success) {
+        // Tạm thời sử dụng tất cả posts làm saved posts
+        // Trong thực tế cần có endpoint riêng cho saved posts
+        setSavedPosts(result.data);
+      } else {
+        toast.error(result.message);
+        setSavedPosts([]);
+      }
+    } catch (error) {
+      console.error("Error loading saved posts:", error);
+      toast.error("Có lỗi xảy ra khi tải danh sách tin đã lưu");
+      setSavedPosts([]);
+    } finally {
+      setLoadingPosts(false);
     }
-  ]);
+  };
 
   useEffect(() => {
     console.log("=== SavedPosts useEffect ===");
@@ -90,6 +71,9 @@ const SavedPosts = ({ user }) => {
     }
 
     console.log("✅ Saved posts access granted");
+    
+    // Load saved posts when user is authenticated
+    loadSavedPosts();
   }, [user, navigate]);
 
   const formatCurrency = (amount) => {
@@ -106,12 +90,16 @@ const SavedPosts = ({ user }) => {
   const handleRemoveFromSaved = async (postId) => {
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setSavedPosts(savedPosts.filter(post => post.id !== postId));
-      toast.success("Đã bỏ lưu tin đăng!");
+      // Gọi API bỏ lưu post (cần implement endpoint này trong backend)
+      // const result = await productService.toggleSavePost(postId);
+      // if (result.success) {
+        setSavedPosts(savedPosts.filter(post => post.id !== postId));
+        toast.success("Đã bỏ lưu tin đăng!");
+      // } else {
+      //   toast.error(result.message);
+      // }
     } catch (error) {
+      console.error("Error removing from saved:", error);
       toast.error("Có lỗi xảy ra khi bỏ lưu tin đăng!");
     } finally {
       setLoading(false);
@@ -232,7 +220,12 @@ const SavedPosts = ({ user }) => {
             </div>
 
             {/* Saved Posts List */}
-            {savedPosts.length === 0 ? (
+            {loadingPosts ? (
+              <div className="text-center py-5">
+                <Spinner animation="border" variant="success" className="mb-3" />
+                <p className="text-muted">Đang tải danh sách tin đã lưu...</p>
+              </div>
+            ) : savedPosts.length === 0 ? (
               <Alert variant="info" className="text-center py-5">
                 <h5>Bạn chưa lưu tin đăng nào</h5>
                 <p className="mb-3">Hãy lưu những tin đăng yêu thích để xem lại sau!</p>
@@ -250,13 +243,13 @@ const SavedPosts = ({ user }) => {
                           <div 
                             className="h-100 bg-light d-flex align-items-center justify-content-center position-relative"
                             style={{ 
-                              backgroundImage: `url(${post.image})`,
+                              backgroundImage: `url(${post.image || post.vehicle?.image || post.battery?.image || post.images?.[0]})`,
                               backgroundSize: "cover",
                               backgroundPosition: "center",
                               minHeight: "200px"
                             }}
                           >
-                            {!post.image && <span className="text-muted">📷</span>}
+                            {!(post.image || post.vehicle?.image || post.battery?.image || post.images?.[0]) && <span className="text-muted">📷</span>}
                             {!post.isAvailable && (
                               <div className="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
                                 <Badge bg="secondary" className="px-3 py-2">
@@ -290,16 +283,16 @@ const SavedPosts = ({ user }) => {
                                 </Button>
                               </div>
                               
-                              <h6 className="card-title text-truncate mb-2">{post.title}</h6>
-                              <p className="text-success fw-bold mb-2">{formatCurrency(post.price)}</p>
+                              <h6 className="card-title text-truncate mb-2">{post.title || post.productName || "Không có tiêu đề"}</h6>
+                              <p className="text-success fw-bold mb-2">{formatCurrency(post.price || post.vehicle?.price || post.battery?.price || 0)}</p>
                               <p className="text-muted small mb-2">
-                                {post.seller}
+                                {post.seller || post.sellerName || post.user?.fullName || "Không rõ người bán"}
                               </p>
                               <p className="text-muted small mb-2">
-                                {post.location} • {post.category}
+                                {post.location || post.address || "Không có địa chỉ"} • {post.category || post.productType || "Không phân loại"}
                               </p>
                               <p className="text-muted small">
-                                Lưu ngày: {formatDate(post.savedDate)}
+                                Lưu ngày: {formatDate(post.savedDate || post.savedAt || post.dateSaved)}
                               </p>
                             </div>
                             

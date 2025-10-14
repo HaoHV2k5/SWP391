@@ -1,5 +1,6 @@
 package com.example.backend.entity;
 
+import com.example.backend.enums.WalletTransactionType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,9 +26,10 @@ public class WalletTransaction {
     @JoinColumn(name = "wallet_id", nullable = false)
     private Wallet wallet;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "NVARCHAR(20)")
-    @Builder.Default
-    private String type = "RECHARGE"; // DEPOSIT, PAYMENT_PACKAGE, PAYMENT_PRODUCT
+
+    private WalletTransactionType typeWalletTraction; // DEPOSIT, PAYMENT_PACKAGE, PAYMENT_PRODUCT
 
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;

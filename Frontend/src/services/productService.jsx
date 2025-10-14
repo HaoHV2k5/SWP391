@@ -7,7 +7,7 @@ const productService = {
   // Logic dưới đây tự xác định endpoint theo quyền người dùng:
   // - ADMIN: gọi /products/seller/staff_approved/admin
   // - SELLER/MEMBER: gọi /products/seller?username=<username>
-  // - GUEST: thử gọi sẵn /api/v1/products/active (để sau BE mở là dùng ngay)
+  // - GUEST: gọi /products (BE hiện có @GetMapping ở root "/products")
   async getPublicList() {
     let endpoint = "";
     try {
@@ -42,9 +42,9 @@ const productService = {
       }
 
       // Chưa đăng nhập hoặc không xác định được endpoint phù hợp thì
-      // thử gọi endpoint công khai (để sau BE mở là dùng được ngay)
+      // gọi endpoint công khai đang có trong BE
       if (!endpoint) {
-        endpoint = "/api/v1/products/active"; // BE có thể mở trong tương lai
+        endpoint = "/products"; // BE hiện có GET /products trả danh sách đã post
       }
 
       const response = await apiClient.get(endpoint);
@@ -60,7 +60,7 @@ const productService = {
         status,
         backendMessage,
       });
-      // Nếu BE chưa mở endpoint công khai, trả danh sách rỗng để không vỡ UI
+      // Nếu không có token và bị chặn/không tìm thấy, trả rỗng để không vỡ UI
       if (
         !localStorage.getItem("token") &&
         (status === 404 || status === 401)
@@ -73,6 +73,112 @@ const productService = {
           backendMessage || "Không rõ"
         }`,
       };
+    }
+  },
+
+  // Tìm kiếm sản phẩm theo từ khóa sử dụng search endpoint của BE
+  async searchProducts(keyword) {
+    try {
+      const response = await apiClient.get(
+        `/tag/vehicle/search?request=${encodeURIComponent(keyword)}`
+      );
+      const data =
+        response?.data?.data ?? response?.data?.content ?? response?.data;
+      return { success: true, data: Array.isArray(data) ? data : [] };
+    } catch (error) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      console.error("searchProducts thất bại", {
+        keyword,
+        status,
+        backendMessage,
+      });
+      return {
+        success: false,
+        message: `Lỗi tìm kiếm (${status || "network"}): ${
+          backendMessage || "Không rõ"
+        }`,
+      };
+    }
+  },
+
+  // Lấy sản phẩm theo tag/category
+  async getProductsByTag(tagSlug) {
+    try {
+      const response = await apiClient.get(
+        `/tag/${encodeURIComponent(tagSlug)}`
+      );
+      const data =
+        response?.data?.data ?? response?.data?.content ?? response?.data;
+      return { success: true, data: Array.isArray(data) ? data : [] };
+    } catch (error) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      console.error("getProductsByTag thất bại", {
+        tagSlug,
+        status,
+        backendMessage,
+      });
+      return {
+        success: false,
+        message: `Lỗi tải sản phẩm theo tag (${status || "network"}): ${
+          backendMessage || "Không rõ"
+        }`,
+      };
+    }
+  },
+
+  // Lấy danh sách filter options từ dữ liệu sản phẩm
+  async getFilterOptions() {
+    try {
+      const result = await this.getPublicList();
+      if (!result.success) {
+        return { success: false, message: result.message };
+      }
+
+      const products = result.data;
+
+      // Lấy danh sách brands duy nhất - chuẩn hóa và loại bỏ trùng lặp
+      const brands = [
+        ...new Set(
+          products
+            .map((product) => {
+              const brand = product.vehicle?.brand || product.battery?.brand;
+              return brand ? brand.trim().toLowerCase() : null;
+            })
+            .filter((brand) => brand)
+        ),
+      ].sort();
+
+      // Lấy danh sách years duy nhất
+      const years = [
+        ...new Set(
+          products
+            .map(
+              (product) =>
+                product.vehicle?.yearManufactured ||
+                product.battery?.yearManufactured
+            )
+            .filter((year) => year)
+        ),
+      ].sort((a, b) => b - a); // Sắp xếp giảm dần
+
+      // Lấy product types
+      const productTypes = [
+        ...new Set(products.map((product) => product.productType)),
+      ];
+
+      return {
+        success: true,
+        data: {
+          brands,
+          years,
+          productTypes,
+        },
+      };
+    } catch (error) {
+      console.error("getFilterOptions thất bại", error);
+      return { success: false, message: "Lỗi lấy filter options" };
     }
   },
 };

@@ -1,7 +1,7 @@
 # 📚 MEMBER FUNCTIONS DOCUMENTATION
 
 ## 🎯 **Tổng quan**
-Module Member cung cấp các chức năng quản lý tài khoản người dùng, bao gồm đăng nhập/đăng ký, quản lý tin đăng, đơn hàng và các tính năng khác.
+Module Member cung cấp các chức năng quản lý tài khoản người dùng, bao gồm đăng nhập/đăng ký, quản lý tin đăng, đơn hàng và các tính năng khác. Tất cả các trang member đã được tích hợp với API thực tế thông qua `productService`.
 
 ---
 
@@ -296,18 +296,41 @@ import OrdersTab from './member/OrdersTab';
 **Props:**
 - `user` (object): Thông tin user
 
+**API Integration:**
+- Sử dụng `productService.getPublicList()` để lấy danh sách posts
+- Tự động xác định endpoint dựa trên role user:
+  - **ADMIN**: `/products/seller/staff_approved/admin`
+  - **SELLER/MEMBER**: `/products/seller?username=<username>`
+  - **GUEST**: `/products`
+
 **Chức năng:**
-- Hiển thị danh sách tin đăng của user
+- Hiển thị danh sách tin đăng của user từ API
+- Loading state với spinner
+- Error handling và toast notifications
 - Filter theo trạng thái (active, pending, expired, sold)
-- Actions: Xem, Sửa, Xóa, Gia hạn
+- Actions: Xem, Sửa, Xóa, Đăng lại
 - Modal xác nhận xóa
-- Auth check
+- Auth check (member hoặc admin)
 
 **Post status:**
 - `"active"` - Đang hoạt động
 - `"pending"` - Chờ duyệt
 - `"expired"` - Hết hạn
 - `"sold"` - Đã bán
+
+**Field Mapping:**
+```javascript
+// API response fields được map sang UI
+{
+  title: post.title || post.productName || "Không có tiêu đề",
+  price: post.price || post.vehicle?.price || post.battery?.price || 0,
+  location: post.location || post.address || "Không có địa chỉ",
+  category: post.category || post.productType || "Không phân loại",
+  image: post.image || post.vehicle?.image || post.battery?.image || post.images?.[0],
+  createdDate: post.createdDate || post.createdAt || post.dateCreated,
+  expiryDate: post.expiryDate || post.expiredAt || post.dateExpired
+}
+```
 
 ---
 
@@ -319,11 +342,32 @@ import OrdersTab from './member/OrdersTab';
 **Props:**
 - `user` (object): Thông tin user
 
+**API Integration:**
+- Sử dụng `productService.getPublicList()` để lấy danh sách posts
+- Tạm thời sử dụng tất cả posts làm saved posts
+- Trong tương lai cần endpoint riêng: `/saved-posts`
+
 **Chức năng:**
-- Hiển thị danh sách tin đã lưu
+- Hiển thị danh sách tin đã lưu từ API
+- Loading state với spinner
+- Error handling và toast notifications
 - Filter theo danh mục
-- Actions: Xem chi tiết, Bỏ lưu
-- Auth check
+- Actions: Xem chi tiết, Bỏ lưu, Liên hệ người bán
+- Auth check (member hoặc admin)
+
+**Field Mapping:**
+```javascript
+// API response fields được map sang UI
+{
+  title: post.title || post.productName || "Không có tiêu đề",
+  price: post.price || post.vehicle?.price || post.battery?.price || 0,
+  seller: post.seller || post.sellerName || post.user?.fullName || "Không rõ người bán",
+  location: post.location || post.address || "Không có địa chỉ",
+  category: post.category || post.productType || "Không phân loại",
+  image: post.image || post.vehicle?.image || post.battery?.image || post.images?.[0],
+  savedDate: post.savedDate || post.savedAt || post.dateSaved
+}
+```
 
 ---
 
@@ -351,10 +395,30 @@ import OrdersTab from './member/OrdersTab';
 **Props:**
 - `user` (object): Thông tin user
 
+**API Integration:**
+- Sử dụng `productService.getPublicList()` để lấy danh sách posts
+- Convert posts data thành orders format
+- Trong tương lai cần endpoint riêng: `/orders`
+
 **Chức năng:**
 - Sử dụng `OrdersTab` component
-- Auth check
-- Mock data cho đơn hàng
+- Loading state với spinner
+- Error handling
+- Auth check (member hoặc admin)
+- Convert API data thành orders format
+
+**Data Conversion:**
+```javascript
+// Convert posts thành orders format
+const ordersData = result.data.map((post, index) => ({
+  id: post.id || index + 1,
+  product: post.title || post.productName || "Sản phẩm",
+  price: post.price || post.vehicle?.price || post.battery?.price || 0,
+  status: "completed", // Tạm thời set status mặc định
+  date: post.createdDate || post.createdAt || new Date().toISOString().split('T')[0],
+  image: post.image || post.vehicle?.image || post.battery?.image || post.images?.[0] || "/logo.jpg",
+}));
+```
 
 ---
 
@@ -449,6 +513,106 @@ useEffect(() => {
 }, [navigate]);
 ```
 
+### 4. **API Integration Pattern:**
+```jsx
+import productService from "../../services/productService";
+
+// Function to load data from API
+const loadData = async () => {
+  setLoading(true);
+  try {
+    const result = await productService.getPublicList();
+    if (result.success) {
+      setData(result.data);
+    } else {
+      toast.error(result.message);
+      setData([]);
+    }
+  } catch (error) {
+    console.error("Error loading data:", error);
+    toast.error("Có lỗi xảy ra khi tải dữ liệu");
+    setData([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
+// Load data when user is authenticated
+useEffect(() => {
+  if (user) {
+    loadData();
+  }
+}, [user]);
+```
+
+---
+
+## 🔌 **API INTEGRATION**
+
+### **ProductService Integration:**
+Tất cả các trang member đã được tích hợp với `productService.getPublicList()` để lấy dữ liệu thực tế từ backend.
+
+### **Endpoint Logic:**
+```javascript
+// productService.getPublicList() tự động xác định endpoint:
+if (isAdmin) {
+  endpoint = "/products/seller/staff_approved/admin";
+} else if (username) {
+  endpoint = `/products/seller?username=${encodeURIComponent(username)}`;
+} else {
+  endpoint = "/products"; // Public endpoint
+}
+```
+
+### **API Response Handling:**
+```javascript
+// Tất cả API calls đều follow pattern này:
+const result = await productService.getPublicList();
+if (result.success) {
+  setData(result.data);
+} else {
+  toast.error(result.message);
+  setData([]);
+}
+```
+
+### **Field Mapping:**
+Do backend có thể trả về data với cấu trúc khác nhau, tất cả components đều sử dụng fallback mapping:
+
+```javascript
+// Example field mapping
+const displayData = {
+  title: post.title || post.productName || "Không có tiêu đề",
+  price: post.price || post.vehicle?.price || post.battery?.price || 0,
+  image: post.image || post.vehicle?.image || post.battery?.image || post.images?.[0],
+  // ... other fields
+};
+```
+
+### **Loading States:**
+Tất cả pages đều có loading states:
+```javascript
+const [loading, setLoading] = useState(false);
+
+// Trong UI
+{loading ? (
+  <Spinner animation="border" variant="success" />
+) : (
+  // Content
+)}
+```
+
+### **Error Handling:**
+```javascript
+try {
+  const result = await productService.getPublicList();
+  // Handle success
+} catch (error) {
+  console.error("Error:", error);
+  toast.error("Có lỗi xảy ra khi tải dữ liệu");
+}
+```
+
 ---
 
 ## 🔐 **AUTHENTICATION**
@@ -515,12 +679,57 @@ Tất cả components đều responsive:
 
 ## 📈 **FUTURE ENHANCEMENTS**
 
-1. **Real API integration** thay vì mock data
-2. **Image upload** với preview
-3. **Pagination** cho danh sách dài
-4. **Search & filter** nâng cao
-5. **Real-time notifications**
-6. **Mobile app integration**
+1. ✅ **Real API integration** - Đã hoàn thành với productService
+2. **Dedicated endpoints** cho saved posts và orders
+3. **Image upload** với preview
+4. **Pagination** cho danh sách dài
+5. **Search & filter** nâng cao
+6. **Real-time notifications**
+7. **Mobile app integration**
+8. **Delete/Repost/Save APIs** - Cần implement trong backend
+
+---
+
+## 🔧 **BACKEND REQUIREMENTS**
+
+### **Required Endpoints:**
+Để hoàn thiện chức năng member, backend cần implement các endpoints sau:
+
+1. **DELETE /products/{id}** - Xóa tin đăng
+2. **POST /products/{id}/repost** - Đăng lại tin đăng
+3. **POST /saved-posts/{id}** - Lưu/bỏ lưu tin đăng
+4. **GET /saved-posts** - Lấy danh sách tin đã lưu
+5. **GET /orders** - Lấy danh sách đơn hàng
+6. **GET /view-history** - Lấy lịch sử xem tin
+
+### **Current Working Endpoints:**
+- ✅ **GET /products** - Lấy danh sách sản phẩm công khai
+- ✅ **GET /products/seller?username={username}** - Lấy sản phẩm của seller
+- ✅ **GET /products/seller/staff_approved/admin** - Lấy sản phẩm cho admin
+
+### **API Response Format:**
+```javascript
+// Expected response format
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "title": "Product Title",
+      "price": 1000000,
+      "category": "Category",
+      "location": "Location",
+      "image": "image_url",
+      "createdDate": "2024-01-01",
+      "expiryDate": "2024-02-01",
+      "status": "active",
+      "views": 100,
+      "likes": 10
+    }
+  ],
+  "message": "Success"
+}
+```
 
 ---
 

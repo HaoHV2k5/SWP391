@@ -13,6 +13,7 @@ import com.example.backend.repository.RoleRepository;
 import com.example.backend.repository.UserOtpRepository;
 import lombok.RequiredArgsConstructor;
 import com.example.backend.mapper.UserMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +33,8 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final OtpService otpService;
     private final UserOtpRepository userOtpRepository;
-
+@Value("${email.login.facebook}")
+private String emailLoginFacebook;
 
     private String LOGIN_URL ="http://localhost:3979/login";
     public CreationUserResponse createUser(CreationUserRequest request) {
@@ -236,6 +238,17 @@ public class UserService {
 
         return  user;
     }
+
+    public UserDetailResponse updatePhoneNumber(PhoneInfoRequest req) {
+        User user = userRepository.findByEmail(req.getEmail()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        user.setPhone(req.getPhone());
+        userRepository.save(user);
+        return userMapper.toUserDetailResponse(user);
+    }
+
+
+
+
 
 
 

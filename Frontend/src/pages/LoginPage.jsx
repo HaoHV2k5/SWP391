@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { GoogleLogin } from "@react-oauth/google";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, User, Mail, Lock, Phone, Calendar } from "lucide-react";
 import { toast } from "react-toastify";
@@ -159,39 +158,23 @@ const LoginPage = ({ onLogin }) => {
       if (isLogin) {
         // Admin login sẽ được xử lý bởi backend API
 
-        // Tài khoản test member
-        if (
-          formData.email === "member@test.com" &&
-          formData.password === "123456"
-        ) {
-          onLogin({
-            token: "member-test-token",
-            user: {
-              id: 1,
-              email: "member@test.com",
-              fullName: "Nguyễn Văn Test",
-              fullname: "Nguyễn Văn Test",
-              phone: "0901234567",
-              address: "123 Test Street, Quận 1, TP.HCM",
-              gender: "Nam",
-              yob: "15/05/1995",
-              dateOfBirth: "1995-05-15",
-              joinDate: "15/01/2024",
-              role: "member",
-            },
-          });
-          toast.success("Đăng nhập thành công!");
-          setTimeout(() => navigate("/"), 1000);
-          return;
-        }
 
         //Tài khoản test cho staff
         if (
           formData.email === "staff@test.com" &&
           formData.password === "123456"
         ) {
+          // Tạo JWT token giả với scope chứa ROLE_STAFF
+          const mockJWT = btoa(JSON.stringify({
+            sub: "staff@test.com",
+            iss: "swp391.com",
+            scope: "ROLE_STAFF",
+            exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24) // 24 hours
+          }));
+          const mockToken = `header.${mockJWT}.signature`;
+          
           onLogin({
-            token: "staff-test-token",
+            token: mockToken,
             user: {
               id: 2,
               email: "staff@test.com",
@@ -233,27 +216,39 @@ const LoginPage = ({ onLogin }) => {
             const backendUser = data.data.user;
             console.log("🔍 Backend user data:", backendUser);
 
-            // Xác định role từ backend
+            // Xác định role từ JWT token scope
             let userRole = "member"; // default role
-            console.log("🔍 Backend user roles:", backendUser?.roles);
-            console.log("🔍 Backend user role field:", backendUser?.role);
+            console.log("🔍 Backend user data:", backendUser);
+            console.log("🔍 Token:", data.data.token);
 
-            if (backendUser?.roles && backendUser.roles.length > 0) {
-              // Lấy role đầu tiên từ roles array
-              const role = backendUser.roles[0];
-              userRole = role.name || role; // role có thể là string hoặc object
-              console.log("🔍 Detected role from roles array:", userRole);
-              console.log("🔍 Role object details:", role);
-            } else if (backendUser?.role) {
-              userRole = backendUser.role;
-              console.log("🔍 Detected role from role field:", userRole);
-            } else {
-              console.log("🔍 No roles found, using default:", userRole);
+            // Decode JWT token để lấy scope (roles)
+            try {
+              const tokenParts = data.data.token.split('.');
+              const payload = JSON.parse(atob(tokenParts[1]));
+              console.log("🔍 JWT payload:", payload);
+              
+              if (payload.scope) {
+                const scopes = payload.scope.split(' ');
+                console.log("🔍 JWT scopes:", scopes);
+                
+                // Tìm role trong scopes
+                const roleScope = scopes.find(scope => scope.startsWith('ROLE_'));
+                if (roleScope) {
+                  userRole = roleScope; // Giữ nguyên format ROLE_XXX
+                  console.log("🔍 Detected role from JWT scope:", userRole);
+                }
+              }
+            } catch (error) {
+              console.error("🔍 Error decoding JWT:", error);
             }
 
-            // Chuẩn hóa role name
-            if (userRole === "ADMIN" || userRole === "ROLE_ADMIN") {
+            // Chuẩn hóa role name (JWT trả về format ROLE_XXX)
+            if (userRole === "ROLE_ADMIN") {
               userRole = "ROLE_ADMIN";
+            } else if (userRole === "ROLE_STAFF") {
+              userRole = "ROLE_STAFF";
+            } else if (userRole === "ROLE_USER") {
+              userRole = "member"; // Convert ROLE_USER to member for frontend
             } else if (formData.email === "admin@gmail.com") {
               // Fallback: nếu là admin email nhưng role không được detect đúng
               console.log(
@@ -287,6 +282,9 @@ const LoginPage = ({ onLogin }) => {
             if (userRole === "ROLE_ADMIN") {
               toast.success("Đăng nhập admin thành công!");
               navigate("/admin");
+            } else if (userRole === "ROLE_STAFF") {
+              toast.success("Đăng nhập staff thành công!");
+              navigate("/staff");
             } else {
               toast.success("Đăng nhập thành công!");
               navigate("/");
@@ -516,21 +514,21 @@ const LoginPage = ({ onLogin }) => {
               <strong>🔐 Tài khoản Test:</strong>
               <br />
               <br />
-              <strong>Admin:</strong>
+              <strong>Admin (Backend):</strong>
               <br />
-              Email: admin@electricrade.com
+              Email: admin@gmail.com
               <br />
-              Password: admin123
+              Password: admin
               <br />
               <br />
-              <strong>Staff:</strong>
+              <strong>Staff (Test):</strong>
               <br />
               Email: staff@test.com
               <br />
               Password: 123456
               <br />
               <br />
-              <strong>Member:</strong>
+              <strong>Member (Test):</strong>
               <br />
               Email: member@test.com
               <br />

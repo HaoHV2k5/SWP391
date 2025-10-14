@@ -6,6 +6,7 @@ import {
 } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
+import { getToastDefaults } from "./utils/notificationManager";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -13,7 +14,7 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AdminPage from "./pages/AdminPage";
-import StaffPage from "./pages/StaffPage"; //STAFF PAGE - Trang dành cho nhân viên
+import StaffPage from "./pages/StaffPage";
 import MemberOrders from "./pages/member/MemberOrders";
 import PostAd from "./pages/member/PostAd";
 import MyPosts from "./pages/member/MyPosts";
@@ -151,17 +152,20 @@ function AppContent() {
       (user.user &&
         (user.user.role === "staff" || user.user.role === "ROLE_STAFF")));
 
-  // Kiểm tra quyền truy cập - staff chỉ có thể truy cập trang staff
+  // Kiểm tra quyền truy cập và tự động chuyển hướng staff
   useEffect(() => {
     // Chỉ kiểm tra khi có user và không phải trang đăng nhập/đăng ký
-    if (isStaffUser && !isAuthPage && !isStaffPage) {
-      // Tự động đăng xuất staff khi cố gắng truy cập trang khác
-      toast.error("Staff không có quyền truy cập trang này! Đang đăng xuất...");
-      setTimeout(() => {
-        handleLogout();
-      }, 1000);
+    if (isStaffUser && !isAuthPage) {
+      if (!isStaffPage) {
+        // Tự động chuyển hướng staff đến trang staff
+        console.log("🔄 Staff user detected, redirecting to /staff");
+        toast.info("Chuyển hướng đến trang Staff...");
+        setTimeout(() => {
+          window.location.href = "/staff";
+        }, 1000);
+      }
     }
-  }, [isStaffUser, isAuthPage, isStaffPage, handleLogout]);
+  }, [isStaffUser, isAuthPage, isStaffPage]);
 
   return (
     <div className="App">
@@ -196,15 +200,7 @@ function AppContent() {
 
       {/* Toast Container */}
       <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
+        {...getToastDefaults()}
         theme="light"
       />
     </div>

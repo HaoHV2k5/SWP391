@@ -53,8 +53,8 @@ public class RedirectController {
             String refreshTokenData = result.get("refreshToken").toString();
             String email = result.get("email").toString();
             String name = result.get("name").toString();
-//            String picture = result.get("picture").toString();
-            
+
+
             // Redirect trực tiếp về frontend với token trong URL
             String redirectUrl = "http://localhost:5173/?token=" + tokenData + "&email=" + email + "&name=" + name;
             

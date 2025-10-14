@@ -10,8 +10,6 @@ import {
   Edit,
   Trash2,
   Search,
-  Filter,
-  Download,
   Lock,
   Unlock,
   UserPlus,
