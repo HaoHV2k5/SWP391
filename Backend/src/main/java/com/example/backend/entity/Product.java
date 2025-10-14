@@ -57,6 +57,10 @@ public class Product {
     @Column(name = "image_url")
     private List<String> imageUrls;
 
+    @OneToOne
+    @JoinColumn(name = "tags_id")
+    private Tags tags;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id", nullable = false)
     private User seller;
