@@ -57,9 +57,13 @@ public class Product {
     @Column(name = "image_url")
     private List<String> imageUrls;
 
-    @OneToOne
-    @JoinColumn(name = "tags_id")
-    private Tags tags;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tag_id")
+    private Tags tag;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "wishlist_id")
+    private Wishlist wishlist;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id", nullable = false)
