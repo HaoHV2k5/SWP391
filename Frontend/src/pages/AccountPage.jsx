@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import UserProfileCard from '../components/account/UserProfileCard';
+import EditProfileModal from '../components/account/EditProfileModal';
 import PersonalInfo from '../components/account/PersonalInfo';
 import AccountStats from '../components/account/AccountStats';
 import { memberService } from '../services/memberService';
@@ -8,6 +9,7 @@ const AccountPage = ({ user }) => {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showEdit, setShowEdit] = useState(false);
 
   const loadProfile = async () => {
     try {
@@ -116,10 +118,23 @@ const AccountPage = ({ user }) => {
         margin: '0 auto', 
         padding: '0 20px' 
       }}>
-        <UserProfileCard user={mergedUser} />
+        <UserProfileCard 
+          user={mergedUser} 
+          onEdit={() => setShowEdit(true)}
+        />
         <PersonalInfo user={mergedUser} />
         <AccountStats />
       </div>
+      {showEdit && (
+        <EditProfileModal
+          user={mergedUser}
+          onClose={() => setShowEdit(false)}
+          onSuccess={() => {
+            setShowEdit(false);
+            loadProfile();
+          }}
+        />
+      )}
     </div>
   );
 };

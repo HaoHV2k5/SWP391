@@ -60,7 +60,7 @@ export const memberService = {
   // Cập nhật thông tin profile của member
   async updateMemberProfile(profileData) {
     try {
-      const response = await apiClient.put("/users/me", profileData);
+      const response = await apiClient.put("/users/update", profileData);
       return {
         success: true,
         data: response.data,
@@ -74,29 +74,7 @@ export const memberService = {
     }
   },
 
-  // Cập nhật avatar của member
-  async updateAvatar(avatarFile) {
-    try {
-      const formData = new FormData();
-      formData.append("avatar", avatarFile);
-      
-      const response = await apiClient.post("/users/me/avatar", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      return {
-        success: true,
-        data: response.data,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        message:
-          error.response?.data?.message || "Không thể cập nhật avatar",
-      };
-    }
-  },
+  // (Deprecated) Cập nhật avatar - đã loại bỏ, dùng chỉnh sửa hồ sơ tổng nếu cần
 
   // Đổi mật khẩu
   async changePassword(passwordData) {

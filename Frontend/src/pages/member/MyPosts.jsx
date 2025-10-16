@@ -62,8 +62,8 @@ const MyPosts = ({ user }) => {
       userRole = user.role;
     }
 
-    if (userRole !== "member" && userRole !== "admin") {
-      console.log("❌ User role is not member or admin:", userRole);
+    if (userRole !== "member") {
+      console.log("❌ User role is not member:", userRole);
       navigate("/");
       return;
     }
