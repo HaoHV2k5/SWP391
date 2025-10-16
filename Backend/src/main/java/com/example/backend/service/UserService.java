@@ -229,11 +229,18 @@ private String emailLoginFacebook;
 
 
 
+    public Long getIdByUsername(String name){
+        User user = userRepository.findByUsername(name).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        return user.getId();
+    }
 
 
 
 
-    
+
+
+
+
 
 
 }
