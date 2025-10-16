@@ -2,7 +2,7 @@ import React from 'react';
 import { Edit3 } from 'lucide-react';
 import { CameraOutlined } from '@ant-design/icons';
 
-const UserProfileCard = ({ user }) => {
+const UserProfileCard = ({ user, onEdit }) => {
   const getInitial = () => {
     return (user?.fullName || user?.fullname || user?.user?.fullname || user?.email || "U")
       .charAt(0).toUpperCase();
@@ -114,8 +114,9 @@ const UserProfileCard = ({ user }) => {
           gap: '8px',
           transition: 'all 0.3s ease'
         }}
-        onMouseEnter={(e) => e.target.style.backgroundColor = '#008f5a'}
+        onMouseEnter={(e) => { e.target.style.backgroundColor = '#008f5a'; }}
         onMouseLeave={(e) => e.target.style.backgroundColor = '#00A86B'}
+        onClick={onEdit}
         >
           <Edit3 size={16} />
           Chỉnh sửa

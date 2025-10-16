@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Mail, Phone, MapPin, Users } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Users, Calendar } from 'lucide-react';
 
 const PersonalInfo = ({ user }) => {
   const InfoItem = ({ icon: Icon, label, value }) => (
@@ -32,7 +32,27 @@ const PersonalInfo = ({ user }) => {
   };
 
   const getGender = () => {
-    return user?.gender || 'Chưa cập nhật';
+    const raw = (user?.gender || '').toString().toLowerCase();
+    if (!raw) return 'Chưa cập nhật';
+    if (raw === 'male' || raw === 'nam') return 'Nam';
+    if (raw === 'female' || raw === 'nu' || raw === 'nữ') return 'Nữ';
+    return 'Khác';
+  };
+
+  const getYob = () => {
+    const yob = user?.yob;
+    if (!yob) return 'Chưa cập nhật';
+    if (typeof yob === 'string') {
+      if (yob.includes('/')) return yob; // dd/MM/yyyy
+      if (yob.includes('-')) {
+        const parts = yob.split('-');
+        if (parts.length === 3) {
+          const [yyyy, mm, dd] = parts;
+          return `${dd.padStart(2, '0')}/${mm.padStart(2, '0')}/${yyyy}`;
+        }
+      }
+    }
+    return yob;
   };
 
   return (
@@ -67,6 +87,12 @@ const PersonalInfo = ({ user }) => {
           icon={User} 
           label="Họ và tên" 
           value={getFullName()} 
+        />
+
+        <InfoItem 
+          icon={Calendar} 
+          label="Ngày sinh" 
+          value={getYob()} 
         />
         
         <InfoItem 
