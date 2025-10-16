@@ -21,9 +21,22 @@ const MyPosts = ({ user }) => {
   const loadPosts = async () => {
     setLoadingPosts(true);
     try {
-      const result = await productService.getPublicList();
+      // Ưu tiên lấy đúng tin của user hiện tại
+      const username = (user?.username || user?.user?.username || user?.email || user?.user?.email);
+      const result = await productService.getMyPosts(username);
       if (result.success) {
-        setPosts(result.data);
+        // Merge pending post (optimistic) nếu có
+        let merged = result.data || [];
+        try {
+          const pendingRaw = localStorage.getItem('recentPendingPost');
+          if (pendingRaw) {
+            const pending = JSON.parse(pendingRaw);
+            // chỉ thêm nếu chưa có id này trong danh sách
+            const exists = merged.some(p => `${p.id}` === `${pending.id}`);
+            if (!exists) merged = [pending, ...merged];
+          }
+        } catch {}
+        setPosts(merged);
       } else {
         toast.error(result.message);
         setPosts([]);
@@ -72,6 +85,11 @@ const MyPosts = ({ user }) => {
     
     // Load posts when user is authenticated
     loadPosts();
+
+    // Tự refresh khi cửa sổ lấy lại focus
+    const onFocus = () => loadPosts();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
   }, [user, navigate]);
 
   const getStatusColor = (status) => {
@@ -255,7 +273,7 @@ const MyPosts = ({ user }) => {
               <h3 className="h5 mb-0 text-dark">Tin đăng của tôi ({posts.length})</h3>
               <Button 
                 variant="success" 
-                onClick={() => navigate("/member/post-ad")}
+                onClick={() => navigate("/post-ad")}
                 className="px-4"
               >
                 Đăng tin mới
@@ -272,7 +290,7 @@ const MyPosts = ({ user }) => {
               <Alert variant="info" className="text-center py-5">
                 <h5>Bạn chưa có tin đăng nào</h5>
                 <p className="mb-3">Hãy đăng tin đầu tiên để bắt đầu bán hàng!</p>
-                <Button variant="success" onClick={() => navigate("/member/post-ad")}>
+                <Button variant="success" onClick={() => navigate("/post-ad")}>
                   Đăng tin ngay
                 </Button>
               </Alert>
