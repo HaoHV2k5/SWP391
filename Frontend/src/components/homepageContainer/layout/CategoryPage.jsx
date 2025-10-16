@@ -17,17 +17,20 @@ const CategoryPage = () => {
   // Lấy sản phẩm theo category - map URL param với ProductType từ Backend
   const getProductTypeFromUrl = (urlType) => {
     const mapping = {
-      "electric-scooter": "VEHICLE",  // Sẽ được phân loại chi tiết trong filter
-      "electric-bicycle": "VEHICLE",  // Sẽ được phân loại chi tiết trong filter
+      "electric-scooter": "ELECTRIC_SCOOTER",  // Map với productType thực tế từ backend
+      "electric-bicycle": "ELECTRIC_BICYCLE",  // Map với productType thực tế từ backend
       "battery": "BATTERY",
-      "vehicle": "VEHICLE"  // "vehicle" sẽ hiển thị tất cả VEHICLE
+      "vehicle": "VEHICLE"  // "vehicle" sẽ hiển thị tất cả xe điện
     };
     return mapping[urlType];
   };
 
   // Hàm phân loại xe dựa trên title/description
   const getVehicleSubType = (product) => {
-    if (product.productType !== 'VEHICLE') return null;
+    // Kiểm tra tất cả các loại xe điện
+    if (product.productType !== 'VEHICLE' && 
+        product.productType !== 'ELECTRIC_SCOOTER' && 
+        product.productType !== 'ELECTRIC_BICYCLE') return null;
     
     const title = (product.title || '').toLowerCase();
     const description = (product.description || '').toLowerCase();
@@ -51,7 +54,14 @@ const CategoryPage = () => {
   const categoryProducts = filteredProducts.filter(p => {
     const expectedProductType = getProductTypeFromUrl(type);
     
-    // Nếu là VEHICLE, cần phân loại chi tiết
+    // Nếu URL là "vehicle", hiển thị tất cả xe điện (bao gồm ELECTRIC_SCOOTER, ELECTRIC_BICYCLE, VEHICLE)
+    if (type === 'vehicle') {
+      return p.productType === 'VEHICLE' || 
+             p.productType === 'ELECTRIC_SCOOTER' || 
+             p.productType === 'ELECTRIC_BICYCLE';
+    }
+    
+    // Nếu là VEHICLE khác, cần phân loại chi tiết
     if (expectedProductType === 'VEHICLE') {
       const vehicleSubType = getVehicleSubType(p);
       return vehicleSubType === type;

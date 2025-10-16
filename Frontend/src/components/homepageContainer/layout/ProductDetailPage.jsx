@@ -1,5 +1,6 @@
 import { Container, Row, Col, Spinner, Alert } from "react-bootstrap";
 import { useProductDetailLogic } from "../../../hooks/useProductDetail";
+import { useSavedProducts } from "../contexts/SavedProductsContext";
 import "../styles/ProductDetail.css";
 
 const ProductDetailPage = () => {
@@ -18,6 +19,15 @@ const ProductDetailPage = () => {
     prevImage,
     setCurrentImageIndex
   } = useProductDetailLogic();
+  
+  const { toggle, isSaved } = useSavedProducts();
+  const saved = data?.id ? isSaved(data.id) : false;
+  
+  const handleSaveClick = () => {
+    if (data) {
+      toggle(data);
+    }
+  };
   if (loading) {
     return (
       <Container className="py-5 text-center">
@@ -147,15 +157,18 @@ const ProductDetailPage = () => {
                 <h2 className="product-title">
                   {data.title}
                 </h2>
-                <button className="btn btn-outline-danger btn-sm">
-                  <i className="bi bi-heart me-1"></i>
-                  Lưu
+                <button 
+                  className={`btn btn-sm ${saved ? 'btn-danger' : 'btn-outline-danger'}`}
+                  onClick={handleSaveClick}
+                  disabled={!data}
+                >
+                  <i className={`bi ${saved ? 'bi-heart-fill' : 'bi-heart'}`}></i>
                 </button>
               </div>
               
               {/* Thông tin sản phẩm - Dynamic from backend */}
               <div className="product-subtitle">
-                {data.productType === 'VEHICLE' ? 'Xe máy điện' : 
+                {data.productType === 'VEHICLE' ? 'Xe điện' : 
                  data.productType === 'BATTERY' ? 'Pin/Bộ sạc' : 
                  data.productType || 'Sản phẩm'}
                 {productInfo.brand && ` • ${productInfo.brand}`}
