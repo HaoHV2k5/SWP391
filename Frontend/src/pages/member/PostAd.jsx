@@ -102,11 +102,32 @@ const PostAd = ({ user }) => {
     setLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      // TODO: Gọi API thật tạo tin: POST /products/create?username=<username> (multipart/form-data)
+      // Tạm thời giữ simulate để không phá luồng, nhưng vẫn navigate về My Posts
+      await new Promise(resolve => setTimeout(resolve, 1200));
+
+      // Lưu tạm tin pending để hiển thị ngay ở My Posts
+      try {
+        const pending = {
+          id: `temp-${Date.now()}`,
+          title: formData.title,
+          productName: formData.title,
+          price: parseInt(formData.price || 0, 10),
+          location: formData.location,
+          address: formData.location,
+          status: 'pending',
+          createdDate: new Date().toISOString(),
+          image: null,
+          images: [],
+          views: 0,
+          likes: 0,
+        };
+        localStorage.setItem('recentPendingPost', JSON.stringify(pending));
+      } catch {}
+
       toast.success("Đăng tin thành công! Tin của bạn đang chờ duyệt.");
-      navigate("/member/my-posts");
+      // Điều hướng về My Posts
+      navigate("/my-posts");
     } catch (error) {
       toast.error("Có lỗi xảy ra khi đăng tin. Vui lòng thử lại!");
     } finally {

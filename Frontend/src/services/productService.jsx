@@ -53,6 +53,38 @@ const productService = {
     }
   },
 
+  // Lấy danh sách tin đăng của chính user (seller/member)
+  async getMyPosts(username) {
+    try {
+      if (!username) {
+        const raw = localStorage.getItem("userData");
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            username =
+              parsed?.username ||
+              parsed?.user?.username ||
+              parsed?.email ||
+              parsed?.user?.email ||
+              null;
+          } catch {}
+        }
+      }
+
+      const endpoint = username
+        ? `/products/seller?username=${encodeURIComponent(username)}`
+        : "/products"; // fallback công khai nếu chưa có username
+
+      const response = await apiClient.get(endpoint);
+      const data = response?.data?.data ?? response?.data?.content ?? response?.data;
+      return { success: true, data: Array.isArray(data) ? data : [] };
+    } catch (error) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      return { success: false, message: `Lỗi tải tin của tôi (${status || "network"}): ${backendMessage || "Không rõ"}` };
+    }
+  },
+
   // Tìm kiếm sản phẩm theo từ khóa sử dụng search endpoint của BE
   async searchProducts(keyword) {
     try {
