@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Mail, Phone, MapPin, Calendar } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Users } from 'lucide-react';
 
 const PersonalInfo = ({ user }) => {
   const InfoItem = ({ icon: Icon, label, value }) => (
@@ -31,10 +31,8 @@ const PersonalInfo = ({ user }) => {
     return user?.fullName || user?.fullname || user?.user?.fullname || 'Chưa cập nhật';
   };
 
-  const getJoinDate = () => {
-    return user?.createdAt 
-      ? new Date(user.createdAt).toLocaleDateString('vi-VN') 
-      : 'Không xác định';
+  const getGender = () => {
+    return user?.gender || 'Chưa cập nhật';
   };
 
   return (
@@ -84,9 +82,9 @@ const PersonalInfo = ({ user }) => {
         />
         
         <InfoItem 
-          icon={Calendar} 
-          label="Ngày tham gia" 
-          value={getJoinDate()} 
+          icon={Users} 
+          label="Giới tính" 
+          value={getGender()} 
         />
       </div>
     </div>
