@@ -1,5 +1,6 @@
 import React from 'react';
 import { Edit3 } from 'lucide-react';
+import { CameraOutlined } from '@ant-design/icons';
 
 const UserProfileCard = ({ user }) => {
   const getInitial = () => {
@@ -19,6 +20,10 @@ const UserProfileCard = ({ user }) => {
     return user?.role === 'admin' ? '#dc3545' : '#00A86B';
   };
 
+  const handleChangeAvatar = () => {
+    alert('Chức năng đổi avatar sẽ được phát triển sau');
+  };
+
   return (
     <div style={{
       backgroundColor: 'white',
@@ -29,19 +34,38 @@ const UserProfileCard = ({ user }) => {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
         {/* Avatar */}
-        <div style={{
-          width: '80px',
-          height: '80px',
-          borderRadius: '50%',
-          background: 'linear-gradient(135deg, #00A86B 0%, #2BB673 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          fontSize: '32px',
-          fontWeight: 'bold'
-        }}>
-          {getInitial()}
+        <div style={{ position: 'relative' }}>
+          <div style={{
+            width: '80px',
+            height: '80px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #00A86B 0%, #2BB673 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontSize: '32px',
+            fontWeight: 'bold'
+          }}>
+            {getInitial()}
+          </div>
+          
+          {/* Camera Icon */}
+          <button
+            onClick={handleChangeAvatar}
+            style={{
+              position: 'absolute',
+              bottom: '0',
+              right: '0',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#666',
+              padding: '4px'
+            }}
+          >
+            <CameraOutlined style={{ fontSize: '20px' }} />
+          </button>
         </div>
         
         {/* User Info */}
