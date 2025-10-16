@@ -62,7 +62,7 @@ export const useProductDetailLogic = () => {
     
     if (data.productType === 'VEHICLE' && data.vehicle) {
       return {
-        type: 'Xe máy điện',
+        type: 'Xe điện',
         brand: data.vehicle.brand,
         model: data.vehicle.model,
         year: data.vehicle.yearManufactured,
