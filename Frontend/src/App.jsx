@@ -1,9 +1,4 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import { getToastDefaults } from "./utils/notificationManager";
@@ -24,6 +19,7 @@ import AccountPage from "./pages/AccountPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
 import "./App.css";
 import CategoryPage from "./components/homepageContainer/layout/CategoryPage";
+import ProductDetailPage from "./components/homepageContainer/layout/ProductDetailPage";
 import { SavedProductsProvider } from "./components/homepageContainer/contexts/SavedProductsContext";
 
 function AppContent() {
@@ -190,6 +186,7 @@ function AppContent() {
         <Route path="/post-ad" element={<PostAd user={user} />} />
         <Route path="/verify-otp" element={<OTPVerificationPage />} />
         <Route path="/products/:type" element={<CategoryPage />} />
+        <Route path="/product/:id" element={<ProductDetailPage />} />
       </Routes>
 
       {/* Chỉ hiển thị Footer cho trang chủ và admin, không hiển thị cho staff */}
