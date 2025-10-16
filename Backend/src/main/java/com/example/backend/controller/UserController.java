@@ -1,10 +1,7 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.request.*;
-import com.example.backend.dto.response.ApiResponse;
-import com.example.backend.dto.response.LoginResponse;
-import com.example.backend.dto.response.ResetPasswordResponse;
-import com.example.backend.dto.response.UserDetailResponse;
+import com.example.backend.dto.response.*;
 import com.example.backend.entity.User;
 import com.example.backend.service.MailService;
 import com.example.backend.service.OtpService;
@@ -99,6 +96,19 @@ public class UserController {
         UserDetailResponse user =userService.updatePhoneNumber(request);
         return ApiResponse.<UserDetailResponse>builder().data(user).build();
 
+    }
+
+    @PutMapping("/update")
+
+    public ApiResponse<UserListResponse> updateUser(Authentication authentication,
+                                                    @RequestBody @Valid UpdateUserRequest request) {
+        String name = authentication.getName();
+        Long id = userService.getIdByUsername(name);
+        UserListResponse updatedUser = userService.updateUser(id, request);
+        return ApiResponse.<UserListResponse>builder()
+                .data(updatedUser)
+                .message("User updated successfully")
+                .build();
     }
 
 
