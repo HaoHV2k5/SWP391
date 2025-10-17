@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Row, Col, Card, Button, Badge, Dropdown, Modal, Spinner, Alert } from "react-bootstrap";
+import { Container, Row, Col, Card, Button, Badge, Dropdown, Modal, Spinner, Alert, Form } from "react-bootstrap";
 import { toast } from "react-toastify";
 import MemberHeader from "../../components/member/MemberHeader";
 import productService from "../../services/productService";
@@ -16,28 +16,29 @@ const MyPosts = ({ user }) => {
   // State for user's posts
   const [posts, setPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
+  const [filteredPosts, setFilteredPosts] = useState([]);
+  const [filterStatus, setFilterStatus] = useState('ALL');
 
   // Function to load posts from productService
   const loadPosts = async () => {
     setLoadingPosts(true);
     try {
-      // Ưu tiên lấy đúng tin của user hiện tại
+      // Xóa localStorage cũ nếu có
+      localStorage.removeItem('recentPendingPost');
+      
+      // Lấy tin đăng từ backend
       const username = (user?.username || user?.user?.username || user?.email || user?.user?.email);
+      console.log('📡 Loading posts for username:', username);
+      
       const result = await productService.getMyPosts(username);
+      console.log('📦 API result:', result);
+      
       if (result.success) {
-        // Merge pending post (optimistic) nếu có
-        let merged = result.data || [];
-        try {
-          const pendingRaw = localStorage.getItem('recentPendingPost');
-          if (pendingRaw) {
-            const pending = JSON.parse(pendingRaw);
-            // chỉ thêm nếu chưa có id này trong danh sách
-            const exists = merged.some(p => `${p.id}` === `${pending.id}`);
-            if (!exists) merged = [pending, ...merged];
-          }
-        } catch {}
-        setPosts(merged);
+        const data = result.data || [];
+        console.log('✅ Loaded posts from DB:', data.length, 'posts');
+        setPosts(data);
       } else {
+        console.error('❌ Failed to load posts:', result.message);
         toast.error(result.message);
         setPosts([]);
       }
@@ -50,8 +51,22 @@ const MyPosts = ({ user }) => {
     }
   };
 
+  // Filter posts theo trạng thái
+  useEffect(() => {
+    let filtered = posts;
+    
+    if (filterStatus !== 'ALL') {
+      filtered = filtered.filter(p => (p.status || '').toUpperCase() === filterStatus);
+    }
+    
+    setFilteredPosts(filtered);
+  }, [posts, filterStatus]);
+
   useEffect(() => {
     console.log("=== MyPosts useEffect ===");
+    
+    // Xóa localStorage mock data ngay khi load trang
+    localStorage.removeItem('recentPendingPost');
     
     if (!user) {
       console.log("⏳ No user yet, waiting...");
@@ -93,14 +108,20 @@ const MyPosts = ({ user }) => {
   }, [user, navigate]);
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case "active":
-        return "success";
-      case "pending":
+    const s = (status || '').toUpperCase();
+    switch (s) {
+      case "PENDING":
         return "warning";
-      case "sold":
+      case "STAFF_APPROVED":
         return "info";
-      case "expired":
+      case "ADMIN_APPROVED":
+      case "ACTIVE":
+        return "success";
+      case "REJECTED":
+        return "danger";
+      case "SOLD":
+        return "secondary";
+      case "INACTIVE":
         return "secondary";
       default:
         return "secondary";
@@ -108,17 +129,24 @@ const MyPosts = ({ user }) => {
   };
 
   const getStatusText = (status) => {
-    switch (status) {
-      case "active":
-        return "Đang hiển thị";
-      case "pending":
+    const s = (status || '').toUpperCase();
+    switch (s) {
+      case "PENDING":
         return "Chờ duyệt";
-      case "sold":
+      case "STAFF_APPROVED":
+        return "Đã duyệt Staff";
+      case "ADMIN_APPROVED":
+        return "Đã duyệt Admin";
+      case "ACTIVE":
+        return "Đang hiển thị";
+      case "REJECTED":
+        return "Bị từ chối";
+      case "SOLD":
         return "Đã bán";
-      case "expired":
-        return "Hết hạn";
+      case "INACTIVE":
+        return "Không hoạt động";
       default:
-        return status;
+        return status || "Không rõ";
     }
   };
 
@@ -235,17 +263,9 @@ const MyPosts = ({ user }) => {
             {/* Stats Cards */}
             <Row className="g-4 mb-4">
               <Col lg={3} md={6}>
-                <Card className="text-white border-0 h-100" style={{ background: "linear-gradient(135deg, #00A86B 0%, #2BB673 100%)" }}>
-                  <Card.Body className="text-center p-3">
-                    <h4 className="fw-bold mb-1">{posts.filter(p => p.status === 'active').length}</h4>
-                    <small className="opacity-75">Tin đang hiển thị</small>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col lg={3} md={6}>
                 <Card className="text-white border-0 h-100" style={{ background: "linear-gradient(135deg, #ffc107 0%, #ffb300 100%)" }}>
                   <Card.Body className="text-center p-3">
-                    <h4 className="fw-bold mb-1">{posts.filter(p => p.status === 'pending').length}</h4>
+                    <h4 className="fw-bold mb-1">{posts.filter(p => (p.status || '').toUpperCase() === 'PENDING').length}</h4>
                     <small className="opacity-75">Tin chờ duyệt</small>
                   </Card.Body>
                 </Card>
@@ -253,31 +273,57 @@ const MyPosts = ({ user }) => {
               <Col lg={3} md={6}>
                 <Card className="text-white border-0 h-100" style={{ background: "linear-gradient(135deg, #17a2b8 0%, #138496 100%)" }}>
                   <Card.Body className="text-center p-3">
-                    <h4 className="fw-bold mb-1">{posts.filter(p => p.status === 'sold').length}</h4>
-                    <small className="opacity-75">Tin đã bán</small>
+                    <h4 className="fw-bold mb-1">{posts.filter(p => (p.status || '').toUpperCase() === 'STAFF_APPROVED').length}</h4>
+                    <small className="opacity-75">Đã duyệt Staff</small>
                   </Card.Body>
                 </Card>
               </Col>
               <Col lg={3} md={6}>
-                <Card className="text-white border-0 h-100" style={{ background: "linear-gradient(135deg, #6c757d 0%, #5a6268 100%)" }}>
+                <Card className="text-white border-0 h-100" style={{ background: "linear-gradient(135deg, #00A86B 0%, #2BB673 100%)" }}>
                   <Card.Body className="text-center p-3">
-                    <h4 className="fw-bold mb-1">{posts.reduce((sum, p) => sum + p.views, 0)}</h4>
-                    <small className="opacity-75">Tổng lượt xem</small>
+                    <h4 className="fw-bold mb-1">{posts.filter(p => (p.status || '').toUpperCase() === 'ADMIN_APPROVED' || (p.status || '').toUpperCase() === 'ACTIVE').length}</h4>
+                    <small className="opacity-75">Đã duyệt/Hiển thị</small>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col lg={3} md={6}>
+                <Card className="text-white border-0 h-100" style={{ background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)" }}>
+                  <Card.Body className="text-center p-3">
+                    <h4 className="fw-bold mb-1">{posts.filter(p => (p.status || '').toUpperCase() === 'REJECTED').length}</h4>
+                    <small className="opacity-75">Bị từ chối</small>
                   </Card.Body>
                 </Card>
               </Col>
             </Row>
 
-            {/* Action Bar */}
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <h3 className="h5 mb-0 text-dark">Tin đăng của tôi ({posts.length})</h3>
-              <Button 
-                variant="success" 
-                onClick={() => navigate("/post-ad")}
-                className="px-4"
-              >
-                Đăng tin mới
-              </Button>
+            {/* Action Bar với Filter */}
+            <div className="mb-4">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h3 className="h5 mb-0 text-dark">Tin đăng của tôi ({filteredPosts.length}/{posts.length})</h3>
+                <Button 
+                  variant="success" 
+                  onClick={() => navigate("/post-ad")}
+                  className="px-4"
+                >
+                  Đăng tin mới
+                </Button>
+              </div>
+              
+              {/* Filter theo trạng thái */}
+              <div>
+                <Form.Select 
+                  value={filterStatus} 
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  size="sm"
+                  style={{ maxWidth: '250px' }}
+                >
+                  <option value="ALL">Tất cả trạng thái</option>
+                  <option value="PENDING">Chờ duyệt</option>
+                  <option value="STAFF_APPROVED">Đã duyệt Staff</option>
+                  <option value="ACTIVE">Đang hiển thị</option>
+                  <option value="REJECTED">Bị từ chối</option>
+                </Form.Select>
+              </div>
             </div>
 
             {/* Posts List */}
@@ -286,17 +332,23 @@ const MyPosts = ({ user }) => {
                 <Spinner animation="border" variant="success" className="mb-3" />
                 <p className="text-muted">Đang tải danh sách tin đăng...</p>
               </div>
-            ) : posts.length === 0 ? (
+            ) : filteredPosts.length === 0 ? (
               <Alert variant="info" className="text-center py-5">
-                <h5>Bạn chưa có tin đăng nào</h5>
-                <p className="mb-3">Hãy đăng tin đầu tiên để bắt đầu bán hàng!</p>
-                <Button variant="success" onClick={() => navigate("/post-ad")}>
-                  Đăng tin ngay
-                </Button>
+                {posts.length === 0 ? (
+                  <>
+                    <h5>Bạn chưa có tin đăng nào</h5>
+                    <p className="mb-3">Hãy đăng tin đầu tiên để bắt đầu bán hàng!</p>
+                    <Button variant="success" onClick={() => navigate("/post-ad")}>
+                      Đăng tin ngay
+                    </Button>
+                  </>
+                ) : (
+                  <p className="mb-0">Không tìm thấy tin đăng phù hợp với bộ lọc.</p>
+                )}
               </Alert>
             ) : (
               <Row className="g-4">
-                {posts.map((post) => (
+                {filteredPosts.map((post) => (
                   <Col lg={6} key={post.id}>
                     <Card className="h-100 shadow-sm border-0">
                       <Row className="g-0 h-100">
@@ -320,11 +372,11 @@ const MyPosts = ({ user }) => {
                                 <Badge bg={getStatusColor(post.status)} className="mb-2">
                                   {getStatusText(post.status)}
                                 </Badge>
-                                <Dropdown>
-                                  <Dropdown.Toggle variant="link" className="text-muted p-0 border-0">
+                                <Dropdown align="end">
+                                  <Dropdown.Toggle variant="link" className="text-muted p-0 border-0" style={{ fontSize: '20px' }}>
                                     ⋮
                                   </Dropdown.Toggle>
-                                  <Dropdown.Menu>
+                                  <Dropdown.Menu style={{ minWidth: '150px' }}>
                                     <Dropdown.Item onClick={() => handleEditPost(post.id)}>
                                       Chỉnh sửa
                                     </Dropdown.Item>
