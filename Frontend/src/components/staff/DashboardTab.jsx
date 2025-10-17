@@ -5,6 +5,7 @@ import {
   DollarSign,
   TrendingUp,
 } from "lucide-react";
+import { formatDate } from "../../utils/staffUtils";
 
 const DashboardTab = ({
   stats,
@@ -272,13 +273,13 @@ const DashboardTab = ({
                     #{product.id}
                   </td>
                   <td style={{ padding: "1rem", color: "white" }}>
-                    {product.title}
+                    {product.title || product.name || product.productName || "N/A"}
                   </td>
                   <td style={{ padding: "1rem", color: "white" }}>
-                    {product.seller}
+                    {product.seller || product.sellerName || product.user?.fullName || product.user?.name || "N/A"}
                   </td>
                   <td style={{ padding: "1rem", color: "white" }}>
-                    {formatCurrency(product.price)}
+                    {formatCurrency(product.price || product.priceValue || 0)}
                   </td>
                   <td style={{ padding: "1rem" }}>
                     <span
@@ -295,7 +296,7 @@ const DashboardTab = ({
                     </span>
                   </td>
                   <td style={{ padding: "1rem", color: "white" }}>
-                    {product.createdAt}
+                    {formatDate(product.createdAt || product.created_at || product.createDate)}
                   </td>
                 </tr>
               ))}
@@ -426,13 +427,13 @@ const DashboardTab = ({
                 >
                   <td style={{ padding: "1rem", color: "white" }}>#{kyc.id}</td>
                   <td style={{ padding: "1rem", color: "white" }}>
-                    {kyc.fullName}
+                    {kyc.fullName || kyc.fullname || kyc.name || "N/A"}
                   </td>
                   <td style={{ padding: "1rem", color: "white" }}>
-                    {kyc.email}
+                    {kyc.email || kyc.userEmail || "N/A"}
                   </td>
                   <td style={{ padding: "1rem", color: "white" }}>
-                    {kyc.phone}
+                    {kyc.phone || kyc.phoneNumber || kyc.phone_number || "N/A"}
                   </td>
                   <td style={{ padding: "1rem" }}>
                     <span
@@ -449,7 +450,7 @@ const DashboardTab = ({
                     </span>
                   </td>
                   <td style={{ padding: "1rem", color: "white" }}>
-                    {kyc.submittedAt}
+                    {formatDate(kyc.submittedAt || kyc.createdAt || kyc.created_at || kyc.submitDate)}
                   </td>
                 </tr>
               ))}

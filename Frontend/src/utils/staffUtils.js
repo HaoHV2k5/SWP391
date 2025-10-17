@@ -8,7 +8,7 @@
  */
 export const formatCurrency = (amount) => {
   if (!amount && amount !== 0) return "N/A";
-  
+
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND",
@@ -106,7 +106,7 @@ export const getPriorityText = (priority) => {
  */
 export const formatDate = (dateString) => {
   if (!dateString) return "N/A";
-  
+
   try {
     const date = new Date(dateString);
     return date.toLocaleDateString("vi-VN", {
@@ -114,7 +114,7 @@ export const formatDate = (dateString) => {
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
-      minute: "2-digit"
+      minute: "2-digit",
     });
   } catch (error) {
     console.error("Error formatting date:", error);
@@ -127,7 +127,7 @@ export const formatDate = (dateString) => {
  */
 export const formatDateShort = (dateString) => {
   if (!dateString) return "N/A";
-  
+
   try {
     const date = new Date(dateString);
     return date.toLocaleDateString("vi-VN");
@@ -150,7 +150,7 @@ export const isValidEmail = (email) => {
  */
 export const isValidPhone = (phone) => {
   const phoneRegex = /^(\+84|84|0)[1-9][0-9]{8,9}$/;
-  return phoneRegex.test(phone.replace(/\s/g, ''));
+  return phoneRegex.test(phone.replace(/\s/g, ""));
 };
 
 /**
@@ -201,7 +201,7 @@ export const throttle = (func, limit) => {
     if (!inThrottle) {
       func.apply(this, args);
       inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
+      setTimeout(() => (inThrottle = false), limit);
     }
   };
 };
@@ -212,7 +212,7 @@ export const throttle = (func, limit) => {
 export const deepClone = (obj) => {
   if (obj === null || typeof obj !== "object") return obj;
   if (obj instanceof Date) return new Date(obj.getTime());
-  if (obj instanceof Array) return obj.map(item => deepClone(item));
+  if (obj instanceof Array) return obj.map((item) => deepClone(item));
   if (typeof obj === "object") {
     const clonedObj = {};
     for (const key in obj) {
@@ -239,14 +239,14 @@ export const isEmpty = (obj) => {
  */
 export const getFileExtension = (filename) => {
   if (!filename) return "";
-  return filename.split('.').pop().toLowerCase();
+  return filename.split(".").pop().toLowerCase();
 };
 
 /**
  * Check if file is image
  */
 export const isImageFile = (filename) => {
-  const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+  const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp"];
   const extension = getFileExtension(filename);
   return imageExtensions.includes(extension);
 };
@@ -256,10 +256,10 @@ export const isImageFile = (filename) => {
  */
 export const formatFileSize = (bytes) => {
   if (bytes === 0) return "0 Bytes";
-  
+
   const k = 1024;
   const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
