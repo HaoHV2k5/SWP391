@@ -3,10 +3,7 @@ package com.example.backend.service;
 import com.example.backend.dto.request.CreateProductRequest;
 import com.example.backend.dto.request.UpdateProductRequest;
 import com.example.backend.dto.response.ProductResponse;
-import com.example.backend.entity.PostingPackage;
-import com.example.backend.entity.Product;
-import com.example.backend.entity.User;
-import com.example.backend.entity.UserPostingPackage;
+import com.example.backend.entity.*;
 import com.example.backend.enums.ProductStatus;
 import com.example.backend.enums.ProductType;
 import com.example.backend.exception.AppException;
@@ -38,9 +35,18 @@ public class ProductService {
     private final PostingPackageRepository postingPackageRepository;
     private final UserPostingPackageRepository userPostingPackageRepository;
     private final UserPackageTransactionRepository userPackageTransactionRepository;
+    private final TagsRepository tagsRepository;
 
     @Transactional
     public ProductResponse createProduct(CreateProductRequest request, String username) {
+
+
+        Tags tags = tagsRepository.findByBrandAndModelAndYearModel(
+                request.getVehicle().getBrand(),
+                request.getVehicle().getModel(),
+                request.getVehicle().getYearManufactured()
+        );
+
         // Tìm user theo username
         User seller = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
@@ -76,6 +82,9 @@ public class ProductService {
         Product product = productMapper.toProduct(request);
         product.setSeller(seller);
         product.setImageUrls(imgUrls);
+        if(tags != null){
+            product.setTag(tags);
+        }
         userPackage.setPostPossible(userPackage.getPostPossible() - 1);
         userPackageTransactionRepository.save(userPackage);
         // Lưu product
