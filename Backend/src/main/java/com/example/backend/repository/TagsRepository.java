@@ -12,4 +12,6 @@ public interface TagsRepository extends JpaRepository<Tags, Long> {
     List<Tags> findTop10ByDisplayNameContainingIgnoreCase(String displayName);
 
     Optional<Tags> findBySlugs(String slug);
+
+    Tags findByBrandAndModelAndYearModel(String brand, String model, Integer yearModel);
 }
