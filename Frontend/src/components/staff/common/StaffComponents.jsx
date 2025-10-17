@@ -52,13 +52,49 @@ export const ActionButtons = ({
   showApprove = true,
   showReject = true 
 }) => {
+  const buttonStyle = {
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '0.25rem',
+    margin: '0 0.125rem',
+    transition: 'all 0.2s ease'
+  };
+
+  const secondaryButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: '#f3f4f6',
+    color: '#374151'
+  };
+
+  const successButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: '#10b981',
+    color: 'white'
+  };
+
+  const dangerButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: '#ef4444',
+    color: 'white'
+  };
+
   return (
-    <div className="flex gap-2">
+    <div style={{ display: 'flex', gap: '0.5rem' }}>
       {onView && (
         <button
-          className="staff-btn staff-btn-secondary p-1"
+          style={secondaryButtonStyle}
           onClick={onView}
           title="Xem chi tiết"
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = '#e5e7eb';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = '#f3f4f6';
+          }}
         >
           <Eye size={14} />
         </button>
@@ -66,10 +102,16 @@ export const ActionButtons = ({
       
       {status === "PENDING" && showApprove && (
         <button
-          className="staff-btn staff-btn-success p-1"
+          style={successButtonStyle}
           onClick={onApprove}
           disabled={loading}
           title="Duyệt"
+          onMouseEnter={(e) => {
+            if (!loading) e.target.style.backgroundColor = '#059669';
+          }}
+          onMouseLeave={(e) => {
+            if (!loading) e.target.style.backgroundColor = '#10b981';
+          }}
         >
           <Check size={14} />
         </button>
@@ -77,10 +119,16 @@ export const ActionButtons = ({
       
       {status === "PENDING" && showReject && (
         <button
-          className="staff-btn staff-btn-danger p-1"
+          style={dangerButtonStyle}
           onClick={onReject}
           disabled={loading}
           title="Từ chối"
+          onMouseEnter={(e) => {
+            if (!loading) e.target.style.backgroundColor = '#dc2626';
+          }}
+          onMouseLeave={(e) => {
+            if (!loading) e.target.style.backgroundColor = '#ef4444';
+          }}
         >
           <X size={14} />
         </button>
@@ -135,31 +183,91 @@ export const Modal = ({
   width = 'medium',
   showCloseButton = true 
 }) => {
-  if (!isOpen) return null;
+  console.log("🔍 Modal component render - isOpen:", isOpen);
+  console.log("🔍 Modal component render - title:", title);
+  console.log("🔍 Modal component render - children:", children);
+  
+  if (!isOpen) {
+    console.log("🔍 Modal not open, returning null");
+    return null;
+  }
 
-  const widthClasses = {
-    small: 'max-w-sm',
-    medium: 'max-w-md',
-    large: 'max-w-lg',
-    xlarge: 'max-w-xl',
-    full: 'max-w-full'
+  const widthStyles = {
+    small: { maxWidth: '400px' },
+    medium: { maxWidth: '600px' },
+    large: { maxWidth: '800px' },
+    xlarge: { maxWidth: '1000px' },
+    full: { maxWidth: '100%' }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className={`bg-white rounded-lg shadow-xl w-full ${widthClasses[width]} max-h-[90vh] overflow-y-auto`}>
-        <div className="flex items-center justify-between p-6 border-b">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+    <div 
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        padding: '1rem'
+      }}
+    >
+      <div 
+        style={{
+          backgroundColor: 'white',
+          borderRadius: '8px',
+          boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
+          width: '100%',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          ...widthStyles[width]
+        }}
+      >
+        <div 
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '1.5rem',
+            borderBottom: '1px solid #e5e7eb'
+          }}
+        >
+          <h3 
+            style={{
+              fontSize: '1.125rem',
+              fontWeight: '600',
+              color: '#111827',
+              margin: 0
+            }}
+          >
+            {title}
+          </h3>
           {showCloseButton && (
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#6b7280',
+                cursor: 'pointer',
+                padding: '0.25rem',
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onMouseEnter={(e) => e.target.style.color = '#374151'}
+              onMouseLeave={(e) => e.target.style.color = '#6b7280'}
             >
               <X size={20} />
             </button>
           )}
         </div>
-        <div className="p-6">
+        <div style={{ padding: '1.5rem' }}>
           {children}
         </div>
       </div>

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useKyc } from "../../hooks/useStaff";
 import { LoadingSpinner, ActionButtons, RefreshButton, Modal } from "./common/StaffComponents";
 import { showErrorNotification } from "../../utils/notificationManager";
+import { formatDate } from "../../utils/staffUtils";
 
 const CustomersTab = ({
   kycList: externalKycList,
@@ -85,9 +86,15 @@ const CustomersTab = ({
                 kycList.map((kyc) => (
                   <tr key={kyc.id} style={{ borderBottom: "1px solid #e9ecef" }}>
                     <td style={{ padding: "1rem" }}>#{kyc.id}</td>
-                    <td style={{ padding: "1rem" }}>{kyc.fullName}</td>
-                    <td style={{ padding: "1rem" }}>{kyc.email}</td>
-                    <td style={{ padding: "1rem" }}>{kyc.phone}</td>
+                    <td style={{ padding: "1rem" }}>
+                      {kyc.fullName || kyc.fullname || kyc.name || "N/A"}
+                    </td>
+                    <td style={{ padding: "1rem" }}>
+                      {kyc.email || kyc.userEmail || "N/A"}
+                    </td>
+                    <td style={{ padding: "1rem" }}>
+                      {kyc.phone || kyc.phoneNumber || kyc.phone_number || "N/A"}
+                    </td>
                     <td style={{ padding: "1rem" }}>
                       <span
                         style={{
@@ -101,7 +108,9 @@ const CustomersTab = ({
                         {getStatusText(kyc.status)}
                       </span>
                     </td>
-                    <td style={{ padding: "1rem" }}>{kyc.submittedAt}</td>
+                    <td style={{ padding: "1rem" }}>
+                      {formatDate(kyc.submittedAt || kyc.createdAt || kyc.created_at || kyc.submitDate)}
+                    </td>
                     <td style={{ padding: "1rem" }}>
                       <ActionButtons
                         onView={() => setSelectedKyc(kyc)}
@@ -151,13 +160,13 @@ const CustomersTab = ({
           >
             <h3 style={{ marginBottom: "1rem" }}>Chi tiết KYC</h3>
             <div style={{ marginBottom: "1rem" }}>
-              <strong>Họ tên:</strong> {selectedKyc.fullName}
+              <strong>Họ tên:</strong> {selectedKyc.fullName || selectedKyc.fullname || selectedKyc.name || "N/A"}
             </div>
             <div style={{ marginBottom: "1rem" }}>
-              <strong>Email:</strong> {selectedKyc.email}
+              <strong>Email:</strong> {selectedKyc.email || selectedKyc.userEmail || "N/A"}
             </div>
             <div style={{ marginBottom: "1rem" }}>
-              <strong>Số điện thoại:</strong> {selectedKyc.phone}
+              <strong>Số điện thoại:</strong> {selectedKyc.phone || selectedKyc.phoneNumber || selectedKyc.phone_number || "N/A"}
             </div>
             <div style={{ marginBottom: "1rem" }}>
               <strong>Trạng thái:</strong>
@@ -175,13 +184,13 @@ const CustomersTab = ({
               </span>
             </div>
             <div style={{ marginBottom: "1rem" }}>
-              <strong>Ngày nộp:</strong> {selectedKyc.submittedAt}
+              <strong>Ngày nộp:</strong> {formatDate(selectedKyc.submittedAt || selectedKyc.createdAt || selectedKyc.created_at || selectedKyc.submitDate)}
             </div>
             <div style={{ marginBottom: "1rem" }}>
               <strong>Ảnh CCCD mặt trước:</strong>
               <div style={{ marginTop: "0.5rem" }}>
                 <img
-                  src={`/images/${selectedKyc.frontImage}`}
+                  src={`/images/${selectedKyc.frontImage || selectedKyc.front_image || selectedKyc.frontIdImage || selectedKyc.idCardFront}`}
                   alt="CCCD mặt trước"
                   style={{
                     maxWidth: "200px",
@@ -209,7 +218,7 @@ const CustomersTab = ({
               <strong>Ảnh CCCD mặt sau:</strong>
               <div style={{ marginTop: "0.5rem" }}>
                 <img
-                  src={`/images/${selectedKyc.backImage}`}
+                  src={`/images/${selectedKyc.backImage || selectedKyc.back_image || selectedKyc.backIdImage || selectedKyc.idCardBack}`}
                   alt="CCCD mặt sau"
                   style={{
                     maxWidth: "200px",
