@@ -35,5 +35,7 @@ public class UserPostingPackage {
     @Column(name = "active", nullable = false)
     private Boolean active = true;
 
+    @Column(name = "post_possible", nullable = false)
+    private Integer postPossible;
     // Optionally: có thể thêm trường trạng thái/mở rộng sau này
 }
