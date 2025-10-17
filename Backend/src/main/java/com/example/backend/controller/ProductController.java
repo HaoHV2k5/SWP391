@@ -45,6 +45,13 @@ public class ProductController {
         return ApiResponse.<ProductResponse>builder().message("Đã Tạo Product Thành Công").data(productResponse).build();
 
     }
+    //delete product
+    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    @DeleteMapping("/delete/{id}")
+    public ApiResponse<Void> deleteProduct(@PathVariable Long id){
+        productService.deleteProduct(id);
+        return  ApiResponse.<Void>builder().message("đã xóa product thành công").build();
+    }
 
 
     // staff lay cac product pending
