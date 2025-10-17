@@ -53,35 +53,98 @@ const productService = {
     }
   },
 
-  // Lấy danh sách tin đăng của chính user (seller/member)
+  // Lấy danh sách tin đăng của chính user (seller/member) - TẤT CẢ trạng thái
   async getMyPosts(username) {
+    try {
+      let userId = null;
+      
+      // Lấy userId từ localStorage
+      const raw = localStorage.getItem("userData");
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          userId = parsed?.userId || parsed?.user?.id || parsed?.id || null;
+          username = username || parsed?.username || parsed?.user?.username || parsed?.email || parsed?.user?.email || null;
+        } catch {}
+      }
+
+      // Ưu tiên dùng endpoint lấy TẤT CẢ tin (kể cả PENDING) theo userId
+      let endpoint;
+      if (userId) {
+        endpoint = `/products/history/seller/${userId}`;
+        console.log('🔍 Using history endpoint with userId:', userId);
+      } else if (username) {
+        endpoint = `/products/seller?username=${encodeURIComponent(username)}`;
+        console.log('🔍 Using seller endpoint with username:', username);
+      } else {
+        endpoint = "/products";
+        console.log('🔍 Using public endpoint (no user info)');
+      }
+
+      const response = await apiClient.get(endpoint);
+      const data = response?.data?.data ?? response?.data?.content ?? response?.data;
+      console.log('📦 Received from API:', data);
+      return { success: true, data: Array.isArray(data) ? data : [] };
+    } catch (error) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      console.error('❌ getMyPosts error:', { status, backendMessage });
+      return { success: false, message: `Lỗi tải tin của tôi (${status || "network"}): ${backendMessage || "Không rõ"}` };
+    }
+  },
+
+  // Tạo tin đăng mới (yêu cầu ROLE_SELLER trên BE)
+  async createProduct(form, username) {
     try {
       if (!username) {
         const raw = localStorage.getItem("userData");
         if (raw) {
           try {
             const parsed = JSON.parse(raw);
-            username =
-              parsed?.username ||
-              parsed?.user?.username ||
-              parsed?.email ||
-              parsed?.user?.email ||
-              null;
+            username = parsed?.username || parsed?.user?.username || parsed?.email || parsed?.user?.email || null;
           } catch {}
         }
       }
 
-      const endpoint = username
-        ? `/products/seller?username=${encodeURIComponent(username)}`
-        : "/products"; // fallback công khai nếu chưa có username
+      const formData = new FormData();
+      const productType = form.category || 'VEHICLE';
+      
+      // Các field bắt buộc theo CreateProductRequest
+      formData.append('title', form.title || '');
+      formData.append('price', form.price || 0);
+      formData.append('productType', productType);
+      
+      // Field tùy chọn
+      if (form.description) {
+        formData.append('description', form.description);
+      }
 
-      const response = await apiClient.get(endpoint);
-      const data = response?.data?.data ?? response?.data?.content ?? response?.data;
-      return { success: true, data: Array.isArray(data) ? data : [] };
+      // Gửi vehicle/battery object rỗng dựa trên productType (BE cần ít nhất 1 trong 2)
+      if (productType === 'VEHICLE') {
+        // Gửi vehicle object rỗng (BE sẽ tạo vehicle entity với brand, model, yearManufactured = null)
+        formData.append('vehicle.brand', '');
+        formData.append('vehicle.model', '');
+      } else if (productType === 'BATTERY') {
+        // Gửi battery object rỗng
+        formData.append('battery.brand', '');
+        formData.append('battery.model', '');
+      }
+
+      // Images (nếu có)
+      if (Array.isArray(form.images) && form.images.length > 0) {
+        form.images.forEach((file) => file && formData.append('images', file));
+      }
+
+      const url = username ? `/products/create?username=${encodeURIComponent(username)}` : '/products/create';
+      const response = await apiClient.post(url, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const data = response?.data?.data ?? response?.data;
+      return { success: true, data };
     } catch (error) {
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
-      return { success: false, message: `Lỗi tải tin của tôi (${status || "network"}): ${backendMessage || "Không rõ"}` };
+      return { success: false, message: `Đăng tin thất bại (${status || 'network'}): ${backendMessage || 'Không rõ'}` };
     }
   },
 
