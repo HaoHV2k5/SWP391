@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import com.example.backend.dto.request.BuyProductRequest;
 import com.example.backend.dto.request.CreateProductRequest;
 import com.example.backend.dto.request.ProductDecisionRequest;
+import com.example.backend.dto.request.UpdateProductRequest;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.OrderResponse;
 import com.example.backend.dto.response.ProductResponse;
@@ -190,6 +191,13 @@ public class ProductController {
         return  ApiResponse.<ProductResponse>builder()
                 .message("chuyển bài đăng sang trạng thái public thành công")
                 .data(response).build();
+
+    }
+
+    @PutMapping("/update")
+    public ApiResponse<ProductResponse> updateProduct(@RequestParam Long productId, @RequestBody @Valid UpdateProductRequest request){
+            ProductResponse productResponse = productService.updateProduct(productId, request);
+            return ApiResponse.<ProductResponse>builder().data(productResponse).build();
 
     }
 

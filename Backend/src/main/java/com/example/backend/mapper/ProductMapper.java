@@ -1,10 +1,12 @@
 package com.example.backend.mapper;
 
 import com.example.backend.dto.request.CreateProductRequest;
+import com.example.backend.dto.request.UpdateProductRequest;
 import com.example.backend.dto.response.ProductResponse;
 import com.example.backend.entity.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
@@ -23,5 +25,7 @@ public interface ProductMapper {
     ProductResponse toProductResponse(Product product);
 
     List<ProductResponse> toResponseList(List<Product> products);
+
+    void updateProduct(@MappingTarget Product product, UpdateProductRequest request);
 }
 

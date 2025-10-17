@@ -1,15 +1,18 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.request.CreateProductRequest;
+import com.example.backend.dto.request.UpdateProductRequest;
 import com.example.backend.dto.response.ProductResponse;
 import com.example.backend.entity.Product;
 import com.example.backend.entity.User;
 import com.example.backend.enums.ProductStatus;
+import com.example.backend.enums.ProductType;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
 import com.example.backend.mapper.ProductMapper;
 import com.example.backend.repository.ProductRepository;
 import com.example.backend.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -150,6 +154,53 @@ public class ProductService {
     public List<ProductResponse> getAllProductPosted(){
         List<Product> list = productRepository.findProductByIsPosted(true);
         return productMapper.toResponseList(list);
+    }
+    @Transactional
+    public ProductResponse updateProduct(Long productId, UpdateProductRequest request){
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        boolean changeImportant = false;
+        // So sánh price
+        if (!product.getPrice().equals(request.getPrice())) {
+            changeImportant = true;
+        }
+        // So sánh productType
+        else if (!product.getProductType().equals(request.getProductType())) {
+            changeImportant = true;
+        }
+        // So sánh vehicle
+        else if ((request.getVehicle() != null && product.getVehicle() == null) ||
+                (request.getVehicle() == null && product.getVehicle() != null) ||
+                (request.getVehicle() != null && product.getVehicle() != null &&
+                        (!java.util.Objects.equals(product.getVehicle().getBrand(), request.getVehicle().getBrand()) ||
+                                !java.util.Objects.equals(product.getVehicle().getModel(), request.getVehicle().getModel()) ||
+                                !java.util.Objects.equals(product.getVehicle().getYearManufactured(), request.getVehicle().getYearManufactured())))) {
+            changeImportant = true;
+        }
+        // So sánh battery
+        else if ((request.getBattery() != null && product.getBattery() == null) ||
+                (request.getBattery() == null && product.getBattery() != null) ||
+                (request.getBattery() != null && product.getBattery() != null &&
+                        (!java.util.Objects.equals(product.getBattery().getBrand(), request.getBattery().getBrand()) ||
+                                !java.util.Objects.equals(product.getBattery().getModel(), request.getBattery().getModel()) ||
+                                !java.util.Objects.equals(product.getBattery().getYearManufactured(), request.getBattery().getYearManufactured()) ||
+                                !java.util.Objects.equals(product.getBattery().getBatteryLevel(), request.getBattery().getBatteryLevel())))) {
+            changeImportant = true;
+        }
+        // So sánh ảnh sản phẩm (imageUrls)
+        else if (request.getImages() != null && !request.getImages().isEmpty()) {
+            changeImportant = true;
+        }
+
+
+        if (changeImportant) {
+            product.setStatus(ProductStatus.PENDING);
+        }
+
+        productMapper.updateProduct(product, request);
+        productRepository.save(product);
+        return productMapper.toProductResponse(product);
     }
 
 
