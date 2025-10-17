@@ -3,15 +3,16 @@ package com.example.backend.service;
 import com.example.backend.dto.request.CreateProductRequest;
 import com.example.backend.dto.request.UpdateProductRequest;
 import com.example.backend.dto.response.ProductResponse;
+import com.example.backend.entity.PostingPackage;
 import com.example.backend.entity.Product;
 import com.example.backend.entity.User;
+import com.example.backend.entity.UserPostingPackage;
 import com.example.backend.enums.ProductStatus;
 import com.example.backend.enums.ProductType;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
 import com.example.backend.mapper.ProductMapper;
-import com.example.backend.repository.ProductRepository;
-import com.example.backend.repository.UserRepository;
+import com.example.backend.repository.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,11 +34,36 @@ public class ProductService {
     private final UserRepository userRepository;
     private final ProductMapper productMapper;
     private final CloudinaryService cloudinaryService;
+    private final UserPackageTransactionService userPackageTransactionService;
+    private final PostingPackageRepository postingPackageRepository;
+    private final UserPostingPackageRepository userPostingPackageRepository;
+    private final UserPackageTransactionRepository userPackageTransactionRepository;
+
     @Transactional
     public ProductResponse createProduct(CreateProductRequest request, String username) {
         // Tìm user theo username
         User seller = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        UserPostingPackage userPackage = userPackageTransactionService.getPUserostingPackageByUserId(seller.getId());
+        if(userPackage.getPostPossible() <= 0){
+            throw  new AppException(ErrorCode.POSTING_OVER_LIMIT);
+        }
+        PostingPackage postingPackage = postingPackageRepository
+                .findById(userPackage.getPostingPackage().getId())
+                .orElseThrow(() -> new AppException(ErrorCode.POSTING_PACKAGE_NOT_FOUND));
+
+
+        int duration = postingPackage.getDuration();
+        LocalDateTime now =LocalDateTime.now();
+        LocalDateTime endAt =userPackage.getEndTime();
+
+        if (now.isAfter(endAt)) {
+            throw new AppException(ErrorCode.PACKAGE_EXPIRED);
+        }
+
+
+
         List<String> imgUrls = new ArrayList<>();
         if(request.getImages() != null && !request.getImages().isEmpty() ) {
                 for (MultipartFile file : request.getImages()) {
@@ -49,6 +76,8 @@ public class ProductService {
         Product product = productMapper.toProduct(request);
         product.setSeller(seller);
         product.setImageUrls(imgUrls);
+        userPackage.setPostPossible(userPackage.getPostPossible() - 1);
+        userPackageTransactionRepository.save(userPackage);
         // Lưu product
         Product savedProduct = productRepository.save(product);
         

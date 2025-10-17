@@ -57,6 +57,9 @@ public enum ErrorCode {
     EMAIL_NULL (1042, "Tài khoản chưa liên kết email hãy liên kết tài khoản với email trước khi đăng nhập", HttpStatus.BAD_REQUEST),
     POSTING_PACKAGE_NOT_FOUND (1043, "không tìm thất gói nào!", HttpStatus.BAD_REQUEST),
     INVALID_ORDER_TYPE (1044, "Order type chỉ có thể là recharge hoặc buy", HttpStatus.BAD_REQUEST),
+    POSTING_OVER_LIMIT (1045, "Bạn đã vượt quá số hạn đăng tin cho phép của gói!", HttpStatus.BAD_REQUEST),
+    PACKAGE_NOT_BUY(1046, "Bạn không có gói đăng nào hiệu lực!", HttpStatus.BAD_REQUEST),
+    PACKAGE_EXPIRED(1047, "Gói đăng tin đã quá hạn!", HttpStatus.BAD_REQUEST),
 
 
     ;

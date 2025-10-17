@@ -1,5 +1,6 @@
 package com.example.backend.repository;
 
+import com.example.backend.entity.PostingPackage;
 import com.example.backend.entity.UserPostingPackage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -10,5 +11,6 @@ import java.util.List;
 public interface UserPackageTransactionRepository extends JpaRepository<UserPostingPackage, Long> {
 
     List<UserPostingPackage> findByUserId(Long userId);
+    UserPostingPackage findPostingPackageByUserIdAndActiveTrue(Long userId);
 
 }

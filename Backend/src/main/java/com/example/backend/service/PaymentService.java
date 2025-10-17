@@ -38,6 +38,7 @@ public class PaymentService {
     private final TransactionRepository transactionRepository;
     private final UserPostingPackageRepository userPostingPackageRepository;
     private final TransactionMapper transactionMapper;
+    private final UserPackageTransactionRepository userPackageTransactionRepository;
 
     public Map<String, Object> generateLinkPayment(HttpServletRequest req, Long userId) {
         try {
@@ -190,6 +191,7 @@ public class PaymentService {
                     .postingPackage(postingPackage)
                     .startTime(start)
                     .endTime(end)
+                    .postPossible(postingPackage.getPostLimit())
                     .active(true)
                     .build();
             userPostingPackageRepository.save(upp);
@@ -219,10 +221,12 @@ public class PaymentService {
 
        String status = "";
        String description = "";
-
+        Long userId = wallet.getUser().getId();
         if(before.compareTo(after) > 0) {
             status = WalletTransactionStatus.COMPLETED.name();
             description= "Mua gói thành công";
+            List<UserPostingPackage> list = userPackageTransactionRepository.findByUserId(userId);
+            list.forEach(x -> x.setActive(false));
         }
         else{
             description = "Mua gói thất bại";
