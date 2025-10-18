@@ -104,12 +104,22 @@ const PostAd = ({ user }) => {
     } catch (error) {
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
-      console.error('Create product error:', { status, backendMessage, error });
+      const errorCode = error?.response?.data?.code;
+      console.error('Create product error:', { status, backendMessage, errorCode, error });
       
       if (status === 401) {
         toast.error("Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn.");
       } else if (status === 403) {
         toast.error("Tài khoản của bạn chưa có quyền đăng bán (ROLE_SELLER).");
+      } else if (status === 400) {
+        // Kiểm tra lỗi liên quan đến gói đăng tin
+        if (backendMessage?.includes('gói') || backendMessage?.includes('hạn đăng tin') || backendMessage?.includes('quá hạn')) {
+          toast.error(`⚠️ ${backendMessage}\n\n💡 Vui lòng mua gói đăng tin để tiếp tục.`, {
+            autoClose: 5000
+          });
+        } else {
+          toast.error(`Đăng tin thất bại: ${backendMessage || 'Vui lòng thử lại'}`);
+        }
       } else {
         toast.error(`Đăng tin thất bại: ${backendMessage || 'Vui lòng thử lại'}`);
       }
@@ -173,8 +183,12 @@ const PostAd = ({ user }) => {
                 <h4 className="mb-0">Đăng tin bán hàng</h4>
               </Card.Header>
               <Card.Body className="p-4">
+                <Alert variant="warning" className="mb-3">
+                  <strong>⚠️ Yêu cầu:</strong> Bạn cần <strong>mua gói đăng tin</strong> để có thể đăng bán sản phẩm. 
+                  Mỗi gói sẽ có số lượng tin đăng và thời hạn sử dụng nhất định.
+                </Alert>
                 <Alert variant="info" className="mb-4">
-                  <strong>Lưu ý:</strong> Vui lòng điền đầy đủ thông tin để tin đăng của bạn được duyệt nhanh chóng.
+                  <strong>📝 Lưu ý:</strong> Vui lòng điền đầy đủ thông tin để tin đăng của bạn được duyệt nhanh chóng.
                 </Alert>
 
                 <Form onSubmit={handleSubmit}>

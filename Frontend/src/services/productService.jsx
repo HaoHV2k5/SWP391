@@ -111,7 +111,12 @@ const productService = {
       
       // Các field bắt buộc theo CreateProductRequest
       formData.append('title', form.title || '');
-      formData.append('price', form.price || 0);
+      // Đảm bảo price là số hợp lệ
+      const price = parseFloat(form.price);
+      if (!price || price <= 0) {
+        return { success: false, message: 'Giá sản phẩm phải lớn hơn 0' };
+      }
+      formData.append('price', price);
       formData.append('productType', productType);
       
       // Field tùy chọn
@@ -119,16 +124,8 @@ const productService = {
         formData.append('description', form.description);
       }
 
-      // Gửi vehicle/battery object rỗng dựa trên productType (BE cần ít nhất 1 trong 2)
-      if (productType === 'VEHICLE') {
-        // Gửi vehicle object rỗng (BE sẽ tạo vehicle entity với brand, model, yearManufactured = null)
-        formData.append('vehicle.brand', '');
-        formData.append('vehicle.model', '');
-      } else if (productType === 'BATTERY') {
-        // Gửi battery object rỗng
-        formData.append('battery.brand', '');
-        formData.append('battery.model', '');
-      }
+      // KHÔNG gửi vehicle/battery nếu không có thông tin
+      // Backend sẽ tự tạo entity rỗng dựa trên productType
 
       // Images (nếu có)
       if (Array.isArray(form.images) && form.images.length > 0) {
@@ -258,6 +255,47 @@ const productService = {
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
       return { success: false, message: `Lỗi tải chi tiết sản phẩm (${status || "network"}): ${backendMessage || "Không rõ"}` };
+    }
+  },
+
+  // Xóa sản phẩm theo ID (yêu cầu ROLE_SELLER)
+  async deleteProduct(productId) {
+    try {
+      const response = await apiClient.delete(`/products/delete/${productId}`);
+      const data = response?.data?.data ?? response?.data;
+      return { success: true, data, message: response?.data?.message || "Xóa sản phẩm thành công" };
+    } catch (error) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      console.error('❌ deleteProduct error:', { productId, status, backendMessage });
+      return { success: false, message: `Lỗi xóa sản phẩm (${status || "network"}): ${backendMessage || "Không rõ"}` };
+    }
+  },
+
+  // Cập nhật sản phẩm (yêu cầu ROLE_SELLER)
+  async updateProduct(productId, updateData) {
+    try {
+      // Backend yêu cầu JSON (@RequestBody), không phải FormData
+      const requestBody = {
+        title: updateData.title,
+        description: updateData.description || '',
+        price: updateData.price,
+        productType: updateData.productType,
+        vehicle: updateData.vehicle || null,
+        battery: updateData.battery || null
+      };
+
+      const response = await apiClient.put(`/products/update?productId=${productId}`, requestBody, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      const data = response?.data?.data ?? response?.data;
+      return { success: true, data, message: response?.data?.message || "Cập nhật sản phẩm thành công" };
+    } catch (error) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      console.error('❌ updateProduct error:', { productId, status, backendMessage });
+      return { success: false, message: `Lỗi cập nhật sản phẩm (${status || "network"}): ${backendMessage || "Không rõ"}` };
     }
   }
 };

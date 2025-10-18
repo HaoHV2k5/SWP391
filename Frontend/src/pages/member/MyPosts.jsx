@@ -12,6 +12,13 @@ const MyPosts = ({ user }) => {
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    description: '',
+    price: 0,
+    productType: 'VEHICLE'
+  });
 
   // State for user's posts
   const [posts, setPosts] = useState([]);
@@ -169,16 +176,15 @@ const MyPosts = ({ user }) => {
   const confirmDelete = async () => {
     setLoading(true);
     try {
-      // Gọi API xóa post (cần implement endpoint này trong backend)
-      // const result = await productService.deletePost(selectedPost.id);
-      // if (result.success) {
+      const result = await productService.deleteProduct(selectedPost.id);
+      if (result.success) {
         setPosts(posts.filter(post => post.id !== selectedPost.id));
         toast.success("Xóa tin đăng thành công!");
         setShowDeleteModal(false);
         setSelectedPost(null);
-      // } else {
-      //   toast.error(result.message);
-      // }
+      } else {
+        toast.error(result.message || "Có lỗi xảy ra khi xóa tin đăng!");
+      }
     } catch (error) {
       console.error("Error deleting post:", error);
       toast.error("Có lỗi xảy ra khi xóa tin đăng!");
@@ -187,8 +193,43 @@ const MyPosts = ({ user }) => {
     }
   };
 
-  const handleEditPost = (postId) => {
-    toast.info("Chức năng chỉnh sửa tin đăng đang được phát triển!");
+  const handleEditPost = (post) => {
+    setSelectedPost(post);
+    setEditFormData({
+      title: post.title || post.productName || '',
+      description: post.description || '',
+      price: post.price || post.vehicle?.price || post.battery?.price || 0,
+      productType: post.productType || post.category || 'VEHICLE'
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditFormChange = (field, value) => {
+    setEditFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const confirmEdit = async () => {
+    setLoading(true);
+    try {
+      const result = await productService.updateProduct(selectedPost.id, editFormData);
+      if (result.success) {
+        // Reload posts to get updated data
+        await loadPosts();
+        toast.success("Cập nhật tin đăng thành công!");
+        setShowEditModal(false);
+        setSelectedPost(null);
+      } else {
+        toast.error(result.message || "Có lỗi xảy ra khi cập nhật tin đăng!");
+      }
+    } catch (error) {
+      console.error("Error updating post:", error);
+      toast.error("Có lỗi xảy ra khi cập nhật tin đăng!");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRepost = async (postId) => {
@@ -377,7 +418,7 @@ const MyPosts = ({ user }) => {
                                     ⋮
                                   </Dropdown.Toggle>
                                   <Dropdown.Menu style={{ minWidth: '150px' }}>
-                                    <Dropdown.Item onClick={() => handleEditPost(post.id)}>
+                                    <Dropdown.Item onClick={() => handleEditPost(post)}>
                                       Chỉnh sửa
                                     </Dropdown.Item>
                                     {(post.status === 'expired' || post.status === 'sold') && (
@@ -443,7 +484,15 @@ const MyPosts = ({ user }) => {
           </Alert>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+          <Button 
+            variant="light" 
+            onClick={() => setShowDeleteModal(false)}
+            style={{ 
+              backgroundColor: 'white', 
+              border: '1px solid black',
+              color: 'black'
+            }}
+          >
             Hủy
           </Button>
           <Button 
@@ -458,6 +507,100 @@ const MyPosts = ({ user }) => {
               </>
             ) : (
               "Xóa tin đăng"
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Edit Product Modal */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Chỉnh sửa tin đăng</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedPost && (
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label>Tiêu đề <span className="text-danger">*</span></Form.Label>
+                <Form.Control 
+                  type="text" 
+                  value={editFormData.title}
+                  onChange={(e) => handleEditFormChange('title', e.target.value)}
+                  placeholder="Nhập tiêu đề sản phẩm"
+                  maxLength={255}
+                />
+              </Form.Group>
+
+              <Form.Group className="mb-3">
+                <Form.Label>Mô tả</Form.Label>
+                <Form.Control 
+                  as="textarea" 
+                  rows={4}
+                  value={editFormData.description}
+                  onChange={(e) => handleEditFormChange('description', e.target.value)}
+                  placeholder="Nhập mô tả chi tiết sản phẩm"
+                  maxLength={1000}
+                />
+              </Form.Group>
+
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Giá (VNĐ) <span className="text-danger">*</span></Form.Label>
+                    <Form.Control 
+                      type="number" 
+                      value={editFormData.price}
+                      onChange={(e) => handleEditFormChange('price', parseFloat(e.target.value) || 0)}
+                      placeholder="Nhập giá sản phẩm"
+                     
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Loại sản phẩm <span className="text-danger">*</span></Form.Label>
+                    <Form.Select 
+                      value={editFormData.productType}
+                      onChange={(e) => handleEditFormChange('productType', e.target.value)}
+                    >
+                      <option value="VEHICLE">Xe điện</option>
+                      <option value="BATTERY">Pin/Ắc quy</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Alert variant="info" className="mb-0">
+                <small><strong>Lưu ý:</strong> Chỉ có thể chỉnh sửa thông tin cơ bản. Để thay đổi hình ảnh, vui lòng tạo tin đăng mới.</small>
+              </Alert>
+            </Form>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button 
+            variant="light" 
+            onClick={() => setShowEditModal(false)} 
+            disabled={loading}
+            style={{ 
+              backgroundColor: 'white', 
+              border: '1px solid black',
+              color: 'black'
+            }}
+          >
+            Hủy
+          </Button>
+          <Button 
+            variant="success" 
+            onClick={confirmEdit}
+            disabled={loading || !editFormData.title || editFormData.price <= 0}
+          >
+            {loading ? (
+              <>
+                <Spinner animation="border" size="sm" className="me-2" />
+                Đang lưu...
+              </>
+            ) : (
+              "Lưu thay đổi"
             )}
           </Button>
         </Modal.Footer>
