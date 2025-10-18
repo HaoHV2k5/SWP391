@@ -23,10 +23,10 @@ const ProductsTab = ({
   // Use custom hook for products management
   const productsHook = useProducts();
 
-  // Use external props if provided, otherwise use hook data
-  const products = externalProducts || productsHook.products;
-  const setProducts = externalSetProducts || productsHook.setProducts;
-  const loading = externalLoading || productsHook.loading;
+  // Always use hook data, ignore external props to avoid sync issues
+  const products = productsHook.products;
+  const setProducts = productsHook.setProducts;
+  const loading = productsHook.loading;
   const isInitialLoading = productsHook.isInitialLoading;
   const handleRefresh = productsHook.loadProducts;
   const handleApproveProduct = productsHook.approveProduct;
@@ -153,7 +153,7 @@ const ProductsTab = ({
 
       {/* Modal xem chi tiết tin đăng */}
       <Modal
-        isOpen={!!selectedProduct}
+        isOpen={!!selectedProduct && !showRejectModal}
         onClose={() => setSelectedProduct(null)}
         title=""
         width="xlarge"
@@ -510,92 +510,29 @@ const ProductsTab = ({
                 </div>
               )}
 
-              {/* Action Buttons */}
-              <div style={{ 
-                display: 'flex', 
-                gap: '1.5rem', 
-                justifyContent: 'center',
-                padding: '2rem',
-                background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                borderRadius: '16px',
-                border: '1px solid #dee2e6',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+              {/* Modal chỉ để xem chi tiết - không có action buttons */}
+              <div style={{
+                marginTop: '2rem',
+                padding: '1.5rem',
+                backgroundColor: '#e3f2fd',
+                borderRadius: '12px',
+                border: '1px solid #bbdefb',
+                textAlign: 'center'
               }}>
-                <button
-                  onClick={() => handleApproveProduct(selectedProduct?.id)}
-                  disabled={loading || selectedProduct?.status !== 'PENDING'}
-                  style={{
-                    padding: '1rem 2.5rem',
-                    background: selectedProduct?.status === 'PENDING' 
-                      ? 'linear-gradient(135deg, #28a745 0%, #20c997 100%)' 
-                      : 'linear-gradient(135deg, #6c757d 0%, #495057 100%)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '12px',
-                    cursor: selectedProduct?.status === 'PENDING' ? 'pointer' : 'not-allowed',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    transition: 'all 0.3s ease',
-                    boxShadow: selectedProduct?.status === 'PENDING' 
-                      ? '0 8px 16px rgba(40, 167, 69, 0.3)' 
-                      : '0 4px 8px rgba(108, 117, 125, 0.2)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (selectedProduct?.status === 'PENDING') {
-                      e.target.style.transform = 'translateY(-2px)';
-                      e.target.style.boxShadow = '0 12px 20px rgba(40, 167, 69, 0.4)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedProduct?.status === 'PENDING') {
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = '0 8px 16px rgba(40, 167, 69, 0.3)';
-                    }
-                  }}
-                >
-                  ✅ Duyệt tin đăng
-                </button>
-                
-                <button
-                  onClick={() => {
-                    setShowRejectModal(true);
-                  }}
-                  disabled={loading || selectedProduct?.status !== 'PENDING'}
-                  style={{
-                    padding: '1rem 2.5rem',
-                    background: selectedProduct?.status === 'PENDING' 
-                      ? 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)' 
-                      : 'linear-gradient(135deg, #6c757d 0%, #495057 100%)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '12px',
-                    cursor: selectedProduct?.status === 'PENDING' ? 'pointer' : 'not-allowed',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    transition: 'all 0.3s ease',
-                    boxShadow: selectedProduct?.status === 'PENDING' 
-                      ? '0 8px 16px rgba(220, 53, 69, 0.3)' 
-                      : '0 4px 8px rgba(108, 117, 125, 0.2)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (selectedProduct?.status === 'PENDING') {
-                      e.target.style.transform = 'translateY(-2px)';
-                      e.target.style.boxShadow = '0 12px 20px rgba(220, 53, 69, 0.4)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedProduct?.status === 'PENDING') {
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = '0 8px 16px rgba(220, 53, 69, 0.3)';
-                    }
-                  }}
-                >
-                  ❌ Từ chối
-                </button>
+                <div style={{
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#1976d2',
+                  marginBottom: '0.5rem'
+                }}>
+                  👁️ Chế độ xem chi tiết
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#424242'
+                }}>
+                  Để duyệt hoặc từ chối tin đăng, vui lòng sử dụng các nút hành động trong bảng danh sách
+                </div>
               </div>
             </div>
           </div>
@@ -625,24 +562,132 @@ const ProductsTab = ({
         onClose={() => {
           setShowRejectModal(false);
           setRejectReason("");
+          setSelectedProduct(null);
         }}
         title="Từ chối tin đăng"
-        width="small"
+        width="medium"
       >
         <div>
-          <div style={{ marginBottom: "1rem" }}>
-            <label style={{ display: "block", marginBottom: "0.5rem" }}>
-              Lý do từ chối:
+          {/* Thông tin tin đăng */}
+          {selectedProduct && (
+            <div style={{ 
+              backgroundColor: '#f8f9fa', 
+              padding: '1.25rem', 
+              borderRadius: '12px', 
+              marginBottom: '1.5rem',
+              border: '1px solid #e9ecef',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+            }}>
+              <h5 style={{ 
+                margin: '0 0 0.75rem 0', 
+                color: '#495057',
+                fontSize: '16px',
+                fontWeight: '600',
+                borderBottom: '2px solid #dee2e6',
+                paddingBottom: '0.5rem'
+              }}>
+                📋 Thông tin tin đăng
+              </h5>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  padding: '0.5rem',
+                  backgroundColor: '#ffffff',
+                  borderRadius: '8px',
+                  border: '1px solid #f1f3f4'
+                }}>
+                  <span style={{ 
+                    fontWeight: '600', 
+                    color: '#6c757d',
+                    minWidth: '60px',
+                    fontSize: '14px'
+                  }}>ID:</span>
+                  <span style={{ 
+                    color: '#495057',
+                    fontWeight: '500',
+                    fontSize: '14px'
+                  }}>#{selectedProduct.id}</span>
+                </div>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  padding: '0.5rem',
+                  backgroundColor: '#ffffff',
+                  borderRadius: '8px',
+                  border: '1px solid #f1f3f4'
+                }}>
+                  <span style={{ 
+                    fontWeight: '600', 
+                    color: '#6c757d',
+                    minWidth: '60px',
+                    fontSize: '14px'
+                  }}>Tên:</span>
+                  <span style={{ 
+                    color: '#495057',
+                    fontWeight: '500',
+                    fontSize: '14px'
+                  }}>{selectedProduct.title || selectedProduct.productName || 'Không có tiêu đề'}</span>
+                </div>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  padding: '0.5rem',
+                  backgroundColor: '#ffffff',
+                  borderRadius: '8px',
+                  border: '1px solid #f1f3f4'
+                }}>
+                  <span style={{ 
+                    fontWeight: '600', 
+                    color: '#6c757d',
+                    minWidth: '60px',
+                    fontSize: '14px'
+                  }}>Người bán:</span>
+                  <span style={{ 
+                    color: '#495057',
+                    fontWeight: '500',
+                    fontSize: '14px'
+                  }}>{selectedProduct.sellerName || selectedProduct.seller?.name || 'Không xác định'}</span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div style={{ marginBottom: "1.5rem" }}>
+            <label style={{ 
+              display: "block", 
+              marginBottom: "0.75rem", 
+              fontWeight: '600',
+              color: '#495057',
+              fontSize: '16px'
+            }}>
+              ❌ Lý do từ chối
             </label>
             <textarea
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               style={{
                 width: "100%",
-                padding: "0.5rem",
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-                minHeight: "100px",
+                padding: "0.75rem",
+                border: "2px solid #e9ecef",
+                borderRadius: "12px",
+                minHeight: "120px",
+                fontSize: "14px",
+                fontFamily: "inherit",
+                color: "#495057",
+                backgroundColor: "#ffffff",
+                transition: "all 0.2s ease",
+                resize: "vertical",
+                outline: "none",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = "#007bff";
+                e.target.style.boxShadow = "0 0 0 3px rgba(0,123,255,0.1)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "#e9ecef";
+                e.target.style.boxShadow = "0 2px 4px rgba(0,0,0,0.05)";
               }}
               placeholder="Nhập lý do từ chối tin đăng..."
             />
@@ -652,29 +697,84 @@ const ProductsTab = ({
               display: "flex",
               gap: "1rem",
               justifyContent: "flex-end",
+              paddingTop: "1rem",
+              borderTop: "1px solid #e9ecef"
             }}
           >
             <button
-              className="staff-btn staff-btn-secondary"
+              style={{
+                padding: "0.75rem 1.5rem",
+                backgroundColor: "#6c757d",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                fontSize: "14px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                minWidth: "100px"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = "#5a6268";
+                e.target.style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = "#6c757d";
+                e.target.style.transform = "translateY(0)";
+              }}
               onClick={() => {
                 setShowRejectModal(false);
                 setRejectReason("");
+                setSelectedProduct(null);
               }}
             >
               Hủy
             </button>
             <button
-              className="staff-btn staff-btn-danger"
-              onClick={() => {
+              style={{
+                padding: "0.75rem 1.5rem",
+                backgroundColor: loading ? "#6c757d" : "#dc3545",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                fontSize: "14px",
+                fontWeight: "600",
+                cursor: loading ? "not-allowed" : "pointer",
+                transition: "all 0.2s ease",
+                minWidth: "100px",
+                opacity: loading ? 0.7 : 1
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) {
+                  e.target.style.backgroundColor = "#c82333";
+                  e.target.style.transform = "translateY(-1px)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading) {
+                  e.target.style.backgroundColor = "#dc3545";
+                  e.target.style.transform = "translateY(0)";
+                }
+              }}
+              onClick={async () => {
                 if (rejectReason.trim()) {
-                  handleRejectProduct(selectedProduct?.id || 1, rejectReason);
+                  try {
+                    await handleRejectProduct(selectedProduct?.id || 1, rejectReason);
+                    // Đóng modal sau khi từ chối thành công
+                    setShowRejectModal(false);
+                    setRejectReason("");
+                    setSelectedProduct(null);
+                  } catch (error) {
+                    // Lỗi đã được xử lý trong handleRejectProduct
+                    console.error("Error in reject modal:", error);
+                  }
                 } else {
                   showErrorNotification("Vui lòng nhập lý do từ chối");
                 }
               }}
               disabled={loading}
             >
-              Từ chối
+              {loading ? "Đang xử lý..." : "Từ chối"}
             </button>
           </div>
         </div>

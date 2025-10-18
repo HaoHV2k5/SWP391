@@ -11,13 +11,16 @@ import {
 
 // Import custom hooks and utilities
 import { useProducts, useKyc, useStats, useStaffAuth } from "../hooks/useStaff";
-import { formatCurrency, getStatusColor, getStatusText } from "../utils/staffUtils";
+import {
+  formatCurrency,
+  getStatusColor,
+  getStatusText,
+} from "../utils/staffUtils";
 import { TAB_KEYS } from "../constants/staffConstants";
 import { getToastDefaults } from "../utils/notificationManager";
 
 // Import components
 import DashboardTab from "../components/staff/DashboardTab";
-import OrdersTab from "../components/staff/OrdersTab";
 import CustomersTab from "../components/staff/CustomersTab";
 import ProductsTab from "../components/staff/ProductsTab";
 import "../styles/staff/index.css";
@@ -132,7 +135,7 @@ const StaffPage = ({ user, onLogout }) => {
             setLoading={() => {}} // Not needed with custom hook
           />
         );
-      
+
       case TAB_KEYS.KYC:
         return (
           <CustomersTab
@@ -144,7 +147,7 @@ const StaffPage = ({ user, onLogout }) => {
             setLoading={() => {}} // Not needed with custom hook
           />
         );
-      
+
       case TAB_KEYS.DASHBOARD:
         return (
           <DashboardTab
@@ -156,7 +159,7 @@ const StaffPage = ({ user, onLogout }) => {
             getStatusText={getStatusText}
           />
         );
-      
+
       default:
         return <div>Tab không tồn tại</div>;
     }
@@ -178,7 +181,7 @@ const StaffPage = ({ user, onLogout }) => {
           onClick={(e) => setActiveTab(e.key)}
         />
       </Sider>
-      
+
       <Layout>
         <Header style={{ padding: "0 24px", background: colorBgContainer }}>
           <div
@@ -189,9 +192,7 @@ const StaffPage = ({ user, onLogout }) => {
               height: "100%",
             }}
           >
-            <div style={{ fontWeight: 800 }}>
-              {getHeaderTitle()}
-            </div>
+            <div style={{ fontWeight: 800 }}>{getHeaderTitle()}</div>
             <Dropdown menu={dropdownItems} trigger={["click"]}>
               <a onClick={(e) => e.preventDefault()}>
                 <Space>
@@ -204,7 +205,7 @@ const StaffPage = ({ user, onLogout }) => {
             </Dropdown>
           </div>
         </Header>
-        
+
         <Content style={{ margin: "0 16px" }}>
           <Breadcrumb
             style={{ margin: "16px 0" }}
@@ -224,7 +225,7 @@ const StaffPage = ({ user, onLogout }) => {
             {renderTabContent()}
           </div>
         </Content>
-        
+
         <Footer style={{ textAlign: "center" }}>
           Staff Console ©{new Date().getFullYear()}
         </Footer>
