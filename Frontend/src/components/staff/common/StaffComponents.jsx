@@ -240,7 +240,7 @@ export const Modal = ({
             style={{
               fontSize: '1.125rem',
               fontWeight: '600',
-              color: '#111827',
+              color: '#000000',
               margin: 0
             }}
           >

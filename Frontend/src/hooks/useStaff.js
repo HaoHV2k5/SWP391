@@ -86,9 +86,27 @@ export const useProducts = () => {
     try {
       console.log("✅ Approving Product ID:", productId);
       const result = await productsApi.approveProduct(productId);
+      console.log("🔍 API Response:", result);
       
       // Remove the approved product from the list since it's no longer PENDING
-      setProducts(prev => prev.filter(p => p.id !== productId));
+      // Convert both IDs to string for comparison to handle type mismatch
+      setProducts(prev => {
+        console.log("🔍 Before approval - All products:", prev.map(p => ({ id: p.id, title: p.title || p.productName })));
+        console.log("🔍 Approving product ID:", productId, "Type:", typeof productId);
+        
+        const filtered = prev.filter(p => {
+          const match = String(p.id) !== String(productId);
+          console.log(`🔍 Product ${p.id} (${typeof p.id}) vs ${productId} (${typeof productId}): ${match ? 'KEEP' : 'REMOVE'}`);
+          return match;
+        });
+        
+        console.log("📋 Products before filter:", prev.length);
+        console.log("📋 Products after filter:", filtered.length);
+        console.log("📋 Removed product ID:", productId);
+        console.log("🔍 After approval - Remaining products:", filtered.map(p => ({ id: p.id, title: p.title || p.productName })));
+        
+        return filtered;
+      });
       
       showSuccessNotification("Duyệt tin đăng thành công! Tin đăng đã được loại bỏ khỏi danh sách chờ duyệt.");
       console.log("✅ Product approved and removed from list:", result.data);
@@ -106,9 +124,27 @@ export const useProducts = () => {
     try {
       console.log("❌ Rejecting Product ID:", productId, "Reason:", reason);
       const result = await productsApi.rejectProduct(productId, reason);
+      console.log("🔍 API Response:", result);
       
       // Remove the rejected product from the list since it's no longer PENDING
-      setProducts(prev => prev.filter(p => p.id !== productId));
+      // Convert both IDs to string for comparison to handle type mismatch
+      setProducts(prev => {
+        console.log("🔍 Before rejection - All products:", prev.map(p => ({ id: p.id, title: p.title || p.productName })));
+        console.log("🔍 Rejecting product ID:", productId, "Type:", typeof productId);
+        
+        const filtered = prev.filter(p => {
+          const match = String(p.id) !== String(productId);
+          console.log(`🔍 Product ${p.id} (${typeof p.id}) vs ${productId} (${typeof productId}): ${match ? 'KEEP' : 'REMOVE'}`);
+          return match;
+        });
+        
+        console.log("📋 Products before filter:", prev.length);
+        console.log("📋 Products after filter:", filtered.length);
+        console.log("📋 Removed product ID:", productId);
+        console.log("🔍 After rejection - Remaining products:", filtered.map(p => ({ id: p.id, title: p.title || p.productName })));
+        
+        return filtered;
+      });
       
       showSuccessNotification("Từ chối tin đăng thành công! Tin đăng đã được loại bỏ khỏi danh sách chờ duyệt.");
       console.log("✅ Product rejected and removed from list:", result.data);
