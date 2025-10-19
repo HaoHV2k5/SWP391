@@ -2,15 +2,15 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.request.AddProductIntoWishlistRequest;
 import com.example.backend.dto.response.ApiResponse;
+import com.example.backend.dto.response.ProductResponse;
 import com.example.backend.entity.Product;
 import com.example.backend.entity.Wishlist;
 import com.example.backend.service.ProductService;
 import com.example.backend.service.WishlistService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,6 +27,15 @@ public class WishlistController {
         return ApiResponse.<Boolean>builder()
                 .message("thêm product vào danh sách vỏ hàng thành công")
                 .data(result)
+                .build();
+    }
+
+    @GetMapping
+    public ApiResponse<List<ProductResponse>> getWishlist(@RequestParam Long userId){
+        List<ProductResponse> list = wishlistService.getAllProductsInWishlist(userId);
+        return ApiResponse.<List<ProductResponse>>builder()
+                .data(list)
+                .message("Đã lấy toàn bộ sản phẩm trong wishlist thành công!")
                 .build();
     }
 
