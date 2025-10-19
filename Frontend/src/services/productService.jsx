@@ -441,6 +441,74 @@ const productService = {
       };
     }
   },
+  // Lấy danh sách sản phẩm đã được staff duyệt - chờ admin duyệt
+  async getStaffApprovedProducts() {
+    try {
+      const response = await apiClient.get(
+        "/products/seller/staff_approved/admin"
+      );
+      const data =
+        response?.data?.data ?? response?.data?.content ?? response?.data;
+      return { success: true, data: Array.isArray(data) ? data : [] };
+    } catch (error) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      return {
+        success: false,
+        message: `Lỗi tải sản phẩm đã duyệt staff (${status || "network"}): ${
+          backendMessage || "Không rõ"
+        }`,
+      };
+    }
+  },
+
+  // Admin duyệt sản phẩm
+  async approveProductByAdmin(productId) {
+    try {
+      const response = await apiClient.post(
+        `/products/${productId}/approve/admin`
+      );
+      const data = response?.data?.data ?? response?.data;
+      return {
+        success: true,
+        data,
+        message: response?.data?.message || "Duyệt sản phẩm thành công",
+      };
+    } catch (error) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      return {
+        success: false,
+        message: `Lỗi duyệt sản phẩm (${status || "network"}): ${
+          backendMessage || "Không rõ"
+        }`,
+      };
+    }
+  },
+
+  // Admin từ chối sản phẩm
+  async rejectProductByAdmin(productId, reason) {
+    try {
+      const response = await apiClient.post(`/products/${productId}/reject`, {
+        reason: reason,
+      });
+      const data = response?.data?.data ?? response?.data;
+      return {
+        success: true,
+        data,
+        message: response?.data?.message || "Từ chối sản phẩm thành công",
+      };
+    } catch (error) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      return {
+        success: false,
+        message: `Lỗi từ chối sản phẩm (${status || "network"}): ${
+          backendMessage || "Không rõ"
+        }`,
+      };
+    }
+  },
 };
 
 export default productService;

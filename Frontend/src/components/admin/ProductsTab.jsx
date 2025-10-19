@@ -28,7 +28,7 @@ const ProductsTab = () => {
     setLoading(true);
     setError("");
     try {
-      const result = await productService.getPendingProducts();
+      const result = await productService.getStaffApprovedProducts();
       if (result.success) {
         setProducts(result.data);
       } else {
@@ -66,7 +66,7 @@ const ProductsTab = () => {
 
     setActionLoading(true);
     try {
-      const result = await productService.approveProduct(productId);
+      const result = await productService.approveProductByAdmin(productId);
       if (result.success) {
         alert(result.message);
         fetchProducts(); // Refresh list
@@ -88,7 +88,7 @@ const ProductsTab = () => {
 
     setActionLoading(true);
     try {
-      const result = await productService.rejectProduct(
+      const result = await productService.rejectProductByAdmin(
         productId,
         rejectReason
       );
