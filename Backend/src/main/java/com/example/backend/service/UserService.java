@@ -6,18 +6,18 @@ import com.example.backend.dto.response.UserDetailResponse;
 import com.example.backend.dto.response.UserListResponse;
 import com.example.backend.entity.Role;
 import com.example.backend.entity.User;
+import com.example.backend.entity.Wallet;
+import com.example.backend.entity.Wishlist;
 import com.example.backend.enums.Roles;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
-import com.example.backend.repository.RoleRepository;
-import com.example.backend.repository.UserOtpRepository;
+import com.example.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import com.example.backend.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.example.backend.repository.UserRepository;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -33,12 +33,25 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final OtpService otpService;
     private final UserOtpRepository userOtpRepository;
+    private final WalletRepository walletRepository;
+    private final WishlistRepository wishlistRepository;
+
 @Value("${email.login.facebook}")
 private String emailLoginFacebook;
 
     private String LOGIN_URL ="http://localhost:3979/login";
     public CreationUserResponse createUser(CreationUserRequest request) {
         User user = processRegister(
+                request.getEmail(),
+                request.getPassword(),
+                request.getConfirmPassword(),
+                () -> userMapper.toUser(request)
+        );
+        return userMapper.toCreationUserResponse(user);
+    }
+
+    public CreationUserResponse createUserByAdmin(CreationUserRequest request) {
+        User user = processRegisterByAdmin(
                 request.getEmail(),
                 request.getPassword(),
                 request.getConfirmPassword(),
@@ -118,6 +131,30 @@ private String emailLoginFacebook;
         return user;
     }
 
+    @Transactional
+    private User processRegisterByAdmin(String email,
+                                       String password,
+                                       String confirmPassword,
+                                       Supplier<User> userSupplier) {
+
+        if (userRepository.existsByEmail(email)) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
+        if (!password.equals(confirmPassword)) {
+            throw new AppException(ErrorCode.PASSWORD_NOT_MATCH);
+        }
+
+        User user = userSupplier.get();
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setVerified(true); // Admin tạo user thì tự động verify
+        HashSet<Role> roles = new HashSet<>();
+        roleRepository.findById(Roles.USER.name()).ifPresent(roles::add);
+        user.setRoles(roles);
+        userRepository.save(user);
+
+        return user;
+    }
+
     public User getUser(String email){
         User user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
@@ -181,21 +218,6 @@ private String emailLoginFacebook;
         return userMapper.toUserListResponse(savedUser);
     }
 
-    public UserListResponse verifyUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        user.setVerified(true);
-        User savedUser = userRepository.save(user);
-        return userMapper.toUserListResponse(savedUser);
-    }
-
-    public UserListResponse unverifyUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        user.setVerified(false);
-        User savedUser = userRepository.save(user);
-        return userMapper.toUserListResponse(savedUser);
-    }
 
     public boolean resetPassword(ResetPasswordRequest request, User user) {
         boolean check  = true;
@@ -234,6 +256,19 @@ private String emailLoginFacebook;
         return user.getId();
     }
 
+
+
+    public void initWalletAndWishlist(User user){
+        Wallet wallet = Wallet.builder().user(user).build();
+        walletRepository.save(wallet);
+        Wishlist wishlist = Wishlist.builder().user(user).build();
+        wishlistRepository.save(wishlist);
+    }
+
+    public void updatePassword(User user,String password){
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
+    }
 
 
 

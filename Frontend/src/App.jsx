@@ -100,6 +100,10 @@ function AppContent() {
   const currentRole = user?.user?.role || user?.role;
   const isStaffUser = user && isStaff(currentRole);
 
+  // Kiểm tra xem có phải trang admin không
+  const isAdminPage = location.pathname.startsWith("/admin");
+
+  // Kiểm tra quyền truy cập và tự động chuyển hướng staff
   useEffect(() => {
     if (isStaffUser && !isAuthPage && !isStaffPage) {
       toast.info("Chuyển hướng đến trang Staff...");
@@ -109,7 +113,8 @@ function AppContent() {
 
   return (
     <div className="App">
-      {!isAuthPage && !isStaffPage && (
+      {/* Chỉ hiển thị Navbar cho trang chủ và OTP, không hiển thị cho staff và admin */}
+      {!isAuthPage && !isStaffPage && !isAdminPage && (
         <Navbar user={user} onLogout={handleLogout} />
       )}
       <Routes>
@@ -117,6 +122,9 @@ function AppContent() {
         <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/admin" element={<AdminPage user={user} />} />
+        <Route path="/admin/users" element={<AdminPage user={user} />} />
+        <Route path="/admin/products" element={<AdminPage user={user} />} />
+        <Route path="/admin/kyc" element={<AdminPage user={user} />} />
         <Route
           path="/staff"
           element={
@@ -135,7 +143,11 @@ function AppContent() {
         <Route path="/products/:type" element={<CategoryPage />} />
         <Route path="/product/:id" element={<ProductDetailPage />} />
       </Routes>
-      {!isAuthPage && !isStaffPage && <Footer />}
+
+      {/* Chỉ hiển thị Footer cho trang chủ và OTP, không hiển thị cho staff và admin */}
+      {!isAuthPage && !isStaffPage && !isAdminPage && <Footer />}
+
+      {/* Toast Container */}
       <ToastContainer {...getToastDefaults()} theme="light" />
     </div>
   );
