@@ -112,6 +112,15 @@ public class UserController {
                 .build();
     }
 
+    @PutMapping("/change/password")
+    public ApiResponse<Boolean> updatePasswordUser(Authentication authentication,@RequestBody @Valid  UpdatePasswordRequest request) {
+        String  username = authentication.getName();
+        User user = userService.getUserByUsername(username);
+        userService.updatePassword(user,request.getPassword());
+        return ApiResponse.<Boolean>builder().message("Password updated successfully").build();
+    }
+
+
 
 
 
