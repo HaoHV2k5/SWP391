@@ -13,6 +13,8 @@ const productService = {
     try {
       // Không gọi /auth/me (BE không có). Đọc từ localStorage để xác định quyền/username
       const userDataRaw = localStorage.getItem("userData");
+      console.log("🔍 getPublicList: userDataRaw:", userDataRaw);
+      
       if (userDataRaw) {
         try {
           const userData = JSON.parse(userDataRaw);
@@ -31,6 +33,8 @@ const productService = {
             userData?.email ||
             userData?.user?.email;
 
+          console.log("🔍 getPublicList: isAdmin:", isAdmin, "username:", username);
+
           if (isAdmin) {
             endpoint = "/products/seller/staff_approved/admin";
           } else if (username) {
@@ -38,7 +42,9 @@ const productService = {
               username
             )}`;
           }
-        } catch {}
+        } catch (e) {
+          console.error("❌ getPublicList: Error parsing userData:", e);
+        }
       }
 
       // Chưa đăng nhập hoặc không xác định được endpoint phù hợp thì
@@ -47,12 +53,16 @@ const productService = {
         endpoint = "/products"; // BE hiện có GET /products trả danh sách đã post
       }
 
+      console.log("🔍 getPublicList: Using endpoint:", endpoint);
       const response = await apiClient.get(endpoint);
+      console.log("📡 getPublicList: API response:", response);
       // BE thường bọc dữ liệu trong ApiResponse { data, message }
       const data =
         response?.data?.data ?? response?.data?.content ?? response?.data;
+      console.log("📦 getPublicList: Final data:", data);
       return { success: true, data: Array.isArray(data) ? data : [] };
     } catch (error) {
+      console.error("❌ getPublicList: API error:", error);
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
       console.error("getPublicList thất bại", {
@@ -179,6 +189,111 @@ const productService = {
     } catch (error) {
       console.error("getFilterOptions thất bại", error);
       return { success: false, message: "Lỗi lấy filter options" };
+    }
+  },
+
+  // Admin: Lấy tất cả sản phẩm đã được staff approve để admin duyệt
+  async getPendingProducts() {
+    try {
+      const response = await apiClient.get(
+        "/products/seller/staff_approved/admin"
+      );
+      const data =
+        response?.data?.data ?? response?.data?.content ?? response?.data;
+      return { success: true, data: Array.isArray(data) ? data : [] };
+    } catch (error) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      console.error("getPendingProducts thất bại", {
+        status,
+        backendMessage,
+      });
+      return {
+        success: false,
+        message: `Lỗi tải sản phẩm chờ duyệt (${status || "network"}): ${
+          backendMessage || "Không rõ"
+        }`,
+      };
+    }
+  },
+
+  // Admin: Lấy chi tiết sản phẩm
+  async getProductDetail(id) {
+    try {
+      const response = await apiClient.get(`/products/${id}`);
+      const data = response?.data?.data ?? response?.data;
+      return { success: true, data };
+    } catch (error) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      console.error("getProductDetail thất bại", {
+        id,
+        status,
+        backendMessage,
+      });
+      return {
+        success: false,
+        message: `Lỗi tải chi tiết sản phẩm (${status || "network"}): ${
+          backendMessage || "Không rõ"
+        }`,
+      };
+    }
+  },
+
+  // Admin: Approve sản phẩm
+  async approveProduct(id) {
+    try {
+      const response = await apiClient.post(`/products/${id}/approve/admin`);
+      const data = response?.data?.data ?? response?.data;
+      return {
+        success: true,
+        data,
+        message: response?.data?.message || "Duyệt sản phẩm thành công",
+      };
+    } catch (error) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      console.error("approveProduct thất bại", {
+        id,
+        status,
+        backendMessage,
+      });
+      return {
+        success: false,
+        message: `Lỗi duyệt sản phẩm (${status || "network"}): ${
+          backendMessage || "Không rõ"
+        }`,
+      };
+    }
+  },
+
+  // Admin: Reject sản phẩm
+  async rejectProduct(id, reason) {
+    try {
+      const response = await apiClient.post(`/products/${id}/reject`, {
+        reason: reason || "Không đạt yêu cầu",
+      });
+      const data = response?.data?.data ?? response?.data;
+      return {
+        success: true,
+        data,
+        message: response?.data?.message || "Từ chối sản phẩm thành công",
+      };
+    } catch (error) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      console.error("rejectProduct thất bại", {
+        id,
+        reason,
+        status,
+        backendMessage,
+      });
+      return {
+        success: false,
+        message: `Lỗi từ chối sản phẩm (${status || "network"}): ${
+          backendMessage || "Không rõ"
+        }`,
+      };
     }
   },
 };

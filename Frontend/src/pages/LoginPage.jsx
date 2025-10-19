@@ -158,21 +158,22 @@ const LoginPage = ({ onLogin }) => {
       if (isLogin) {
         // Admin login sẽ được xử lý bởi backend API
 
-
         //Tài khoản test cho staff
         if (
           formData.email === "staff@test.com" &&
           formData.password === "123456"
         ) {
           // Tạo JWT token giả với scope chứa ROLE_STAFF
-          const mockJWT = btoa(JSON.stringify({
-            sub: "staff@test.com",
-            iss: "swp391.com",
-            scope: "ROLE_STAFF",
-            exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24) // 24 hours
-          }));
+          const mockJWT = btoa(
+            JSON.stringify({
+              sub: "staff@test.com",
+              iss: "swp391.com",
+              scope: "ROLE_STAFF",
+              exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24 hours
+            })
+          );
           const mockToken = `header.${mockJWT}.signature`;
-          
+
           onLogin({
             token: mockToken,
             user: {
@@ -223,16 +224,18 @@ const LoginPage = ({ onLogin }) => {
 
             // Decode JWT token để lấy scope (roles)
             try {
-              const tokenParts = data.data.token.split('.');
+              const tokenParts = data.data.token.split(".");
               const payload = JSON.parse(atob(tokenParts[1]));
               console.log("🔍 JWT payload:", payload);
-              
+
               if (payload.scope) {
-                const scopes = payload.scope.split(' ');
+                const scopes = payload.scope.split(" ");
                 console.log("🔍 JWT scopes:", scopes);
-                
+
                 // Tìm role trong scopes
-                const roleScope = scopes.find(scope => scope.startsWith('ROLE_'));
+                const roleScope = scopes.find((scope) =>
+                  scope.startsWith("ROLE_")
+                );
                 if (roleScope) {
                   userRole = roleScope; // Giữ nguyên format ROLE_XXX
                   console.log("🔍 Detected role from JWT scope:", userRole);
@@ -266,7 +269,8 @@ const LoginPage = ({ onLogin }) => {
               user: {
                 id: backendUser?.id || 0,
                 email: backendUser?.email || formData.email,
-                username: backendUser?.username || backendUser?.email || formData.email,
+                username:
+                  backendUser?.username || backendUser?.email || formData.email,
                 fullName:
                   backendUser?.fullname ||
                   backendUser?.fullName ||
@@ -392,14 +396,16 @@ const LoginPage = ({ onLogin }) => {
       <style>
         {`
           .card input, .card select {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            color: white !important;
             backdrop-filter: blur(10px);
           }
           
+          .card .input-visible {
+            color: #333 !important;
+            background-color: #fff !important;
+          }
+          
           .card input::placeholder {
-            color: rgba(255, 255, 255, 0.6) !important;
+            color: rgba(0, 0, 0, 0.6) !important;
           }
           
           .card label {
@@ -567,11 +573,10 @@ const LoginPage = ({ onLogin }) => {
                 onChange={handleInputChange}
                 required={!isLogin}
                 placeholder="Nhập họ và tên"
+                className="input-visible"
                 style={{
                   borderColor: fieldErrors.fullName ? "#e74c3c" : "#ddd",
                   borderWidth: fieldErrors.fullName ? "2px" : "1px",
-                  color: "#333",
-                  backgroundColor: "#fff",
                   padding: "12px 16px",
                   borderRadius: "8px",
                   fontSize: "16px",
@@ -606,9 +611,8 @@ const LoginPage = ({ onLogin }) => {
               onChange={handleInputChange}
               required
               placeholder="Nhập email"
+              className="input-visible"
               style={{
-                color: "#333",
-                backgroundColor: "#fff",
                 padding: "12px 16px",
                 borderRadius: "8px",
                 fontSize: "16px",
@@ -634,11 +638,10 @@ const LoginPage = ({ onLogin }) => {
                 onChange={handleInputChange}
                 required={!isLogin}
                 placeholder="Nhập số điện thoại"
+                className="input-visible"
                 style={{
                   borderColor: fieldErrors.phone ? "#e74c3c" : "#ddd",
                   borderWidth: fieldErrors.phone ? "2px" : "1px",
-                  color: "#333",
-                  backgroundColor: "#fff",
                   padding: "12px 16px",
                   borderRadius: "8px",
                   fontSize: "16px",
@@ -674,9 +677,8 @@ const LoginPage = ({ onLogin }) => {
                 value={formData.dateOfBirth}
                 onChange={handleInputChange}
                 required={!isLogin}
+                className="input-visible"
                 style={{
-                  color: "#333",
-                  backgroundColor: "#fff",
                   padding: "12px 16px",
                   borderRadius: "8px",
                   fontSize: "16px",
@@ -703,12 +705,11 @@ const LoginPage = ({ onLogin }) => {
                 onChange={handleInputChange}
                 required
                 placeholder="Nhập mật khẩu"
+                className="input-visible"
                 style={{
                   paddingRight: "3rem",
                   borderColor: fieldErrors.password ? "#e74c3c" : "#ddd",
                   borderWidth: fieldErrors.password ? "2px" : "1px",
-                  color: "#333",
-                  backgroundColor: "#fff",
                   padding: "12px 16px",
                   borderRadius: "8px",
                   fontSize: "16px",
@@ -768,14 +769,13 @@ const LoginPage = ({ onLogin }) => {
                   onChange={handleInputChange}
                   required={!isLogin}
                   placeholder="Nhập lại mật khẩu"
+                  className="input-visible"
                   style={{
                     paddingRight: "3rem",
                     borderColor: fieldErrors.confirmPassword
                       ? "#e74c3c"
                       : "#ddd",
                     borderWidth: fieldErrors.confirmPassword ? "2px" : "1px",
-                    color: "#333",
-                    backgroundColor: "#fff",
                     padding: "12px 16px",
                     borderRadius: "8px",
                     fontSize: "16px",

@@ -32,7 +32,17 @@ const KYCTab = () => {
   ];
 
   return (
-    <div className="card">
+    <div
+      style={{
+        backgroundColor: "rgba(26, 26, 46, 0.8)",
+        backdropFilter: "blur(20px)",
+        border: "1px solid rgba(255, 255, 255, 0.1)",
+        borderRadius: "15px",
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+        padding: "2rem",
+        color: "white",
+      }}
+    >
       <div
         style={{
           display: "flex",
@@ -41,7 +51,9 @@ const KYCTab = () => {
           marginBottom: "2rem",
         }}
       >
-        <h3>Duyệt KYC - Xác thực danh tính</h3>
+        <h3 style={{ color: "#ffffff", margin: 0 }}>
+          Duyệt KYC - Xác thực danh tính
+        </h3>
         <div style={{ display: "flex", gap: "1rem" }}>
           <button className="btn btn-secondary">
             <Filter size={16} className="mr-1" />
@@ -115,28 +127,73 @@ const KYCTab = () => {
 
       {/* KYC List */}
       <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            color: "#ffffff",
+          }}
+        >
           <thead>
-            <tr style={{ borderBottom: "2px solid #e9ecef" }}>
-              <th style={{ padding: "1rem", textAlign: "left" }}>ID</th>
-              <th style={{ padding: "1rem", textAlign: "left" }}>Tên</th>
-              <th style={{ padding: "1rem", textAlign: "left" }}>Email</th>
-              <th style={{ padding: "1rem", textAlign: "left" }}>
+            <tr style={{ borderBottom: "2px solid rgba(255, 255, 255, 0.2)" }}>
+              <th
+                style={{ padding: "1rem", textAlign: "left", color: "#ffffff" }}
+              >
+                ID
+              </th>
+              <th
+                style={{ padding: "1rem", textAlign: "left", color: "#ffffff" }}
+              >
+                Tên
+              </th>
+              <th
+                style={{ padding: "1rem", textAlign: "left", color: "#ffffff" }}
+              >
+                Email
+              </th>
+              <th
+                style={{ padding: "1rem", textAlign: "left", color: "#ffffff" }}
+              >
                 Số điện thoại
               </th>
-              <th style={{ padding: "1rem", textAlign: "left" }}>Trạng thái</th>
-              <th style={{ padding: "1rem", textAlign: "left" }}>Ngày nộp</th>
-              <th style={{ padding: "1rem", textAlign: "left" }}>Hình ảnh</th>
-              <th style={{ padding: "1rem", textAlign: "left" }}>Thao tác</th>
+              <th
+                style={{ padding: "1rem", textAlign: "left", color: "#ffffff" }}
+              >
+                Trạng thái
+              </th>
+              <th
+                style={{ padding: "1rem", textAlign: "left", color: "#ffffff" }}
+              >
+                Ngày nộp
+              </th>
+              <th
+                style={{ padding: "1rem", textAlign: "left", color: "#ffffff" }}
+              >
+                Hình ảnh
+              </th>
+              <th
+                style={{ padding: "1rem", textAlign: "left", color: "#ffffff" }}
+              >
+                Thao tác
+              </th>
             </tr>
           </thead>
           <tbody>
             {kycData.map((kyc) => (
-              <tr key={kyc.id} style={{ borderBottom: "1px solid #e9ecef" }}>
-                <td style={{ padding: "1rem" }}>#{kyc.id}</td>
-                <td style={{ padding: "1rem" }}>{kyc.name}</td>
-                <td style={{ padding: "1rem" }}>{kyc.email}</td>
-                <td style={{ padding: "1rem" }}>{kyc.phone}</td>
+              <tr
+                key={kyc.id}
+                style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.1)" }}
+              >
+                <td style={{ padding: "1rem", color: "#ffffff" }}>#{kyc.id}</td>
+                <td style={{ padding: "1rem", color: "#ffffff" }}>
+                  {kyc.name}
+                </td>
+                <td style={{ padding: "1rem", color: "#ffffff" }}>
+                  {kyc.email}
+                </td>
+                <td style={{ padding: "1rem", color: "#ffffff" }}>
+                  {kyc.phone}
+                </td>
                 <td style={{ padding: "1rem" }}>
                   <span
                     style={{
@@ -165,7 +222,9 @@ const KYCTab = () => {
                       : "Từ chối"}
                   </span>
                 </td>
-                <td style={{ padding: "1rem" }}>{kyc.submitDate}</td>
+                <td style={{ padding: "1rem", color: "#ffffff" }}>
+                  {kyc.submitDate}
+                </td>
                 <td style={{ padding: "1rem" }}>
                   <div style={{ display: "flex", gap: "0.5rem" }}>
                     {kyc.images.map((image, index) => (
@@ -268,4 +327,3 @@ const KYCTab = () => {
 };
 
 export default KYCTab;
-

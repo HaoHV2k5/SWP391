@@ -142,7 +142,7 @@ function AppContent() {
   const isStaffPage = location.pathname === "/staff";
 
   // Kiểm tra xem có phải trang admin không
-  const isAdminPage = location.pathname === "/admin";
+  const isAdminPage = location.pathname.startsWith("/admin");
 
   // Kiểm tra xem user có role staff không
   const isStaffUser =
@@ -179,6 +179,9 @@ function AppContent() {
         <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/admin" element={<AdminPage user={user} />} />
+        <Route path="/admin/users" element={<AdminPage user={user} />} />
+        <Route path="/admin/products" element={<AdminPage user={user} />} />
+        <Route path="/admin/kyc" element={<AdminPage user={user} />} />
         <Route
           path="/staff"
           element={<StaffPage user={user} onLogout={handleLogout} />}
@@ -199,10 +202,7 @@ function AppContent() {
       {!isAuthPage && !isStaffPage && !isAdminPage && <Footer />}
 
       {/* Toast Container */}
-      <ToastContainer
-        {...getToastDefaults()}
-        theme="light"
-      />
+      <ToastContainer {...getToastDefaults()} theme="light" />
     </div>
   );
 }
