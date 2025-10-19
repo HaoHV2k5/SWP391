@@ -1,4 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+// src/App.jsx
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import { getToastDefaults } from "./utils/notificationManager";
@@ -21,147 +28,88 @@ import "./App.css";
 import CategoryPage from "./components/homepageContainer/layout/CategoryPage";
 import ProductDetailPage from "./components/homepageContainer/layout/ProductDetailPage";
 import { SavedProductsProvider } from "./components/homepageContainer/contexts/SavedProductsContext";
+import { normalizeLoginResponse, persistAuth, isStaff } from "./utils/auth";
+import ProtectedStaffRoute from "./routes/ProtectedStaffRoute";
 
 function AppContent() {
   const [user, setUser] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Kiểm tra token từ URL (Google login)
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get("token");
     const email = urlParams.get("email");
     const name = urlParams.get("name");
 
     if (token && email && name) {
-      console.log("=== Google Login detected from URL ===");
-      console.log("Token:", token);
-      console.log("Email:", email);
-      console.log("Name:", name);
-
-      // Tạo user data từ URL params
       const userData = {
         id: email,
-        email: email,
+        email,
         fullName: name,
-        avatar: "", // Có thể lấy từ backend sau
+        avatar: "",
         role: "member",
-        token: token, // Sử dụng token thật từ backend
+        token,
       };
-
-      console.log("=== Setting user data ===");
-      console.log("UserData:", userData);
-      console.log("UserData type:", typeof userData);
-      console.log("UserData keys:", Object.keys(userData));
-
-      // Lưu vào localStorage
       localStorage.setItem("token", token);
       localStorage.setItem("userData", JSON.stringify(userData));
-
-      // Set user state
       setUser(userData);
-
-      // Hiển thị thông báo thành công
-      console.log("=== Showing notification ===");
-
-      // Delay toast để đảm bảo component đã render xong
-      setTimeout(() => {
-        // Toast chính
-        toast.success(`Chào mừng ${name}! Đăng nhập Google thành công!`);
-        console.log("=== react-toastify called ===");
-      }, 100);
-
-      // Xóa URL params
+      setTimeout(
+        () => toast.success(`Chào mừng ${name}! Đăng nhập Google thành công!`),
+        100
+      );
       window.history.replaceState({}, document.title, window.location.pathname);
-
       return;
     }
 
-    // Kiểm tra user data trong localStorage (login thường)
     const checkUserData = () => {
-      console.log("=== Checking localStorage ===");
       const userData = localStorage.getItem("userData");
       const token = localStorage.getItem("token");
-
-      console.log("Token:", token);
-      console.log("UserData:", userData);
-
       if (userData) {
         try {
-          const parsedUser = JSON.parse(userData);
-          console.log("Parsed user data:", parsedUser);
-
-          // Kiểm tra token trong userData nếu không có token riêng
-          if (!token && parsedUser.token) {
-            console.log("Using token from userData:", parsedUser.token);
-            localStorage.setItem("token", parsedUser.token);
-          }
-
-          setUser(parsedUser);
-        } catch (error) {
-          console.error("Error parsing user data:", error);
+          const parsed = JSON.parse(userData);
+          if (!token && parsed.token)
+            localStorage.setItem("token", parsed.token);
+          setUser(parsed);
+        } catch {
           localStorage.removeItem("userData");
           localStorage.removeItem("token");
         }
       }
     };
-
-    // Check ngay lập tức
     checkUserData();
   }, []);
 
-  const handleLogin = (userData) => {
-    console.log("=== handleLogin called ===");
-    console.log("UserData received:", userData);
-    console.log("UserData type:", typeof userData);
-    console.log("UserData keys:", Object.keys(userData));
-
+  const handleLogin = (loginResponse) => {
+    // loginResponse chính là object bạn log ra (code:1000, data:{token, refreshToken, user...})
+    const normalized = normalizeLoginResponse(loginResponse);
+    const userData = persistAuth(normalized);
     setUser(userData);
-    localStorage.setItem("token", userData.token);
-    localStorage.setItem("userData", JSON.stringify(userData));
   };
 
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem("token");
     localStorage.removeItem("userData");
-
-    // Hiển thị thông báo đăng xuất thành công
     toast.success("Đăng xuất thành công!");
   };
 
-  // Kiểm tra xem có phải trang đăng nhập hoặc đăng ký không
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/register";
-
-  // Kiểm tra xem có phải trang staff không
   const isStaffPage = location.pathname === "/staff";
+  const currentRole = user?.user?.role || user?.role;
+  const isStaffUser = user && isStaff(currentRole);
 
   // Kiểm tra xem có phải trang admin không
   const isAdminPage = location.pathname.startsWith("/admin");
 
-  // Kiểm tra xem user có role staff không
-  const isStaffUser =
-    user &&
-    (user.role === "staff" ||
-      user.role === "ROLE_STAFF" ||
-      (user.user &&
-        (user.user.role === "staff" || user.user.role === "ROLE_STAFF")));
-
   // Kiểm tra quyền truy cập và tự động chuyển hướng staff
   useEffect(() => {
-    // Chỉ kiểm tra khi có user và không phải trang đăng nhập/đăng ký
-    if (isStaffUser && !isAuthPage) {
-      if (!isStaffPage) {
-        // Tự động chuyển hướng staff đến trang staff
-        console.log("🔄 Staff user detected, redirecting to /staff");
-        toast.info("Chuyển hướng đến trang Staff...");
-        setTimeout(() => {
-          window.location.href = "/staff";
-        }, 1000);
-      }
+    if (isStaffUser && !isAuthPage && !isStaffPage) {
+      toast.info("Chuyển hướng đến trang Staff...");
+      setTimeout(() => navigate("/staff", { replace: true }), 600);
     }
-  }, [isStaffUser, isAuthPage, isStaffPage]);
+  }, [isStaffUser, isAuthPage, isStaffPage, navigate]);
 
   return (
     <div className="App">
@@ -169,7 +117,6 @@ function AppContent() {
       {!isAuthPage && !isStaffPage && !isAdminPage && (
         <Navbar user={user} onLogout={handleLogout} />
       )}
-
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
@@ -180,10 +127,12 @@ function AppContent() {
         <Route path="/admin/kyc" element={<AdminPage user={user} />} />
         <Route
           path="/staff"
-          element={<StaffPage user={user} onLogout={handleLogout} />}
+          element={
+            <ProtectedStaffRoute user={user}>
+              <StaffPage user={user} onLogout={handleLogout} />
+            </ProtectedStaffRoute>
+          }
         />
-
-        {/* Các route riêng biệt cho từng field */}
         <Route path="/account" element={<AccountPage user={user} />} />
         <Route path="/my-posts" element={<MyPosts user={user} />} />
         <Route path="/saved-posts" element={<SavedPosts user={user} />} />
@@ -204,7 +153,7 @@ function AppContent() {
   );
 }
 
-function App() {
+export default function App() {
   return (
     <Router>
       <SavedProductsProvider>
@@ -213,5 +162,3 @@ function App() {
     </Router>
   );
 }
-
-export default App;
