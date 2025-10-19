@@ -42,6 +42,7 @@ public class AuthService {
     private final RoleRepository roleRepository;
     private final JwtService jwtService;
     private final UserMapper userMapper;
+    private final UserService userService;
     @Value("${jwt.secret}")
     private  String jwtSecret;
     @Value("${password.secrect}")
@@ -172,6 +173,7 @@ public class AuthService {
             user.setRoles(roles);
 
             userRepository.save(user);
+            userService.initWalletAndWishlist(user);
         }
 
         String token = jwtService.generateToken(user);

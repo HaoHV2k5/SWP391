@@ -30,6 +30,7 @@ public class UserController {
     public ApiResponse<Void> register(@RequestBody @Valid  RegisterRequest request){
 
         User user = userService.registerUser(request);
+        userService.initWalletAndWishlist(user);
         otpService.generateOtpCode(user);
         return ApiResponse.<Void>builder().message("Check your email for the OTP to finish signing up.").build();
     }
