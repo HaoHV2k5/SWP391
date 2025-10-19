@@ -49,5 +49,19 @@ public class WishlistService {
 
     }
 
+    public void deleteProductFromWishlist(Product product, Long userId){
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        Wishlist wishlist = wishlistRepository.findByUser(user);
+        if (wishlist == null) {
+            throw new AppException(ErrorCode.WISHLIST_NOT_EXISTED);
+        }
+
+        Set<Product> setProduct = wishlist.getProducts();
+        setProduct.remove(product);
+        wishlist.setProducts(setProduct);
+
+
+    }
+
 
 }
