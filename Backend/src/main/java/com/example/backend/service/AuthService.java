@@ -79,7 +79,7 @@ public class AuthService {
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         boolean auth = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
         if(!auth){
-            throw  new AppException(ErrorCode.UNAUTHENTICATED);
+            throw  new AppException(ErrorCode.LOGIN_FAIL);
         }
         String token = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
