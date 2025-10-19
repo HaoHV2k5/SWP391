@@ -137,6 +137,9 @@ function AppContent() {
   // Kiểm tra xem có phải trang staff không
   const isStaffPage = location.pathname === "/staff";
 
+  // Kiểm tra xem có phải trang admin không
+  const isAdminPage = location.pathname.startsWith("/admin");
+
   // Kiểm tra xem user có role staff không
   const isStaffUser =
     user &&
@@ -162,8 +165,8 @@ function AppContent() {
 
   return (
     <div className="App">
-      {/* Chỉ hiển thị Navbar cho trang chủ, admin và OTP, không hiển thị cho staff */}
-      {!isAuthPage && !isStaffPage && (
+      {/* Chỉ hiển thị Navbar cho trang chủ và OTP, không hiển thị cho staff và admin */}
+      {!isAuthPage && !isStaffPage && !isAdminPage && (
         <Navbar user={user} onLogout={handleLogout} />
       )}
 
@@ -172,6 +175,9 @@ function AppContent() {
         <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/admin" element={<AdminPage user={user} />} />
+        <Route path="/admin/users" element={<AdminPage user={user} />} />
+        <Route path="/admin/products" element={<AdminPage user={user} />} />
+        <Route path="/admin/kyc" element={<AdminPage user={user} />} />
         <Route
           path="/staff"
           element={<StaffPage user={user} onLogout={handleLogout} />}
@@ -189,14 +195,11 @@ function AppContent() {
         <Route path="/product/:id" element={<ProductDetailPage />} />
       </Routes>
 
-      {/* Chỉ hiển thị Footer cho trang chủ và admin, không hiển thị cho staff */}
-      {!isAuthPage && !isStaffPage && <Footer />}
+      {/* Chỉ hiển thị Footer cho trang chủ và OTP, không hiển thị cho staff và admin */}
+      {!isAuthPage && !isStaffPage && !isAdminPage && <Footer />}
 
       {/* Toast Container */}
-      <ToastContainer
-        {...getToastDefaults()}
-        theme="light"
-      />
+      <ToastContainer {...getToastDefaults()} theme="light" />
     </div>
   );
 }

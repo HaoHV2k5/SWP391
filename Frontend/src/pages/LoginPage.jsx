@@ -359,14 +359,16 @@ const LoginPage = ({ onLogin }) => {
       <style>
         {`
           .card input, .card select {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            color: white !important;
             backdrop-filter: blur(10px);
           }
           
+          .card .input-visible {
+            color: #333 !important;
+            background-color: #fff !important;
+          }
+          
           .card input::placeholder {
-            color: rgba(255, 255, 255, 0.6) !important;
+            color: rgba(0, 0, 0, 0.6) !important;
           }
           
           .card label {
@@ -499,11 +501,10 @@ const LoginPage = ({ onLogin }) => {
                 onChange={handleInputChange}
                 required={!isLogin}
                 placeholder="Nhập họ và tên"
+                className="input-visible"
                 style={{
                   borderColor: fieldErrors.fullName ? "#e74c3c" : "#ddd",
                   borderWidth: fieldErrors.fullName ? "2px" : "1px",
-                  color: "#333",
-                  backgroundColor: "#fff",
                   padding: "12px 16px",
                   borderRadius: "8px",
                   fontSize: "16px",
@@ -538,9 +539,8 @@ const LoginPage = ({ onLogin }) => {
               onChange={handleInputChange}
               required
               placeholder="Nhập email"
+              className="input-visible"
               style={{
-                color: "#333",
-                backgroundColor: "#fff",
                 padding: "12px 16px",
                 borderRadius: "8px",
                 fontSize: "16px",
@@ -566,11 +566,10 @@ const LoginPage = ({ onLogin }) => {
                 onChange={handleInputChange}
                 required={!isLogin}
                 placeholder="Nhập số điện thoại"
+                className="input-visible"
                 style={{
                   borderColor: fieldErrors.phone ? "#e74c3c" : "#ddd",
                   borderWidth: fieldErrors.phone ? "2px" : "1px",
-                  color: "#333",
-                  backgroundColor: "#fff",
                   padding: "12px 16px",
                   borderRadius: "8px",
                   fontSize: "16px",
@@ -606,9 +605,8 @@ const LoginPage = ({ onLogin }) => {
                 value={formData.dateOfBirth}
                 onChange={handleInputChange}
                 required={!isLogin}
+                className="input-visible"
                 style={{
-                  color: "#333",
-                  backgroundColor: "#fff",
                   padding: "12px 16px",
                   borderRadius: "8px",
                   fontSize: "16px",
@@ -635,12 +633,11 @@ const LoginPage = ({ onLogin }) => {
                 onChange={handleInputChange}
                 required
                 placeholder="Nhập mật khẩu"
+                className="input-visible"
                 style={{
                   paddingRight: "3rem",
                   borderColor: fieldErrors.password ? "#e74c3c" : "#ddd",
                   borderWidth: fieldErrors.password ? "2px" : "1px",
-                  color: "#333",
-                  backgroundColor: "#fff",
                   padding: "12px 16px",
                   borderRadius: "8px",
                   fontSize: "16px",
@@ -700,14 +697,13 @@ const LoginPage = ({ onLogin }) => {
                   onChange={handleInputChange}
                   required={!isLogin}
                   placeholder="Nhập lại mật khẩu"
+                  className="input-visible"
                   style={{
                     paddingRight: "3rem",
                     borderColor: fieldErrors.confirmPassword
                       ? "#e74c3c"
                       : "#ddd",
                     borderWidth: fieldErrors.confirmPassword ? "2px" : "1px",
-                    color: "#333",
-                    backgroundColor: "#fff",
                     padding: "12px 16px",
                     borderRadius: "8px",
                     fontSize: "16px",
