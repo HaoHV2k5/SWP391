@@ -39,4 +39,11 @@ public class WishlistController {
                 .build();
     }
 
+    @DeleteMapping("/delete")
+    public  ApiResponse<Void> deleteWishlist(@RequestParam Long productId, @RequestParam Long userId){
+        Product product = productService.getProduct(productId);
+        wishlistService.deleteProductFromWishlist(product,userId );
+        return ApiResponse.<Void>builder().message("Đã xóa product khỏi wishlist").build();
+    }
+
 }
