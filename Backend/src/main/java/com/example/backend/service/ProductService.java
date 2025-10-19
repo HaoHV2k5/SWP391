@@ -247,6 +247,10 @@ public class ProductService {
         productRepository.deleteById(id);
     }
 
+    public Product getProduct(Long productId){
+        return  productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+    }
+
 
 
 
