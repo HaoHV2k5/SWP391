@@ -1,8 +1,11 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.request.BuyProductRequest;
 import com.example.backend.dto.request.CreateProductRequest;
 import com.example.backend.dto.request.ProductDecisionRequest;
+import com.example.backend.dto.request.UpdateProductRequest;
 import com.example.backend.dto.response.ApiResponse;
+import com.example.backend.dto.response.OrderResponse;
 import com.example.backend.dto.response.ProductResponse;
 import com.example.backend.enums.ProductStatus;
 import com.example.backend.service.ProductService;
@@ -41,6 +44,13 @@ public class ProductController {
         ProductResponse productResponse = productService.createProduct(createProductRequest, username);
         return ApiResponse.<ProductResponse>builder().message("Đã Tạo Product Thành Công").data(productResponse).build();
 
+    }
+    //delete product
+    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    @DeleteMapping("/delete/{id}")
+    public ApiResponse<Void> deleteProduct(@PathVariable Long id){
+        productService.deleteProduct(id);
+        return  ApiResponse.<Void>builder().message("đã xóa product thành công").build();
     }
 
 
@@ -190,6 +200,15 @@ public class ProductController {
                 .data(response).build();
 
     }
+
+    @PutMapping("/update")
+    public ApiResponse<ProductResponse> updateProduct(@RequestParam Long productId, @RequestBody @Valid UpdateProductRequest request){
+            ProductResponse productResponse = productService.updateProduct(productId, request);
+            return ApiResponse.<ProductResponse>builder().data(productResponse).build();
+
+    }
+
+
 
 
 

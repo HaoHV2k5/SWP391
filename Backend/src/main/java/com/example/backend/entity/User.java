@@ -50,6 +50,8 @@ public class User {
     private boolean locked = false;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<UserPostingPackage> userPostingPackages;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Wallet wallet;
 
 
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Mail, Phone, MapPin, Calendar } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Users, Calendar } from 'lucide-react';
 
 const PersonalInfo = ({ user }) => {
   const InfoItem = ({ icon: Icon, label, value }) => (
@@ -31,10 +31,28 @@ const PersonalInfo = ({ user }) => {
     return user?.fullName || user?.fullname || user?.user?.fullname || 'Chưa cập nhật';
   };
 
-  const getJoinDate = () => {
-    return user?.createdAt 
-      ? new Date(user.createdAt).toLocaleDateString('vi-VN') 
-      : 'Không xác định';
+  const getGender = () => {
+    const raw = (user?.gender || '').toString().toLowerCase();
+    if (!raw) return 'Chưa cập nhật';
+    if (raw === 'male' || raw === 'nam') return 'Nam';
+    if (raw === 'female' || raw === 'nu' || raw === 'nữ') return 'Nữ';
+    return 'Khác';
+  };
+
+  const getYob = () => {
+    const yob = user?.yob;
+    if (!yob) return 'Chưa cập nhật';
+    if (typeof yob === 'string') {
+      if (yob.includes('/')) return yob; // dd/MM/yyyy
+      if (yob.includes('-')) {
+        const parts = yob.split('-');
+        if (parts.length === 3) {
+          const [yyyy, mm, dd] = parts;
+          return `${dd.padStart(2, '0')}/${mm.padStart(2, '0')}/${yyyy}`;
+        }
+      }
+    }
+    return yob;
   };
 
   return (
@@ -70,6 +88,12 @@ const PersonalInfo = ({ user }) => {
           label="Họ và tên" 
           value={getFullName()} 
         />
+
+        <InfoItem 
+          icon={Calendar} 
+          label="Ngày sinh" 
+          value={getYob()} 
+        />
         
         <InfoItem 
           icon={Phone} 
@@ -84,9 +108,9 @@ const PersonalInfo = ({ user }) => {
         />
         
         <InfoItem 
-          icon={Calendar} 
-          label="Ngày tham gia" 
-          value={getJoinDate()} 
+          icon={Users} 
+          label="Giới tính" 
+          value={getGender()} 
         />
       </div>
     </div>

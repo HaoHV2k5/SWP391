@@ -158,43 +158,6 @@ const LoginPage = ({ onLogin }) => {
       if (isLogin) {
         // Admin login sẽ được xử lý bởi backend API
 
-        //Tài khoản test cho staff
-        if (
-          formData.email === "staff@test.com" &&
-          formData.password === "123456"
-        ) {
-          // Tạo JWT token giả với scope chứa ROLE_STAFF
-          const mockJWT = btoa(
-            JSON.stringify({
-              sub: "staff@test.com",
-              iss: "swp391.com",
-              scope: "ROLE_STAFF",
-              exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24 hours
-            })
-          );
-          const mockToken = `header.${mockJWT}.signature`;
-
-          onLogin({
-            token: mockToken,
-            user: {
-              id: 2,
-              email: "staff@test.com",
-              fullName: "Trần Thị Staff",
-              fullname: "Trần Thị Staff",
-              phone: "0907654321",
-              address: "456 Staff Street, Quận 2, TP.HCM",
-              gender: "Nữ",
-              yob: "20/08/1990",
-              dateOfBirth: "1990-08-20",
-              joinDate: "10/01/2024",
-              role: "ROLE_STAFF",
-            },
-          });
-          toast.success("Đăng nhập staff thành công!");
-          setTimeout(() => navigate("/staff"), 1000);
-          return;
-        }
-
         // Đăng nhập thông thường - gọi API backend
         try {
           const response = await fetch("http://localhost:3979/auth/login", {
@@ -506,41 +469,6 @@ const LoginPage = ({ onLogin }) => {
               ? "Chào mừng bạn quay trở lại!"
               : "Tạo tài khoản mới để bắt đầu"}
           </p>
-          {isLogin && (
-            <div
-              style={{
-                backgroundColor: "#e8f5e8",
-                padding: "1rem",
-                borderRadius: "8px",
-                marginTop: "1rem",
-                fontSize: "0.9rem",
-                border: "1px solid #c8e6c9",
-              }}
-            >
-              <strong>🔐 Tài khoản Test:</strong>
-              <br />
-              <br />
-              <strong>Admin (Backend):</strong>
-              <br />
-              Email: admin@gmail.com
-              <br />
-              Password: admin
-              <br />
-              <br />
-              <strong>Staff (Test):</strong>
-              <br />
-              Email: staff@test.com
-              <br />
-              Password: 123456
-              <br />
-              <br />
-              <strong>Member (Test):</strong>
-              <br />
-              Email: member@test.com
-              <br />
-              Password: 123456
-            </div>
-          )}
         </div>
 
         {error && (

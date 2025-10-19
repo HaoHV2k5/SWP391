@@ -184,7 +184,7 @@ const BaseFilterBar = ({
 
         {/* Brand dropdown */}
         {filterTypes.includes('brand') && brandOptions.length > 0 && 
-          renderDropdown('brand', 'Hãng xe', brandOptions)
+          renderDropdown('brand', 'Hãng', brandOptions)
         }
 
         {/* Year dropdown */}

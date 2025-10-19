@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
 import MemberHeader from "../../components/member/MemberHeader";
+import productService from "../../services/productService";
 import "../../styles/member/index.css";
 
 const PostAd = ({ user }) => {
@@ -13,28 +14,15 @@ const PostAd = ({ user }) => {
     title: "",
     category: "",
     price: "",
-    condition: "",
     description: "",
-    location: "",
-    phone: "",
     images: []
   });
 
   const categories = [
-    { value: "xe-may-dien", label: "Xe máy điện" },
-    { value: "xe-dap-dien", label: "Xe đạp điện" },
-    { value: "phu-kien", label: "Phụ kiện xe điện" },
-    { value: "pin-sac", label: "Pin & Sạc" },
-    { value: "khac", label: "Khác" }
+    { value: "VEHICLE", label: "Xe điện (Vehicle)" },
+    { value: "BATTERY", label: "Pin & Sạc (Battery)" }
   ];
 
-  const conditions = [
-    { value: "new", label: "Mới 100%" },
-    { value: "like-new", label: "Như mới" },
-    { value: "good", label: "Tốt" },
-    { value: "fair", label: "Khá" },
-    { value: "poor", label: "Cần sửa chữa" }
-  ];
 
   useEffect(() => {
     console.log("=== PostAd useEffect ===");
@@ -61,8 +49,8 @@ const PostAd = ({ user }) => {
       userRole = user.role;
     }
 
-    if (userRole !== "member" && userRole !== "admin") {
-      console.log("❌ User role is not member or admin:", userRole);
+    if (userRole !== "member") {
+      console.log("❌ User role is not member:", userRole);
       navigate("/");
       return;
     }
@@ -102,13 +90,39 @@ const PostAd = ({ user }) => {
     setLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Gọi API thật để tạo tin
+      console.log('Creating product with data:', formData);
+      const result = await productService.createProduct(formData);
+      console.log('Product creation result:', result);
       
+      if (!result.success) {
+        throw new Error(result.message || 'Đăng tin thất bại');
+      }
+
       toast.success("Đăng tin thành công! Tin của bạn đang chờ duyệt.");
-      navigate("/member/my-posts");
+      navigate("/my-posts");
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi đăng tin. Vui lòng thử lại!");
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      const errorCode = error?.response?.data?.code;
+      console.error('Create product error:', { status, backendMessage, errorCode, error });
+      
+      if (status === 401) {
+        toast.error("Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn.");
+      } else if (status === 403) {
+        toast.error("Tài khoản của bạn chưa có quyền đăng bán (ROLE_SELLER).");
+      } else if (status === 400) {
+        // Kiểm tra lỗi liên quan đến gói đăng tin
+        if (backendMessage?.includes('gói') || backendMessage?.includes('hạn đăng tin') || backendMessage?.includes('quá hạn')) {
+          toast.error(`⚠️ ${backendMessage}\n\n💡 Vui lòng mua gói đăng tin để tiếp tục.`, {
+            autoClose: 5000
+          });
+        } else {
+          toast.error(`Đăng tin thất bại: ${backendMessage || 'Vui lòng thử lại'}`);
+        }
+      } else {
+        toast.error(`Đăng tin thất bại: ${backendMessage || 'Vui lòng thử lại'}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -169,8 +183,12 @@ const PostAd = ({ user }) => {
                 <h4 className="mb-0">Đăng tin bán hàng</h4>
               </Card.Header>
               <Card.Body className="p-4">
+                <Alert variant="warning" className="mb-3">
+                  <strong>⚠️ Yêu cầu:</strong> Bạn cần <strong>mua gói đăng tin</strong> để có thể đăng bán sản phẩm. 
+                  Mỗi gói sẽ có số lượng tin đăng và thời hạn sử dụng nhất định.
+                </Alert>
                 <Alert variant="info" className="mb-4">
-                  <strong>Lưu ý:</strong> Vui lòng điền đầy đủ thông tin để tin đăng của bạn được duyệt nhanh chóng.
+                  <strong>📝 Lưu ý:</strong> Vui lòng điền đầy đủ thông tin để tin đăng của bạn được duyệt nhanh chóng.
                 </Alert>
 
                 <Form onSubmit={handleSubmit}>
@@ -230,36 +248,6 @@ const PostAd = ({ user }) => {
                         </Col>
                       </Row>
 
-                      {/* Condition & Location */}
-                      <Row>
-                        <Col md={6}>
-                          <Form.Group className="mb-3">
-                            <Form.Label className="fw-bold">Tình trạng</Form.Label>
-                            <Form.Select
-                              name="condition"
-                              value={formData.condition}
-                              onChange={handleInputChange}
-                            >
-                              <option value="">Chọn tình trạng</option>
-                              {conditions.map(cond => (
-                                <option key={cond.value} value={cond.value}>{cond.label}</option>
-                              ))}
-                            </Form.Select>
-                          </Form.Group>
-                        </Col>
-                        <Col md={6}>
-                          <Form.Group className="mb-3">
-                            <Form.Label className="fw-bold">Địa điểm</Form.Label>
-                            <Form.Control
-                              type="text"
-                              name="location"
-                              value={formData.location}
-                              onChange={handleInputChange}
-                              placeholder="VD: Quận 1, TP.HCM"
-                            />
-                          </Form.Group>
-                        </Col>
-                      </Row>
 
                       {/* Description */}
                       <Form.Group className="mb-3">
@@ -279,17 +267,6 @@ const PostAd = ({ user }) => {
                         </Form.Text>
                       </Form.Group>
 
-                      {/* Phone */}
-                      <Form.Group className="mb-4">
-                        <Form.Label className="fw-bold">Số điện thoại liên hệ</Form.Label>
-                        <Form.Control
-                          type="tel"
-                          name="phone"
-                          value={formData.phone}
-                          onChange={handleInputChange}
-                          placeholder="VD: 0901234567"
-                        />
-                      </Form.Group>
                     </Col>
 
                     <Col md={4}>
@@ -331,7 +308,7 @@ const PostAd = ({ user }) => {
                             {formData.price ? `${parseInt(formData.price).toLocaleString('vi-VN')} ₫` : "0 ₫"}
                           </p>
                           <small className="text-muted">
-                            📍 {formData.location || "Chưa có địa điểm"}
+                            {formData.category ? categories.find(c => c.value === formData.category)?.label : "Chọn danh mục"}
                           </small>
                         </Card.Body>
                       </Card>

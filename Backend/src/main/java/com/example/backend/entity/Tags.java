@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "tags")
 @Data
@@ -22,7 +24,9 @@ public class Tags {
     private String model;
     private Integer yearModel;
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 40)
+    @Column(nullable = false, length = 40, name = "type_product")
     private ProductType type;
 
+    @OneToMany(mappedBy = "tag")
+    private List<Product> products;
 }

@@ -18,13 +18,15 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Người gửi đánh giá (reviewer)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "reviewer_id", nullable = false)
+    private User reviewer;
 
+    // Người nhận đánh giá (seller - reviewee)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @JoinColumn(name = "reviewee_id", nullable = false)
+    private User reviewee;
 
     @Column(nullable = false)
     private Integer rating; // 1-5 stars

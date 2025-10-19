@@ -1,11 +1,19 @@
 import { Button, Card } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useSavedProducts } from "../contexts/SavedProductsContext";
+import { useNavigate } from "react-router-dom";
 
 const ProductCard = ({ product }) => {
   const { vehicleInfo, SellerInfo } = product;
   const { toggle, isSaved } = useSavedProducts();
+  const navigate = useNavigate();
   const saved = isSaved(product.id);
+
+  const handleCardClick = (e) => {
+    // Ngăn chặn event khi click vào heart button
+    if (e.target.closest("button")) return;
+    navigate(`/product/${product.id}`);
+  };
 
   return (
     <Card
@@ -13,6 +21,7 @@ const ProductCard = ({ product }) => {
         height: "100%",
         cursor: "pointer",
       }}
+      onClick={handleCardClick}
     >
       <Card.Img
         variant="top"

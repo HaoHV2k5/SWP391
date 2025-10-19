@@ -42,6 +42,7 @@ public class AuthService {
     private final RoleRepository roleRepository;
     private final JwtService jwtService;
     private final UserMapper userMapper;
+    private final UserService userService;
     @Value("${jwt.secret}")
     private  String jwtSecret;
     @Value("${password.secrect}")
@@ -78,7 +79,7 @@ public class AuthService {
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         boolean auth = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
         if(!auth){
-            throw  new AppException(ErrorCode.UNAUTHENTICATED);
+            throw  new AppException(ErrorCode.LOGIN_FAIL);
         }
         String token = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
@@ -172,6 +173,7 @@ public class AuthService {
             user.setRoles(roles);
 
             userRepository.save(user);
+            userService.initWalletAndWishlist(user);
         }
 
         String token = jwtService.generateToken(user);

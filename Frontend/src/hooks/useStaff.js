@@ -21,9 +21,56 @@ export const useProducts = () => {
       console.log("🔄 Loading Products data from API...");
       const result = await productsApi.getPendingProducts();
       
-      setProducts(result.data || []);
-      console.log("✅ Products loaded:", result.data?.length || 0, "records");
-      showSuccessNotification(`Đã tải ${result.data?.length || 0} tin đăng`);
+      // Debug: Log the actual data structure
+      console.log("🔍 Products API Response:", result);
+      console.log("🔍 Products Data Structure:", result.data);
+      console.log("🔍 Products Data Length:", result.data?.length || 0);
+      
+      if (result.data && result.data.length > 0) {
+        console.log("🔍 First Product Item Structure:", result.data[0]);
+        console.log("🔍 First Product Item Keys:", Object.keys(result.data[0]));
+        
+        // Log all products
+        result.data.forEach((product, index) => {
+          console.log(`🔍 Product ${index + 1}:`, {
+            id: product.id,
+            title: product.title || product.name || product.productName,
+            status: product.status,
+            valid: !!(product.id && (product.title || product.name || product.productName))
+          });
+        });
+      }
+      
+      const validProducts = (result.data || []).filter(product => {
+        const isValid = product && product.id && (product.title || product.name || product.productName);
+        const isPending = product.status === 'PENDING';
+        
+        if (!isValid) {
+          console.log("🔍 Invalid product filtered out:", product);
+        }
+        if (!isPending) {
+          console.log("🔍 Non-pending product filtered out:", product);
+        }
+        
+        return isValid && isPending;
+      });
+      
+      console.log("🔍 Valid products count:", validProducts.length);
+      console.log("🔍 All products count:", result.data?.length || 0);
+      console.log("🔍 Filtered out:", (result.data?.length || 0) - validProducts.length, "invalid products");
+      
+      setProducts(validProducts);
+      console.log("✅ Products loaded:", validProducts.length, "valid records out of", result.data?.length || 0, "total");
+      
+      // Show notification with correct count
+      const totalProducts = result.data?.length || 0;
+      const pendingProducts = validProducts.length;
+      
+      if (pendingProducts === totalProducts) {
+        showSuccessNotification(`Đã tải ${pendingProducts} tin đăng chờ duyệt`);
+      } else {
+        showSuccessNotification(`Đã tải ${pendingProducts} tin đăng chờ duyệt (${totalProducts} tổng cộng)`);
+      }
     } catch (error) {
       console.error("❌ Error loading products:", error);
       showErrorNotification(handleApiError(error, "Không thể tải dữ liệu tin đăng"));
@@ -39,13 +86,30 @@ export const useProducts = () => {
     try {
       console.log("✅ Approving Product ID:", productId);
       const result = await productsApi.approveProduct(productId);
+      console.log("🔍 API Response:", result);
       
-      setProducts(prev => prev.map(p => 
-        p.id === productId ? result.data : p
-      ));
+      // Remove the approved product from the list since it's no longer PENDING
+      // Convert both IDs to string for comparison to handle type mismatch
+      setProducts(prev => {
+        console.log("🔍 Before approval - All products:", prev.map(p => ({ id: p.id, title: p.title || p.productName })));
+        console.log("🔍 Approving product ID:", productId, "Type:", typeof productId);
+        
+        const filtered = prev.filter(p => {
+          const match = String(p.id) !== String(productId);
+          console.log(`🔍 Product ${p.id} (${typeof p.id}) vs ${productId} (${typeof productId}): ${match ? 'KEEP' : 'REMOVE'}`);
+          return match;
+        });
+        
+        console.log("📋 Products before filter:", prev.length);
+        console.log("📋 Products after filter:", filtered.length);
+        console.log("📋 Removed product ID:", productId);
+        console.log("🔍 After approval - Remaining products:", filtered.map(p => ({ id: p.id, title: p.title || p.productName })));
+        
+        return filtered;
+      });
       
-      showSuccessNotification("Duyệt tin đăng thành công!");
-      console.log("✅ Product approved:", result.data);
+      showSuccessNotification("Duyệt tin đăng thành công! Tin đăng đã được loại bỏ khỏi danh sách chờ duyệt.");
+      console.log("✅ Product approved and removed from list:", result.data);
     } catch (error) {
       console.error("❌ Error approving product:", error);
       showErrorNotification(handleApiError(error, "Có lỗi xảy ra khi duyệt tin đăng"));
@@ -60,13 +124,30 @@ export const useProducts = () => {
     try {
       console.log("❌ Rejecting Product ID:", productId, "Reason:", reason);
       const result = await productsApi.rejectProduct(productId, reason);
+      console.log("🔍 API Response:", result);
       
-      setProducts(prev => prev.map(p => 
-        p.id === productId ? result.data : p
-      ));
+      // Remove the rejected product from the list since it's no longer PENDING
+      // Convert both IDs to string for comparison to handle type mismatch
+      setProducts(prev => {
+        console.log("🔍 Before rejection - All products:", prev.map(p => ({ id: p.id, title: p.title || p.productName })));
+        console.log("🔍 Rejecting product ID:", productId, "Type:", typeof productId);
+        
+        const filtered = prev.filter(p => {
+          const match = String(p.id) !== String(productId);
+          console.log(`🔍 Product ${p.id} (${typeof p.id}) vs ${productId} (${typeof productId}): ${match ? 'KEEP' : 'REMOVE'}`);
+          return match;
+        });
+        
+        console.log("📋 Products before filter:", prev.length);
+        console.log("📋 Products after filter:", filtered.length);
+        console.log("📋 Removed product ID:", productId);
+        console.log("🔍 After rejection - Remaining products:", filtered.map(p => ({ id: p.id, title: p.title || p.productName })));
+        
+        return filtered;
+      });
       
-      showSuccessNotification("Từ chối tin đăng thành công!");
-      console.log("✅ Product rejected:", result.data);
+      showSuccessNotification("Từ chối tin đăng thành công! Tin đăng đã được loại bỏ khỏi danh sách chờ duyệt.");
+      console.log("✅ Product rejected and removed from list:", result.data);
     } catch (error) {
       console.error("❌ Error rejecting product:", error);
       showErrorNotification(handleApiError(error, "Có lỗi xảy ra khi từ chối tin đăng"));
@@ -105,6 +186,14 @@ export const useKyc = () => {
     try {
       console.log("🔄 Loading KYC data from API...");
       const result = await kycApi.getKycList();
+      
+      // Debug: Log the actual data structure
+      console.log("🔍 KYC API Response:", result);
+      console.log("🔍 KYC Data Structure:", result.data);
+      if (result.data && result.data.length > 0) {
+        console.log("🔍 First KYC Item Structure:", result.data[0]);
+        console.log("🔍 First KYC Item Keys:", Object.keys(result.data[0]));
+      }
       
       setKycList(result.data || []);
       console.log("✅ KYC loaded:", result.data?.length || 0, "records");

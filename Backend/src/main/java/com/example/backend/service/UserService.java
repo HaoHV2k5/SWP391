@@ -6,18 +6,18 @@ import com.example.backend.dto.response.UserDetailResponse;
 import com.example.backend.dto.response.UserListResponse;
 import com.example.backend.entity.Role;
 import com.example.backend.entity.User;
+import com.example.backend.entity.Wallet;
+import com.example.backend.entity.Wishlist;
 import com.example.backend.enums.Roles;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
-import com.example.backend.repository.RoleRepository;
-import com.example.backend.repository.UserOtpRepository;
+import com.example.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import com.example.backend.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.example.backend.repository.UserRepository;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -33,6 +33,9 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final OtpService otpService;
     private final UserOtpRepository userOtpRepository;
+    private final WalletRepository walletRepository;
+    private final WishlistRepository wishlistRepository;
+
 @Value("${email.login.facebook}")
 private String emailLoginFacebook;
 
@@ -248,11 +251,31 @@ private String emailLoginFacebook;
 
 
 
+    public Long getIdByUsername(String name){
+        User user = userRepository.findByUsername(name).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        return user.getId();
+    }
+
+
+
+    public void initWalletAndWishlist(User user){
+        Wallet wallet = Wallet.builder().user(user).build();
+        walletRepository.save(wallet);
+        Wishlist wishlist = Wishlist.builder().user(user).build();
+        wishlistRepository.save(wishlist);
+    }
+
+    public void updatePassword(User user,String password){
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
+    }
 
 
 
 
-    
+
+
+
 
 
 }
