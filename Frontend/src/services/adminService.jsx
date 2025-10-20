@@ -44,6 +44,28 @@ const adminService = {
       throw error;
     }
   },
+
+  // Xóa user
+  async deleteUser(userId) {
+    try {
+      const response = await apiClient.delete(`/admin/users/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      throw error;
+    }
+  },
+
+  // Cập nhật user
+  async updateUser(userId, userData) {
+    try {
+      const response = await apiClient.put(`/admin/users/${userId}`, userData);
+      return response.data;
+    } catch (error) {
+      console.error("Error updating user:", error);
+      throw error;
+    }
+  },
 };
 
 export default adminService;
