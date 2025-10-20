@@ -279,7 +279,6 @@ import OrdersTab from './member/OrdersTab';
 ```javascript
 [
   { value: "xe-may-dien", label: "Xe máy điện" },
-  { value: "xe-dap-dien", label: "Xe đạp điện" },
   { value: "phu-kien", label: "Phụ kiện xe điện" },
   { value: "pin-sac", label: "Pin & Sạc" },
   { value: "khac", label: "Khác" }

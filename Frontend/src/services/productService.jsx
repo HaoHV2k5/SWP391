@@ -1,4 +1,5 @@
 import { apiClient, authService } from "./authService";
+import searchService from "./searchService";
 
 // Dịch vụ sản phẩm: gom tất cả các lời gọi API liên quan đến sản phẩm
 const productService = {
@@ -49,6 +50,12 @@ const productService = {
       if (!localStorage.getItem("token") && (status === 404 || status === 401)) {
         return { success: true, data: [] };
       }
+      
+      // Nếu lỗi 500 (Internal Server Error), trả về dữ liệu rỗng để không vỡ UI
+      if (status === 500) {
+        return { success: true, data: [] };
+      }
+      
       return { success: false, message: `Lỗi tải sản phẩm (${status || "network"}): ${backendMessage || "Không rõ"}` };
     }
   },
@@ -145,32 +152,17 @@ const productService = {
     }
   },
 
-  // Tìm kiếm sản phẩm theo từ khóa sử dụng search endpoint của BE
-  async searchProducts(keyword) {
-    try {
-      const response = await apiClient.get(`/tag/vehicle/search?request=${encodeURIComponent(keyword)}`);
-      const data = response?.data?.data ?? response?.data?.content ?? response?.data;
-      return { success: true, data: Array.isArray(data) ? data : [] };
-    } catch (error) {
-      const status = error?.response?.status;
-      const backendMessage = error?.response?.data?.message || error?.message;
-      console.error("searchProducts thất bại", { keyword, status, backendMessage });
-      return { success: false, message: `Lỗi tìm kiếm (${status || "network"}): ${backendMessage || "Không rõ"}` };
-    }
+  // Delegate search functions to searchService
+  async getAutocompleteSuggestions(keyword) {
+    return searchService.getAutocompleteSuggestions(keyword);
   },
 
-  // Lấy sản phẩm theo tag/category
+  async searchProducts(keyword) {
+    return searchService.searchProducts(keyword);
+  },
+
   async getProductsByTag(tagSlug) {
-    try {
-      const response = await apiClient.get(`/tag/${encodeURIComponent(tagSlug)}`);
-      const data = response?.data?.data ?? response?.data?.content ?? response?.data;
-      return { success: true, data: Array.isArray(data) ? data : [] };
-    } catch (error) {
-      const status = error?.response?.status;
-      const backendMessage = error?.response?.data?.message || error?.message;
-      console.error("getProductsByTag thất bại", { tagSlug, status, backendMessage });
-      return { success: false, message: `Lỗi tải sản phẩm theo tag (${status || "network"}): ${backendMessage || "Không rõ"}` };
-    }
+    return searchService.getProductsByTag(tagSlug);
   },
 
   // Lấy danh sách filter options từ dữ liệu sản phẩm

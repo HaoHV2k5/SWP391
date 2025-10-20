@@ -18,8 +18,9 @@ import ViewHistory from "./pages/member/ViewHistory";
 import AccountPage from "./pages/AccountPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
 import "./App.css";
-import CategoryPage from "./components/homepageContainer/layout/CategoryPage";
+import CategoryRouter from "./components/homepageContainer/layout/CategoryRouter";
 import ProductDetailPage from "./components/homepageContainer/layout/ProductDetailPage";
+import TagPage from "./components/homepageContainer/layout/TagPage";
 import { SavedProductsProvider } from "./components/homepageContainer/contexts/SavedProductsContext";
 
 function AppContent() {
@@ -185,8 +186,9 @@ function AppContent() {
         <Route path="/view-history" element={<ViewHistory user={user} />} />
         <Route path="/post-ad" element={<PostAd user={user} />} />
         <Route path="/verify-otp" element={<OTPVerificationPage />} />
-        <Route path="/products/:type" element={<CategoryPage />} />
+        <Route path="/products/:type" element={<CategoryRouter />} />
         <Route path="/product/:id" element={<ProductDetailPage />} />
+        <Route path="/tag/:slug" element={<TagPage />} />
       </Routes>
 
       {/* Chỉ hiển thị Footer cho trang chủ và admin, không hiển thị cho staff */}
