@@ -179,8 +179,17 @@ const productService = {
         formData.append("description", form.description);
       }
 
-      // KHÔNG gửi vehicle/battery nếu không có thông tin
-      // Backend sẽ tự tạo entity rỗng dựa trên productType
+      // Gửi vehicle/battery object theo yêu cầu của backend
+      if (productType === "VEHICLE") {
+        formData.append("vehicle.brand", form.brand || "Unknown");
+        formData.append("vehicle.model", form.model || "Unknown");
+        formData.append("vehicle.yearManufactured", form.yearManufactured || new Date().getFullYear());
+      } else if (productType === "BATTERY") {
+        formData.append("battery.brand", form.brand || "Unknown");
+        formData.append("battery.model", form.model || "Unknown");
+        formData.append("battery.yearManufactured", form.yearManufactured || new Date().getFullYear());
+        formData.append("battery.batteryLevel", form.batteryLevel || 80);
+      }
 
       // Images (nếu có)
       if (Array.isArray(form.images) && form.images.length > 0) {
