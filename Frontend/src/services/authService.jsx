@@ -31,11 +31,10 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response?.status === 401) {
-      // Token hết hạn hoặc không hợp lệ
-      localStorage.removeItem("token");
-      window.location.href = "/login";
-    }
+    // if (error.response?.status === 401) {
+    //   localStorage.removeItem("token");
+    //   window.location.href = "/login";
+    // }
     return Promise.reject(error);
   }
 );
@@ -144,6 +143,36 @@ export const googleAuthService = {
       return {
         success: false,
         message: error.response?.data?.message || "Google login failed",
+      };
+    }
+  },
+};
+
+export const facebookAuthService = {
+  // Bước 1: Redirect qua Facebook login
+  loginWithFacebook() {
+    window.location.href = `${API_BASE_URL}/oauth2/authorization/facebook`;
+  },
+
+  // Bước 2: Sau khi Facebook redirect về BE -> BE redirect về /oauth2/success
+  async handleFacebookCallback() {
+    try {
+      const response = await apiClient.get("/oauth2/success");
+      const data = response.data.data;
+
+      // Lưu token vào localStorage
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || "Facebook login failed",
       };
     }
   },

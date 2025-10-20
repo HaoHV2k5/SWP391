@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, User, Mail, Lock, Phone, Calendar } from "lucide-react";
 import { toast } from "react-toastify";
+import { facebookAuthService } from "../services/authService";
 
 const LoginPage = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -12,7 +13,7 @@ const LoginPage = ({ onLogin }) => {
   const [fieldErrors, setFieldErrors] = useState({});
 
   // Validation functions
-  const validateRegistration = (data) => {
+  const _validateRegistration = (data) => {
     // Kiểm tra tất cả trường không được bỏ trống
     if (!data.fullName.trim()) {
       return "Họ và tên không được bỏ trống";
@@ -53,7 +54,7 @@ const LoginPage = ({ onLogin }) => {
     if (!/[A-Z]/.test(data.password)) {
       return "Mật khẩu phải có ít nhất 1 chữ hoa";
     }
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/.test(data.password)) {
+    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(data.password)) {
       return "Mật khẩu phải có ít nhất 1 ký tự đặc biệt";
     }
 
@@ -101,7 +102,7 @@ const LoginPage = ({ onLogin }) => {
           errors.password = "Mật khẩu phải có ít nhất 6 ký tự";
         } else if (!/[A-Z]/.test(value)) {
           errors.password = "Mật khẩu phải có ít nhất 1 chữ hoa";
-        } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/.test(value)) {
+        } else if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(value)) {
           errors.password = "Mật khẩu phải có ít nhất 1 ký tự đặc biệt";
         } else {
           delete errors.password;
@@ -146,6 +147,16 @@ const LoginPage = ({ onLogin }) => {
     // Real-time validation cho đăng ký
     if (!isLogin) {
       validateField(name, value);
+    }
+  };
+
+  // Xử lý Facebook login
+  const handleFacebookLogin = () => {
+    try {
+      facebookAuthService.loginWithFacebook();
+    } catch (error) {
+      console.error("Facebook login error:", error);
+      toast.error("Lỗi đăng nhập Facebook");
     }
   };
 
@@ -796,6 +807,7 @@ const LoginPage = ({ onLogin }) => {
               justifyContent: "center",
               gap: "8px",
               transition: "all 0.3s ease",
+              marginBottom: "0.75rem",
             }}
             onMouseOver={(e) => {
               e.target.style.backgroundColor = "#3367d6";
@@ -824,6 +836,39 @@ const LoginPage = ({ onLogin }) => {
             </svg>
             {isLogin ? "Đăng nhập với Google" : "Đăng ký với Google"}
           </button>
+
+          <button
+            onClick={handleFacebookLogin}
+            style={{
+              width: "100%",
+              padding: "12px 24px",
+              backgroundColor: "#1877f2",
+              color: "white",
+              border: "none",
+              borderRadius: "25px",
+              fontSize: "16px",
+              fontWeight: "500",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              transition: "all 0.3s ease",
+              marginBottom: "0.75rem",
+            }}
+            onMouseOver={(e) => {
+              e.target.style.backgroundColor = "#166fe5";
+            }}
+            onMouseOut={(e) => {
+              e.target.style.backgroundColor = "#1877f2";
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+            </svg>
+            {isLogin ? "Đăng nhập với Facebook" : "Đăng ký với Facebook"}
+          </button>
+
           <div style={{ margin: "1rem 0", color: "#aaa", fontWeight: 500 }}>
             Hoặc
           </div>

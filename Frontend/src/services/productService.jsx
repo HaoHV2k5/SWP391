@@ -12,45 +12,45 @@ const productService = {
     let endpoint = "";
     try {
       // Không gọi /auth/me (BE không có). Đọc từ localStorage để xác định quyền/username
-      const userDataRaw = localStorage.getItem("userData");
-      console.log("🔍 getPublicList: userDataRaw:", userDataRaw);
+      // const userDataRaw = localStorage.getItem("userData");
+      // console.log("🔍 getPublicList: userDataRaw:", userDataRaw);
 
-      if (userDataRaw) {
-        try {
-          const userData = JSON.parse(userDataRaw);
-          const rolesRaw = userData?.roles || userData?.user?.roles || [];
-          const roles = Array.isArray(rolesRaw)
-            ? rolesRaw
-                .map((r) => (typeof r === "string" ? r : r?.name))
-                .filter(Boolean)
-            : [];
-          const isAdmin =
-            roles.includes("ROLE_ADMIN") ||
-            userData?.user?.role === "ROLE_ADMIN";
-          const username =
-            userData?.username ||
-            userData?.user?.username ||
-            userData?.email ||
-            userData?.user?.email;
+      // if (userDataRaw) {
+      //   try {
+      //     const userData = JSON.parse(userDataRaw);
+      //     const rolesRaw = userData?.roles || userData?.user?.roles || [];
+      //     const roles = Array.isArray(rolesRaw)
+      //       ? rolesRaw
+      //           .map((r) => (typeof r === "string" ? r : r?.name))
+      //           .filter(Boolean)
+      //       : [];
+      //     const isAdmin =
+      //       roles.includes("ROLE_ADMIN") ||
+      //       userData?.user?.role === "ROLE_ADMIN";
+      //     const username =
+      //       userData?.username ||
+      //       userData?.user?.username ||
+      //       userData?.email ||
+      //       userData?.user?.email;
 
-          console.log(
-            "🔍 getPublicList: isAdmin:",
-            isAdmin,
-            "username:",
-            username
-          );
+      //     console.log(
+      //       "🔍 getPublicList: isAdmin:",
+      //       isAdmin,
+      //       "username:",
+      //       username
+      //     );
 
-          if (isAdmin) {
-            endpoint = "/products/seller/staff_approved/admin";
-          } else if (username) {
-            endpoint = `/products/seller?username=${encodeURIComponent(
-              username
-            )}`;
-          }
-        } catch (e) {
-          console.error("❌ getPublicList: Error parsing userData:", e);
-        }
-      }
+      //     if (isAdmin) {
+      //       endpoint = "/products/seller/staff_approved/admin";
+      //     } else if (username) {
+      //       endpoint = `/products/seller?username=${encodeURIComponent(
+      //         username
+      //       )}`;
+      //     }
+      //   } catch (e) {
+      //     console.error("❌ getPublicList: Error parsing userData:", e);
+      //   }
+      // }
 
       // Chưa đăng nhập hoặc không xác định được endpoint phù hợp thì
       // gọi endpoint công khai đang có trong BE
