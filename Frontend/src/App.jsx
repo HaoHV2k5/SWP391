@@ -24,6 +24,7 @@ import SavedPosts from "./pages/member/SavedPosts";
 import ViewHistory from "./pages/member/ViewHistory";
 import AccountPage from "./pages/AccountPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
+import FacebookCallbackPage from "./pages/FacebookCallbackPage";
 import "./App.css";
 import CategoryPage from "./components/homepageContainer/layout/CategoryPage";
 import ProductDetailPage from "./components/homepageContainer/layout/ProductDetailPage";
@@ -140,6 +141,10 @@ function AppContent() {
         <Route path="/view-history" element={<ViewHistory user={user} />} />
         <Route path="/post-ad" element={<PostAd user={user} />} />
         <Route path="/verify-otp" element={<OTPVerificationPage />} />
+        <Route
+          path="/facebook-callback"
+          element={<FacebookCallbackPage onLogin={handleLogin} />}
+        />
         <Route path="/products/:type" element={<CategoryPage />} />
         <Route path="/product/:id" element={<ProductDetailPage />} />
       </Routes>

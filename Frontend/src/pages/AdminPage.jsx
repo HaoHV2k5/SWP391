@@ -28,6 +28,7 @@ const AdminPage = ({ user }) => {
   const [loading, setLoading] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [users, setUsers] = useState([]);
+  const [isManualUpdate, setIsManualUpdate] = useState(false);
 
   // Mock data for dashboard
   const [stats] = useState({
@@ -64,8 +65,22 @@ const AdminPage = ({ user }) => {
     },
   ]);
 
-  // Load users từ API
+  // Load users từ API - chỉ load khi cần thiết
   const loadUsers = useCallback(async () => {
+    // Tránh load users khi không cần thiết
+    if (activeTab !== "users") {
+      console.log("🚫 Skipping loadUsers - not on users tab");
+      return;
+    }
+
+    // Tránh load lại nếu đã có data và không loading và không phải manual update
+    if (users.length > 0 && !loading && !isManualUpdate) {
+      console.log(
+        "🚫 Skipping loadUsers - data already exists and not manual update"
+      );
+      return;
+    }
+
     try {
       console.log("🔄 Starting loadUsers...");
       setLoading(true);
@@ -93,8 +108,9 @@ const AdminPage = ({ user }) => {
       toast.error("Lỗi khi tải danh sách users!");
     } finally {
       setLoading(false);
+      setIsManualUpdate(false); // Reset flag sau khi load xong
     }
-  }, [navigate]);
+  }, [navigate, activeTab, users.length, loading, isManualUpdate]);
 
   // Sync activeTab with URL changes
   useEffect(() => {
@@ -102,7 +118,7 @@ const AdminPage = ({ user }) => {
     setActiveTab(newActiveTab);
   }, [location.pathname, getActiveTabFromPath]);
 
-  // Authentication check
+  // Authentication check - tách biệt khỏi tab logic
   useEffect(() => {
     console.log("=== AdminPage useEffect ===");
     console.log("AdminPage - User object:", user);
@@ -147,43 +163,58 @@ const AdminPage = ({ user }) => {
     }
 
     console.log("✅ Admin access granted");
-    // Load users khi vào trang admin
-    if (activeTab === "users") {
-      console.log("🔄 Loading users...");
-      loadUsers();
-    }
-  }, [user, navigate, activeTab, loadUsers]);
+  }, [user, navigate]); // Loại bỏ activeTab và loadUsers khỏi dependencies
 
-  // Load users when tab changes to users
+  // Load users when tab changes to users - chỉ chạy khi cần thiết
   useEffect(() => {
     console.log(
       "🔍 Tab change detected - activeTab:",
       activeTab,
       "user:",
-      !!user
+      !!user,
+      "isManualUpdate:",
+      isManualUpdate
     );
-    if (activeTab === "users" && user) {
+
+    // Chỉ load users khi:
+    // 1. Đang ở tab users
+    // 2. User đã được authenticate
+    // 3. Chưa có data hoặc đang loading hoặc là manual update
+    if (
+      activeTab === "users" &&
+      user &&
+      (users.length === 0 || loading || isManualUpdate)
+    ) {
       console.log("🔄 Tab changed to users, loading users...");
       loadUsers();
     }
-  }, [activeTab, user, loadUsers]);
+  }, [activeTab, user, loadUsers, users.length, loading, isManualUpdate]);
 
-  // Handle tab change
+  // Handle tab change - tối ưu để tránh duplicate calls
   const handleTabChange = (tabId) => {
     console.log("🔄 Tab change requested:", tabId);
-    setActiveTab(tabId);
-    navigate(`/admin/${tabId}`);
 
-    // Load users when switching to users tab
-    if (tabId === "users") {
-      console.log("🔄 Directly calling loadUsers() for users tab");
-      loadUsers();
+    // Chỉ navigate, không gọi loadUsers ở đây
+    // loadUsers sẽ được gọi tự động bởi useEffect khi activeTab thay đổi
+    setActiveTab(tabId);
+
+    // Navigate đến URL tương ứng
+    if (tabId === "dashboard") {
+      navigate("/admin");
+    } else {
+      navigate(`/admin/${tabId}`);
     }
   };
 
-  // Debug activeTab changes
+  // Debug activeTab changes - thêm thông tin về render
   useEffect(() => {
     console.log("🔍 activeTab changed to:", activeTab);
+    console.log("🔍 Current tab content will render:", {
+      dashboard: activeTab === "dashboard",
+      users: activeTab === "users",
+      products: activeTab === "products",
+      kyc: activeTab === "kyc",
+    });
   }, [activeTab]);
 
   // Handle logout
@@ -483,22 +514,63 @@ const AdminPage = ({ user }) => {
               color: "white",
             }}
           >
+            {/* Dashboard Tab */}
             {activeTab === "dashboard" && (
-              <DashboardTab stats={stats} orders={orders} />
+              <div key="dashboard-content">
+                <DashboardTab stats={stats} orders={orders} />
+              </div>
             )}
 
+            {/* Users Tab */}
             {activeTab === "users" && (
-              <UsersTab
-                users={users}
-                setUsers={setUsers}
-                loading={loading}
-                setLoading={setLoading}
-              />
+              <div key="users-content">
+                <UsersTab
+                  users={users}
+                  setUsers={setUsers}
+                  loading={loading}
+                  setLoading={setLoading}
+                  setIsManualUpdate={setIsManualUpdate}
+                />
+              </div>
             )}
 
-            {activeTab === "products" && <ProductsTab />}
+            {/* Products Tab */}
+            {activeTab === "products" && (
+              <div key="products-content">
+                <ProductsTab />
+              </div>
+            )}
 
-            {activeTab === "kyc" && <KYCTab />}
+            {/* KYC Tab */}
+            {activeTab === "kyc" && (
+              <div key="kyc-content">
+                <KYCTab />
+              </div>
+            )}
+
+            {/* Fallback - nếu không có tab nào match */}
+            {!["dashboard", "users", "products", "kyc"].includes(activeTab) && (
+              <div style={{ textAlign: "center", padding: "2rem" }}>
+                <p style={{ color: "rgba(255, 255, 255, 0.7)" }}>
+                  Tab không xác định: {activeTab}
+                </p>
+                <button
+                  onClick={() => handleTabChange("dashboard")}
+                  style={{
+                    padding: "0.5rem 1rem",
+                    background:
+                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    border: "none",
+                    borderRadius: "8px",
+                    color: "white",
+                    cursor: "pointer",
+                    marginTop: "1rem",
+                  }}
+                >
+                  Về trang tổng quan
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

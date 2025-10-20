@@ -12,38 +12,45 @@ const productService = {
     let endpoint = "";
     try {
       // Không gọi /auth/me (BE không có). Đọc từ localStorage để xác định quyền/username
-      const userDataRaw = localStorage.getItem("userData");
-      
+      // const userDataRaw = localStorage.getItem("userData");
+      // console.log("🔍 getPublicList: userDataRaw:", userDataRaw);
 
-      if (userDataRaw) {
-        try {
-          const userData = JSON.parse(userDataRaw);
-          const rolesRaw = userData?.roles || userData?.user?.roles || [];
-          const roles = Array.isArray(rolesRaw)
-            ? rolesRaw
-                .map((r) => (typeof r === "string" ? r : r?.name))
-                .filter(Boolean)
-            : [];
-          const isAdmin =
-            roles.includes("ROLE_ADMIN") ||
-            userData?.user?.role === "ROLE_ADMIN";
-          const username =
-            userData?.username ||
-            userData?.user?.username ||
-            userData?.email ||
-            userData?.user?.email;
+      // if (userDataRaw) {
+      //   try {
+      //     const userData = JSON.parse(userDataRaw);
+      //     const rolesRaw = userData?.roles || userData?.user?.roles || [];
+      //     const roles = Array.isArray(rolesRaw)
+      //       ? rolesRaw
+      //           .map((r) => (typeof r === "string" ? r : r?.name))
+      //           .filter(Boolean)
+      //       : [];
+      //     const isAdmin =
+      //       roles.includes("ROLE_ADMIN") ||
+      //       userData?.user?.role === "ROLE_ADMIN";
+      //     const username =
+      //       userData?.username ||
+      //       userData?.user?.username ||
+      //       userData?.email ||
+      //       userData?.user?.email;
 
-          
+      //     console.log(
+      //       "🔍 getPublicList: isAdmin:",
+      //       isAdmin,
+      //       "username:",
+      //       username
+      //     );
 
-          if (isAdmin) {
-            endpoint = "/products/seller/staff_approved/admin";
-          } else if (username) {
-            endpoint = `/products/seller?username=${encodeURIComponent(
-              username
-            )}`;
-          }
-        } catch (e) {}
-      }
+      //     if (isAdmin) {
+      //       endpoint = "/products/seller/staff_approved/admin";
+      //     } else if (username) {
+      //       endpoint = `/products/seller?username=${encodeURIComponent(
+      //         username
+      //       )}`;
+      //     }
+      //   } catch (e) {
+      //     console.error("❌ getPublicList: Error parsing userData:", e);
+      //   }
+      // }
 
       // Chưa đăng nhập hoặc không xác định được endpoint phù hợp thì
       // gọi endpoint công khai đang có trong BE
@@ -59,7 +66,7 @@ const productService = {
     } catch (error) {
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
-      
+
       // Nếu không có token và bị chặn/không tìm thấy, trả rỗng để không vỡ UI
       if (
         !localStorage.getItem("token") &&
@@ -163,11 +170,17 @@ const productService = {
       if (productType === "VEHICLE") {
         formData.append("vehicle.brand", form.brand || "Unknown");
         formData.append("vehicle.model", form.model || "Unknown");
-        formData.append("vehicle.yearManufactured", form.yearManufactured || new Date().getFullYear());
+        formData.append(
+          "vehicle.yearManufactured",
+          form.yearManufactured || new Date().getFullYear()
+        );
       } else if (productType === "BATTERY") {
         formData.append("battery.brand", form.brand || "Unknown");
         formData.append("battery.model", form.model || "Unknown");
-        formData.append("battery.yearManufactured", form.yearManufactured || new Date().getFullYear());
+        formData.append(
+          "battery.yearManufactured",
+          form.yearManufactured || new Date().getFullYear()
+        );
         formData.append("battery.batteryLevel", form.batteryLevel || 80);
       }
 
