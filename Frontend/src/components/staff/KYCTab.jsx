@@ -1,330 +1,289 @@
-import React, { useState } from "react";
-import { Table, Button, Modal, Input, Space, Tag, Spin, Image } from "antd";
-import { useKyc } from "../../hooks/useStaff";
+// src/components/staff/KYCTab.jsx
+import React, { useMemo, useState } from "react";
 import {
-  formatDate,
-  getStatusColor,
-  getStatusText,
-  resolveImageUrl,
-} from "../../utils/staffUtils";
-import { showErrorNotification } from "../../utils/notificationManager";
+  Table,
+  Button,
+  Modal,
+  Input,
+  Space,
+  Tag,
+  Image,
+  Row,
+  Col,
+  Empty,
+} from "antd";
+import { ReloadOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import { usePendingKyc } from "../../hooks/useStaff";
+import { vnDate, statusTag, resolveImageUrl } from "../../utils/staffUtils";
+
+/** Lấy 2 ảnh CCCD (front/back) từ rất nhiều tên key có thể có */
+function extractKycImages(rec = {}) {
+  const tryKeys = (o, keys) => {
+    for (const k of keys) {
+      const v = o?.[k];
+      if (v != null && String(v).trim() !== "") return v;
+    }
+    return null;
+  };
+
+  // Các tên key hay gặp BE đặt khác nhau
+  const frontRaw = tryKeys(rec, [
+    "frontUrl",
+    "frontURL",
+    "front",
+    "front_image",
+    "frontImage",
+    "frontImageUrl",
+    "urlFront",
+    "frontCCCD",
+    "cccdFront",
+    "imageFront",
+  ]);
+
+  const backRaw = tryKeys(rec, [
+    "backUrl",
+    "backURL",
+    "back",
+    "back_image",
+    "backImage",
+    "backImageUrl",
+    "urlBack",
+    "backCCCD",
+    "cccdBack",
+    "imageBack",
+  ]);
+
+  const front = resolveImageUrl(frontRaw);
+  const back = resolveImageUrl(backRaw);
+
+  // Nếu BE trả mảng images có đúng 2 ảnh, vẫn hỗ trợ
+  let fallback = [];
+  const listCandidates = [
+    rec.images,
+    rec.imageUrls,
+    rec.image_urls,
+    rec.imagesUrl,
+    rec.photos,
+    rec.pictures,
+  ].filter(Boolean);
+  for (const arr of listCandidates) {
+    if (Array.isArray(arr)) {
+      fallback = arr.map(resolveImageUrl).filter(Boolean);
+      break;
+    } else if (typeof arr === "string") {
+      fallback = arr
+        .split(",")
+        .map((s) => resolveImageUrl(s.trim()))
+        .filter(Boolean);
+      break;
+    }
+  }
+
+  // Ưu tiên front/back; nếu không có thì trả mảng fallback
+  const pair = [front, back].filter(Boolean);
+  return pair.length ? pair : fallback.slice(0, 2);
+}
 
 const KYCTab = () => {
-  const { kycList, loadKyc, approveKyc, rejectKyc, loading, isInitialLoading } =
-    useKyc();
-
-  const [selected, setSelected] = useState(null);
-  const [rejectModal, setRejectModal] = useState({ open: false, id: null });
+  const { list, reload, approve, reject, loading, initial, loadUserInfo } =
+    usePendingKyc();
+  const [detail, setDetail] = useState(null);
+  const [reasonModal, setReasonModal] = useState({ open: false, id: null });
   const [reason, setReason] = useState("");
 
-  // helper: nhận diện chuỗi giống email
-  const isEmailLike = (v) => typeof v === "string" && /\S+@\S+\.\S+/.test(v);
+  const columns = useMemo(
+    () => [
+      {
+        title: "ID",
+        dataIndex: "id",
+        key: "id",
+        width: 80,
+        render: (v) => `#${v}`,
+      },
+      { title: "User ID", dataIndex: "userId", key: "userId" },
+      {
+        title: "Gửi lúc",
+        key: "createdAt",
+        render: (_, r) => vnDate(r.createdAt || r.created_at),
+      },
+      {
+        title: "Trạng thái",
+        dataIndex: "status",
+        key: "status",
+        render: (s) => (
+          <Tag color={statusTag(s).color}>{statusTag(s).text}</Tag>
+        ),
+      },
+      {
+        title: "Ảnh",
+        key: "images",
+        render: (_, r) => {
+          const imgs = extractKycImages(r);
+          if (!imgs.length) return "—";
+          return (
+            <Space>
+              {imgs.map((u, i) => (
+                <Image
+                  key={i}
+                  src={u}
+                  width={48}
+                  height={36}
+                  style={{ objectFit: "cover", borderRadius: 6 }}
+                />
+              ))}
+            </Space>
+          );
+        },
+      },
+      {
+        title: "Thao tác",
+        key: "actions",
+        width: 240,
+        render: (_, r) => (
+          <Space>
+            <Button onClick={() => openDetail(r)}>Chi tiết</Button>
+            <Button
+              type="primary"
+              loading={loading}
+              onClick={() => approveConfirm(r.id)}
+            >
+              Duyệt
+            </Button>
+            <Button
+              danger
+              loading={loading}
+              onClick={() => setReasonModal({ open: true, id: r.id })}
+            >
+              Từ chối
+            </Button>
+          </Space>
+        ),
+      },
+    ],
+    [loading]
+  );
 
-  // ✅ Tên KHÔNG bao giờ rơi về email; không dùng username để tránh username=email
-  const safeName = (r) => {
-    const candidates = [
-      r?._fullName,
-      r?.fullName,
-      r?.fullname,
-      r?.name,
-      r?.user?.fullName,
-      r?.user?.fullname,
-      r?.user?.name,
-    ];
-    const picked = candidates.find((v) => v && !isEmailLike(v));
-    return picked || "N/A";
+  const approveConfirm = (id) => {
+    Modal.confirm({
+      title: "Xác nhận duyệt KYC?",
+      icon: <ExclamationCircleOutlined />,
+      okText: "Duyệt",
+      cancelText: "Hủy",
+      onOk: async () => {
+        await approve(id);
+      },
+    });
   };
 
-  const safeEmail = (r) => r?._email || r?.email || r?.user?.email || "—";
-
-  const safePhone = (r) =>
-    r?._phone ||
-    r?.phone ||
-    r?.phoneNumber ||
-    r?.user?.phone ||
-    r?.user?.phoneNumber ||
-    "—";
-
-  const fImg = (r) =>
-    resolveImageUrl(
-      r?.frontIdImage || r?.frontImage || r?.front_id_image || ""
-    );
-  const bImg = (r) =>
-    resolveImageUrl(r?.backIdImage || r?.backImage || r?.back_id_image || "");
-
-  const handleApprove = async (id) => {
-    try {
-      await approveKyc(id);
-      await loadKyc();
-    } catch (err) {
-      showErrorNotification(err?.message || "Lỗi khi duyệt KYC");
-    }
-  };
-
-  const openReject = (id) => {
-    setRejectModal({ open: true, id });
+  const doReject = async () => {
+    const id = reasonModal.id;
+    if (!id) return;
+    const text = reason.trim();
+    if (text.length < 3) return;
+    await reject(id, text);
     setReason("");
+    setReasonModal({ open: false, id: null });
   };
 
-  const confirmReject = async () => {
-    if (!reason.trim())
-      return showErrorNotification("Vui lòng nhập lý do từ chối");
-    try {
-      await rejectKyc(rejectModal.id, reason);
-      setRejectModal({ open: false, id: null });
-      setReason("");
-      await loadKyc();
-    } catch (err) {
-      showErrorNotification(err?.message || "Lỗi khi từ chối KYC");
-    }
+  const openDetail = async (rec) => {
+    const userResp = await loadUserInfo(rec.id);
+    // unwrap nếu BE trả {code, message, data}
+    const user = userResp?.data ?? userResp?.user ?? userResp ?? null;
+    setDetail({ ...rec, __user: user });
   };
 
-  const columns = [
-    { title: "ID", dataIndex: "id", key: "id", render: (v) => `#${v}` },
-    { title: "Người dùng", key: "userInfo", render: (_, r) => safeName(r) },
-    {
-      title: "Email",
-      key: "email",
-      render: (_, r) => safeEmail(r),
-      responsive: ["lg"],
-    },
-    {
-      title: "SĐT",
-      key: "phone",
-      render: (_, r) => safePhone(r),
-      responsive: ["lg"],
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (s) => <Tag color={getStatusColor(s)}>{getStatusText(s)}</Tag>,
-    },
-    {
-      title: "Ngày nộp",
-      dataIndex: "submittedAt",
-      key: "submittedAt",
-      render: (d, r) => formatDate(d || r.createdAt || r.created_at),
-    },
-    {
-      title: "Ảnh",
-      key: "images",
-      render: (_, r) => (
-        <Space size={8}>
-          {fImg(r) ? (
-            <Image
-              src={fImg(r)}
-              width={48}
-              height={30}
-              style={{ objectFit: "cover", borderRadius: 4 }}
-              alt="front"
-              preview={{ mask: "Mặt trước" }}
-            />
-          ) : (
-            <div
-              style={{
-                width: 48,
-                height: 30,
-                background: "#eee",
-                borderRadius: 4,
-                fontSize: 8,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#999",
-              }}
-            >
-              CCCD Front
-            </div>
-          )}
-          {bImg(r) ? (
-            <Image
-              src={bImg(r)}
-              width={48}
-              height={30}
-              style={{ objectFit: "cover", borderRadius: 4 }}
-              alt="back"
-              preview={{ mask: "Mặt sau" }}
-            />
-          ) : (
-            <div
-              style={{
-                width: 48,
-                height: 30,
-                background: "#eee",
-                borderRadius: 4,
-                fontSize: 8,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#999",
-              }}
-            >
-              CCCD Back
-            </div>
-          )}
-        </Space>
-      ),
-      responsive: ["md"],
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      render: (_, rec) => (
-        <Space>
-          <Button onClick={() => setSelected(rec)}>Xem</Button>
-          {String(rec.status || "").toUpperCase() === "PENDING" && (
-            <>
-              <Button type="primary" onClick={() => handleApprove(rec.id)}>
-                Duyệt
-              </Button>
-              <Button danger onClick={() => openReject(rec.id)}>
-                Từ chối
-              </Button>
-            </>
-          )}
-        </Space>
-      ),
-    },
-  ];
+  const imgs = extractKycImages(detail || {});
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: 16,
-        }}
-      >
-        <h3>Danh sách KYC đang chờ</h3>
-        <Space>
-          <Button onClick={loadKyc}>Làm mới</Button>
-          <div style={{ color: "#666" }}>{(kycList || []).length} hồ sơ</div>
-        </Space>
-      </div>
+      <Space style={{ marginBottom: 12 }}>
+        <Button icon={<ReloadOutlined />} onClick={reload}>
+          Tải lại
+        </Button>
+      </Space>
 
-      {isInitialLoading ? (
-        <div style={{ textAlign: "center", padding: 40 }}>
-          <Spin spinning tip="Đang tải danh sách KYC...">
-            <div style={{ height: 100 }} />
-          </Spin>
-        </div>
-      ) : (
-        <Table
-          dataSource={kycList || []}
-          columns={columns}
-          rowKey={(r) => r.id}
-          pagination={{ pageSize: 10 }}
-          loading={loading}
-        />
-      )}
+      <Table
+        rowKey={(r) => r.id}
+        loading={initial}
+        columns={columns}
+        dataSource={list}
+        pagination={{ pageSize: 10 }}
+      />
 
-      {/* Modal chi tiết */}
+      {/* Modal từ chối */}
       <Modal
-        title="Chi tiết KYC"
-        open={!!selected}
-        footer={null}
-        onCancel={() => setSelected(null)}
-        width={900}
-      >
-        {selected && (
-          <div>
-            <div style={{ marginBottom: 8 }}>
-              <strong>Họ tên:</strong> {safeName(selected)}
-            </div>
-            <div style={{ marginBottom: 8 }}>
-              <strong>Email:</strong> {safeEmail(selected)}
-            </div>
-            <div style={{ marginBottom: 8 }}>
-              <strong>SĐT:</strong> {safePhone(selected)}
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 16,
-                marginTop: 16,
-              }}
-            >
-              <div>
-                <b>Mặt trước:</b>
-                <div style={{ marginTop: 8 }}>
-                  {fImg(selected) ? (
-                    <Image
-                      src={fImg(selected)}
-                      width={320}
-                      style={{ borderRadius: 8 }}
-                      alt="front"
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: 320,
-                        height: 200,
-                        background: "#eee",
-                        borderRadius: 8,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "#999",
-                        fontSize: 28,
-                      }}
-                    >
-                      CCCD Front
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <b>Mặt sau:</b>
-                <div style={{ marginTop: 8 }}>
-                  {bImg(selected) ? (
-                    <Image
-                      src={bImg(selected)}
-                      width={320}
-                      style={{ borderRadius: 8 }}
-                      alt="back"
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: 320,
-                        height: 200,
-                        background: "#eee",
-                        borderRadius: 8,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "#999",
-                        fontSize: 28,
-                      }}
-                    >
-                      CCCD Back
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </Modal>
-
-      {/* Modal nhập lý do từ chối */}
-      <Modal
-        title="Nhập lý do từ chối KYC"
-        open={rejectModal.open}
-        onCancel={() => setRejectModal({ open: false, id: null })}
-        onOk={confirmReject}
+        title="Nhập lý do từ chối"
+        open={reasonModal.open}
+        onCancel={() => setReasonModal({ open: false, id: null })}
+        onOk={doReject}
+        okButtonProps={{ disabled: !reason.trim() || reason.trim().length < 3 }}
       >
         <Input.TextArea
           rows={4}
+          placeholder="Lý do (tối thiểu 3 ký tự)"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          placeholder="Nhập lý do..."
         />
+      </Modal>
+
+      {/* Modal chi tiết */}
+      <Modal
+        title={`Chi tiết KYC #${detail?.id ?? "—"}`}
+        open={!!detail}
+        onCancel={() => setDetail(null)}
+        footer={null}
+        width={920}
+      >
+        {detail && (
+          <Row gutter={16}>
+            <Col span={12}>
+              <div style={{ marginBottom: 8 }}>
+                <b>User ID:</b> {detail.userId}
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <b>Gửi lúc:</b> {vnDate(detail.createdAt || detail.created_at)}
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <b>Trạng thái:</b> {statusTag(detail.status).text}
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <b>User:</b>{" "}
+                {detail.__user?.username || detail.__user?.email || "—"}
+              </div>
+              <pre
+                style={{
+                  background: "#f5f5f5",
+                  padding: 12,
+                  borderRadius: 8,
+                  maxHeight: 260,
+                  overflow: "auto",
+                }}
+              >
+                {JSON.stringify(detail.__user ?? {}, null, 2)}
+              </pre>
+            </Col>
+
+            <Col span={12}>
+              {imgs.length ? (
+                <Image.PreviewGroup>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr",
+                      gap: 8,
+                    }}
+                  >
+                    {imgs.map((u, i) => (
+                      <Image key={i} src={u} width="100%" />
+                    ))}
+                  </div>
+                </Image.PreviewGroup>
+              ) : (
+                <Empty description="Không có ảnh" />
+              )}
+            </Col>
+          </Row>
+        )}
       </Modal>
     </div>
   );
