@@ -38,38 +38,11 @@ const AdminPage = ({ user }) => {
     totalRevenue: 1250000000,
   });
 
-  const [orders] = useState([
-    {
-      id: 1,
-      customer: "Nguyễn Văn A",
-      product: "Pin Lithium-ion 48V 20Ah",
-      amount: 2500000,
-      status: "completed",
-      date: "2024-01-20",
-    },
-    {
-      id: 2,
-      customer: "Trần Thị B",
-      product: "Xe điện VinFast Klara S",
-      amount: 15000000,
-      status: "pending",
-      date: "2024-01-22",
-    },
-    {
-      id: 3,
-      customer: "Lê Văn C",
-      product: "Pin sắt phosphate 60V 30Ah",
-      amount: 3200000,
-      status: "cancelled",
-      date: "2024-01-25",
-    },
-  ]);
-
   // Load users từ API - chỉ load khi cần thiết
   const loadUsers = useCallback(async () => {
     // Tránh load users khi không cần thiết
-    if (activeTab !== "users") {
-      console.log("🚫 Skipping loadUsers - not on users tab");
+    if (activeTab !== "users" && activeTab !== "dashboard") {
+      console.log("🚫 Skipping loadUsers - not on users or dashboard tab");
       return;
     }
 
@@ -177,15 +150,15 @@ const AdminPage = ({ user }) => {
     );
 
     // Chỉ load users khi:
-    // 1. Đang ở tab users
+    // 1. Đang ở tab users hoặc dashboard
     // 2. User đã được authenticate
     // 3. Chưa có data hoặc đang loading hoặc là manual update
     if (
-      activeTab === "users" &&
+      (activeTab === "users" || activeTab === "dashboard") &&
       user &&
       (users.length === 0 || loading || isManualUpdate)
     ) {
-      console.log("🔄 Tab changed to users, loading users...");
+      console.log(`🔄 Tab changed to ${activeTab}, loading users...`);
       loadUsers();
     }
   }, [activeTab, user, loadUsers, users.length, loading, isManualUpdate]);
@@ -517,7 +490,7 @@ const AdminPage = ({ user }) => {
             {/* Dashboard Tab */}
             {activeTab === "dashboard" && (
               <div key="dashboard-content">
-                <DashboardTab stats={stats} orders={orders} />
+                <DashboardTab stats={stats} users={users} />
               </div>
             )}
 
