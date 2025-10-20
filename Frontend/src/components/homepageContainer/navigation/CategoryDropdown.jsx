@@ -1,37 +1,29 @@
 import { useState, useRef, useEffect } from "react";
 import { FaMotorcycle } from "react-icons/fa";
-import { MdElectricBike } from "react-icons/md";
 import { HiBattery100 } from "react-icons/hi2";
 import { Link } from "react-router-dom";
-// Hardcode minimal categories to avoid mock data dependency
-const categoryData = {
-  vehicle: {
-    title: <i className="bi bi-ev-front"> Phương tiện điện</i>,
-    children: {
-      "electric-scooter": { title: <><FaMotorcycle /> Xe máy điện</> },
-      "electric-bicycle": { title: <><MdElectricBike /> Xe đạp điện</> }
-    }
-  },
-  battery: {
-    title: <><HiBattery100 /> Pin/Ắc quy</>,
-    children: {
-      "battery-charger": { title: <><i className="bi bi-battery-charging"></i> Pin/Ắc quy</> }
-    }
-  }
-};
 import { ChevronDown } from "lucide-react";
 
+// Dữ liệu categories - mapping với CategoryPage
+const categoryData = {
+  "electric-scooter": {
+    title: <><FaMotorcycle /> Xe máy điện</>
+  },
+  "battery": {
+    title: <><HiBattery100 /> Pin/Ắc quy</>
+  }
+};
+
 const CategoryDropdown = () => {
+  // State quản lý dropdown
   const [isOpen, setIsOpen] = useState(false);
-  const [activeParent, setActiveParent] = useState(null);
   const dropdownRef = useRef(null);
 
-  // Xử lý click outside để đóng dropdown
+  // Đóng dropdown khi click outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
-        setActiveParent(null);
       }
     };
 
@@ -44,20 +36,14 @@ const CategoryDropdown = () => {
     };
   }, [isOpen]);
 
-  // Toggle dropdown khi click vào button
+  // Toggle dropdown
   const handleToggle = () => {
     setIsOpen(!isOpen);
-    setActiveParent(null); // Reset activeParent mỗi khi toggle
-  };
-
-  // Reset activeParent khi hover ra ngoài menu
-  const handleMenuLeave = () => {
-    setActiveParent(null);
   };
 
   return (
     <div ref={dropdownRef} className="me-3 position-relative">
-      {/* Button trigger */}
+      {/* Button trigger dropdown */}
       <button
         className="btn btn-link text-dark text-decoration-none"
         onClick={handleToggle}
@@ -66,55 +52,30 @@ const CategoryDropdown = () => {
         <ChevronDown size={16} className="ms-2" />
       </button>
 
-      {/* Dropdown Menu */}
+      {/* Dropdown menu - hiển thị khi isOpen = true */}
       {isOpen && (
         <div
-          className="position-absolute bg-white border shadow-lg d-flex"
+          className="position-absolute bg-white border shadow-lg"
           style={{
             top: '100%',
             left: 0,
-            minWidth: activeParent ? "400px" : "200px",
+            minWidth: "200px",
             zIndex: 1050
           }}
-          onMouseLeave={handleMenuLeave}
         >
-          {/* Cột bên trái: cha */}
-          <div style={{
-            width: activeParent ? "40%" : "100%",
-            borderRight: activeParent ? "1px solid #eee" : "none"
-          }}>
-            {Object.entries(categoryData).map(([key, cat]) => (
-              <div
-                key={key}
-                className={`p-2 ${activeParent === key ? "bg-light" : ""}`}
-                style={{ cursor: 'pointer' }}
-                onMouseEnter={() => setActiveParent(key)}
-              >
-                {cat.title}
-              </div>
-            ))}
-          </div>
-
-          {/* Cột bên phải: chỉ hiển thị khi hover vào cha */}
-          {activeParent && categoryData[activeParent]?.children && (
-            <div style={{ width: "60%" }}>
-              <div className="p-2">
-                {Object.entries(categoryData[activeParent].children).map(([childKey, child]) => (
-                  <Link
-                    key={childKey}
-                    to={`/products/${childKey}`}
-                    className="d-block text-decoration-none text-dark p-1"
-                    style={{ cursor: 'pointer' }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                    onClick={() => setIsOpen(false)} // Đóng dropdown khi click
-                  >
-                    {child.title}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
+          {Object.entries(categoryData).map(([key, cat]) => (
+            <Link
+              key={key}
+              to={`/products/${key}`}
+              className="d-block text-decoration-none text-dark p-3"
+              style={{ cursor: 'pointer' }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+              onClick={() => setIsOpen(false)}
+            >
+              {cat.title}
+            </Link>
+          ))}
         </div>
       )}
     </div>

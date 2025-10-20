@@ -81,20 +81,14 @@ export default function useProducts() {
         if (!type && productTypeUpper) {
           // Map từ enum BE sang route FE
           // VEHICLE => electric-scooter (hiển thị chung cho phương tiện)
-          // BATTERY => battery-charger
-          if (productTypeUpper === "VEHICLE") type = "electric-scooter";
-          if (productTypeUpper === "BATTERY") type = "battery-charger";
+          // BATTERY => battery
+          if (productTypeUpper === 'VEHICLE') type = 'electric-scooter';
+          if (productTypeUpper === 'BATTERY') type = 'battery';
         }
-
-        // Nếu Backend trả về VEHICLE, cần xác định là ELECTRIC_SCOOTER hay ELECTRIC_BIKE
-        // Dựa vào vehicle.brand hoặc logic khác
+        
+        // Sử dụng productType từ backend trực tiếp
         let finalProductType = productTypeUpper;
-        if (productTypeUpper === "VEHICLE") {
-          // Tạm thời map VEHICLE thành ELECTRIC_SCOOTER
-          // Có thể cần logic phức tạp hơn để phân biệt xe máy và xe đạp
-          finalProductType = "ELECTRIC_SCOOTER";
-        }
-        const mileage = String(p.mileage || p.kilometers || "");
+        const mileage = String(p.mileage || p.kilometers || '');
         const priceNumber = p.price || p.listPrice || p.amount || 0;
         // Format giá tiền theo định dạng Việt Nam
         const price =
@@ -126,7 +120,7 @@ export default function useProducts() {
           year,
           price,
           image,
-          productType: finalProductType, // Sử dụng finalProductType đã map
+          productType: finalProductType, // Sử dụng productType từ backend
           SellerInfo: { sellerAddress },
           isActive,
         };

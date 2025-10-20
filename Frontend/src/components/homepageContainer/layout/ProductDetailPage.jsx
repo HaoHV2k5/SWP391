@@ -1,4 +1,4 @@
-import { Container, Row, Col, Spinner, Alert } from "react-bootstrap";
+import { Container, Spinner, Alert } from "react-bootstrap";
 import { useProductDetailLogic } from "../../../hooks/useProductDetail";
 import { useSavedProducts } from "../contexts/SavedProductsContext";
 import "../styles/ProductDetail.css";
@@ -56,7 +56,7 @@ const ProductDetailPage = () => {
               <a href={(() => {
                 // Map productType từ backend sang URL slug
                 const typeMapping = {
-                  'VEHICLE': 'vehicle',  // Backend chỉ có VEHICLE chung
+                  'VEHICLE': 'electric-scooter',  // VEHICLE dẫn đến xe máy điện
                   'BATTERY': 'battery'
                 };
                 const urlSlug = typeMapping[data.productType] || 'battery';
