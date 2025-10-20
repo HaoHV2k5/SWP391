@@ -508,8 +508,14 @@ const UsersTab = ({
                           padding: "0.25rem 0.75rem",
                           borderRadius: "15px",
                           fontSize: "0.8rem",
-                          backgroundColor: "#28a74520",
-                          color: "#28a745",
+                          backgroundColor:
+                            user.status || user.isActive
+                              ? "#28a74520"
+                              : "#dc354520",
+                          color:
+                            user.status || user.isActive
+                              ? "#28a745"
+                              : "#dc3545",
                         }}
                       >
                         {user.status || user.isActive
