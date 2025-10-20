@@ -1,346 +1,148 @@
-import { Eye, Check, X, Clock, RefreshCw } from "lucide-react";
-import { useState, useEffect } from "react";
+// src/components/staff/CustomersTab.jsx
+import React, { useState, useEffect } from "react";
+import { Table, Button, Modal, Spin, Space } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
+import { useStaff } from "../../hooks/useStaff";
+import { showErrorNotification } from "../utils/notificationManager";
 
-// Import custom hooks and components
-import { useKyc } from "../../hooks/useStaff";
-import { LoadingSpinner, ActionButtons, RefreshButton, Modal } from "./common/StaffComponents";
-import { showErrorNotification } from "../../utils/notificationManager";
-import { formatDate } from "../../utils/staffUtils";
+const CustomersTab = () => {
+  const { loadKyc, kycList, approveKyc, rejectKyc, loading } = useStaff();
 
-const CustomersTab = ({
-  kycList: externalKycList,
-  setKycList: externalSetKycList,
-  getStatusColor,
-  getStatusText,
-  loading: externalLoading,
-  setLoading: externalSetLoading,
-}) => {
-  const [selectedKyc, setSelectedKyc] = useState(null);
-  const [showRejectModal, setShowRejectModal] = useState(false);
-  const [rejectReason, setRejectReason] = useState("");
+  const [reasonModal, setReasonModal] = useState({ open: false, id: null });
+  const [reason, setReason] = useState("");
+  const [detailUser, setDetailUser] = useState(null);
 
-  // Use custom hook for KYC management
-  const kycHook = useKyc();
+  useEffect(() => {
+    loadKyc();
+  }, [loadKyc]);
 
-  // Use external props if provided, otherwise use hook data
-  const kycList = externalKycList || kycHook.kycList;
-  const setKycList = externalSetKycList || kycHook.setKycList;
-  const loading = externalLoading || kycHook.loading;
-  const isInitialLoading = kycHook.isInitialLoading;
-  const handleRefresh = kycHook.loadKyc;
-  const handleApproveKyc = kycHook.approveKyc;
-  const handleRejectKyc = kycHook.rejectKyc;
+  const columns = [
+    {
+      title: "ID",
+      dataIndex: "id",
+      width: 70,
+      render: (v) => `#${v}`,
+    },
+    {
+      title: "Họ tên",
+      dataIndex: "fullName",
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      render: (s) => (s === "PENDING" ? "Đang chờ" : s),
+    },
+    {
+      title: "Thao tác",
+      render: (_, r) => (
+        <Space>
+          <Button onClick={() => setDetailUser(r)}>Xem</Button>
+          {r.status === "PENDING" && (
+            <>
+              <Button type="primary" onClick={() => approveKyc(r.id)}>
+                Duyệt
+              </Button>
+              <Button
+                danger
+                onClick={() => setReasonModal({ open: true, id: r.id })}
+              >
+                Từ chối
+              </Button>
+            </>
+          )}
+        </Space>
+      ),
+    },
+  ];
+
+  const confirmReject = async () => {
+    if (!reason.trim()) {
+      showErrorNotification("Vui lòng nhập lý do từ chối");
+      return;
+    }
+    try {
+      await rejectKyc(reasonModal.id, reason);
+      setReasonModal({ open: false, id: null });
+      setReason("");
+      await loadKyc();
+    } catch (err) {
+      showErrorNotification(err.message || "Lỗi khi từ chối KYC");
+    }
+  };
 
   return (
-    <div className="staff-card">
+    <div>
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "2rem",
+          marginBottom: 16,
         }}
       >
-        <h3>Duyệt KYC chờ phê duyệt</h3>
-        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-          <RefreshButton 
-            onRefresh={handleRefresh}
-            loading={loading || isInitialLoading}
-          />
-          <span style={{ color: "#666", fontSize: "0.9rem" }}>
-            Tổng: {kycList.length} KYC
-          </span>
-        </div>
+        <h3>Danh sách KYC</h3>
+        <Button icon={<ReloadOutlined />} onClick={loadKyc}>
+          Làm mới
+        </Button>
       </div>
 
-      {/* Loading state */}
-      {isInitialLoading && (
-        <LoadingSpinner text="Đang tải dữ liệu KYC..." />
-      )}
-
-      {/* Table */}
-      {!isInitialLoading && (
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ borderBottom: "2px solid #e9ecef" }}>
-                <th style={{ padding: "1rem", textAlign: "left" }}>ID</th>
-                <th style={{ padding: "1rem", textAlign: "left" }}>Họ tên</th>
-                <th style={{ padding: "1rem", textAlign: "left" }}>Email</th>
-                <th style={{ padding: "1rem", textAlign: "left" }}>
-                  Số điện thoại
-                </th>
-                <th style={{ padding: "1rem", textAlign: "left" }}>Trạng thái</th>
-                <th style={{ padding: "1rem", textAlign: "left" }}>Ngày nộp</th>
-                <th style={{ padding: "1rem", textAlign: "left" }}>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {kycList.length === 0 ? (
-                <tr>
-                  <td colSpan="7" style={{ padding: "2rem", textAlign: "center", color: "#666" }}>
-                    Chưa có dữ liệu KYC
-                  </td>
-                </tr>
-              ) : (
-                kycList.map((kyc) => (
-                  <tr key={kyc.id} style={{ borderBottom: "1px solid #e9ecef" }}>
-                    <td style={{ padding: "1rem" }}>#{kyc.id}</td>
-                    <td style={{ padding: "1rem" }}>
-                      {kyc.fullName || kyc.fullname || kyc.name || "N/A"}
-                    </td>
-                    <td style={{ padding: "1rem" }}>
-                      {kyc.email || kyc.userEmail || "N/A"}
-                    </td>
-                    <td style={{ padding: "1rem" }}>
-                      {kyc.phone || kyc.phoneNumber || kyc.phone_number || "N/A"}
-                    </td>
-                    <td style={{ padding: "1rem" }}>
-                      <span
-                        style={{
-                          padding: "0.25rem 0.75rem",
-                          borderRadius: "15px",
-                          fontSize: "0.8rem",
-                          backgroundColor: getStatusColor(kyc.status) + "20",
-                          color: getStatusColor(kyc.status),
-                        }}
-                      >
-                        {getStatusText(kyc.status)}
-                      </span>
-                    </td>
-                    <td style={{ padding: "1rem" }}>
-                      {formatDate(kyc.submittedAt || kyc.createdAt || kyc.created_at || kyc.submitDate)}
-                    </td>
-                    <td style={{ padding: "1rem" }}>
-                      <ActionButtons
-                        onView={() => setSelectedKyc(kyc)}
-                        onApprove={() => handleApproveKyc(kyc.id)}
-                        onReject={() => {
-                          setSelectedKyc(kyc);
-                          setShowRejectModal(true);
-                        }}
-                        status={kyc.status}
-                        loading={loading}
-                      />
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      {loading ? (
+        <div style={{ textAlign: "center", padding: 40 }}>
+          <Spin spinning={loading} tip="Đang tải danh sách KYC...">
+            <div style={{ height: 100 }} />
+          </Spin>
         </div>
+      ) : (
+        <Table
+          dataSource={kycList || []}
+          columns={columns}
+          rowKey={(r) => r.id}
+          pagination={{ pageSize: 10 }}
+        />
       )}
 
-      {/* Modal xem chi tiết KYC */}
-      {selectedKyc && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: "darkslateblue",
-              padding: "2rem",
-              borderRadius: "8px",
-              maxWidth: "600px",
-              width: "90%",
-              maxHeight: "80vh",
-              overflowY: "auto",
-            }}
-          >
-            <h3 style={{ marginBottom: "1rem" }}>Chi tiết KYC</h3>
-            <div style={{ marginBottom: "1rem" }}>
-              <strong>Họ tên:</strong> {selectedKyc.fullName || selectedKyc.fullname || selectedKyc.name || "N/A"}
-            </div>
-            <div style={{ marginBottom: "1rem" }}>
-              <strong>Email:</strong> {selectedKyc.email || selectedKyc.userEmail || "N/A"}
-            </div>
-            <div style={{ marginBottom: "1rem" }}>
-              <strong>Số điện thoại:</strong> {selectedKyc.phone || selectedKyc.phoneNumber || selectedKyc.phone_number || "N/A"}
-            </div>
-            <div style={{ marginBottom: "1rem" }}>
-              <strong>Trạng thái:</strong>
-              <span
-                style={{
-                  padding: "0.25rem 0.75rem",
-                  borderRadius: "15px",
-                  fontSize: "0.8rem",
-                  backgroundColor: getStatusColor(selectedKyc.status) + "20",
-                  color: getStatusColor(selectedKyc.status),
-                  marginLeft: "0.5rem",
-                }}
-              >
-                {getStatusText(selectedKyc.status)}
-              </span>
-            </div>
-            <div style={{ marginBottom: "1rem" }}>
-              <strong>Ngày nộp:</strong> {formatDate(selectedKyc.submittedAt || selectedKyc.createdAt || selectedKyc.created_at || selectedKyc.submitDate)}
-            </div>
-            <div style={{ marginBottom: "1rem" }}>
-              <strong>Ảnh CCCD mặt trước:</strong>
-              <div style={{ marginTop: "0.5rem" }}>
-                <img
-                  src={`/images/${selectedKyc.frontImage || selectedKyc.front_image || selectedKyc.frontIdImage || selectedKyc.idCardFront}`}
-                  alt="CCCD mặt trước"
-                  style={{
-                    maxWidth: "200px",
-                    height: "auto",
-                    border: "1px solid #ddd",
-                  }}
-                  onError={(e) => {
-                    e.target.style.display = "none";
-                    e.target.nextSibling.style.display = "block";
-                  }}
-                />
-                <div
-                  style={{
-                    display: "none",
-                    padding: "1rem",
-                    border: "1px solid #ddd",
-                    backgroundColor: "peachpuff",
-                  }}
-                >
-                  Ảnh không khả dụng
-                </div>
-              </div>
-            </div>
-            <div style={{ marginBottom: "1rem" }}>
-              <strong>Ảnh CCCD mặt sau:</strong>
-              <div style={{ marginTop: "0.5rem" }}>
-                <img
-                  src={`/images/${selectedKyc.backImage || selectedKyc.back_image || selectedKyc.backIdImage || selectedKyc.idCardBack}`}
-                  alt="CCCD mặt sau"
-                  style={{
-                    maxWidth: "200px",
-                    height: "auto",
-                    border: "1px solid #ddd",
-                  }}
-                  onError={(e) => {
-                    e.target.style.display = "none";
-                    e.target.nextSibling.style.display = "block";
-                  }}
-                />
-                <div
-                  style={{
-                    display: "none",
-                    padding: "1rem",
-                    border: "1px solid #ddd",
-                    backgroundColor: "peachpuff",
-                  }}
-                >
-                  Ảnh không khả dụng
-                </div>
-              </div>
-            </div>
-            {selectedKyc.reason && (
-              <div style={{ marginBottom: "1rem" }}>
-                <strong>Lý do từ chối:</strong> {selectedKyc.reason}
-              </div>
-            )}
-            <div
-              style={{
-                display: "flex",
-                gap: "1rem",
-                justifyContent: "flex-end",
-              }}
-            >
-              <button
-                className="staff-btn staff-btn-secondary"
-                onClick={() => setSelectedKyc(null)}
-              >
-                Đóng
-              </button>
-            </div>
+      {/* Modal từ chối */}
+      <Modal
+        title="Nhập lý do từ chối"
+        open={reasonModal.open}
+        onCancel={() => setReasonModal({ open: false, id: null })}
+        onOk={confirmReject}
+        okText="Xác nhận"
+        cancelText="Hủy"
+      >
+        <textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          style={{ width: "100%", minHeight: 100 }}
+          placeholder="Nhập lý do từ chối..."
+        />
+      </Modal>
+
+      {/* Modal chi tiết */}
+      <Modal
+        title="Chi tiết người dùng"
+        open={!!detailUser}
+        footer={null}
+        onCancel={() => setDetailUser(null)}
+        width={800}
+      >
+        {detailUser && (
+          <div>
+            <p>
+              <b>Họ tên:</b> {detailUser.fullName}
+            </p>
+            <p>
+              <b>Email:</b> {detailUser.email}
+            </p>
+            <p>
+              <b>Trạng thái:</b> {detailUser.status}
+            </p>
           </div>
-        </div>
-      )}
-
-      {/* Modal từ chối KYC */}
-      {showRejectModal && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: "rosybrown",
-              padding: "2rem",
-              borderRadius: "8px",
-              maxWidth: "400px",
-              width: "90%",
-            }}
-          >
-            <h3 style={{ marginBottom: "1rem" }}>Từ chối KYC</h3>
-            <div style={{ marginBottom: "1rem" }}>
-              <label style={{ display: "block", marginBottom: "0.5rem" }}>
-                Lý do từ chối:
-              </label>
-              <textarea
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                  minHeight: "100px",
-                }}
-                placeholder="Nhập lý do từ chối KYC..."
-              />
-            </div>
-            <div
-              style={{
-                display: "flex",
-                gap: "1rem",
-                justifyContent: "flex-end",
-              }}
-            >
-              <button
-                className="staff-btn staff-btn-secondary"
-                onClick={() => {
-                  setShowRejectModal(false);
-                  setRejectReason("");
-                }}
-              >
-                Hủy
-              </button>
-              <button
-                className="staff-btn staff-btn-danger"
-              onClick={() => {
-                if (rejectReason.trim()) {
-                  handleRejectKyc(selectedKyc?.id || 1, rejectReason);
-                } else {
-                  showErrorNotification("Vui lòng nhập lý do từ chối");
-                }
-              }}
-                disabled={loading}
-              >
-                Từ chối
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </div>
   );
 };

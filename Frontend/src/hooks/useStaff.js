@@ -1,162 +1,111 @@
-/**
- * Custom Hooks for Staff functionality
- */
+// src/hooks/useStaff.js
+import { useState, useEffect, useCallback } from "react";
+import {
+  productsApi,
+  kycApi,
+  statsApi,
+  handleApiError,
+} from "../services/staffApi";
+import {
+  showSuccessNotification,
+  showErrorNotification,
+} from "../utils/notificationManager";
 
-import { useState, useEffect, useCallback } from 'react';
-import { productsApi, kycApi, statsApi, handleApiError } from '../services/staffApi';
-import { showSuccessNotification, showErrorNotification } from '../utils/notificationManager';
+import { firstNonEmpty, resolveImageUrl } from "../utils/staffUtils";
 
-/**
- * Hook để quản lý Products data và actions
- */
+/* ------------------------------------------------------------------
+   Small helper: concurrency limiter for detail enrichment
+------------------------------------------------------------------- */
+const withConcurrency = async (items, limit, worker) => {
+  const ret = new Array(items.length);
+  let idx = 0,
+    running = 0;
+
+  return new Promise((resolve) => {
+    const next = () => {
+      if (idx === items.length && running === 0) return resolve(ret);
+      while (running < limit && idx < items.length) {
+        const cur = idx++;
+        running++;
+        Promise.resolve(worker(items[cur], cur))
+          .then((v) => (ret[cur] = v))
+          .catch(() => (ret[cur] = items[cur]))
+          .finally(() => {
+            running--;
+            next();
+          });
+      }
+    };
+    next();
+  });
+};
+
+/* ------------------------------------------------------------------
+   PRODUCTS HOOK
+------------------------------------------------------------------- */
 export const useProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-  // Load products data
   const loadProducts = useCallback(async () => {
     setIsInitialLoading(true);
     try {
-      console.log("🔄 Loading Products data from API...");
-      const result = await productsApi.getPendingProducts();
-      
-      // Debug: Log the actual data structure
-      console.log("🔍 Products API Response:", result);
-      console.log("🔍 Products Data Structure:", result.data);
-      console.log("🔍 Products Data Length:", result.data?.length || 0);
-      
-      if (result.data && result.data.length > 0) {
-        console.log("🔍 First Product Item Structure:", result.data[0]);
-        console.log("🔍 First Product Item Keys:", Object.keys(result.data[0]));
-        
-        // Log all products
-        result.data.forEach((product, index) => {
-          console.log(`🔍 Product ${index + 1}:`, {
-            id: product.id,
-            title: product.title || product.name || product.productName,
-            status: product.status,
-            valid: !!(product.id && (product.title || product.name || product.productName))
-          });
-        });
+      const res = await productsApi.getPendingProducts();
+
+      const pickArray = (raw) => {
+        if (Array.isArray(raw)) return raw;
+        if (Array.isArray(raw?.content)) return raw.content;
+        if (Array.isArray(raw?.items)) return raw.items;
+        if (Array.isArray(raw?.results)) return raw.results;
+        if (Array.isArray(raw?.data)) return raw.data;
+        return [];
+      };
+
+      const raw = res?.data ?? res ?? [];
+      const data = pickArray(raw);
+
+      setProducts(data);
+      showSuccessNotification(`Đã tải ${data.length} tin đăng (chờ duyệt)`);
+    } catch (err) {
+      const msg = handleApiError(err, "Không thể tải tin đăng");
+      showErrorNotification(msg);
+      if (err?.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userData");
       }
-      
-      const validProducts = (result.data || []).filter(product => {
-        const isValid = product && product.id && (product.title || product.name || product.productName);
-        const isPending = product.status === 'PENDING';
-        
-        if (!isValid) {
-          console.log("🔍 Invalid product filtered out:", product);
-        }
-        if (!isPending) {
-          console.log("🔍 Non-pending product filtered out:", product);
-        }
-        
-        return isValid && isPending;
-      });
-      
-      console.log("🔍 Valid products count:", validProducts.length);
-      console.log("🔍 All products count:", result.data?.length || 0);
-      console.log("🔍 Filtered out:", (result.data?.length || 0) - validProducts.length, "invalid products");
-      
-      setProducts(validProducts);
-      console.log("✅ Products loaded:", validProducts.length, "valid records out of", result.data?.length || 0, "total");
-      
-      // Show notification with correct count
-      const totalProducts = result.data?.length || 0;
-      const pendingProducts = validProducts.length;
-      
-      if (pendingProducts === totalProducts) {
-        showSuccessNotification(`Đã tải ${pendingProducts} tin đăng chờ duyệt`);
-      } else {
-        showSuccessNotification(`Đã tải ${pendingProducts} tin đăng chờ duyệt (${totalProducts} tổng cộng)`);
-      }
-    } catch (error) {
-      console.error("❌ Error loading products:", error);
-      showErrorNotification(handleApiError(error, "Không thể tải dữ liệu tin đăng"));
       setProducts([]);
     } finally {
       setIsInitialLoading(false);
     }
   }, []);
 
-  // Approve product
-  const approveProduct = useCallback(async (productId) => {
+  const approveProduct = useCallback(async (id) => {
     setLoading(true);
     try {
-      console.log("✅ Approving Product ID:", productId);
-      const result = await productsApi.approveProduct(productId);
-      console.log("🔍 API Response:", result);
-      
-      // Remove the approved product from the list since it's no longer PENDING
-      // Convert both IDs to string for comparison to handle type mismatch
-      setProducts(prev => {
-        console.log("🔍 Before approval - All products:", prev.map(p => ({ id: p.id, title: p.title || p.productName })));
-        console.log("🔍 Approving product ID:", productId, "Type:", typeof productId);
-        
-        const filtered = prev.filter(p => {
-          const match = String(p.id) !== String(productId);
-          console.log(`🔍 Product ${p.id} (${typeof p.id}) vs ${productId} (${typeof productId}): ${match ? 'KEEP' : 'REMOVE'}`);
-          return match;
-        });
-        
-        console.log("📋 Products before filter:", prev.length);
-        console.log("📋 Products after filter:", filtered.length);
-        console.log("📋 Removed product ID:", productId);
-        console.log("🔍 After approval - Remaining products:", filtered.map(p => ({ id: p.id, title: p.title || p.productName })));
-        
-        return filtered;
-      });
-      
-      showSuccessNotification("Duyệt tin đăng thành công! Tin đăng đã được loại bỏ khỏi danh sách chờ duyệt.");
-      console.log("✅ Product approved and removed from list:", result.data);
-    } catch (error) {
-      console.error("❌ Error approving product:", error);
-      showErrorNotification(handleApiError(error, "Có lỗi xảy ra khi duyệt tin đăng"));
+      await productsApi.approveProduct(id);
+      showSuccessNotification("Duyệt tin đăng thành công");
+      setProducts((prev) => prev.filter((p) => String(p.id) !== String(id)));
+    } catch (err) {
+      showErrorNotification(handleApiError(err, "Không thể duyệt tin đăng"));
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Reject product
-  const rejectProduct = useCallback(async (productId, reason) => {
+  const rejectProduct = useCallback(async (id, reason) => {
     setLoading(true);
     try {
-      console.log("❌ Rejecting Product ID:", productId, "Reason:", reason);
-      const result = await productsApi.rejectProduct(productId, reason);
-      console.log("🔍 API Response:", result);
-      
-      // Remove the rejected product from the list since it's no longer PENDING
-      // Convert both IDs to string for comparison to handle type mismatch
-      setProducts(prev => {
-        console.log("🔍 Before rejection - All products:", prev.map(p => ({ id: p.id, title: p.title || p.productName })));
-        console.log("🔍 Rejecting product ID:", productId, "Type:", typeof productId);
-        
-        const filtered = prev.filter(p => {
-          const match = String(p.id) !== String(productId);
-          console.log(`🔍 Product ${p.id} (${typeof p.id}) vs ${productId} (${typeof productId}): ${match ? 'KEEP' : 'REMOVE'}`);
-          return match;
-        });
-        
-        console.log("📋 Products before filter:", prev.length);
-        console.log("📋 Products after filter:", filtered.length);
-        console.log("📋 Removed product ID:", productId);
-        console.log("🔍 After rejection - Remaining products:", filtered.map(p => ({ id: p.id, title: p.title || p.productName })));
-        
-        return filtered;
-      });
-      
-      showSuccessNotification("Từ chối tin đăng thành công! Tin đăng đã được loại bỏ khỏi danh sách chờ duyệt.");
-      console.log("✅ Product rejected and removed from list:", result.data);
-    } catch (error) {
-      console.error("❌ Error rejecting product:", error);
-      showErrorNotification(handleApiError(error, "Có lỗi xảy ra khi từ chối tin đăng"));
+      await productsApi.rejectProduct(id, reason);
+      showSuccessNotification("Từ chối tin đăng thành công");
+      setProducts((prev) => prev.filter((p) => String(p.id) !== String(id)));
+    } catch (err) {
+      showErrorNotification(handleApiError(err, "Không thể từ chối tin đăng"));
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Load products on mount
   useEffect(() => {
     loadProducts();
   }, [loadProducts]);
@@ -168,88 +117,204 @@ export const useProducts = () => {
     isInitialLoading,
     loadProducts,
     approveProduct,
-    rejectProduct
+    rejectProduct,
   };
 };
 
-/**
- * Hook để quản lý KYC data và actions
- */
+//* ---------- KYC HOOK (FIXED + ENRICH) ---------- */
 export const useKyc = () => {
   const [kycList, setKycList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-  // Load KYC data
+  const normalizeList = (payload) => {
+    if (!payload) return [];
+    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload.data)) return payload.data;
+    if (payload.data && Array.isArray(payload.data.content))
+      return payload.data.content;
+    if (Array.isArray(payload.content)) return payload.content;
+    if (Array.isArray(payload.items)) return payload.items;
+    if (Array.isArray(payload.results)) return payload.results;
+    if (Array.isArray(payload.list)) return payload.list;
+    return [];
+  };
+
+  const DEFAULT_FRONT = "https://placehold.co/600x380?text=CCCD+Front";
+  const DEFAULT_BACK = "https://placehold.co/600x380?text=CCCD+Back";
+
+  const isEmailLike = (v) => typeof v === "string" && /\S+@\S+\.\S+/.test(v);
+  const toAbs = (url) => (url ? resolveImageUrl(url) : "");
+
+  // Chỉ lấy tên từ các key tên, KHÔNG động vào username (có thể là email)
+  const pickNameOnly = (obj) =>
+    firstNonEmpty(obj?.fullName, obj?.fullname, obj?.name);
+
+  const pickImages = (detail, row) => {
+    const front =
+      firstNonEmpty(
+        detail?.frontIdImage,
+        detail?.frontImage,
+        detail?.front_id_image,
+        row?.frontIdImage,
+        row?.frontImage,
+        row?.front_id_image
+      ) || DEFAULT_FRONT;
+
+    const back =
+      firstNonEmpty(
+        detail?.backIdImage,
+        detail?.backImage,
+        detail?.back_id_image,
+        row?.backIdImage,
+        row?.backImage,
+        row?.back_id_image
+      ) || DEFAULT_BACK;
+
+    return { frontIdImage: toAbs(front), backIdImage: toAbs(back) };
+  };
+
+  const enrichOne = async (row) => {
+    try {
+      // lấy detail + cố gắng lấy user info nếu service có
+      const detailP = kycApi.getKycDetail(row.id);
+      const userP =
+        typeof kycApi.getKycUserInfo === "function"
+          ? kycApi.getKycUserInfo(row.id) // GET /kyc/{id}/infor/user
+          : Promise.resolve(null);
+
+      const [detailRes, userRes] = await Promise.allSettled([detailP, userP]);
+
+      const detail =
+        detailRes.status === "fulfilled"
+          ? detailRes.value?.data || detailRes.value || {}
+          : {};
+
+      const userInfo =
+        userRes.status === "fulfilled"
+          ? userRes.value?.data || userRes.value || {}
+          : {};
+
+      // Tập ứng viên tên: userInfo → detail → row (lọc bỏ email-like)
+      const nameCandidates = [
+        pickNameOnly(userInfo),
+        pickNameOnly(detail?.user || {}),
+        pickNameOnly(detail),
+        pickNameOnly(row?.user || {}),
+        pickNameOnly(row),
+      ].filter(Boolean);
+
+      const fullName =
+        nameCandidates.find((v) => v && !isEmailLike(v)) || "N/A";
+
+      const email =
+        firstNonEmpty(
+          userInfo?.email,
+          detail?.email,
+          detail?.user?.email,
+          row?.email,
+          row?.user?.email
+        ) || "—";
+
+      const phone =
+        firstNonEmpty(
+          userInfo?.phone,
+          userInfo?.phoneNumber,
+          detail?.phone,
+          detail?.phoneNumber,
+          detail?.user?.phone,
+          detail?.user?.phoneNumber,
+          row?.phone,
+          row?.phoneNumber,
+          row?.user?.phone,
+          row?.user?.phoneNumber
+        ) || "—";
+
+      const imgs = pickImages(detail, row);
+
+      return {
+        ...row,
+        user: detail?.user || row.user || userInfo || null,
+        _fullName: fullName, // luôn là tên, không phải email
+        _email: email,
+        _phone: phone,
+        frontIdImage: imgs.frontIdImage,
+        backIdImage: imgs.backIdImage,
+        submittedAt:
+          firstNonEmpty(
+            row.submittedAt,
+            row.createdAt,
+            row.created_at,
+            detail.submittedAt,
+            detail.createdAt,
+            detail.created_at
+          ) || null,
+      };
+    } catch {
+      const imgs = pickImages({}, row);
+      const nameFallback = firstNonEmpty(
+        row?.fullName,
+        row?.fullname,
+        row?.name // KHÔNG lấy username
+      );
+      return {
+        ...row,
+        _fullName:
+          nameFallback && !isEmailLike(nameFallback) ? nameFallback : "N/A",
+        _email: row?.email || "—",
+        _phone: firstNonEmpty(row?.phone, row?.phoneNumber) || "—",
+        frontIdImage: imgs.frontIdImage,
+        backIdImage: imgs.backIdImage,
+        submittedAt:
+          firstNonEmpty(row?.submittedAt, row?.createdAt, row?.created_at) ||
+          null,
+      };
+    }
+  };
+
   const loadKyc = useCallback(async () => {
     setIsInitialLoading(true);
     try {
-      console.log("🔄 Loading KYC data from API...");
-      const result = await kycApi.getKycList();
-      
-      // Debug: Log the actual data structure
-      console.log("🔍 KYC API Response:", result);
-      console.log("🔍 KYC Data Structure:", result.data);
-      if (result.data && result.data.length > 0) {
-        console.log("🔍 First KYC Item Structure:", result.data[0]);
-        console.log("🔍 First KYC Item Keys:", Object.keys(result.data[0]));
-      }
-      
-      setKycList(result.data || []);
-      console.log("✅ KYC loaded:", result.data?.length || 0, "records");
-      showSuccessNotification(`Đã tải ${result.data?.length || 0} hồ sơ KYC`);
-    } catch (error) {
-      console.error("❌ Error loading KYC:", error);
-      showErrorNotification(handleApiError(error, "Không thể tải dữ liệu KYC"));
+      const res = await kycApi.getKycList();
+      const raw = res?.data ?? res?.raw ?? res ?? [];
+      const list = normalizeList(raw);
+      const enriched = await withConcurrency(list, 4, enrichOne);
+      setKycList(enriched);
+      showSuccessNotification(`Đã tải ${enriched.length} hồ sơ KYC`);
+    } catch (err) {
+      showErrorNotification(handleApiError(err, "Không thể tải KYC"));
       setKycList([]);
     } finally {
       setIsInitialLoading(false);
     }
   }, []);
 
-  // Approve KYC
-  const approveKyc = useCallback(async (kycId) => {
+  const approveKyc = useCallback(async (id) => {
     setLoading(true);
     try {
-      console.log("✅ Approving KYC ID:", kycId);
-      const result = await kycApi.approveKyc(kycId);
-      
-      setKycList(prev => prev.map(k => 
-        k.id === kycId ? result.data : k
-      ));
-      
-      showSuccessNotification("Duyệt KYC thành công!");
-      console.log("✅ KYC approved:", result.data);
-    } catch (error) {
-      console.error("❌ Error approving KYC:", error);
-      showErrorNotification(handleApiError(error, "Có lỗi xảy ra khi duyệt KYC"));
+      await kycApi.approveKyc(id);
+      setKycList((prev) => prev.filter((k) => String(k.id) !== String(id)));
+      showSuccessNotification("Duyệt KYC thành công");
+    } catch (err) {
+      showErrorNotification(handleApiError(err, "Không thể duyệt KYC"));
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Reject KYC
-  const rejectKyc = useCallback(async (kycId, reason) => {
+  const rejectKyc = useCallback(async (id, reason) => {
     setLoading(true);
     try {
-      console.log("❌ Rejecting KYC ID:", kycId, "Reason:", reason);
-      const result = await kycApi.rejectKyc(kycId, reason);
-      
-      setKycList(prev => prev.map(k => 
-        k.id === kycId ? result.data : k
-      ));
-      
-      showSuccessNotification("Từ chối KYC thành công!");
-      console.log("✅ KYC rejected:", result.data);
-    } catch (error) {
-      console.error("❌ Error rejecting KYC:", error);
-      showErrorNotification(handleApiError(error, "Có lỗi xảy ra khi từ chối KYC"));
+      await kycApi.rejectKyc(id, reason);
+      setKycList((prev) => prev.filter((k) => String(k.id) !== String(id)));
+      showSuccessNotification("Từ chối KYC thành công");
+    } catch (err) {
+      showErrorNotification(handleApiError(err, "Không thể từ chối KYC"));
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Load KYC on mount
   useEffect(() => {
     loadKyc();
   }, [loadKyc]);
@@ -261,98 +326,53 @@ export const useKyc = () => {
     isInitialLoading,
     loadKyc,
     approveKyc,
-    rejectKyc
+    rejectKyc,
   };
 };
 
-/**
- * Hook để quản lý Stats data
- */
+/* ------------------------------------------------------------------
+   STATS HOOK
+------------------------------------------------------------------- */
 export const useStats = () => {
-  const [stats, setStats] = useState({
-    totalProducts: 0,
-    pendingProducts: 0,
-    approvedProducts: 0,
-    rejectedProducts: 0,
-    totalKyc: 0,
-    pendingKyc: 0,
-    approvedKyc: 0,
-  });
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Load stats
   const loadStats = useCallback(async () => {
     setLoading(true);
     try {
-      console.log("🔄 Loading stats from API...");
-      const result = await statsApi.getAllStats();
-      
-      setStats(result.data);
-      console.log("✅ Stats loaded successfully");
-    } catch (error) {
-      console.error("❌ Error loading stats:", error);
-      showErrorNotification(handleApiError(error, "Không thể tải thống kê"));
+      const res = await statsApi.getAllStats();
+      setStats(res.data || res);
+    } catch (err) {
+      showErrorNotification(handleApiError(err, "Không thể tải thống kê"));
+      setStats(null);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Update stats when products or KYC change
-  const updateStats = useCallback((products, kycList) => {
-    setStats(prev => ({
-      ...prev,
-      totalProducts: products.length,
-      pendingProducts: products.filter(p => p.status === 'PENDING').length,
-      approvedProducts: products.filter(p => p.status === 'STAFF_APPROVED' || p.status === 'ADMIN_APPROVED').length,
-      rejectedProducts: products.filter(p => p.status === 'REJECTED').length,
-      totalKyc: kycList.length,
-      pendingKyc: kycList.filter(k => k.status === 'PENDING').length,
-      approvedKyc: kycList.filter(k => k.status === 'STAFF_APPROVED' || k.status === 'ADMIN_APPROVED').length,
-    }));
-  }, []);
-
-  return {
-    stats,
-    setStats,
-    loading,
-    loadStats,
-    updateStats
-  };
+  return { stats, setStats, loading, loadStats };
 };
 
-/**
- * Hook để quản lý Staff authentication và authorization
- */
+/* ------------------------------------------------------------------
+   AUTH CHECK HOOK
+------------------------------------------------------------------- */
 export const useStaffAuth = (user, navigate) => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // Kiểm tra nếu không có user -> redirect về login
     if (!user) {
-      setIsCheckingAuth(true);
-      const timer = setTimeout(() => {
-        if (!user) {
-          navigate("/login");
-        }
-      }, 1000);
-      return () => clearTimeout(timer);
+      const t = setTimeout(() => navigate("/login"), 800);
+      return () => clearTimeout(t);
     }
-
     setIsCheckingAuth(false);
 
-    // Xác định role của user từ các cấu trúc khác nhau
     let userRole = null;
-    if (user.user && user.user.role) {
-      userRole = user.user.role;
-    } else if (user.role) {
-      userRole = user.role;
-    }
+    if (user.user && user.user.role) userRole = user.user.role;
+    else if (user.role) userRole = user.role;
 
-    // Kiểm tra quyền truy cập - chỉ cho phép ROLE_STAFF hoặc staff
     if (userRole !== "ROLE_STAFF" && userRole !== "staff") {
       navigate("/");
       showErrorNotification("Bạn không có quyền truy cập trang staff!");
-      return;
     }
   }, [user, navigate]);
 
