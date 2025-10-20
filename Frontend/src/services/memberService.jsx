@@ -74,7 +74,6 @@ export const memberService = {
     }
   },
 
-  // (Deprecated) Cập nhật avatar - đã loại bỏ, dùng chỉnh sửa hồ sơ tổng nếu cần
 
   // Đổi mật khẩu
   async changePassword(passwordData) {

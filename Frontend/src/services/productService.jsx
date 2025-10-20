@@ -58,23 +58,15 @@ const productService = {
         endpoint = "/products"; // BE hiện có GET /products trả danh sách đã post
       }
 
-      console.log("🔍 getPublicList: Using endpoint:", endpoint);
       const response = await apiClient.get(endpoint);
-      console.log("📡 getPublicList: API response:", response);
       // BE thường bọc dữ liệu trong ApiResponse { data, message }
       const data =
         response?.data?.data ?? response?.data?.content ?? response?.data;
-      console.log("📦 getPublicList: Final data:", data);
       return { success: true, data: Array.isArray(data) ? data : [] };
     } catch (error) {
-      console.error("❌ getPublicList: API error:", error);
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
-      console.error("getPublicList thất bại", {
-        endpoint,
-        status,
-        backendMessage,
-      });
+
       // Nếu không có token và bị chặn/không tìm thấy, trả rỗng để không vỡ UI
       if (
         !localStorage.getItem("token") &&
@@ -116,24 +108,19 @@ const productService = {
       let endpoint;
       if (userId) {
         endpoint = `/products/history/seller/${userId}`;
-        console.log("🔍 Using history endpoint with userId:", userId);
       } else if (username) {
         endpoint = `/products/seller?username=${encodeURIComponent(username)}`;
-        console.log("🔍 Using seller endpoint with username:", username);
       } else {
         endpoint = "/products";
-        console.log("🔍 Using public endpoint (no user info)");
       }
 
       const response = await apiClient.get(endpoint);
       const data =
         response?.data?.data ?? response?.data?.content ?? response?.data;
-      console.log("📦 Received from API:", data);
       return { success: true, data: Array.isArray(data) ? data : [] };
     } catch (error) {
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
-      console.error("❌ getMyPosts error:", { status, backendMessage });
       return {
         success: false,
         message: `Lỗi tải tin của tôi (${status || "network"}): ${
@@ -179,8 +166,23 @@ const productService = {
         formData.append("description", form.description);
       }
 
-      // KHÔNG gửi vehicle/battery nếu không có thông tin
-      // Backend sẽ tự tạo entity rỗng dựa trên productType
+      // Gửi vehicle/battery object theo yêu cầu của backend
+      if (productType === "VEHICLE") {
+        formData.append("vehicle.brand", form.brand || "Unknown");
+        formData.append("vehicle.model", form.model || "Unknown");
+        formData.append(
+          "vehicle.yearManufactured",
+          form.yearManufactured || new Date().getFullYear()
+        );
+      } else if (productType === "BATTERY") {
+        formData.append("battery.brand", form.brand || "Unknown");
+        formData.append("battery.model", form.model || "Unknown");
+        formData.append(
+          "battery.yearManufactured",
+          form.yearManufactured || new Date().getFullYear()
+        );
+        formData.append("battery.batteryLevel", form.batteryLevel || 80);
+      }
 
       // Images (nếu có)
       if (Array.isArray(form.images) && form.images.length > 0) {
@@ -384,11 +386,6 @@ const productService = {
     } catch (error) {
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
-      console.error("❌ deleteProduct error:", {
-        productId,
-        status,
-        backendMessage,
-      });
       return {
         success: false,
         message: `Lỗi xóa sản phẩm (${status || "network"}): ${
@@ -428,11 +425,6 @@ const productService = {
     } catch (error) {
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
-      console.error("❌ updateProduct error:", {
-        productId,
-        status,
-        backendMessage,
-      });
       return {
         success: false,
         message: `Lỗi cập nhật sản phẩm (${status || "network"}): ${
