@@ -1,163 +1,50 @@
 // src/services/staffApi.js
-import { API_CONFIG } from "../constants/staffConstants";
+import api from "./apiClient"; // axios instance đã có sẵn trong dự án
 
-const BASE = API_CONFIG.BASE_URL;
+/* ===== helper chung để lấy message lỗi ===== */
+export const handleApiError = (err, fb) =>
+  err?.response?.data?.message ||
+  err?.response?.data?.error ||
+  err?.message ||
+  fb ||
+  "Có lỗi xảy ra";
 
-/* ---------- helpers ---------- */
-const readResponseSafely = async (res) => {
-  try {
-    const t = await res.text();
-    if (!t) return null;
-    try {
-      return JSON.parse(t);
-    } catch {
-      return t;
-    }
-  } catch {
-    return null;
-  }
-};
-
-const headersBase = () => {
-  const token = localStorage.getItem("token");
-  const h = { Accept: "application/json" };
-  if (token) h.Authorization = `Bearer ${token}`;
-  return h;
-};
-
-const handleApiResponse = async (res) => {
-  const payload = await readResponseSafely(res);
-  if (res.status === 401) {
-    const e = new Error(payload?.message || "Unauthorized");
-    e.status = 401;
-    throw e;
-  }
-  if (!res.ok) {
-    const e = new Error(payload?.message || `HTTP ${res.status}`);
-    e.status = res.status;
-    throw e;
-  }
-  return payload ?? null;
-};
-
-const GET = async (path) => {
-  const res = await fetch(`${BASE}${path}`, { headers: headersBase() });
-  const data = await handleApiResponse(res);
-  return { success: true, data, raw: data };
-};
-
-const POST = async (path, body) => {
-  const res = await fetch(`${BASE}${path}`, {
-    method: "POST",
-    headers: {
-      ...headersBase(),
-      ...(body instanceof FormData
-        ? {}
-        : { "Content-Type": "application/json" }),
-    },
-    body: body instanceof FormData ? body : JSON.stringify(body || {}),
-  });
-  const data = await handleApiResponse(res);
-  return { success: true, data, raw: data };
-};
-
-// Ép dữ liệu về mảng an toàn
-const toArray = (data) => {
-  if (Array.isArray(data)) return data;
-  if (data?.items && Array.isArray(data.items)) return data.items;
-  if (data?.content && Array.isArray(data.content)) return data.content;
-  if (data?.data && Array.isArray(data.data)) return data.data;
-  return [];
-};
-
-/* ---------- PRODUCTS (đúng spec) ---------- */
+/* ---------- PRODUCTS (Tin đăng) ---------- */
 export const productsApi = {
-  // GET/products/pending/seller/staff
-  getPendingProducts: () => GET(`/products/pending/seller/staff`),
+  // Danh sách tin đăng PENDING + kèm seller info
+  getPending: () => api.get(`/products/pending/seller/staff`),
 
-  // POST/products/{id}/approve/staff
-  approveProduct: (id) => POST(`/products/${id}/approve/staff`),
+  // Duyệt tin → staff-approved
+  approve: (id) => api.post(`/products/${id}/approve/staff`),
 
-  // POST/products/{id}/reject  (kèm reason)
-  rejectProduct: (id, reason) => POST(`/products/${id}/reject`, { reason }),
+  // Từ chối tin + lý do
+  reject: (id, reason) => api.post(`/products/${id}/reject`, { reason }),
 
-  // tuỳ bạn còn dùng hay không; giữ lại cho an toàn
-  getProductDetail: (id) => GET(`/products/${id}`),
+  // (tuỳ BE) Thử lấy chi tiết nếu Swagger có endpoint này; nếu không có cũng không sao.
+  getDetail: (id) => api.get(`/products/${id}`),
 
-  // nếu cần lấy seller theo productId (không có trong spec, nhưng để dự phòng)
-  getSellerByProductId: (id) => GET(`/products/seller/${id}`),
+  updateImages: (id, images) => api.put(`/products/update`, { id, images }), // { id: number, images: string[] }
 };
 
-/* ---------- KYC (đúng spec) ---------- */
+/* ---------- KYC ---------- */
 export const kycApi = {
-  // GET/kyc/staff
-  getKycList: () => GET(`/kyc/staff`),
+  // Danh sách KYC PENDING
+  getPending: () => api.get(`/kyc/staff`),
 
-  // GET/kyc/{id}/infor/user  (thông tin seller đã gửi KYC)
-  getKycDetail: (id) => GET(`/kyc/${id}/infor/user`),
+  // Thông tin user của KYC
+  getUserInfo: (id) => api.get(`/kyc/${id}/infor/user`),
 
-  // POST/kyc/{id}/staff/approve
-  approveKyc: (id) => POST(`/kyc/${id}/staff/approve`),
+  // Duyệt KYC
+  approve: (id) => api.post(`/kyc/${id}/staff/approve`),
 
-  // POST/kyc/{id}/reject (kèm reason)
-  rejectKyc: (id, reason) => POST(`/kyc/${id}/reject`, { reason }),
-
-  // ✅ NEW: lấy thông tin seller đã gửi KYC
-  getKycUserInfo: (id) => GET(`/kyc/${id}/infor/user`),
+  // Từ chối KYC + lý do
+  reject: (id, reason) => api.post(`/kyc/${id}/reject`, { reason }),
 };
 
-/* ---------- STATS ---------- */
-export const statsApi = {
-  getAllStats: async () => {
-    const [kyc, prod] = await Promise.allSettled([
-      kycApi.getKycList(),
-      productsApi.getPendingProducts(),
-    ]);
-
-    const kycList = toArray(kyc.status === "fulfilled" ? kyc.value.data : []);
-    const products = toArray(
-      prod.status === "fulfilled" ? prod.value.data : []
-    );
-
-    return {
-      success: true,
-      data: {
-        totalProducts: products.length,
-        pendingProducts: products.filter(
-          (p) => (p.status || "").toUpperCase() === "PENDING"
-        ).length,
-        approvedProducts: products.filter((p) =>
-          ["STAFF_APPROVED", "ADMIN_APPROVED"].includes(
-            (p.status || "").toUpperCase()
-          )
-        ).length,
-        rejectedProducts: products.filter(
-          (p) => (p.status || "").toUpperCase() === "REJECTED"
-        ).length,
-
-        totalKyc: kycList.length,
-        pendingKyc: kycList.filter(
-          (k) => (k.status || "").toUpperCase() === "PENDING"
-        ).length,
-        approvedKyc: kycList.filter((k) =>
-          ["STAFF_APPROVED", "ADMIN_APPROVED"].includes(
-            (k.status || "").toUpperCase()
-          )
-        ).length,
-
-        kycList,
-        products,
-      },
-    };
-  },
-};
-
-/* ---------- common error ---------- */
-export const handleApiError = (err, fallback = "Có lỗi xảy ra") => {
-  if (!err) return fallback;
-  if (err.status === 401) return "Phiên đăng nhập đã hết hạn";
-  if (err.message?.toLowerCase().includes("failed to fetch"))
-    return "Không thể kết nối máy chủ";
-  if (err.status === 500) return "Lỗi máy chủ (500)";
-  return err.message || fallback;
+/* ---------- COMPLAINT (khiếu nại) — giống luồng tin đăng ---------- */
+/* Nếu Swagger của bạn có khác path, chỉ cần đổi 3 dòng dưới */
+export const complaintApi = {
+  getPending: () => api.get(`/complaints/pending/staff`),
+  approve: (id) => api.post(`/complaints/${id}/approve/staff`),
+  reject: (id, reason) => api.post(`/complaints/${id}/reject`, { reason }),
 };
