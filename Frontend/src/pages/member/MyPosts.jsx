@@ -176,14 +176,27 @@ const MyPosts = ({ user }) => {
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
+    if (!amount || amount === 0) return "0 ₫";
+    
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    if (isNaN(numAmount)) return "0 ₫";
+    
+    // Format với dấu phẩy và đơn vị ₫
+    return new Intl.NumberFormat("vi-VN").format(numAmount) + " ₫";
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("vi-VN");
+    if (!dateString) return "";
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return "";
+      }
+      return date.toLocaleDateString("vi-VN");
+    } catch (error) {
+      return "";
+    }
   };
 
   const handleDeletePost = (post) => {
@@ -550,13 +563,9 @@ const MyPosts = ({ user }) => {
                             )}
                           </p>
                           <p className="text-muted small mb-2">
-                            {post.location ||
-                              post.address ||
-                              "Không có địa chỉ"}{" "}
-                            •{" "}
-                            {post.category ||
-                              post.productType ||
-                              "Không phân loại"}
+                            {post.location || post.address || post.sellerAddress || ""}
+                            {(post.location || post.address || post.sellerAddress) && " • "}
+                            {post.category || post.productType || ""}
                           </p>
 
                           <div className="d-flex justify-content-between text-muted small">
@@ -568,20 +577,26 @@ const MyPosts = ({ user }) => {
                         <div className="mt-3 pt-2 border-top">
                           <div className="d-flex justify-content-between text-muted small">
                             <span>
-                              Đăng:{" "}
                               {formatDate(
                                 post.createdDate ||
                                   post.createdAt ||
                                   post.dateCreated
-                              )}
+                              ) && `Đăng: ${formatDate(
+                                post.createdDate ||
+                                  post.createdAt ||
+                                  post.dateCreated
+                              )}`}
                             </span>
                             <span>
-                              Hết hạn:{" "}
                               {formatDate(
                                 post.expiryDate ||
                                   post.expiredAt ||
                                   post.dateExpired
-                              )}
+                              ) && `Hết hạn: ${formatDate(
+                                post.expiryDate ||
+                                  post.expiredAt ||
+                                  post.dateExpired
+                              )}`}
                             </span>
                           </div>
                         </div>
