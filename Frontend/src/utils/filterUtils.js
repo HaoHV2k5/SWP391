@@ -21,14 +21,11 @@ export const filterProducts = (products, filters) => {
         case '10m-20m':
           if (price < 10000000 || price >= 20000000) return false;
           break;
-        case '20m-30m':
-          if (price < 20000000 || price >= 30000000) return false;
+        case '20m-50m':
+          if (price < 20000000 || price >= 50000000) return false;
           break;
-        case '30m-40m':
-          if (price < 30000000 || price >= 40000000) return false;
-          break;
-        case '40m-50m':
-          if (price < 40000000 || price >= 50000000) return false;
+        case '50m-100m':
+          if (price < 50000000 || price >= 100000000) return false;
           break;
         default:
           break;
@@ -46,8 +43,11 @@ export const filterProducts = (products, filters) => {
     // Vehicle type filter (chỉ dùng cho FilterBar thông thường)
     if (filters.vehicleType) {
       switch (filters.vehicleType) {
+        case 'electric_bike':
+          if (product.productType !== "ELECTRIC_BIKE") return false;
+          break;
         case 'electric_scooter':
-          if (product.productType !== "VEHICLE") return false;
+          if (product.productType !== "ELECTRIC_SCOOTER") return false;
           break;
         case 'battery':
           if (product.productType !== "BATTERY") return false;
@@ -140,13 +140,12 @@ export const loadFilterOptions = async () => {
   }
 };
 
-// Price options phù hợp với xe điện và pin (dưới 2 triệu - 50 triệu)
+// Price options phù hợp với xe điện và pin (tối đa 100 triệu)
 export const priceOptions = [
     { label: 'Dưới 2 triệu', value: 'under2m' },
     { label: '2-5 triệu', value: '2m-5m' },
     { label: '5-10 triệu', value: '5m-10m' },
     { label: '10-20 triệu', value: '10m-20m' },
-    { label: '20-30 triệu', value: '20m-30m' },
-    { label: '30-40 triệu', value: '30m-40m' },
-    { label: '40-50 triệu', value: '40m-50m' }
+    { label: '20-50 triệu', value: '20m-50m' },
+    { label: '50-100 triệu', value: '50m-100m' }
 ];

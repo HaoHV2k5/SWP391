@@ -9,6 +9,11 @@ const HomePage = () => {
   const { products, loading, error } = useProducts();
   const { filteredProducts, handleFiltersChange } = useFilter(products);
 
+  // Debug logs
+  console.log("🏠 HomePage: products:", products);
+  console.log("🏠 HomePage: loading:", loading);
+  console.log("🏠 HomePage: error:", error);
+
   return (
     <div
       style={{

@@ -1,265 +1,120 @@
-/**
- * Staff Utility Functions
- * Tập trung các hàm tiện ích cho Staff functionality
- */
+// ---- GIỮ nguyên ở đầu file ----
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 
-/**
- * Format tiền tệ theo định dạng Việt Nam
- */
-export const formatCurrency = (amount) => {
-  if (!amount && amount !== 0) return "N/A";
+// ===== Chuẩn hoá URL ảnh (kể cả Google Drive, path tương đối) =====
+export const resolveImageUrl = (s) => {
+  if (!s) return "";
+  if (Array.isArray(s)) return s.map(resolveImageUrl).filter(Boolean);
 
-  return new Intl.NumberFormat("vi-VN", {
+  const v = String(s).trim();
+  if (!v) return "";
+
+  // Link Google Drive -> chuyển sang direct view
+  const gd = v.match(
+    /https?:\/\/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([\w-]+)/
+  );
+  if (gd?.[1]) return `https://drive.google.com/uc?export=view&id=${gd[1]}`;
+
+  // http(s) tuyệt đối
+  if (/^https?:\/\//i.test(v)) return v;
+
+  // Đường dẫn tuyệt đối theo server (bắt đầu bằng /)
+  if (v.startsWith("/")) return `${API_BASE}${v}`;
+
+  // Còn lại coi như relative path
+  return `${API_BASE}/${v}`;
+};
+
+// ===== Gom ảnh từ nhiều key khác nhau =====
+export const collectImages = (obj = {}) => {
+  const set = new Set();
+
+  const push = (val) => {
+    if (!val) return;
+    // Chuỗi CSV -> tách ra
+    if (typeof val === "string" && val.includes(",")) {
+      val
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean)
+        .forEach(push);
+      return;
+    }
+    const r = resolveImageUrl(val);
+    if (Array.isArray(r)) r.forEach((x) => x && set.add(x));
+    else if (r) set.add(r);
+  };
+
+  // 1) Các trường mảng/chuỗi nhiều URL phổ biến
+  const arrayish = [
+    obj.images,
+    obj.photos,
+    obj.pictures,
+    obj.gallery,
+    obj.files,
+    obj.resources,
+    obj.photoUrls,
+    obj.imageUrls,
+    obj.imagesUrl,
+    obj.image_links,
+  ];
+  arrayish.filter(Boolean).forEach((v) => {
+    if (Array.isArray(v)) v.forEach(push);
+    else push(v);
+  });
+
+  // 2) Trường đơn lẻ 1 URL
+  [
+    obj.image,
+    obj.imageUrl,
+    obj.mainImage,
+    obj.cover,
+    obj.thumbnail,
+    obj.featuredImage,
+  ].forEach(push);
+
+  // 3) Các field tách rời kiểu image1..image5 (nếu DB lưu vậy)
+  ["image1", "image2", "image3", "image4", "image5"].forEach((k) =>
+    push(obj[k])
+  );
+
+  // 4) Nếu dữ liệu lồng bên trong vehicle/battery -> gom tiếp
+  if (obj.vehicle) collectImages(obj.vehicle).forEach((u) => set.add(u));
+  if (obj.battery) collectImages(obj.battery).forEach((u) => set.add(u));
+
+  return [...set];
+};
+export const vnDate = (d) => {
+  try {
+    const x = typeof d === "string" || typeof d === "number" ? new Date(d) : d;
+    if (isNaN(x?.getTime?.())) return "—";
+    return x.toLocaleString("vi-VN", { hour12: false });
+  } catch {
+    return "—";
+  }
+};
+
+export const money = (v) =>
+  (Number(v) || 0).toLocaleString("vi-VN", {
     style: "currency",
     currency: "VND",
-  }).format(amount);
+    maximumFractionDigits: 0,
+  });
+
+export const statusTag = (s) => {
+  const k = String(s || "").toUpperCase();
+  if (k === "PENDING") return { color: "gold", text: "Chờ duyệt" };
+  if (k === "STAFF_APPROVED" || k === "APPROVED")
+    return { color: "green", text: "Đã duyệt" };
+  if (k === "STAFF_DECLINED" || k === "REJECTED")
+    return { color: "red", text: "Bị từ chối" };
+  return { color: "default", text: s || "—" };
 };
 
-/**
- * Lấy màu sắc cho trạng thái (status)
- */
-export const getStatusColor = (status) => {
-  switch (status) {
-    case "PENDING":
-      return "#ffc107"; // Vàng - Chờ duyệt
-    case "STAFF_APPROVED":
-      return "#17a2b8"; // Xanh dương - Staff đã duyệt
-    case "ADMIN_APPROVED":
-      return "#28a745"; // Xanh lá - Admin đã duyệt
-    case "REJECTED":
-      return "#dc3545"; // Đỏ - Đã từ chối
-    case "active":
-      return "#28a745"; // Xanh lá - Hoạt động
-    case "completed":
-      return "#28a745"; // Xanh lá - Hoàn thành
-    case "processing":
-      return "#17a2b8"; // Xanh dương - Đang xử lý
-    case "cancelled":
-      return "#dc3545"; // Đỏ - Đã hủy
-    default:
-      return "#6c757d"; // Xám - Mặc định
-  }
-};
+/* ===== Alias tương thích với code cũ ===== */
+export const formatDate = vnDate; // đã báo ở bước trước
+export const formatCurrency = money;
 
-/**
- * Lấy text hiển thị cho trạng thái
- */
-export const getStatusText = (status) => {
-  switch (status) {
-    case "PENDING":
-      return "Chờ duyệt";
-    case "STAFF_APPROVED":
-      return "Staff đã duyệt";
-    case "ADMIN_APPROVED":
-      return "Admin đã duyệt";
-    case "REJECTED":
-      return "Đã từ chối";
-    case "active":
-      return "Hoạt động";
-    case "pending":
-      return "Chờ xử lý";
-    case "processing":
-      return "Đang xử lý";
-    case "completed":
-      return "Hoàn thành";
-    case "cancelled":
-      return "Đã hủy";
-    default:
-      return status || "Không xác định";
-  }
-};
-
-/**
- * Lấy màu sắc cho mức độ ưu tiên (priority)
- */
-export const getPriorityColor = (priority) => {
-  switch (priority) {
-    case "high":
-      return "#dc3545"; // Đỏ - Ưu tiên cao
-    case "medium":
-      return "#ffc107"; // Vàng - Ưu tiên trung bình
-    case "low":
-      return "#28a745"; // Xanh lá - Ưu tiên thấp
-    default:
-      return "#6c757d"; // Xám - Mặc định
-  }
-};
-
-/**
- * Lấy text hiển thị cho mức độ ưu tiên
- */
-export const getPriorityText = (priority) => {
-  switch (priority) {
-    case "high":
-      return "Cao";
-    case "medium":
-      return "Trung bình";
-    case "low":
-      return "Thấp";
-    default:
-      return "Không xác định";
-  }
-};
-
-/**
- * Format ngày tháng theo định dạng Việt Nam
- */
-export const formatDate = (dateString) => {
-  if (!dateString) return "N/A";
-
-  try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch (error) {
-    console.error("Error formatting date:", error);
-    return dateString;
-  }
-};
-
-/**
- * Format ngày tháng ngắn gọn
- */
-export const formatDateShort = (dateString) => {
-  if (!dateString) return "N/A";
-
-  try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN");
-  } catch (error) {
-    console.error("Error formatting date:", error);
-    return dateString;
-  }
-};
-
-/**
- * Validate email format
- */
-export const isValidEmail = (email) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
-
-/**
- * Validate phone number format (Vietnam)
- */
-export const isValidPhone = (phone) => {
-  const phoneRegex = /^(\+84|84|0)[1-9][0-9]{8,9}$/;
-  return phoneRegex.test(phone.replace(/\s/g, ""));
-};
-
-/**
- * Truncate text với độ dài tùy chỉnh
- */
-export const truncateText = (text, maxLength = 100) => {
-  if (!text) return "";
-  if (text.length <= maxLength) return text;
-  return text.substring(0, maxLength) + "...";
-};
-
-/**
- * Capitalize first letter
- */
-export const capitalizeFirst = (str) => {
-  if (!str) return "";
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-};
-
-/**
- * Generate random ID (for testing purposes)
- */
-export const generateId = () => {
-  return Math.random().toString(36).substr(2, 9);
-};
-
-/**
- * Debounce function
- */
-export const debounce = (func, wait) => {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-};
-
-/**
- * Throttle function
- */
-export const throttle = (func, limit) => {
-  let inThrottle;
-  return function executedFunction(...args) {
-    if (!inThrottle) {
-      func.apply(this, args);
-      inThrottle = true;
-      setTimeout(() => (inThrottle = false), limit);
-    }
-  };
-};
-
-/**
- * Deep clone object
- */
-export const deepClone = (obj) => {
-  if (obj === null || typeof obj !== "object") return obj;
-  if (obj instanceof Date) return new Date(obj.getTime());
-  if (obj instanceof Array) return obj.map((item) => deepClone(item));
-  if (typeof obj === "object") {
-    const clonedObj = {};
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        clonedObj[key] = deepClone(obj[key]);
-      }
-    }
-    return clonedObj;
-  }
-};
-
-/**
- * Check if object is empty
- */
-export const isEmpty = (obj) => {
-  if (obj == null) return true;
-  if (Array.isArray(obj) || typeof obj === "string") return obj.length === 0;
-  if (typeof obj === "object") return Object.keys(obj).length === 0;
-  return false;
-};
-
-/**
- * Get file extension from filename
- */
-export const getFileExtension = (filename) => {
-  if (!filename) return "";
-  return filename.split(".").pop().toLowerCase();
-};
-
-/**
- * Check if file is image
- */
-export const isImageFile = (filename) => {
-  const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp"];
-  const extension = getFileExtension(filename);
-  return imageExtensions.includes(extension);
-};
-
-/**
- * Format file size
- */
-export const formatFileSize = (bytes) => {
-  if (bytes === 0) return "0 Bytes";
-
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-};
+// ✅ Thêm 2 alias này để fix ComplaintTab
+export const getStatusColor = (s) => statusTag(s).color;
+export const getStatusText = (s) => statusTag(s).text;

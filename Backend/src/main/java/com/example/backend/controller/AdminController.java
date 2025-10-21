@@ -52,10 +52,10 @@ public class AdminController {
     @PostMapping("/users")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ApiResponse<CreationUserResponse> createUser(@RequestBody @Valid CreationUserRequest request) {
-        CreationUserResponse creationUserResponse = userService.createUser(request);
+        CreationUserResponse creationUserResponse = userService.createUserByAdmin(request);
         return ApiResponse.<CreationUserResponse>builder()
                 .data(creationUserResponse)
-                .message("User created successfully")
+                .message("User created successfully and verified")
                 .build();
     }
 
@@ -115,6 +115,7 @@ public class AdminController {
                 .message("User roles updated successfully")
                 .build();
     }
+
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping("/add/role")
     public ApiResponse<Void> addPermissionForRole(@RequestBody AddPermissionRequest request){

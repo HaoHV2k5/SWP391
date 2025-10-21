@@ -1,7 +1,35 @@
 /* ===========================================
-   HOMEPAGE LAYOUT
+   HOMEPAGE STYLES
+   File: src/pages/HomePage.jsx
    =========================================== */
 
+/* Hero Section */
+.hero input[type="text"] {
+  border: 2px solid #2196f3;
+  background: #fff;
+  color: #222;
+  font-size: 1.1rem;
+  font-weight: 500;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.hero input[type="text"]:focus {
+  border: 2px solid #222;
+  box-shadow: 0 0 0 2px #2196f388;
+}
+
+/* Section titles */
+.homepage h2 {
+  color: #2196f3 !important;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+/* ===========================================
+   HOMEPAGE LAYOUT STYLES
+   File: src/pages/HomePage.jsx
+   =========================================== */
+
+/* Homepage specific styles */
 .homepage {
   width: 100%;
   overflow-x: hidden;
@@ -12,40 +40,23 @@
   max-width: 100%;
 }
 
-.homepage h2 {
-  color: #2196f3 !important;
-  font-weight: 900;
-  letter-spacing: 1px;
-}
-
 /* ===========================================
-   HERO SECTION
+   CARD COMPONENT STYLES
+   File: src/components/homepageContainer/home/ProductCard.jsx
    =========================================== */
 
-.hero input[type="text"] {
+/* Card highlight style */
+.card {
   border: 2px solid #2196f3;
-  background: #fff;
-  color: #222;
-  font-size: 1.1rem;
-  font-weight: 500;
-  transition: border 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px #2196f322;
 }
-
-.hero input[type="text"]:focus {
-  border: 2px solid #222;
-  box-shadow: 0 0 0 2px #2196f388;
-}
-
-/* ===========================================
-   CARD COMPONENTS
-   =========================================== */
 
 .card {
   background: #fff;
   border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 4px 16px rgba(33, 150, 243, 0.13);
-  border: 2px solid #2196f3;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
   transition: all 0.3s ease;
 }
 
@@ -55,9 +66,11 @@
 }
 
 /* ===========================================
-   GRID LAYOUT
+   LAYOUT & GRID STYLES
+   File: src/components/homepageContainer/home/ProductGrid.jsx
    =========================================== */
 
+/* Grid Layout */
 .grid {
   display: grid;
   gap: 2rem;
@@ -72,15 +85,136 @@
 }
 
 /* ===========================================
-   CATEGORY DROPDOWN
+   RESPONSIVE DESIGN FOR HOMEPAGE
+   File: Global responsive styles for homepage components
    =========================================== */
 
+/* Responsive Design */
+@media (max-width: 768px) {
+  .grid-2,
+  .grid-3 {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
+  
+  .card {
+    padding: 1.2rem;
+    border-radius: 8px;
+  }
+  
+  /* Navbar spacing helpers on mobile */
+  .homepage {
+    padding-top: 0;
+  }
+  
+  /* Fix dropdown toggle spacing on small screens */
+  .dropdown-toggle.btn.btn-link {
+    padding-left: 0;
+  }
+  
+  /* Ensure navbar search occupies full width when stacked */
+  .navbar-inner {
+    row-gap: 10px;
+  }
+  .navbar-left,
+  .navbar-right {
+    flex: 1 1 100%;
+    justify-content: space-between;
+  }
+  .navbar-center {
+    order: 3;
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 1rem;
+  }
+  
+  /* Tighter paddings for very small screens */
+  .filter-bar-container {
+    padding: 10px;
+  }
+
+  .navbar-left span {
+    font-size: 18px;
+  }
+  .navbar-left img {
+    height: 32px;
+  }
+}
+
+/* Custom Category Dropdown Styles */
 .dropdown-toggle::after {
   display: none !important;
 }
 
 /* ===========================================
-   FILTER BAR
+   NAVBAR STYLES (moved from Navbar.jsx)
+   =========================================== */
+.main-navbar {
+  background: white;
+  padding: 15px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.navbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 240px;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.navbar-logo-img {
+  height: 40px;
+  margin-right: 10px;
+}
+
+.navbar-logo-text {
+  font-size: 22px;
+  font-weight: bold;
+  color: #00A86B;
+}
+
+.navbar-center {
+  flex: 1;
+  min-width: 240px;
+  max-width: 900px;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 240px;
+  justify-content: flex-end;
+}
+
+/* ===========================================
+   FILTER BAR STYLES
+   File: src/components/FilterBar.jsx
    =========================================== */
 
 .filter-bar-container {
@@ -106,7 +240,6 @@
   border-radius: 20px;
   cursor: pointer;
   font-size: 14px;
-  transition: all 0.3s ease;
 }
 
 .filter-button:hover {
@@ -150,334 +283,8 @@
   cursor: pointer;
   font-size: 14px;
   text-align: left;
-  transition: background-color 0.2s;
 }
 
 .filter-dropdown-item:hover {
   background: #f5f5f5;
 }
-
-/* ===========================================
-   SAVED POPUP
-   =========================================== */
-
-.saved-popup {
-  z-index: 9999 !important;
-  position: absolute !important;
-  top: calc(100% + 8px) !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  margin-top: 0 !important;
-}
-
-.saved-popup .card {
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
-  border: 1px solid #e0e0e0 !important;
-  border-radius: 10px !important;
-  width: 400px !important;
-  max-width: 90vw !important;
-}
-
-/* ===========================================
-   NAVBAR
-   =========================================== */
-
-.main-navbar {
-  background: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.navbar-search-container {
-  position: relative;
-  z-index: 1;
-  max-width: 800px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.navbar-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 15px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.navbar-top {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  min-height: 60px;
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.navbar-left {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex: 0 0 auto;
-}
-
-.navbar-right {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex: 0 0 auto;
-}
-
-.navbar-search-form {
-  width: 100%;
-}
-
-.navbar-search-input-group {
-  width: 100%;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid #e0e0e0;
-}
-
-.navbar-search-input {
-  border: none;
-  padding: 12px 16px;
-  font-size: 14px;
-  background: white;
-}
-
-.navbar-search-input:focus {
-  outline: none;
-  box-shadow: none;
-  border-color: #00A86B;
-  background: white;
-}
-
-.navbar-search-button {
-  background: #00A86B;
-  border: none;
-  color: white;
-  padding: 12px 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.navbar-logo {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-}
-
-.navbar-logo-img {
-  height: 40px;
-  margin-right: 10px;
-}
-
-.navbar-logo-text {
-  font-size: 22px;
-  font-weight: bold;
-  color: #00A86B;
-}
-
-/* ===========================================
-   SEARCH SUGGESTIONS
-   =========================================== */
-
-.search-container {
-  position: relative;
-  width: 100%;
-}
-
-.search-suggestions {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.suggestions-header {
-  padding: 12px 16px;
-  background: #f8f9fa;
-  border-bottom: 1px solid #e0e0e0;
-  font-size: 14px;
-  color: #666;
-  font-weight: 500;
-}
-
-.suggestions-list {
-  padding: 8px 0;
-}
-
-.suggestion-item {
-  display: flex;
-  align-items: center;
-  padding: 8px 16px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.suggestion-item:hover {
-  background: #f8f9fa;
-}
-
-.suggestion-icon {
-  color: #999;
-  margin-right: 12px;
-  flex-shrink: 0;
-}
-
-.suggestion-content {
-  flex: 1;
-}
-
-.suggestion-title {
-  font-size: 14px;
-  color: #333;
-  margin-bottom: 2px;
-}
-
-.suggestion-category {
-  font-size: 12px;
-  color: #999;
-}
-
-/* ===========================================
-   RESPONSIVE DESIGN
-   =========================================== */
-
-/* Tablet and Mobile */
-@media (max-width: 768px) {
-  .grid-2,
-  .grid-3 {
-    grid-template-columns: 1fr;
-    gap: 1.2rem;
-  }
-  
-  .card {
-    padding: 1.2rem;
-    border-radius: 8px;
-  }
-  
-  .homepage {
-    padding-top: 0;
-  }
-  
-  .dropdown-toggle.btn.btn-link {
-    padding-left: 0;
-  }
-  
-  .navbar-inner {
-    padding: 10px 15px;
-    gap: 10px;
-  }
-  
-  .navbar-top {
-    gap: 8px;
-    justify-content: center;
-  }
-  
-  .navbar-left {
-    gap: 15px;
-  }
-  
-  .navbar-right {
-    gap: 15px;
-  }
-  
-  .navbar-search-container {
-    max-width: 100%;
-    padding: 0 10px;
-  }
-  
-  .search-container {
-    max-width: 100%;
-  }
-  
-  .search-bar-wrapper {
-    flex-direction: column;
-  }
-  
-  .saved-popup .card {
-    width: 350px !important;
-  }
-}
-
-/* Mobile */
-@media (max-width: 480px) {
-  .card {
-    padding: 1rem;
-  }
-  
-  .navbar-left span {
-    font-size: 18px;
-  }
-  
-  .navbar-left img {
-    height: 32px;
-  }
-  
-  .navbar-inner {
-    padding: 8px 10px;
-    gap: 8px;
-  }
-  
-  .navbar-top {
-    gap: 6px;
-    justify-content: center;
-  }
-  
-  .navbar-left {
-    gap: 12px;
-  }
-  
-  .navbar-right {
-    gap: 12px;
-  }
-  
-  .navbar-search-input {
-    padding: 8px 12px;
-    font-size: 12px;
-  }
-  
-  .navbar-search-button {
-    padding: 8px 12px;
-  }
-  
-  .navbar-search-container {
-    padding: 0 5px;
-  }
-  
-  .filter-bar-container {
-    padding: 8px;
-  }
-  
-  .filter-bar-content {
-    gap: 6px;
-  }
-  
-  .filter-button {
-    padding: 5px 10px;
-    font-size: 12px;
-  }
-  
-  .saved-popup .card {
-    width: 300px !important;
-  }
-}
-

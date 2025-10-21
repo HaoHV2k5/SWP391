@@ -62,10 +62,6 @@ public class Product {
     private Tags tag;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "wishlist_id")
-    private Wishlist wishlist;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id", nullable = false)
     private User seller;
 

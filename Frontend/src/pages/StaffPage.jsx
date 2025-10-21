@@ -1,63 +1,48 @@
-import { useState } from "react";
+// src/pages/StaffPage.jsx
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout, Menu, Breadcrumb, Avatar, Dropdown, Space, theme } from "antd";
 import {
   PieChartOutlined,
   AppstoreOutlined,
   TeamOutlined,
+  ExclamationCircleOutlined,
   UserOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
-
-// Import custom hooks and utilities
 import { useProducts, useKyc, useStats, useStaffAuth } from "../hooks/useStaff";
-import {
-  formatCurrency,
-  getStatusColor,
-  getStatusText,
-} from "../utils/staffUtils";
 import { TAB_KEYS } from "../constants/staffConstants";
-import { getToastDefaults } from "../utils/notificationManager";
-
-// Import components
-import DashboardTab from "../components/staff/DashboardTab";
-import CustomersTab from "../components/staff/CustomersTab";
 import ProductsTab from "../components/staff/ProductsTab";
+import KYCTab from "../components/staff/KYCTab";
+import ComplaintTab from "../components/staff/ComplaintTab";
+import DashboardTab from "../components/staff/DashboardTab";
 import "../styles/staff/index.css";
 
 const { Header, Content, Footer, Sider } = Layout;
-
-function getItem(label, key, icon) {
-  return { key, icon, label };
-}
+const getItem = (label, key, icon) => ({ key, icon, label });
 
 const StaffPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+  const [activeTab, setActiveTab] = useState(TAB_KEYS.PRODUCTS);
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
-  // Get toast defaults (cấu hình sẽ được thực hiện trong ToastContainer)
-  const toastDefaults = getToastDefaults();
-
-  // ========================================
-  // STATE MANAGEMENT - Sử dụng custom hooks
-  // ========================================
-  const [activeTab, setActiveTab] = useState(TAB_KEYS.PRODUCTS);
-
-  // Custom hooks for data management
   const productsHook = useProducts();
   const kycHook = useKyc();
   const statsHook = useStats();
-  const { isCheckingAuth } = useStaffAuth(user, navigate);
+  const { isCheckingAuth } = useStaffAuth(user); // ❗ KHÔNG truyền navigate ở đây
 
-  // ========================================
-  // MENU CONFIGURATION
-  // ========================================
+  useEffect(() => {
+    // ❗ dùng reload(), không phải loadStats()
+    statsHook.reload?.();
+  }, [statsHook]);
+
   const menuItems = [
-    getItem("Tin Đăng", TAB_KEYS.PRODUCTS, <AppstoreOutlined />),
+    getItem("Tin đăng", TAB_KEYS.PRODUCTS, <AppstoreOutlined />),
     getItem("KYC", TAB_KEYS.KYC, <TeamOutlined />),
+    getItem("Khiếu nại", TAB_KEYS.COMPLAINTS, <ExclamationCircleOutlined />),
     getItem("Tổng quan", TAB_KEYS.DASHBOARD, <PieChartOutlined />),
   ];
 
@@ -85,11 +70,6 @@ const StaffPage = ({ user, onLogout }) => {
     ],
   };
 
-  // ========================================
-  // RENDER LOGIC
-  // ========================================
-
-  // Hiển thị loading spinner khi đang kiểm tra authentication
   if (isCheckingAuth) {
     return (
       <div className="staff-loading">
@@ -100,78 +80,18 @@ const StaffPage = ({ user, onLogout }) => {
       </div>
     );
   }
+  if (!user) return null;
 
-  // Không render gì nếu không có user
-  if (!user) {
-    return null;
-  }
-
-  // Get header title based on active tab
-  const getHeaderTitle = () => {
-    switch (activeTab) {
-      case TAB_KEYS.PRODUCTS:
-        return "Duyệt Tin Đăng";
-      case TAB_KEYS.KYC:
-        return "Duyệt KYC";
-      case TAB_KEYS.DASHBOARD:
-        return "Tổng quan";
-      default:
-        return "Staff Console";
-    }
-  };
-
-  // Render active tab content
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case TAB_KEYS.PRODUCTS:
-        return (
-          <ProductsTab
-            products={productsHook.products}
-            setProducts={productsHook.setProducts}
-            formatCurrency={formatCurrency}
-            getStatusColor={getStatusColor}
-            getStatusText={getStatusText}
-            loading={productsHook.loading}
-            setLoading={() => {}} // Not needed with custom hook
-          />
-        );
-
-      case TAB_KEYS.KYC:
-        return (
-          <CustomersTab
-            kycList={kycHook.kycList}
-            setKycList={kycHook.setKycList}
-            getStatusColor={getStatusColor}
-            getStatusText={getStatusText}
-            loading={kycHook.loading}
-            setLoading={() => {}} // Not needed with custom hook
-          />
-        );
-
-      case TAB_KEYS.DASHBOARD:
-        return (
-          <DashboardTab
-            stats={statsHook.stats}
-            products={productsHook.products}
-            kycList={kycHook.kycList}
-            formatCurrency={formatCurrency}
-            getStatusColor={getStatusColor}
-            getStatusText={getStatusText}
-          />
-        );
-
-      default:
-        return <div>Tab không tồn tại</div>;
-    }
+  const titles = {
+    [TAB_KEYS.PRODUCTS]: "Duyệt Tin Đăng",
+    [TAB_KEYS.KYC]: "Duyệt Hồ Sơ KYC",
+    [TAB_KEYS.COMPLAINTS]: "Quản lý Khiếu Nại",
+    [TAB_KEYS.DASHBOARD]: "Tổng Quan",
   };
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Sider
-        collapsible
-        collapsed={collapsed}
-        onCollapse={(v) => setCollapsed(v)}
-      >
+      <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed}>
         <div className="demo-logo-vertical" />
         <Menu
           theme="dark"
@@ -192,7 +112,9 @@ const StaffPage = ({ user, onLogout }) => {
               height: "100%",
             }}
           >
-            <div style={{ fontWeight: 800 }}>{getHeaderTitle()}</div>
+            <div style={{ fontWeight: 800 }}>
+              {titles[activeTab] || "Staff Console"}
+            </div>
             <Dropdown menu={dropdownItems} trigger={["click"]}>
               <a onClick={(e) => e.preventDefault()}>
                 <Space>
@@ -222,7 +144,17 @@ const StaffPage = ({ user, onLogout }) => {
               borderRadius: borderRadiusLG,
             }}
           >
-            {renderTabContent()}
+            {activeTab === TAB_KEYS.PRODUCTS && <ProductsTab />}
+            {activeTab === TAB_KEYS.KYC && <KYCTab />}
+            {activeTab === TAB_KEYS.COMPLAINTS && <ComplaintTab />}
+            {activeTab === TAB_KEYS.DASHBOARD && (
+              <DashboardTab
+                stats={statsHook.stats}
+                products={productsHook.products}
+                kycList={kycHook.kycList}
+                complaints={[]}
+              />
+            )}
           </div>
         </Content>
 
@@ -233,5 +165,4 @@ const StaffPage = ({ user, onLogout }) => {
     </Layout>
   );
 };
-
 export default StaffPage;

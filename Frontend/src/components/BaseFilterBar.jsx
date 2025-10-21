@@ -87,9 +87,11 @@ const BaseFilterBar = ({
     const loadOptions = async () => {
       try {
         setLoading(true);
+        console.log('BaseFilterBar - Loading filter options...');
         const options = await loadFilterOptions();
-        setBrandOptions(options.brands || []);
-        setYearOptions(options.years || []);
+        console.log('BaseFilterBar - Loaded options:', options);
+        setBrandOptions(options.brands);
+        setYearOptions(options.years);
       } catch (error) {
         console.error('Lỗi load filter options:', error);
         setBrandOptions([]);
@@ -193,6 +195,12 @@ const BaseFilterBar = ({
         {/* Vehicle type buttons */}
         {showVehicleType && filterTypes.includes('vehicleType') && (
           <>
+            <button
+              onClick={() => handleFilterClick('vehicleType', 'electric_bike')}
+              className={`filter-button ${activeFilters.vehicleType !== 'electric_bike' ? 'filter-button-inactive' : ''}`}
+            >
+              Xe đạp điện
+            </button>
             <button
               onClick={() => handleFilterClick('vehicleType', 'electric_scooter')}
               className={`filter-button ${activeFilters.vehicleType !== 'electric_scooter' ? 'filter-button-inactive' : ''}`}

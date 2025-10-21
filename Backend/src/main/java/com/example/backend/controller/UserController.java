@@ -30,6 +30,7 @@ public class UserController {
     public ApiResponse<Void> register(@RequestBody @Valid  RegisterRequest request){
 
         User user = userService.registerUser(request);
+        userService.initWalletAndWishlist(user);
         otpService.generateOtpCode(user);
         return ApiResponse.<Void>builder().message("Check your email for the OTP to finish signing up.").build();
     }
@@ -110,6 +111,15 @@ public class UserController {
                 .message("User updated successfully")
                 .build();
     }
+
+    @PutMapping("/change/password")
+    public ApiResponse<Boolean> updatePasswordUser(Authentication authentication,@RequestBody @Valid  UpdatePasswordRequest request) {
+        String  username = authentication.getName();
+        User user = userService.getUserByUsername(username);
+        userService.updatePassword(user,request.getPassword());
+        return ApiResponse.<Boolean>builder().message("Password updated successfully").build();
+    }
+
 
 
 

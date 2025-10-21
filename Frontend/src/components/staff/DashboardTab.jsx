@@ -1,463 +1,187 @@
+// src/components/staff/DashboardTab.jsx
+import React, { useMemo, useState } from "react";
+import { Card, Input, Tabs, Table, Tag } from "antd";
 import {
-  ClipboardList,
-  Clock,
-  CheckCircle,
-  DollarSign,
-  TrendingUp,
-} from "lucide-react";
-import { formatDate } from "../../utils/staffUtils";
+  usePendingProducts,
+  usePendingKyc,
+  usePendingComplaints,
+} from "../../hooks/useStaff";
+import { vnDate, statusTag, money } from "../../utils/staffUtils";
 
-const DashboardTab = ({
-  stats,
-  products,
-  kycList,
-  formatCurrency,
-  getStatusColor,
-  getStatusText,
-}) => {
+const DashboardTab = () => {
+  const pro = usePendingProducts();
+  const kyc = usePendingKyc();
+  const cmp = usePendingComplaints(); // nếu chưa có API complaint, có thể ẩn tab này
+
+  const [q, setQ] = useState("");
+
+  const filter = (arr) => {
+    if (!q.trim()) return arr;
+    const t = q.toLowerCase();
+    return arr.filter((x) => JSON.stringify(x).toLowerCase().includes(t));
+  };
+
+  const colsProducts = useMemo(
+    () => [
+      {
+        title: "ID",
+        dataIndex: "id",
+        key: "id",
+        width: 80,
+        render: (v) => `#${v}`,
+      },
+      { title: "Tiêu đề", dataIndex: "title", key: "title" },
+      {
+        title: "Giá",
+        key: "price",
+        render: (_, r) => money(r.price || r.amount || r.cost),
+      },
+      {
+        title: "Gửi lúc",
+        key: "createdAt",
+        render: (_, r) => vnDate(r.createdAt || r.created_at),
+      },
+      {
+        title: "Trạng thái",
+        dataIndex: "status",
+        key: "status",
+        render: (s) => (
+          <Tag color={statusTag(s).color}>{statusTag(s).text}</Tag>
+        ),
+      },
+    ],
+    []
+  );
+
+  const colsKyc = useMemo(
+    () => [
+      {
+        title: "ID",
+        dataIndex: "id",
+        key: "id",
+        width: 80,
+        render: (v) => `#${v}`,
+      },
+      { title: "User ID", dataIndex: "userId", key: "userId" },
+      {
+        title: "Gửi lúc",
+        key: "createdAt",
+        render: (_, r) => vnDate(r.createdAt || r.created_at),
+      },
+      {
+        title: "Trạng thái",
+        dataIndex: "status",
+        key: "status",
+        render: (s) => (
+          <Tag color={statusTag(s).color}>{statusTag(s).text}</Tag>
+        ),
+      },
+    ],
+    []
+  );
+
+  const colsCmp = useMemo(
+    () => [
+      {
+        title: "ID",
+        dataIndex: "id",
+        key: "id",
+        width: 80,
+        render: (v) => `#${v}`,
+      },
+      {
+        title: "Người mua",
+        dataIndex: "buyer",
+        key: "buyer",
+        render: (v, r) => r?.buyer?.username || r?.buyerName || "—",
+      },
+      {
+        title: "Nội dung",
+        dataIndex: "content",
+        key: "content",
+        ellipsis: true,
+      },
+      {
+        title: "Gửi lúc",
+        key: "createdAt",
+        render: (_, r) => vnDate(r.createdAt || r.created_at),
+      },
+    ],
+    []
+  );
+
   return (
     <div>
-      {/* STATS CARDS - Cards thống kê */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-          gap: "1.5rem",
-          marginBottom: "2rem",
-        }}
-      >
-        <div
-          className="card"
-          style={{
-            textAlign: "center",
-            padding: "2rem",
-            background: "rgba(26, 26, 46, 0.8)",
-            backdropFilter: "blur(20px)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            borderRadius: "15px",
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
-          }}
-        >
-          <ClipboardList
-            size={48}
-            style={{ color: "#667eea", marginBottom: "1rem" }}
-          />
-          <h3
-            style={{
-              fontSize: "2rem",
-              marginBottom: "0.5rem",
-              color: "white",
-              fontWeight: "700",
-            }}
-          >
-            {stats.totalProducts}
-          </h3>
-          <p style={{ color: "rgba(255, 255, 255, 0.7)", margin: 0 }}>
-            Tổng Tin Đăng
-          </p>
-        </div>
-
-        <div
-          className="card"
-          style={{
-            textAlign: "center",
-            padding: "2rem",
-            background: "rgba(26, 26, 46, 0.8)",
-            backdropFilter: "blur(20px)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            borderRadius: "15px",
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
-          }}
-        >
-          <Clock size={48} style={{ color: "#ffc107", marginBottom: "1rem" }} />
-          <h3
-            style={{
-              fontSize: "2rem",
-              marginBottom: "0.5rem",
-              color: "white",
-              fontWeight: "700",
-            }}
-          >
-            {stats.pendingProducts}
-          </h3>
-          <p style={{ color: "rgba(255, 255, 255, 0.7)", margin: 0 }}>
-            Tin Đăng chờ duyệt
-          </p>
-        </div>
-
-        <div
-          className="card"
-          style={{
-            textAlign: "center",
-            padding: "2rem",
-            background: "rgba(26, 26, 46, 0.8)",
-            backdropFilter: "blur(20px)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            borderRadius: "15px",
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
-          }}
-        >
-          <CheckCircle
-            size={48}
-            style={{ color: "#28a745", marginBottom: "1rem" }}
-          />
-          <h3
-            style={{
-              fontSize: "2rem",
-              marginBottom: "0.5rem",
-              color: "white",
-              fontWeight: "700",
-            }}
-          >
-            {stats.approvedProducts}
-          </h3>
-          <p style={{ color: "rgba(255, 255, 255, 0.7)", margin: 0 }}>
-            Tin Đăng đã duyệt
-          </p>
-        </div>
-
-        <div
-          className="card"
-          style={{
-            textAlign: "center",
-            padding: "2rem",
-            background: "rgba(26, 26, 46, 0.8)",
-            backdropFilter: "blur(20px)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            borderRadius: "15px",
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
-          }}
-        >
-          <DollarSign
-            size={48}
-            style={{ color: "#dc3545", marginBottom: "1rem" }}
-          />
-          <h3
-            style={{
-              fontSize: "2rem",
-              marginBottom: "0.5rem",
-              color: "white",
-              fontWeight: "700",
-            }}
-          >
-            {stats.totalKyc}
-          </h3>
-          <p style={{ color: "rgba(255, 255, 255, 0.7)", margin: 0 }}>
-            Tổng KYC
-          </p>
-        </div>
-      </div>
-
-      {/* ======================================== */}
-      {/* 📦 RECENT PRODUCTS - Sản phẩm gần đây */}
-      {/* ======================================== */}
-      <div
-        className="card"
-        style={{
-          background: "rgba(26, 26, 46, 0.8)",
-          backdropFilter: "blur(20px)",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-          borderRadius: "15px",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
-          padding: "2rem",
-          marginBottom: "2rem",
-        }}
-      >
+      <Card style={{ marginBottom: 12 }}>
         <div
           style={{
             display: "flex",
+            gap: 12,
             alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "1.5rem",
+            flexWrap: "wrap",
           }}
         >
-          <h3
-            style={{
-              margin: 0,
-              color: "white",
-              fontSize: "1.5rem",
-              fontWeight: "600",
-            }}
-          >
-            Tin Đăng chờ duyệt gần đây
-          </h3>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              color: "rgba(255, 255, 255, 0.7)",
-              fontSize: "0.9rem",
-            }}
-          >
-            <TrendingUp size={16} />
-            <span>Hiệu suất tốt</span>
+          <div>
+            <b>Tin PENDING:</b> {pro.list.length}
           </div>
-        </div>
-
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr
-                style={{ borderBottom: "2px solid rgba(255, 255, 255, 0.1)" }}
-              >
-                <th
-                  style={{
-                    padding: "1rem",
-                    textAlign: "left",
-                    color: "rgba(255, 255, 255, 0.8)",
-                    fontWeight: "600",
-                  }}
-                >
-                  ID
-                </th>
-                <th
-                  style={{
-                    padding: "1rem",
-                    textAlign: "left",
-                    color: "rgba(255, 255, 255, 0.8)",
-                    fontWeight: "600",
-                  }}
-                >
-                  Tên
-                </th>
-                <th
-                  style={{
-                    padding: "1rem",
-                    textAlign: "left",
-                    color: "rgba(255, 255, 255, 0.8)",
-                    fontWeight: "600",
-                  }}
-                >
-                  Người bán
-                </th>
-                <th
-                  style={{
-                    padding: "1rem",
-                    textAlign: "left",
-                    color: "rgba(255, 255, 255, 0.8)",
-                    fontWeight: "600",
-                  }}
-                >
-                  Giá
-                </th>
-                <th
-                  style={{
-                    padding: "1rem",
-                    textAlign: "left",
-                    color: "rgba(255, 255, 255, 0.8)",
-                    fontWeight: "600",
-                  }}
-                >
-                  Trạng thái
-                </th>
-                <th
-                  style={{
-                    padding: "1rem",
-                    textAlign: "left",
-                    color: "rgba(255, 255, 255, 0.8)",
-                    fontWeight: "600",
-                  }}
-                >
-                  Ngày tạo
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.slice(0, 5).map((product) => (
-                <tr
-                  key={product.id}
-                  style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.1)" }}
-                >
-                  <td style={{ padding: "1rem", color: "white" }}>
-                    #{product.id}
-                  </td>
-                  <td style={{ padding: "1rem", color: "white" }}>
-                    {product.title || product.name || product.productName || "N/A"}
-                  </td>
-                  <td style={{ padding: "1rem", color: "white" }}>
-                    {product.seller || product.sellerName || product.user?.fullName || product.user?.name || "N/A"}
-                  </td>
-                  <td style={{ padding: "1rem", color: "white" }}>
-                    {formatCurrency(product.price || product.priceValue || 0)}
-                  </td>
-                  <td style={{ padding: "1rem" }}>
-                    <span
-                      style={{
-                        padding: "0.25rem 0.75rem",
-                        borderRadius: "15px",
-                        fontSize: "0.8rem",
-                        backgroundColor: getStatusColor(product.status) + "20",
-                        color: getStatusColor(product.status),
-                        fontWeight: "500",
-                      }}
-                    >
-                      {getStatusText(product.status)}
-                    </span>
-                  </td>
-                  <td style={{ padding: "1rem", color: "white" }}>
-                    {formatDate(product.createdAt || product.created_at || product.createDate)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* ======================================== */}
-      {/* RECENT KYC - KYC gần đây */}
-      {/* ======================================== */}
-      <div
-        className="card"
-        style={{
-          background: "rgba(26, 26, 46, 0.8)",
-          backdropFilter: "blur(20px)",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-          borderRadius: "15px",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
-          padding: "2rem",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "1.5rem",
-          }}
-        >
-          <h3
-            style={{
-              margin: 0,
-              color: "white",
-              fontSize: "1.5rem",
-              fontWeight: "600",
-            }}
-          >
-            KYC chờ duyệt gần đây
-          </h3>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              color: "rgba(255, 255, 255, 0.7)",
-              fontSize: "0.9rem",
-            }}
-          >
-            <TrendingUp size={16} />
-            <span>Hiệu suất tốt</span>
+          <div>
+            <b>KYC PENDING:</b> {kyc.list.length}
           </div>
+          <div>
+            <b>Complaint PENDING:</b> {cmp.list.length}
+          </div>
+          <Input.Search
+            placeholder="Tìm kiếm mọi thứ…"
+            style={{ maxWidth: 340, marginLeft: "auto" }}
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
         </div>
+      </Card>
 
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr
-                style={{ borderBottom: "2px solid rgba(255, 255, 255, 0.1)" }}
-              >
-                <th
-                  style={{
-                    padding: "1rem",
-                    textAlign: "left",
-                    color: "rgba(255, 255, 255, 0.8)",
-                    fontWeight: "600",
-                  }}
-                >
-                  ID
-                </th>
-                <th
-                  style={{
-                    padding: "1rem",
-                    textAlign: "left",
-                    color: "rgba(255, 255, 255, 0.8)",
-                    fontWeight: "600",
-                  }}
-                >
-                  Họ tên
-                </th>
-                <th
-                  style={{
-                    padding: "1rem",
-                    textAlign: "left",
-                    color: "rgba(255, 255, 255, 0.8)",
-                    fontWeight: "600",
-                  }}
-                >
-                  Email
-                </th>
-                <th
-                  style={{
-                    padding: "1rem",
-                    textAlign: "left",
-                    color: "rgba(255, 255, 255, 0.8)",
-                    fontWeight: "600",
-                  }}
-                >
-                  Số điện thoại
-                </th>
-                <th
-                  style={{
-                    padding: "1rem",
-                    textAlign: "left",
-                    color: "rgba(255, 255, 255, 0.8)",
-                    fontWeight: "600",
-                  }}
-                >
-                  Trạng thái
-                </th>
-                <th
-                  style={{
-                    padding: "1rem",
-                    textAlign: "left",
-                    color: "rgba(255, 255, 255, 0.8)",
-                    fontWeight: "600",
-                  }}
-                >
-                  Ngày nộp
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {kycList.slice(0, 5).map((kyc) => (
-                <tr
-                  key={kyc.id}
-                  style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.1)" }}
-                >
-                  <td style={{ padding: "1rem", color: "white" }}>#{kyc.id}</td>
-                  <td style={{ padding: "1rem", color: "white" }}>
-                    {kyc.fullName || kyc.fullname || kyc.name || "N/A"}
-                  </td>
-                  <td style={{ padding: "1rem", color: "white" }}>
-                    {kyc.email || kyc.userEmail || "N/A"}
-                  </td>
-                  <td style={{ padding: "1rem", color: "white" }}>
-                    {kyc.phone || kyc.phoneNumber || kyc.phone_number || "N/A"}
-                  </td>
-                  <td style={{ padding: "1rem" }}>
-                    <span
-                      style={{
-                        padding: "0.25rem 0.75rem",
-                        borderRadius: "15px",
-                        fontSize: "0.8rem",
-                        backgroundColor: getStatusColor(kyc.status) + "20",
-                        color: getStatusColor(kyc.status),
-                        fontWeight: "500",
-                      }}
-                    >
-                      {getStatusText(kyc.status)}
-                    </span>
-                  </td>
-                  <td style={{ padding: "1rem", color: "white" }}>
-                    {formatDate(kyc.submittedAt || kyc.createdAt || kyc.created_at || kyc.submitDate)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <Tabs
+        items={[
+          {
+            key: "products",
+            label: `Tin đăng (${pro.list.length})`,
+            children: (
+              <Table
+                rowKey="id"
+                loading={pro.initial}
+                columns={colsProducts}
+                dataSource={filter(pro.list)}
+                pagination={{ pageSize: 8 }}
+              />
+            ),
+          },
+          {
+            key: "kyc",
+            label: `KYC (${kyc.list.length})`,
+            children: (
+              <Table
+                rowKey="id"
+                loading={kyc.initial}
+                columns={colsKyc}
+                dataSource={filter(kyc.list)}
+                pagination={{ pageSize: 8 }}
+              />
+            ),
+          },
+          {
+            key: "complaints",
+            label: `Khiếu nại (${cmp.list.length})`,
+            children: (
+              <Table
+                rowKey="id"
+                loading={cmp.initial}
+                columns={colsCmp}
+                dataSource={filter(cmp.list)}
+                pagination={{ pageSize: 8 }}
+              />
+            ),
+          },
+        ]}
+      />
     </div>
   );
 };

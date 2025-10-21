@@ -23,33 +23,30 @@ const Navbar = ({ user, onLogout }) => {
       {/* Main Navbar */}
       <nav className="main-navbar">
         <div className="navbar-inner">
-          {/* Top Row: Logo + Category + Actions + User */}
-          <div className="navbar-top">
-            {/* Left: Logo + Category */}
-            <div className="navbar-left">
-              <Link to="/" className="navbar-logo">
-                <img src={logoImage} alt="ElectricStore Logo" className="navbar-logo-img" />
-                <span className="navbar-logo-text">ElectricStore</span>
-              </Link>
-              <CategoryDropdown />
-            </div>
-
-            {/* Right: Actions + User */}
-            <div className="navbar-right">
-              <NavbarActions />
-              {/* Member Components - Chỉ thêm chức năng member */}
-              {!user && <LoginButton />}
-              {user ? (
-                <UserDropdown user={user} onLogout={onLogout} />
-              ) : (
-                <GuestDropdown />
-              )}
-            </div>
+          {/* Left: Logo + Category */}
+          <div className="navbar-left">
+            <Link to="/" className="navbar-logo">
+              <img src={logoImage} alt="ElectricStore Logo" className="navbar-logo-img" />
+              <span className="navbar-logo-text">ElectricStore</span>
+            </Link>
+            <CategoryDropdown />
           </div>
 
-          {/* Search Bar */}
-          <div className="navbar-search-container">
+          {/* Center: Search (flexible) */}
+          <div className="navbar-center">
             <SearchBar />
+          </div>
+
+          {/* Right: Actions + User */}
+          <div className="navbar-right">
+            <NavbarActions />
+            {/* Member Components - Chỉ thêm chức năng member */}
+            {!user && <LoginButton />}
+            {user ? (
+              <UserDropdown user={user} onLogout={onLogout} />
+            ) : (
+              <GuestDropdown />
+            )}
           </div>
         </div>
       </nav>

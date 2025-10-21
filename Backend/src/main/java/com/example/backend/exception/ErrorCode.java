@@ -60,6 +60,8 @@ public enum ErrorCode {
     POSTING_OVER_LIMIT (1045, "Bạn đã vượt quá số hạn đăng tin cho phép của gói!", HttpStatus.BAD_REQUEST),
     PACKAGE_NOT_BUY(1046, "Bạn không có gói đăng nào hiệu lực!", HttpStatus.BAD_REQUEST),
     PACKAGE_EXPIRED(1047, "Gói đăng tin đã quá hạn!", HttpStatus.BAD_REQUEST),
+    WISHLIST_NOT_EXISTED(1048, "Người dùng không có wishlist", HttpStatus.BAD_REQUEST),
+    LOGIN_FAIL(1049, "Tài khoản hay mật khẩu không chính xác, hãy thử lại!", HttpStatus.BAD_REQUEST),
 
 
     ;

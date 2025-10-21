@@ -15,7 +15,11 @@ const PostAd = ({ user }) => {
     category: "",
     price: "",
     description: "",
-    images: []
+    images: [],
+    brand: "",
+    model: "",
+    yearManufactured: new Date().getFullYear(),
+    batteryLevel: 80
   });
 
   const categories = [
@@ -25,14 +29,10 @@ const PostAd = ({ user }) => {
 
 
   useEffect(() => {
-    console.log("=== PostAd useEffect ===");
-    
     if (!user) {
-      console.log("⏳ No user yet, waiting...");
       setIsCheckingAuth(true);
       const timer = setTimeout(() => {
         if (!user) {
-          console.log("❌ Still no user after timeout, redirecting to login");
           navigate("/login");
         }
       }, 1000);
@@ -50,12 +50,9 @@ const PostAd = ({ user }) => {
     }
 
     if (userRole !== "member") {
-      console.log("❌ User role is not member:", userRole);
       navigate("/");
       return;
     }
-
-    console.log("✅ Post ad access granted");
   }, [user, navigate]);
 
   const handleInputChange = (e) => {
@@ -82,7 +79,8 @@ const PostAd = ({ user }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.category || !formData.price || !formData.description) {
+    if (!formData.title || !formData.category || !formData.price || !formData.description || 
+        !formData.brand || !formData.model || !formData.yearManufactured) {
       toast.error("Vui lòng điền đầy đủ thông tin bắt buộc!");
       return;
     }
@@ -90,10 +88,7 @@ const PostAd = ({ user }) => {
     setLoading(true);
     
     try {
-      // Gọi API thật để tạo tin
-      console.log('Creating product with data:', formData);
       const result = await productService.createProduct(formData);
-      console.log('Product creation result:', result);
       
       if (!result.success) {
         throw new Error(result.message || 'Đăng tin thất bại');
@@ -104,8 +99,6 @@ const PostAd = ({ user }) => {
     } catch (error) {
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
-      const errorCode = error?.response?.data?.code;
-      console.error('Create product error:', { status, backendMessage, errorCode, error });
       
       if (status === 401) {
         toast.error("Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn.");
@@ -128,33 +121,6 @@ const PostAd = ({ user }) => {
     }
   };
 
-  const handleTabChange = (tabId) => {
-    switch (tabId) {
-      case "dashboard":
-        navigate("/account");
-        break;
-      case "my-posts":
-        navigate("/member/my-posts");
-        break;
-      case "saved-posts":
-        navigate("/member/saved-posts");
-        break;
-      case "search-history":
-        navigate("/member/search-history");
-        break;
-      case "view-history":
-        navigate("/member/view-history");
-        break;
-      case "orders":
-        navigate("/member/orders");
-        break;
-      case "profile":
-        navigate("/member/profile");
-        break;
-      default:
-        navigate("/account");
-    }
-  };
 
   if (isCheckingAuth) {
     return (
@@ -183,13 +149,6 @@ const PostAd = ({ user }) => {
                 <h4 className="mb-0">Đăng tin bán hàng</h4>
               </Card.Header>
               <Card.Body className="p-4">
-                <Alert variant="warning" className="mb-3">
-                  <strong>⚠️ Yêu cầu:</strong> Bạn cần <strong>mua gói đăng tin</strong> để có thể đăng bán sản phẩm. 
-                  Mỗi gói sẽ có số lượng tin đăng và thời hạn sử dụng nhất định.
-                </Alert>
-                <Alert variant="info" className="mb-4">
-                  <strong>📝 Lưu ý:</strong> Vui lòng điền đầy đủ thông tin để tin đăng của bạn được duyệt nhanh chóng.
-                </Alert>
 
                 <Form onSubmit={handleSubmit}>
                   <Row>
@@ -248,6 +207,72 @@ const PostAd = ({ user }) => {
                         </Col>
                       </Row>
 
+                      {/* Brand, Model, Year */}
+                      <Row>
+                        <Col md={4}>
+                          <Form.Group className="mb-3">
+                            <Form.Label className="fw-bold">Thương hiệu <span className="text-danger">*</span></Form.Label>
+                            <Form.Control
+                              type="text"
+                              name="brand"
+                              value={formData.brand}
+                              onChange={handleInputChange}
+                              placeholder="VD: VinFast, Honda, Yamaha"
+                              required
+                            />
+                          </Form.Group>
+                        </Col>
+                        <Col md={4}>
+                          <Form.Group className="mb-3">
+                            <Form.Label className="fw-bold">Model <span className="text-danger">*</span></Form.Label>
+                            <Form.Control
+                              type="text"
+                              name="model"
+                              value={formData.model}
+                              onChange={handleInputChange}
+                              placeholder="VD: Klara S, Air Blade"
+                              required
+                            />
+                          </Form.Group>
+                        </Col>
+                        <Col md={4}>
+                          <Form.Group className="mb-3">
+                            <Form.Label className="fw-bold">Năm sản xuất <span className="text-danger">*</span></Form.Label>
+                            <Form.Control
+                              type="number"
+                              name="yearManufactured"
+                              value={formData.yearManufactured}
+                              onChange={handleInputChange}
+                              min="1900"
+                              max="2030"
+                              required
+                            />
+                          </Form.Group>
+                        </Col>
+                      </Row>
+
+                      {/* Battery Level (only for BATTERY category) */}
+                      {formData.category === "BATTERY" && (
+                        <Row>
+                          <Col md={6}>
+                            <Form.Group className="mb-3">
+                              <Form.Label className="fw-bold">Mức pin (%) <span className="text-danger">*</span></Form.Label>
+                              <Form.Control
+                                type="number"
+                                name="batteryLevel"
+                                value={formData.batteryLevel}
+                                onChange={handleInputChange}
+                                min="0"
+                                max="100"
+                                required
+                              />
+                              <Form.Text className="text-muted">
+                                Nhập mức pin từ 0-100%
+                              </Form.Text>
+                            </Form.Group>
+                          </Col>
+                        </Row>
+                      )}
 
                       {/* Description */}
                       <Form.Group className="mb-3">
