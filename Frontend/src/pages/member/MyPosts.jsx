@@ -14,6 +14,7 @@ import {
   Form,
 } from "react-bootstrap";
 import { toast } from "react-toastify";
+import "bootstrap-icons/font/bootstrap-icons.css";
 import MemberHeader from "../../components/member/MemberHeader";
 import productService from "../../services/productService";
 import "../../styles/member/index.css";
@@ -44,6 +45,7 @@ const MyPosts = ({ user }) => {
       const username = user?.username || user?.user?.username || user?.email || user?.user?.email;
       const result = await productService.getMyPosts(username);
       if (result.success) {
+        console.log("📸 MyPosts data:", result.data); // Debug để xem dữ liệu hình ảnh
         setPosts(result.data || []);
       } else {
         toast.error(result.message);
@@ -283,51 +285,54 @@ const MyPosts = ({ user }) => {
         <Row className="g-4 mb-4">
           <Col lg={3} md={6}>
             <Card
-              className="text-white border-0 h-100"
+              className="text-dark h-100"
               style={{
-                background: "linear-gradient(135deg, #ffc107 0%, #ffb300 100%)",
+                backgroundColor: "white",
+                border: "2px solid #28a745",
               }}
             >
               <Card.Body className="text-center p-3">
-                <h4 className="fw-bold mb-1">
+                <h4 className="fw-bold mb-1 text-dark">
                   {
                     posts.filter(
                       (p) => (p.status || "").toUpperCase() === "PENDING"
                     ).length
                   }
                 </h4>
-                <small className="opacity-75">Tin chờ duyệt</small>
+                <small className="text-dark">Tin chờ duyệt</small>
               </Card.Body>
             </Card>
           </Col>
           <Col lg={3} md={6}>
             <Card
-              className="text-white border-0 h-100"
+              className="text-dark h-100"
               style={{
-                background: "linear-gradient(135deg, #17a2b8 0%, #138496 100%)",
+                backgroundColor: "white",
+                border: "2px solid #28a745",
               }}
             >
               <Card.Body className="text-center p-3">
-                <h4 className="fw-bold mb-1">
+                <h4 className="fw-bold mb-1 text-dark">
                   {
                     posts.filter(
                       (p) => (p.status || "").toUpperCase() === "STAFF_APPROVED"
                     ).length
                   }
                 </h4>
-                <small className="opacity-75">Đã duyệt Staff</small>
+                <small className="text-dark">Đã duyệt Staff</small>
               </Card.Body>
             </Card>
           </Col>
           <Col lg={3} md={6}>
             <Card
-              className="text-white border-0 h-100"
+              className="text-dark h-100"
               style={{
-                background: "linear-gradient(135deg, #00A86B 0%, #2BB673 100%)",
+                backgroundColor: "white",
+                border: "2px solid #28a745",
               }}
             >
               <Card.Body className="text-center p-3">
-                <h4 className="fw-bold mb-1">
+                <h4 className="fw-bold mb-1 text-dark">
                   {
                     posts.filter(
                       (p) =>
@@ -336,26 +341,27 @@ const MyPosts = ({ user }) => {
                     ).length
                   }
                 </h4>
-                <small className="opacity-75">Đã duyệt/Hiển thị</small>
+                <small className="text-dark">Đã duyệt/Hiển thị</small>
               </Card.Body>
             </Card>
           </Col>
           <Col lg={3} md={6}>
             <Card
-              className="text-white border-0 h-100"
+              className="text-dark h-100"
               style={{
-                background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
+                backgroundColor: "white",
+                border: "2px solid #28a745",
               }}
             >
               <Card.Body className="text-center p-3">
-                <h4 className="fw-bold mb-1">
+                <h4 className="fw-bold mb-1 text-dark">
                   {
                     posts.filter(
                       (p) => (p.status || "").toUpperCase() === "REJECTED"
                     ).length
                   }
                 </h4>
-                <small className="opacity-75">Bị từ chối</small>
+                <small className="text-dark">Bị từ chối</small>
               </Card.Body>
             </Card>
           </Col>
@@ -417,135 +423,192 @@ const MyPosts = ({ user }) => {
             )}
           </Alert>
         ) : (
-          <Row className="g-4">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+              gap: "25px",
+              padding: "20px 0",
+            }}
+          >
             {filteredPosts.map((post) => (
-              <Col lg={6} key={post.id}>
-                <Card className="h-100 shadow-sm border-0">
-                  <Row className="g-0 h-100">
-                    <Col md={4}>
-                      <div
-                        className="h-100 bg-light d-flex align-items-center justify-content-center"
-                        style={{
-                          backgroundImage: `url(${
-                            post.image ||
-                            post.vehicle?.image ||
-                            post.battery?.image ||
-                            post.images?.[0]
-                          })`,
-                          backgroundSize: "cover",
-                          backgroundPosition: "center",
-                          minHeight: "200px",
-                        }}
+              <Card
+                key={post.id}
+                style={{
+                  height: "100%",
+                  cursor: "pointer",
+                }}
+              >
+                <Card.Img
+                  variant="top"
+                  src={
+                    post.imageUrls?.[0] ||
+                    post.image ||
+                    post.vehicle?.image ||
+                    post.battery?.image ||
+                    post.images?.[0] ||
+                    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=="
+                  }
+                  style={{ height: "200px", objectFit: "cover" }}
+                  onError={(e) => {
+                    e.currentTarget.src =
+                      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==";
+                  }}
+                />
+
+                <Card.Body
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div>
+                    {/* Status Badge and Menu */}
+                    <div className="d-flex justify-content-between align-items-start mb-2">
+                      <Badge
+                        bg={getStatusColor(post.status)}
+                        className="mb-2"
                       >
-                        {!(
-                          post.image ||
-                          post.vehicle?.image ||
-                          post.battery?.image ||
-                          post.images?.[0]
-                        ) && <span className="text-muted">📷</span>}
-                      </div>
-                    </Col>
-                    <Col md={8}>
-                      <Card.Body className="p-3 d-flex flex-column h-100">
-                        <div className="flex-grow-1">
-                          <div className="d-flex justify-content-between align-items-start mb-2">
-                            <Badge
-                              bg={getStatusColor(post.status)}
-                              className="mb-2"
+                        {getStatusText(post.status)}
+                      </Badge>
+                      <Dropdown align="end">
+                        <Dropdown.Toggle
+                          variant="link"
+                          className="text-muted p-0 border-0"
+                          style={{ fontSize: "20px" }}
+                        >
+                          ⋮
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu style={{ minWidth: "150px" }}>
+                          <Dropdown.Item
+                            onClick={() => handleEditPost(post)}
+                          >
+                            Chỉnh sửa
+                          </Dropdown.Item>
+                          {(post.status === "expired" ||
+                            post.status === "sold") && (
+                            <Dropdown.Item
+                              onClick={() => handleRepost(post.id)}
                             >
-                              {getStatusText(post.status)}
-                            </Badge>
-                            <Dropdown align="end">
-                              <Dropdown.Toggle
-                                variant="link"
-                                className="text-muted p-0 border-0"
-                                style={{ fontSize: "20px" }}
-                              >
-                                ⋮
-                              </Dropdown.Toggle>
-                              <Dropdown.Menu style={{ minWidth: "150px" }}>
-                                <Dropdown.Item
-                                  onClick={() => handleEditPost(post)}
-                                >
-                                  Chỉnh sửa
-                                </Dropdown.Item>
-                                {(post.status === "expired" ||
-                                  post.status === "sold") && (
-                                  <Dropdown.Item
-                                    onClick={() => handleRepost(post.id)}
-                                  >
-                                    Đăng lại
-                                  </Dropdown.Item>
-                                )}
-                                <Dropdown.Divider />
-                                <Dropdown.Item
-                                  className="text-danger"
-                                  onClick={() => handleDeletePost(post)}
-                                >
-                                  Xóa tin
-                                </Dropdown.Item>
-                              </Dropdown.Menu>
-                            </Dropdown>
-                          </div>
+                              Đăng lại
+                            </Dropdown.Item>
+                          )}
+                          <Dropdown.Divider />
+                          <Dropdown.Item
+                            className="text-danger"
+                            onClick={() => handleDeletePost(post)}
+                          >
+                            Xóa tin
+                          </Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    </div>
 
-                          <h6 className="card-title text-truncate mb-2">
-                            {post.title ||
-                              post.productName ||
-                              "Không có tiêu đề"}
-                          </h6>
-                           <p className="text-success fw-bold mb-2">
-                             {formatCurrency(
-                               post.price ||
-                                 post.vehicle?.price ||
-                                 post.battery?.price ||
-                                 0
-                             )}
-                           </p>
-                           <p className="text-muted small mb-2">
-                             {post.location || post.address || post.sellerAddress || ""}
-                             {(post.location || post.address || post.sellerAddress) && " • "}
-                             {post.category || post.productType || ""}
-                           </p>
+                    {/* Title */}
+                    <Card.Title
+                      style={{
+                        fontSize: "16px",
+                        marginBottom: "4px",
+                        fontWeight: "500",
+                        lineHeight: "1.4",
+                        color: "#333",
+                      }}
+                    >
+                      {post.title ||
+                        post.productName ||
+                        "Không có tiêu đề"}
+                    </Card.Title>
 
-                          <div className="d-flex justify-content-between text-muted small">
-                            <span>{post.views || 0} lượt xem</span>
-                            <span>{post.likes || 0} lượt thích</span>
-                          </div>
-                        </div>
+                    {/* Description */}
+                    <div
+                      style={{
+                        fontSize: "14px",
+                        color: "#666",
+                        marginBottom: "8px",
+                        lineHeight: "1.3",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {post.description ||
+                        post.vehicleInfo?.description ||
+                        "Không có mô tả"}
+                    </div>
 
-                        <div className="mt-3 pt-2 border-top">
-                          <div className="d-flex justify-content-between text-muted small">
-                            <span>
-                              {formatDate(
-                                post.createdDate ||
-                                  post.createdAt ||
-                                  post.dateCreated
-                              ) && `Đăng: ${formatDate(
-                                post.createdDate ||
-                                  post.createdAt ||
-                                  post.dateCreated
-                              )}`}
-                            </span>
-                            <span>
-                              {formatDate(
-                                post.expiryDate ||
-                                  post.expiredAt ||
-                                  post.dateExpired
-                              ) && `Hết hạn: ${formatDate(
-                                post.expiryDate ||
-                                  post.expiredAt ||
-                                  post.dateExpired
-                              )}`}
-                            </span>
-                          </div>
-                        </div>
-                      </Card.Body>
-                    </Col>
-                  </Row>
-                </Card>
-              </Col>
+                    {/* Vehicle Info */}
+                    <div
+                      style={{ fontSize: "14px", color: "#666", marginBottom: "10px" }}
+                    >
+                      <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                        <span>{post.year}</span>
+                        <span>{post.brand}</span>
+                        <span>{post.category || post.productType || ""}</span>
+                      </div>
+                    </div>
+
+                    {/* Price */}
+                    <div
+                      style={{
+                        fontSize: "18px",
+                        fontWeight: "bold",
+                        color: "#e74c3c",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      {formatCurrency(
+                        post.price ||
+                          post.vehicle?.price ||
+                          post.battery?.price ||
+                          0
+                      )}
+                    </div>
+
+                    {/* Location */}
+                    <div style={{ fontSize: "12px", color: "#999", marginBottom: "10px" }}>
+                      <i className="bi bi-geo-alt"></i> {post.location || post.address || post.sellerAddress || "Chưa có địa chỉ"}
+                    </div>
+
+                    {/* Stats */}
+                    <div className="d-flex justify-content-between text-muted small mb-2">
+                      <span>{post.views || 0} lượt xem</span>
+                      <span>{post.likes || 0} lượt thích</span>
+                    </div>
+                  </div>
+
+                  {/* Date Info */}
+                  <div className="mt-3 pt-2 border-top">
+                    <div className="d-flex justify-content-between text-muted small">
+                      <span>
+                        {formatDate(
+                          post.createdDate ||
+                            post.createdAt ||
+                            post.dateCreated
+                        ) && `Đăng: ${formatDate(
+                          post.createdDate ||
+                            post.createdAt ||
+                            post.dateCreated
+                        )}`}
+                      </span>
+                      <span>
+                        {formatDate(
+                          post.expiryDate ||
+                            post.expiredAt ||
+                            post.dateExpired
+                        ) && `Hết hạn: ${formatDate(
+                          post.expiryDate ||
+                            post.expiredAt ||
+                            post.dateExpired
+                        )}`}
+                      </span>
+                    </div>
+                  </div>
+                </Card.Body>
+              </Card>
             ))}
-          </Row>
+          </div>
         )}
       </div>
 
