@@ -16,35 +16,18 @@ const isBrand = (request) => {
 };
 
 const searchService = {
-  // Tìm kiếm autocomplete suggestions - Xử lý cả guest và member
+  // Tìm kiếm autocomplete suggestions - Hiển thị đa dạng (tags + brands + products)
   async getAutocompleteSuggestions(keyword) {
     if (!keyword.trim()) {
       return { success: true, data: [] };
     }
 
     try {
-      // Thử sử dụng API autocomplete của backend (có thể yêu cầu authentication)
-      try {
-        const autocompleteResult = await apiClient.get(`/tag/autocomplete?displayName=${encodeURIComponent(keyword)}`);
-        const data = autocompleteResult?.data?.data ?? autocompleteResult?.data?.content ?? autocompleteResult?.data;
-        
-        if (Array.isArray(data) && data.length > 0) {
-          // Chuyển đổi tags thành suggestions theo format BE
-          const suggestionItems = data.slice(0, 10).map(tag => ({
-            id: tag.id,
-            displayName: tag.displayName,
-            type: 'tag',
-            slug: tag.slugs // Thêm slug để có thể navigate
-          }));
-          
-          return { success: true, data: suggestionItems };
-        }
-      } catch (authError) {
-        // Nếu API tags yêu cầu authentication và user chưa login, fallback về products
-        console.log("Autocomplete API requires auth, falling back to product search");
-      }
-
-      // Fallback: Tìm kiếm trong tất cả sản phẩm (luôn hoạt động cho guest và member)
+      const suggestions = [];
+      const keywordLower = keyword.toLowerCase();
+      const keywords = extractWords(keyword);
+      
+      // Lấy tất cả sản phẩm để tìm kiếm suggestions
       const response = await apiClient.get('/products');
       const allProducts = response?.data?.data ?? response?.data?.content ?? response?.data;
       
@@ -52,27 +35,25 @@ const searchService = {
         return { success: true, data: [] };
       }
 
-      // Tạo suggestions từ tên sản phẩm và brand (logic thông minh)
-      const suggestions = [];
-      const keywordLower = keyword.toLowerCase();
-      const keywords = extractWords(keyword);
-      
       // Set để track các brand và model đã thêm
       const addedBrands = new Set();
       const addedModels = new Set();
+      const addedProducts = new Set();
       
+      // Tìm kiếm thông minh trong tất cả sản phẩm
       allProducts.forEach(product => {
         const title = product.title || '';
         const brand = product.vehicle?.brand || product.battery?.brand || '';
         const model = product.vehicle?.model || product.battery?.model || '';
         
-        // Tìm kiếm trong title
-        if (title.toLowerCase().includes(keywordLower)) {
+        // Tìm kiếm trong title (sản phẩm)
+        if (title.toLowerCase().includes(keywordLower) && !addedProducts.has(title.toLowerCase())) {
           suggestions.push({
             id: product.id,
             displayName: title,
             type: 'product'
           });
+          addedProducts.add(title.toLowerCase());
         }
         
         // Tìm kiếm trong brand (chỉ thêm 1 lần cho mỗi brand)
@@ -97,10 +78,32 @@ const searchService = {
         }
       });
 
+      // Thử sử dụng API autocomplete của backend để bổ sung tags
+      try {
+        const autocompleteResult = await apiClient.get(`/tag/autocomplete?displayName=${encodeURIComponent(keyword)}`);
+        const data = autocompleteResult?.data?.data ?? autocompleteResult?.data?.content ?? autocompleteResult?.data;
+        
+        if (Array.isArray(data) && data.length > 0) {
+          // Thêm tags vào suggestions (không thay thế)
+          const tagSuggestions = data.slice(0, 5).map(tag => ({
+            id: tag.id,
+            displayName: tag.displayName,
+            type: 'tag',
+            slug: tag.slugs
+          }));
+          
+          // Thêm tags vào đầu danh sách
+          suggestions.unshift(...tagSuggestions);
+        }
+      } catch (authError) {
+        // Nếu API tags yêu cầu authentication, bỏ qua
+        console.log("Tag autocomplete API requires auth, skipping tags");
+      }
+
       // Loại bỏ trùng lặp dựa trên displayName (case insensitive)
       const uniqueSuggestions = suggestions.filter((item, index, self) => 
         index === self.findIndex(t => t.displayName.toLowerCase() === item.displayName.toLowerCase())
-      ).slice(0, 8);
+      ).slice(0, 10);
 
       return { success: true, data: uniqueSuggestions };
 
@@ -151,8 +154,8 @@ const searchService = {
         k === 'xe' || k === 'vehicle' || k === 'scooter'
       );
 
-      // Sử dụng Set để loại bỏ trùng lặp giống BE
-      const resultSet = new Set();
+      // Sử dụng Map để loại bỏ trùng lặp và giữ thứ tự giống BE LinkedHashSet
+      const resultMap = new Map();
 
       // Tìm kiếm theo Battery nếu có từ khóa liên quan (giống hệt BE)
       if (searchBattery) {
@@ -180,8 +183,8 @@ const searchService = {
           });
         }
 
-        // Thêm vào resultSet (giống BE)
-        batteryProducts.forEach(product => resultSet.add(product));
+        // Thêm vào resultMap (giống BE)
+        batteryProducts.forEach(product => resultMap.set(product.id, product));
       }
 
       // Tìm kiếm theo Vehicle nếu có từ khóa liên quan (giống hệt BE)
@@ -210,12 +213,12 @@ const searchService = {
           });
         }
 
-        // Thêm vào resultSet (giống BE)
-        vehicleProducts.forEach(product => resultSet.add(product));
+        // Thêm vào resultMap (giống BE)
+        vehicleProducts.forEach(product => resultMap.set(product.id, product));
       }
 
       // Fallback cuối cùng nếu không có kết quả (giống hệt BE)
-      if (resultSet.size === 0) {
+      if (resultMap.size === 0) {
         // Mô phỏng full-text search trên Product table (giống BE)
         let fallbackProducts = allProducts.filter(product => {
           const title = (product.title || '').toLowerCase();
@@ -236,12 +239,12 @@ const searchService = {
           });
         }
 
-        // Thêm vào resultSet
-        fallbackProducts.forEach(product => resultSet.add(product));
+        // Thêm vào resultMap
+        fallbackProducts.forEach(product => resultMap.set(product.id, product));
       }
 
-      // Convert Set to Array và sắp xếp theo score (giống BE)
-      const uniqueProducts = Array.from(resultSet);
+      // Convert Map to Array và sắp xếp theo score (giống BE)
+      const uniqueProducts = Array.from(resultMap.values());
       
       // Mô phỏng scoring system của BE
       const scoredProducts = uniqueProducts.map(product => {
@@ -321,7 +324,8 @@ const searchService = {
           id: item.id,
           title: item.displayName,
           type: item.type,
-          slug: item.slug // Thêm slug nếu có
+          slug: item.slug, // Thêm slug nếu có
+          isKnownBrand: item.isKnownBrand // Thêm flag cho brand
         }));
         
         return { success: true, data: suggestionItems };
@@ -348,7 +352,7 @@ const searchService = {
         console.log("Tag API requires auth, falling back to product search");
       }
 
-      // Fallback: Tìm kiếm sản phẩm theo tag slug trong tất cả sản phẩm
+      // Fallback: Tìm kiếm sản phẩm theo tag slug (mô phỏng logic Backend)
       const response = await apiClient.get('/products');
       const allProducts = response?.data?.data ?? response?.data?.content ?? response?.data;
       
@@ -356,18 +360,27 @@ const searchService = {
         return { success: false, message: 'Dữ liệu sản phẩm không hợp lệ' };
       }
 
-      // Tìm kiếm sản phẩm có chứa tag slug trong title, description, brand, model
+      // Mô phỏng logic Backend: Tìm kiếm chính xác theo brand và model
+      // Giả sử tagSlug có format "brand-model" hoặc chỉ là brand
+      const tagSlugLower = tagSlug.toLowerCase();
+      
+      // Tách brand và model từ slug (nếu có dấu gạch ngang)
+      const slugParts = tagSlugLower.split('-');
+      const brandFromSlug = slugParts[0];
+      const modelFromSlug = slugParts.length > 1 ? slugParts.slice(1).join('-') : null;
+      
       const filteredProducts = allProducts.filter(product => {
-        const title = (product.title || '').toLowerCase();
-        const description = (product.description || '').toLowerCase();
         const brand = (product.vehicle?.brand || product.battery?.brand || '').toLowerCase();
         const model = (product.vehicle?.model || product.battery?.model || '').toLowerCase();
-        const tagSlugLower = tagSlug.toLowerCase();
         
-        return title.includes(tagSlugLower) ||
-               description.includes(tagSlugLower) ||
-               brand.includes(tagSlugLower) ||
-               model.includes(tagSlugLower);
+        // Tìm kiếm chính xác theo brand và model (giống Backend)
+        if (modelFromSlug) {
+          // Nếu có cả brand và model trong slug
+          return brand === brandFromSlug && model === modelFromSlug;
+        } else {
+          // Nếu chỉ có brand trong slug, tìm theo brand
+          return brand === brandFromSlug;
+        }
       });
 
       return { success: true, data: filteredProducts };

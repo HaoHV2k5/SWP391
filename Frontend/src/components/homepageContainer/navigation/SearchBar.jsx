@@ -168,11 +168,6 @@ const SearchBar = () => {
                   <div className="suggestion-content">
                     <div className="suggestion-title">
                       {suggestion.title}
-                      {suggestion.isKnownBrand && (
-                        <span className="badge bg-primary ms-2" style={{fontSize: '0.7em'}}>
-                          Thương hiệu
-                        </span>
-                      )}
                     </div>
                     <div className="suggestion-type text-muted" style={{fontSize: '0.8em'}}>
                       {suggestion.type === 'tag' ? 'Tag' :
