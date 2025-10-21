@@ -1,4 +1,4 @@
-// src/pages/staff/StaffPage.jsx
+// src/pages/StaffPage.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout, Menu, Breadcrumb, Avatar, Dropdown, Space, theme } from "antd";
@@ -32,11 +32,12 @@ const StaffPage = ({ user, onLogout }) => {
   const productsHook = useProducts();
   const kycHook = useKyc();
   const statsHook = useStats();
-  const { isCheckingAuth } = useStaffAuth(user, navigate);
+  const { isCheckingAuth } = useStaffAuth(user); // ❗ KHÔNG truyền navigate ở đây
 
   useEffect(() => {
-    statsHook.loadStats();
-  }, []); // nếu có API overview
+    // ❗ dùng reload(), không phải loadStats()
+    statsHook.reload?.();
+  }, [statsHook]);
 
   const menuItems = [
     getItem("Tin đăng", TAB_KEYS.PRODUCTS, <AppstoreOutlined />),

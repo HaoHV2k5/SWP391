@@ -12,45 +12,45 @@ const productService = {
     let endpoint = "";
     try {
       // Không gọi /auth/me (BE không có). Đọc từ localStorage để xác định quyền/username
-      const userDataRaw = localStorage.getItem("userData");
-      console.log("🔍 getPublicList: userDataRaw:", userDataRaw);
+      // const userDataRaw = localStorage.getItem("userData");
+      // console.log("🔍 getPublicList: userDataRaw:", userDataRaw);
 
-      if (userDataRaw) {
-        try {
-          const userData = JSON.parse(userDataRaw);
-          const rolesRaw = userData?.roles || userData?.user?.roles || [];
-          const roles = Array.isArray(rolesRaw)
-            ? rolesRaw
-                .map((r) => (typeof r === "string" ? r : r?.name))
-                .filter(Boolean)
-            : [];
-          const isAdmin =
-            roles.includes("ROLE_ADMIN") ||
-            userData?.user?.role === "ROLE_ADMIN";
-          const username =
-            userData?.username ||
-            userData?.user?.username ||
-            userData?.email ||
-            userData?.user?.email;
+      // if (userDataRaw) {
+      //   try {
+      //     const userData = JSON.parse(userDataRaw);
+      //     const rolesRaw = userData?.roles || userData?.user?.roles || [];
+      //     const roles = Array.isArray(rolesRaw)
+      //       ? rolesRaw
+      //           .map((r) => (typeof r === "string" ? r : r?.name))
+      //           .filter(Boolean)
+      //       : [];
+      //     const isAdmin =
+      //       roles.includes("ROLE_ADMIN") ||
+      //       userData?.user?.role === "ROLE_ADMIN";
+      //     const username =
+      //       userData?.username ||
+      //       userData?.user?.username ||
+      //       userData?.email ||
+      //       userData?.user?.email;
 
-          console.log(
-            "🔍 getPublicList: isAdmin:",
-            isAdmin,
-            "username:",
-            username
-          );
+      //     console.log(
+      //       "🔍 getPublicList: isAdmin:",
+      //       isAdmin,
+      //       "username:",
+      //       username
+      //     );
 
-          if (isAdmin) {
-            endpoint = "/products/seller/staff_approved/admin";
-          } else if (username) {
-            endpoint = `/products/seller?username=${encodeURIComponent(
-              username
-            )}`;
-          }
-        } catch (e) {
-          console.error("❌ getPublicList: Error parsing userData:", e);
-        }
-      }
+      //     if (isAdmin) {
+      //       endpoint = "/products/seller/staff_approved/admin";
+      //     } else if (username) {
+      //       endpoint = `/products/seller?username=${encodeURIComponent(
+      //         username
+      //       )}`;
+      //     }
+      //   } catch (e) {
+      //     console.error("❌ getPublicList: Error parsing userData:", e);
+      //   }
+      // }
 
       // Chưa đăng nhập hoặc không xác định được endpoint phù hợp thì
       // gọi endpoint công khai đang có trong BE
@@ -58,23 +58,15 @@ const productService = {
         endpoint = "/products"; // BE hiện có GET /products trả danh sách đã post
       }
 
-      console.log("🔍 getPublicList: Using endpoint:", endpoint);
       const response = await apiClient.get(endpoint);
-      console.log("📡 getPublicList: API response:", response);
       // BE thường bọc dữ liệu trong ApiResponse { data, message }
       const data =
         response?.data?.data ?? response?.data?.content ?? response?.data;
-      console.log("📦 getPublicList: Final data:", data);
       return { success: true, data: Array.isArray(data) ? data : [] };
     } catch (error) {
-      console.error("❌ getPublicList: API error:", error);
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
-      console.error("getPublicList thất bại", {
-        endpoint,
-        status,
-        backendMessage,
-      });
+
       // Nếu không có token và bị chặn/không tìm thấy, trả rỗng để không vỡ UI
       if (
         !localStorage.getItem("token") &&
@@ -116,24 +108,19 @@ const productService = {
       let endpoint;
       if (userId) {
         endpoint = `/products/history/seller/${userId}`;
-        console.log("🔍 Using history endpoint with userId:", userId);
       } else if (username) {
         endpoint = `/products/seller?username=${encodeURIComponent(username)}`;
-        console.log("🔍 Using seller endpoint with username:", username);
       } else {
         endpoint = "/products";
-        console.log("🔍 Using public endpoint (no user info)");
       }
 
       const response = await apiClient.get(endpoint);
       const data =
         response?.data?.data ?? response?.data?.content ?? response?.data;
-      console.log("📦 Received from API:", data);
       return { success: true, data: Array.isArray(data) ? data : [] };
     } catch (error) {
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
-      console.error("❌ getMyPosts error:", { status, backendMessage });
       return {
         success: false,
         message: `Lỗi tải tin của tôi (${status || "network"}): ${
@@ -192,7 +179,10 @@ const productService = {
       } else if (productType === "BATTERY") {
         formData.append("battery.brand", form.brand || "Unknown");
         formData.append("battery.model", form.model || "Unknown");
-        formData.append("battery.yearManufactured", form.yearManufactured || new Date().getFullYear());
+        formData.append(
+          "battery.yearManufactured",
+          form.yearManufactured || new Date().getFullYear()
+        );
         formData.append("battery.batteryLevel", form.batteryLevel || 80);
         // Gửi vehicle object rỗng để tránh lỗi backend
         formData.append("vehicle.brand", "");
@@ -402,11 +392,6 @@ const productService = {
     } catch (error) {
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
-      console.error("❌ deleteProduct error:", {
-        productId,
-        status,
-        backendMessage,
-      });
       return {
         success: false,
         message: `Lỗi xóa sản phẩm (${status || "network"}): ${
@@ -446,11 +431,6 @@ const productService = {
     } catch (error) {
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
-      console.error("❌ updateProduct error:", {
-        productId,
-        status,
-        backendMessage,
-      });
       return {
         success: false,
         message: `Lỗi cập nhật sản phẩm (${status || "network"}): ${
