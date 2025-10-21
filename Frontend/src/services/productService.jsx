@@ -170,10 +170,12 @@ const productService = {
       if (productType === "VEHICLE") {
         formData.append("vehicle.brand", form.brand || "Unknown");
         formData.append("vehicle.model", form.model || "Unknown");
-        formData.append(
-          "vehicle.yearManufactured",
-          form.yearManufactured || new Date().getFullYear()
-        );
+        formData.append("vehicle.yearManufactured", form.yearManufactured || new Date().getFullYear());
+        // Gửi battery object rỗng để tránh lỗi backend
+        formData.append("battery.brand", "");
+        formData.append("battery.model", "");
+        formData.append("battery.yearManufactured", "");
+        formData.append("battery.batteryLevel", "");
       } else if (productType === "BATTERY") {
         formData.append("battery.brand", form.brand || "Unknown");
         formData.append("battery.model", form.model || "Unknown");
@@ -182,6 +184,10 @@ const productService = {
           form.yearManufactured || new Date().getFullYear()
         );
         formData.append("battery.batteryLevel", form.batteryLevel || 80);
+        // Gửi vehicle object rỗng để tránh lỗi backend
+        formData.append("vehicle.brand", "");
+        formData.append("vehicle.model", "");
+        formData.append("vehicle.yearManufactured", "");
       }
 
       // Images (nếu có)

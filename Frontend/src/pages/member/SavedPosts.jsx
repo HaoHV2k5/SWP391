@@ -11,27 +11,20 @@ const SavedPosts = ({ user }) => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  // State for saved posts
   const [savedPosts, setSavedPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
 
-  // Function to load saved posts from productService
   const loadSavedPosts = async () => {
     setLoadingPosts(true);
     try {
-      // Sử dụng getPublicList để lấy tất cả posts, sau đó filter saved posts
-      // Hoặc có thể tạo endpoint riêng cho saved posts
       const result = await productService.getPublicList();
       if (result.success) {
-        // Tạm thời sử dụng tất cả posts làm saved posts
-        // Trong thực tế cần có endpoint riêng cho saved posts
         setSavedPosts(result.data);
       } else {
         toast.error(result.message);
         setSavedPosts([]);
       }
     } catch (error) {
-      console.error("Error loading saved posts:", error);
       toast.error("Có lỗi xảy ra khi tải danh sách tin đã lưu");
       setSavedPosts([]);
     } finally {
@@ -40,39 +33,19 @@ const SavedPosts = ({ user }) => {
   };
 
   useEffect(() => {
-    console.log("=== SavedPosts useEffect ===");
-    
     if (!user) {
-      console.log("⏳ No user yet, waiting...");
       setIsCheckingAuth(true);
       const timer = setTimeout(() => {
-        if (!user) {
-          console.log("❌ Still no user after timeout, redirecting to login");
-          navigate("/login");
-        }
+        if (!user) navigate("/login");
       }, 1000);
       return () => clearTimeout(timer);
     }
-
     setIsCheckingAuth(false);
-
-    // Kiểm tra role
-    let userRole = null;
-    if (user.user && user.user.role) {
-      userRole = user.user.role;
-    } else if (user.role) {
-      userRole = user.role;
-    }
-
+    const userRole = user.user?.role || user.role;
     if (userRole !== "member") {
-      console.log("❌ User role is not member:", userRole);
       navigate("/");
       return;
     }
-
-    console.log("✅ Saved posts access granted");
-    
-    // Load saved posts when user is authenticated
     loadSavedPosts();
   }, [user, navigate]);
 

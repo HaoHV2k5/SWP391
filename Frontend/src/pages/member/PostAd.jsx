@@ -149,13 +149,6 @@ const PostAd = ({ user }) => {
                 <h4 className="mb-0">Đăng tin bán hàng</h4>
               </Card.Header>
               <Card.Body className="p-4">
-                <Alert variant="warning" className="mb-3">
-                  <strong>⚠️ Yêu cầu:</strong> Bạn cần <strong>mua gói đăng tin</strong> để có thể đăng bán sản phẩm. 
-                  Mỗi gói sẽ có số lượng tin đăng và thời hạn sử dụng nhất định.
-                </Alert>
-                <Alert variant="info" className="mb-4">
-                  <strong>📝 Lưu ý:</strong> Vui lòng điền đầy đủ thông tin để tin đăng của bạn được duyệt nhanh chóng.
-                </Alert>
 
                 <Form onSubmit={handleSubmit}>
                   <Row>

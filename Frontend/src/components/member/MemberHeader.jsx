@@ -1,5 +1,4 @@
-import { Card, Button, Badge } from "react-bootstrap";
-import { Bell } from "lucide-react";
+import { Card } from "react-bootstrap";
 
 const MemberHeader = ({ activeTab }) => {
   const getTabTitle = (tab) => {
@@ -26,19 +25,6 @@ const MemberHeader = ({ activeTab }) => {
           {getTabTitle(activeTab)}
         </h1>
 
-        <div className="d-flex gap-2 align-items-center">
-          <Button variant="outline-success" className="position-relative">
-            <Bell size={20} />
-            <Badge 
-              bg="success" 
-              pill 
-              className="position-absolute top-0 start-100 translate-middle"
-              style={{ fontSize: "0.7rem" }}
-            >
-              2
-            </Badge>
-          </Button>
-        </div>
       </Card.Body>
     </Card>
   );
