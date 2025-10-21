@@ -32,41 +32,24 @@ const MyPosts = ({ user }) => {
     productType: "VEHICLE",
   });
 
-  // State for user's posts
   const [posts, setPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [filterStatus, setFilterStatus] = useState("ALL");
 
-  // Function to load posts from productService
   const loadPosts = async () => {
     setLoadingPosts(true);
     try {
-      // Xóa localStorage cũ nếu có
       localStorage.removeItem("recentPendingPost");
-
-      // Lấy tin đăng từ backend
-      const username =
-        user?.username ||
-        user?.user?.username ||
-        user?.email ||
-        user?.user?.email;
-      console.log("📡 Loading posts for username:", username);
-
+      const username = user?.username || user?.user?.username || user?.email || user?.user?.email;
       const result = await productService.getMyPosts(username);
-      console.log("📦 API result:", result);
-
       if (result.success) {
-        const data = result.data || [];
-        console.log("✅ Loaded posts from DB:", data.length, "posts");
-        setPosts(data);
+        setPosts(result.data || []);
       } else {
-        console.error("❌ Failed to load posts:", result.message);
         toast.error(result.message);
         setPosts([]);
       }
     } catch (error) {
-      console.error("Error loading posts:", error);
       toast.error("Có lỗi xảy ra khi tải danh sách tin đăng");
       setPosts([]);
     } finally {
@@ -74,59 +57,30 @@ const MyPosts = ({ user }) => {
     }
   };
 
-  // Filter posts theo trạng thái
   useEffect(() => {
     let filtered = posts;
-
     if (filterStatus !== "ALL") {
-      filtered = filtered.filter(
-        (p) => (p.status || "").toUpperCase() === filterStatus
-      );
+      filtered = filtered.filter((p) => (p.status || "").toUpperCase() === filterStatus);
     }
-
     setFilteredPosts(filtered);
   }, [posts, filterStatus]);
 
   useEffect(() => {
-    console.log("=== MyPosts useEffect ===");
-
-    // Xóa localStorage mock data ngay khi load trang
     localStorage.removeItem("recentPendingPost");
-
     if (!user) {
-      console.log("⏳ No user yet, waiting...");
       setIsCheckingAuth(true);
       const timer = setTimeout(() => {
-        if (!user) {
-          console.log("❌ Still no user after timeout, redirecting to login");
-          navigate("/login");
-        }
+        if (!user) navigate("/login");
       }, 1000);
       return () => clearTimeout(timer);
     }
-
     setIsCheckingAuth(false);
-
-    // Kiểm tra role
-    let userRole = null;
-    if (user.user && user.user.role) {
-      userRole = user.user.role;
-    } else if (user.role) {
-      userRole = user.role;
-    }
-
+    const userRole = user.user?.role || user.role;
     if (userRole !== "member") {
-      console.log("❌ User role is not member:", userRole);
       navigate("/");
       return;
     }
-
-    console.log("✅ My posts access granted");
-
-    // Load posts when user is authenticated
     loadPosts();
-
-    // Tự refresh khi cửa sổ lấy lại focus
     const onFocus = () => loadPosts();
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
@@ -217,7 +171,6 @@ const MyPosts = ({ user }) => {
         toast.error(result.message || "Có lỗi xảy ra khi xóa tin đăng!");
       }
     } catch (error) {
-      console.error("Error deleting post:", error);
       toast.error("Có lỗi xảy ra khi xóa tin đăng!");
     } finally {
       setLoading(false);
@@ -245,12 +198,8 @@ const MyPosts = ({ user }) => {
   const confirmEdit = async () => {
     setLoading(true);
     try {
-      const result = await productService.updateProduct(
-        selectedPost.id,
-        editFormData
-      );
+      const result = await productService.updateProduct(selectedPost.id, editFormData);
       if (result.success) {
-        // Reload posts to get updated data
         await loadPosts();
         toast.success("Cập nhật tin đăng thành công!");
         setShowEditModal(false);
@@ -259,7 +208,6 @@ const MyPosts = ({ user }) => {
         toast.error(result.message || "Có lỗi xảy ra khi cập nhật tin đăng!");
       }
     } catch (error) {
-      console.error("Error updating post:", error);
       toast.error("Có lỗi xảy ra khi cập nhật tin đăng!");
     } finally {
       setLoading(false);
@@ -269,17 +217,9 @@ const MyPosts = ({ user }) => {
   const handleRepost = async (postId) => {
     setLoading(true);
     try {
-      // Gọi API repost (cần implement endpoint này trong backend)
-      // const result = await productService.repostPost(postId);
-      // if (result.success) {
-      // Reload posts to get updated data
       await loadPosts();
       toast.success("Đăng lại tin thành công! Tin đăng đang chờ duyệt.");
-      // } else {
-      //   toast.error(result.message);
-      // }
     } catch (error) {
-      console.error("Error reposting:", error);
       toast.error("Có lỗi xảy ra khi đăng lại tin!");
     } finally {
       setLoading(false);
@@ -436,7 +376,6 @@ const MyPosts = ({ user }) => {
             </Button>
           </div>
 
-          {/* Filter theo trạng thái */}
           <div>
             <Form.Select
               value={filterStatus}
@@ -554,19 +493,19 @@ const MyPosts = ({ user }) => {
                               post.productName ||
                               "Không có tiêu đề"}
                           </h6>
-                          <p className="text-success fw-bold mb-2">
-                            {formatCurrency(
-                              post.price ||
-                                post.vehicle?.price ||
-                                post.battery?.price ||
-                                0
-                            )}
-                          </p>
-                          <p className="text-muted small mb-2">
-                            {post.location || post.address || post.sellerAddress || ""}
-                            {(post.location || post.address || post.sellerAddress) && " • "}
-                            {post.category || post.productType || ""}
-                          </p>
+                           <p className="text-success fw-bold mb-2">
+                             {formatCurrency(
+                               post.price ||
+                                 post.vehicle?.price ||
+                                 post.battery?.price ||
+                                 0
+                             )}
+                           </p>
+                           <p className="text-muted small mb-2">
+                             {post.location || post.address || post.sellerAddress || ""}
+                             {(post.location || post.address || post.sellerAddress) && " • "}
+                             {post.category || post.productType || ""}
+                           </p>
 
                           <div className="d-flex justify-content-between text-muted small">
                             <span>{post.views || 0} lượt xem</span>
