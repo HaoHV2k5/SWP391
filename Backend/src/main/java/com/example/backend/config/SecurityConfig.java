@@ -63,6 +63,7 @@ public class SecurityConfig  {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.GET,"products").permitAll()
                         .requestMatchers("/ws/**", "/topic/**", "/app/**").permitAll()
+                        .requestMatchers("/api/eversign/webhook").permitAll()
                         .requestMatchers("/ws").permitAll()
                         .anyRequest().authenticated()   
                 )
