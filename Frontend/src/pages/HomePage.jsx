@@ -1,6 +1,6 @@
-import Banner from "../components/Banner";
+import Banner from "../components/homepageContainer/banner/Banner";
 import ProductGrid from "../components/homepageContainer/home/ProductGrid";
-import FilterBar from "../components/FilterBar";
+import FilterBar from "../components/homepageContainer/filters/FilterBar";
 import "../components/homepageContainer/styles/HomePage.css";
 import useProducts from "../hooks/useProducts";
 import { useFilter } from "../hooks/useFilter";

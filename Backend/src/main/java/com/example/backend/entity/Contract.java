@@ -47,27 +47,27 @@ public class Contract {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
-    private ContractStatus status = ContractStatus.PENDING;
+    private ContractStatus status = ContractStatus.PENDING; // sau khi ca hai khi xong
 
     @Column(name = "buyer_signed")
     @Builder.Default
-    private Boolean buyerSigned = false;
+    private Boolean buyerSigned = false; // sau khi ca hai khi xong
 
     @Column(name = "seller_signed")
     @Builder.Default
-    private Boolean sellerSigned = false;
+    private Boolean sellerSigned = false;// sau khi ca hai khi xong
 
     @Column(name = "payment_completed")
     @Builder.Default
-    private Boolean paymentCompleted = false;
+    private Boolean paymentCompleted = false; // update khi thanh toan
 
     @Column(name = "delivery_completed")
     @Builder.Default
-    private Boolean deliveryCompleted = false;
+    private Boolean deliveryCompleted = false; // khi ng mua nhan nut xac nhan nhan hang
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "transaction_id")
-    private Transaction transaction;
+    private Transaction transaction; // khi thanh toan
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -76,10 +76,10 @@ public class Contract {
     private LocalDateTime updatedAt;
 
     @Column(name = "signed_at")
-    private LocalDateTime signedAt;
+    private LocalDateTime signedAt; // khi tao hop dong
 
     @Column(name = "completed_at")
-    private LocalDateTime completedAt;
+    private LocalDateTime completedAt; // sau khi release tien cho seller
 
     @PrePersist
     protected void onCreate() {
