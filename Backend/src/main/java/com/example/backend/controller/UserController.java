@@ -5,6 +5,7 @@ import com.example.backend.dto.response.*;
 import com.example.backend.entity.User;
 import com.example.backend.service.MailService;
 import com.example.backend.service.OtpService;
+import com.example.backend.service.WalletTransactionService;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.example.backend.service.UserService;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
@@ -22,6 +25,8 @@ public class UserController {
     private final UserService userService;
     private final OtpService otpService;
     private final MailService mailService;
+    private final WalletTransactionService walletTransactionService;
+
     @Value("${email.login.facebook}")
     private String emailLoginFacebook;
 
@@ -119,8 +124,17 @@ public class UserController {
         userService.updatePassword(user,request.getPassword());
         return ApiResponse.<Boolean>builder().message("Password updated successfully").build();
     }
-
-
+    // user lay history waller transaction cua minh
+    @GetMapping("/walletTransaction")
+    public ApiResponse<List<WalletTransactionResponse>> getWalletTransactionByUserID(Authentication authentication){
+        String username = authentication.getName();
+        User user = userService.getUserByUsername(username);
+        List<WalletTransactionResponse> responses = walletTransactionService.getAllWalletTransactionsByUserID(user.getId());
+        return ApiResponse.<List<WalletTransactionResponse>>builder()
+                .data(responses)
+                .message("lấy danh sách wallet transactions của user thành công ")
+                .build();
+    }
 
 
 
