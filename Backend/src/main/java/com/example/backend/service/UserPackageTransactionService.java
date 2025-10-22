@@ -26,7 +26,7 @@ public class UserPackageTransactionService {
         return userPackageTransactionMapper.toUserPackageTransactionResponsesList(list);
     }
     // lay goi tin ma nguoi ban mua
-    public UserPostingPackage getPUserostingPackageByUserId(Long userId){
+    public UserPostingPackage getUserPostingPackageByUserId(Long userId){
         UserPostingPackage userPosingPackage = userPackageTransactionRepository.findPostingPackageByUserIdAndActiveTrue(userId);
         if(userPosingPackage == null){
             throw new AppException(ErrorCode.PACKAGE_NOT_BUY);
