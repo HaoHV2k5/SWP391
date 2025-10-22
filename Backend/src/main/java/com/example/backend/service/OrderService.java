@@ -40,4 +40,8 @@ public class OrderService {
         return  orderMapper.toOrderResponse(order);
     }
 
+    public Order findById(Long id){
+        return orderRespository.findById(id).get();
+    }
+
 }

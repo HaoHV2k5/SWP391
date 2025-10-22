@@ -6,6 +6,7 @@ import com.example.backend.entity.Vehicle;
 import com.example.backend.enums.ProductStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -69,5 +70,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> searchByTitle(String model);
     @Query("SELECT p FROM Product p WHERE LOWER(p.description) LIKE LOWER(?1)")
     List<Product> searchByDescription(String brand);
+    @EntityGraph(attributePaths = {"seller", "imageUrls", "vehicle", "battery"})
+    @Query("SELECT p FROM Product p WHERE p.isPosted = true")
+    List<Product> findAllPostedProducts();
 
 }

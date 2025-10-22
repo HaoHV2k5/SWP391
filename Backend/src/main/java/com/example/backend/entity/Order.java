@@ -45,6 +45,9 @@ public class Order {
     @Column(columnDefinition = "NVARCHAR(1000)")
     private String rejectionReason;
 
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private OrderEscrow orderEscrow;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
