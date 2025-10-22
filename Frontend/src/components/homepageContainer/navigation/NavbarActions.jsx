@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button, Badge } from "react-bootstrap";
 import { MapPin, Bell, Heart } from "lucide-react";
 import StoreLocationModal from "./StoreLocationModal";
-import SavedPopup from "../layout/SavedPopup";
+import SavedPopup from "../home/SavedPopup";
 import { useSavedProducts } from "../contexts/SavedProductsContext";
 
 const NavbarActions = () => {

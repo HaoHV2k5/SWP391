@@ -1,89 +1,51 @@
 import { apiClient, authService } from "./authService";
+import searchService from "./searchService";
+import displayService from "./displayService";
+import filterService from "./filterService";
+import productDetailService from "./productDetailService";
 
+// ==================== PRODUCT SERVICE ====================
 // Dịch vụ sản phẩm: gom tất cả các lời gọi API liên quan đến sản phẩm
 const productService = {
-  // Lấy danh sách sản phẩm hiển thị trên trang chủ
-  // Lưu ý: Hiện tại BE chưa có endpoint công khai cho khách (guest).
-  // Logic dưới đây tự xác định endpoint theo quyền người dùng:
-  // - ADMIN: gọi /products/seller/staff_approved/admin
-  // - SELLER/MEMBER: gọi /products/seller?username=<username>
-  // - GUEST: gọi /products (BE hiện có @GetMapping ở root "/products")
+  // ==================== HOMEPAGE RELATED API ====================
+  // 🏠 CHÍNH: Lấy danh sách sản phẩm hiển thị trên trang chủ/HomePage
+  // 📍 Endpoints: /products, /products/seller?username=xxx, /products/seller/staff_approved/admin
+  // 👥 Users: Guest, Member, Admin (tự động detect quyền)
   async getPublicList() {
-    let endpoint = "";
-    try {
-      // Không gọi /auth/me (BE không có). Đọc từ localStorage để xác định quyền/username
-      // const userDataRaw = localStorage.getItem("userData");
-      // console.log("🔍 getPublicList: userDataRaw:", userDataRaw);
-
-      // if (userDataRaw) {
-      //   try {
-      //     const userData = JSON.parse(userDataRaw);
-      //     const rolesRaw = userData?.roles || userData?.user?.roles || [];
-      //     const roles = Array.isArray(rolesRaw)
-      //       ? rolesRaw
-      //           .map((r) => (typeof r === "string" ? r : r?.name))
-      //           .filter(Boolean)
-      //       : [];
-      //     const isAdmin =
-      //       roles.includes("ROLE_ADMIN") ||
-      //       userData?.user?.role === "ROLE_ADMIN";
-      //     const username =
-      //       userData?.username ||
-      //       userData?.user?.username ||
-      //       userData?.email ||
-      //       userData?.user?.email;
-
-      //     console.log(
-      //       "🔍 getPublicList: isAdmin:",
-      //       isAdmin,
-      //       "username:",
-      //       username
-      //     );
-
-      //     if (isAdmin) {
-      //       endpoint = "/products/seller/staff_approved/admin";
-      //     } else if (username) {
-      //       endpoint = `/products/seller?username=${encodeURIComponent(
-      //         username
-      //       )}`;
-      //     }
-      //   } catch (e) {
-      //     console.error("❌ getPublicList: Error parsing userData:", e);
-      //   }
-      // }
-
-      // Chưa đăng nhập hoặc không xác định được endpoint phù hợp thì
-      // gọi endpoint công khai đang có trong BE
-      if (!endpoint) {
-        endpoint = "/products"; // BE hiện có GET /products trả danh sách đã post
-      }
-
-      const response = await apiClient.get(endpoint);
-      // BE thường bọc dữ liệu trong ApiResponse { data, message }
-      const data =
-        response?.data?.data ?? response?.data?.content ?? response?.data;
-      return { success: true, data: Array.isArray(data) ? data : [] };
-    } catch (error) {
-      const status = error?.response?.status;
-      const backendMessage = error?.response?.data?.message || error?.message;
-
-      // Nếu không có token và bị chặn/không tìm thấy, trả rỗng để không vỡ UI
-      if (
-        !localStorage.getItem("token") &&
-        (status === 404 || status === 401)
-      ) {
-        return { success: true, data: [] };
-      }
-      return {
-        success: false,
-        message: `Lỗi tải sản phẩm (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
-      };
-    }
+    return displayService.getPublicList();
   },
 
-  // Lấy danh sách tin đăng của chính user (seller/member) - TẤT CẢ trạng thái
+  // 🔧 PHỤ: Lấy danh sách filter options từ dữ liệu sản phẩm (brands, years, types)
+  // 📍 Logic: Gọi getPublicList() rồi xử lý dữ liệu
+  // 👥 Users: Guest, Member (không cần auth)
+  async getFilterOptions() {
+    return filterService.getFilterOptions();
+  },
+
+  // 🔍 Delegate search functions to searchService (không gọi API trực tiếp)
+  // 📍 Logic: Frontend search với fallback API
+  // 👥 Users: Guest, Member (không cần auth)
+  async getAutocompleteSuggestions(keyword) {
+    return searchService.getAutocompleteSuggestions(keyword);
+  },
+
+  async searchProducts(keyword) {
+    return searchService.searchProducts(keyword);
+  },
+
+  async getProductsByTag(tagSlug) {
+    return searchService.getProductsByTag(tagSlug);
+  },
+
+  // Delegate to productDetailService
+  async getProductById(id) {
+    return productDetailService.getProductById(id);
+  },
+
+  // ==================== USER MANAGEMENT API ====================
+  // 📋 PHỤ: Lấy danh sách tin đăng của chính user (seller/member) - TẤT CẢ trạng thái
+  // 📍 Endpoints: /products/history/seller/{userId}, /products/seller?username=xxx
+  // 👥 Users: Member, Seller (cần đăng nhập)
   async getMyPosts(username) {
     try {
       let userId = null;
@@ -108,19 +70,24 @@ const productService = {
       let endpoint;
       if (userId) {
         endpoint = `/products/history/seller/${userId}`;
+        console.log("🔍 Using history endpoint with userId:", userId);
       } else if (username) {
         endpoint = `/products/seller?username=${encodeURIComponent(username)}`;
+        console.log("🔍 Using seller endpoint with username:", username);
       } else {
         endpoint = "/products";
+        console.log("🔍 Using public endpoint (no user info)");
       }
 
       const response = await apiClient.get(endpoint);
       const data =
         response?.data?.data ?? response?.data?.content ?? response?.data;
+      console.log("📦 Received from API:", data);
       return { success: true, data: Array.isArray(data) ? data : [] };
     } catch (error) {
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
+      console.error("❌ getMyPosts error:", { status, backendMessage });
       return {
         success: false,
         message: `Lỗi tải tin của tôi (${status || "network"}): ${
@@ -130,7 +97,10 @@ const productService = {
     }
   },
 
-  // Tạo tin đăng mới (yêu cầu ROLE_SELLER trên BE)
+  // ==================== PRODUCT MANAGEMENT API ====================
+  // ➕ Tạo tin đăng mới (yêu cầu ROLE_SELLER trên BE)
+  // 📍 Endpoint: /products/create?username=xxx
+  // 👥 Users: Seller (cần đăng nhập + quyền SELLER)
   async createProduct(form, username) {
     try {
       if (!username) {
@@ -171,23 +141,11 @@ const productService = {
         formData.append("vehicle.brand", form.brand || "Unknown");
         formData.append("vehicle.model", form.model || "Unknown");
         formData.append("vehicle.yearManufactured", form.yearManufactured || new Date().getFullYear());
-        // Gửi battery object rỗng để tránh lỗi backend
-        formData.append("battery.brand", "");
-        formData.append("battery.model", "");
-        formData.append("battery.yearManufactured", "");
-        formData.append("battery.batteryLevel", "");
       } else if (productType === "BATTERY") {
         formData.append("battery.brand", form.brand || "Unknown");
         formData.append("battery.model", form.model || "Unknown");
-        formData.append(
-          "battery.yearManufactured",
-          form.yearManufactured || new Date().getFullYear()
-        );
+        formData.append("battery.yearManufactured", form.yearManufactured || new Date().getFullYear());
         formData.append("battery.batteryLevel", form.batteryLevel || 80);
-        // Gửi vehicle object rỗng để tránh lỗi backend
-        formData.append("vehicle.brand", "");
-        formData.append("vehicle.model", "");
-        formData.append("vehicle.yearManufactured", "");
       }
 
       // Images (nếu có)
@@ -215,171 +173,11 @@ const productService = {
     }
   },
 
-  // Tìm kiếm sản phẩm theo từ khóa sử dụng search endpoint của BE
-  async searchProducts(keyword) {
-    try {
-      const response = await apiClient.get(
-        `/tag/vehicle/search?request=${encodeURIComponent(keyword)}`
-      );
-      const data =
-        response?.data?.data ?? response?.data?.content ?? response?.data;
-      return { success: true, data: Array.isArray(data) ? data : [] };
-    } catch (error) {
-      const status = error?.response?.status;
-      const backendMessage = error?.response?.data?.message || error?.message;
-      console.error("searchProducts thất bại", {
-        keyword,
-        status,
-        backendMessage,
-      });
-      return {
-        success: false,
-        message: `Lỗi tìm kiếm (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
-      };
-    }
-  },
 
-  // Lấy sản phẩm theo tag/category
-  async getProductsByTag(tagSlug) {
-    try {
-      const response = await apiClient.get(
-        `/tag/${encodeURIComponent(tagSlug)}`
-      );
-      const data =
-        response?.data?.data ?? response?.data?.content ?? response?.data;
-      return { success: true, data: Array.isArray(data) ? data : [] };
-    } catch (error) {
-      const status = error?.response?.status;
-      const backendMessage = error?.response?.data?.message || error?.message;
-      console.error("getProductsByTag thất bại", {
-        tagSlug,
-        status,
-        backendMessage,
-      });
-      return {
-        success: false,
-        message: `Lỗi tải sản phẩm theo tag (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
-      };
-    }
-  },
-
-  // Lấy danh sách filter options từ dữ liệu sản phẩm
-  async getFilterOptions() {
-    try {
-      const result = await this.getPublicList();
-      if (!result.success) {
-        return { success: false, message: result.message };
-      }
-
-      const products = result.data;
-
-      // Lấy danh sách brands duy nhất - chuẩn hóa và loại bỏ trùng lặp
-      const brands = [
-        ...new Set(
-          products
-            .map((product) => {
-              const brand = product.vehicle?.brand || product.battery?.brand;
-              return brand ? brand.trim().toLowerCase() : null;
-            })
-            .filter((brand) => brand)
-        ),
-      ].sort();
-
-      // Lấy danh sách years duy nhất
-      const years = [
-        ...new Set(
-          products
-            .map(
-              (product) =>
-                product.vehicle?.yearManufactured ||
-                product.battery?.yearManufactured
-            )
-            .filter((year) => year)
-        ),
-      ].sort((a, b) => b - a); // Sắp xếp giảm dần
-
-      // Lấy product types
-      const productTypes = [
-        ...new Set(products.map((product) => product.productType)),
-      ];
-
-      return {
-        success: true,
-        data: {
-          brands,
-          years,
-          productTypes,
-        },
-      };
-    } catch (error) {
-      console.error("getFilterOptions thất bại", error);
-      return { success: false, message: "Lỗi lấy filter options" };
-    }
-  },
-
-  // Lấy chi tiết sản phẩm theo ID
-  async getProductById(id) {
-    try {
-      // Ưu tiên tìm trong danh sách sản phẩm công khai trước (không cần auth)
-      const allProductsResponse = await this.getPublicList();
-      if (allProductsResponse.success) {
-        const product = allProductsResponse.data.find(
-          (p) => p.id == id || p.productId == id
-        );
-        if (product) {
-          return { success: true, data: product };
-        }
-      }
-
-      // Nếu không tìm thấy trong danh sách công khai, thử endpoint trực tiếp
-      try {
-        const response = await apiClient.get(`/products/${id}`);
-        const data =
-          response?.data?.data ?? response?.data?.content ?? response?.data;
-
-        // Kiểm tra xem data có phải là HTML không (redirect đến login)
-        if (typeof data === "string" && data.includes("<!DOCTYPE html>")) {
-          throw new Error("Authentication required - received HTML login page");
-        }
-
-        // Kiểm tra xem data có phải là object hợp lệ không
-        if (!data || typeof data !== "object") {
-          throw new Error("Invalid data format received");
-        }
-
-        return { success: true, data: data };
-      } catch (error) {
-        // Thử endpoint versioned
-        try {
-          const response2 = await apiClient.get(`/api/v1/products/${id}`);
-          const data2 =
-            response2?.data?.data ??
-            response2?.data?.content ??
-            response2?.data;
-          return { success: true, data: data2 };
-        } catch (error2) {
-          // Ignore versioned endpoint error
-        }
-
-        throw error; // Re-throw original error
-      }
-    } catch (error) {
-      const status = error?.response?.status;
-      const backendMessage = error?.response?.data?.message || error?.message;
-      return {
-        success: false,
-        message: `Lỗi tải chi tiết sản phẩm (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
-      };
-    }
-  },
-
-  // Xóa sản phẩm theo ID (yêu cầu ROLE_SELLER)
+  // ==================== PRODUCT CRUD API ====================
+  // 🗑️ Xóa sản phẩm theo ID (yêu cầu ROLE_SELLER)
+  // 📍 Endpoint: /products/delete/{productId}
+  // 👥 Users: Seller (cần đăng nhập + quyền SELLER)
   async deleteProduct(productId) {
     try {
       const response = await apiClient.delete(`/products/delete/${productId}`);
@@ -392,6 +190,11 @@ const productService = {
     } catch (error) {
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
+      console.error("❌ deleteProduct error:", {
+        productId,
+        status,
+        backendMessage,
+      });
       return {
         success: false,
         message: `Lỗi xóa sản phẩm (${status || "network"}): ${
@@ -401,7 +204,9 @@ const productService = {
     }
   },
 
-  // Cập nhật sản phẩm (yêu cầu ROLE_SELLER)
+  // ✏️ Cập nhật sản phẩm (yêu cầu ROLE_SELLER)
+  // 📍 Endpoint: /products/update?productId={productId}
+  // 👥 Users: Seller (cần đăng nhập + quyền SELLER)
   async updateProduct(productId, updateData) {
     try {
       // Backend yêu cầu JSON (@RequestBody), không phải FormData
@@ -431,6 +236,11 @@ const productService = {
     } catch (error) {
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
+      console.error("❌ updateProduct error:", {
+        productId,
+        status,
+        backendMessage,
+      });
       return {
         success: false,
         message: `Lỗi cập nhật sản phẩm (${status || "network"}): ${
@@ -439,7 +249,11 @@ const productService = {
       };
     }
   },
-  // Lấy danh sách sản phẩm đã được staff duyệt - chờ admin duyệt
+
+  // ==================== ADMIN API ====================
+  // 📋 Lấy danh sách sản phẩm đã được staff duyệt - chờ admin duyệt
+  // 📍 Endpoint: /products/seller/staff_approved/admin
+  // 👥 Users: Admin (cần đăng nhập + quyền ADMIN)
   async getStaffApprovedProducts() {
     try {
       const response = await apiClient.get(
@@ -460,7 +274,9 @@ const productService = {
     }
   },
 
-  // Admin duyệt sản phẩm
+  // ✅ Admin duyệt sản phẩm
+  // 📍 Endpoint: /products/{productId}/approve/admin
+  // 👥 Users: Admin (cần đăng nhập + quyền ADMIN)
   async approveProductByAdmin(productId) {
     try {
       const response = await apiClient.post(
@@ -484,7 +300,9 @@ const productService = {
     }
   },
 
-  // Admin từ chối sản phẩm
+  // ❌ Admin từ chối sản phẩm
+  // 📍 Endpoint: /products/{productId}/reject
+  // 👥 Users: Admin (cần đăng nhập + quyền ADMIN)
   async rejectProductByAdmin(productId, reason) {
     try {
       const response = await apiClient.post(`/products/${productId}/reject`, {

@@ -1,7 +1,7 @@
-import { Container, Row, Col, Spinner, Alert } from "react-bootstrap";
-import { useProductDetailLogic } from "../../../hooks/useProductDetail";
-import { useSavedProducts } from "../contexts/SavedProductsContext";
-import "../styles/ProductDetail.css";
+import { Container, Spinner, Alert } from "react-bootstrap";
+import { useProductDetailLogic } from "../../hooks/useProductDetail";
+import { useSavedProducts } from "../../components/homepageContainer/contexts/SavedProductsContext";
+import "../../components/homepageContainer/styles/ProductDetail.css";
 
 const ProductDetailPage = () => {
   const {
@@ -56,7 +56,7 @@ const ProductDetailPage = () => {
               <a href={(() => {
                 // Map productType từ backend sang URL slug
                 const typeMapping = {
-                  'VEHICLE': 'vehicle',  // Backend chỉ có VEHICLE chung
+                  'VEHICLE': 'electric-scooter',  // VEHICLE dẫn đến xe máy điện
                   'BATTERY': 'battery'
                 };
                 const urlSlug = typeMapping[data.productType] || 'battery';
