@@ -3,9 +3,7 @@ package com.example.backend.controller;
 import com.example.backend.dto.request.*;
 import com.example.backend.dto.response.*;
 import com.example.backend.entity.User;
-import com.example.backend.service.MailService;
-import com.example.backend.service.OtpService;
-import com.example.backend.service.WalletTransactionService;
+import com.example.backend.service.*;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import com.example.backend.service.UserService;
 
 import java.util.List;
 
@@ -26,6 +23,8 @@ public class UserController {
     private final OtpService otpService;
     private final MailService mailService;
     private final WalletTransactionService walletTransactionService;
+    private  final TransactionService transactionService;
+
 
     @Value("${email.login.facebook}")
     private String emailLoginFacebook;
@@ -131,6 +130,18 @@ public class UserController {
         User user = userService.getUserByUsername(username);
         List<WalletTransactionResponse> responses = walletTransactionService.getAllWalletTransactionsByUserID(user.getId());
         return ApiResponse.<List<WalletTransactionResponse>>builder()
+                .data(responses)
+                .message("lấy danh sách wallet transactions của user thành công ")
+                .build();
+    }
+
+    // user lay danh sach history
+    @GetMapping("/transaction")
+    public ApiResponse<List<TransactionHistoryResponse>> getTransactionUserid(Authentication authentication){
+        String username = authentication.getName();
+        User user = userService.getUserByUsername(username);
+        List<TransactionHistoryResponse> responses = transactionService.getTranctionByUserid(user.getId());
+        return ApiResponse.<List<TransactionHistoryResponse>>builder()
                 .data(responses)
                 .message("lấy danh sách wallet transactions của user thành công ")
                 .build();
