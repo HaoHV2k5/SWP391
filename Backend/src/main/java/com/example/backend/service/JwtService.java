@@ -127,6 +127,30 @@ public class JwtService {
 //        return userName;
 //    }
 
+    public String extractUsername(String token){
+        try{
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            return signedJWT.getJWTClaimsSet().getSubject();
+        }catch (AppException e){
+            log.error("Cannot extract username from JWT", e);
+        } catch (ParseException e) {
+            log.error("Cannot extract username from JWT", e);
+        }
+        return null;
+    }
+
+
+    public boolean isTokenValid(String token){
+        try{
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            Date date = signedJWT.getJWTClaimsSet().getExpirationTime();
+            return date.after(new Date());
+        }catch (AppException e){
+            return false;
+        } catch (ParseException e) {
+            return false;
+        }
+    }
 
 
 }

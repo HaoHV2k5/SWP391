@@ -101,7 +101,7 @@ private String emailLoginFacebook;
 
 
     @Transactional
-    private User processRegister(String email,
+    public User processRegister(String email,
                                  String password,
                                  String confirmPassword,
                                  Supplier<User> userSupplier) {
@@ -132,7 +132,7 @@ private String emailLoginFacebook;
     }
 
     @Transactional
-    private User processRegisterByAdmin(String email,
+    public User processRegisterByAdmin(String email,
                                        String password,
                                        String confirmPassword,
                                        Supplier<User> userSupplier) {
