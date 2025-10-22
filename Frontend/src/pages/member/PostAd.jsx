@@ -328,13 +328,71 @@ const PostAd = ({ user }) => {
                           <small className="text-muted">Xem trước tin đăng</small>
                         </Card.Header>
                         <Card.Body className="p-3">
-                          <h6 className="text-truncate">{formData.title || "Tiêu đề tin đăng"}</h6>
-                          <p className="text-success fw-bold mb-1">
+                          {/* Title */}
+                          <h6 className="text-truncate mb-2">{formData.title || "Tiêu đề tin đăng"}</h6>
+                          
+                          {/* Price */}
+                          <p className="text-success fw-bold mb-2">
                             {formData.price ? `${parseInt(formData.price).toLocaleString('vi-VN')} ₫` : "0 ₫"}
                           </p>
-                          <small className="text-muted">
-                            {formData.category ? categories.find(c => c.value === formData.category)?.label : "Chọn danh mục"}
-                          </small>
+                          
+                          {/* Category */}
+                          <div className="mb-2">
+                            <small className="text-muted">
+                              <strong>Loại:</strong> {formData.category ? categories.find(c => c.value === formData.category)?.label : "Chọn danh mục"}
+                            </small>
+                          </div>
+
+                          {/* Product Details */}
+                          {(formData.brand || formData.model || formData.yearManufactured) && (
+                            <div className="mb-2">
+                              <small className="text-muted">
+                                <strong>Thông số:</strong>
+                              </small>
+                              <div className="small text-muted">
+                                {formData.brand && <div>• Hãng: {formData.brand}</div>}
+                                {formData.model && <div>• Model: {formData.model}</div>}
+                                {formData.yearManufactured && <div>• Năm SX: {formData.yearManufactured}</div>}
+                                {formData.category === "BATTERY" && formData.batteryLevel && (
+                                  <div>• Mức pin: {formData.batteryLevel}%</div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Description Preview */}
+                          {formData.description && (
+                            <div className="mb-2">
+                              <small className="text-muted">
+                                <strong>Mô tả:</strong>
+                              </small>
+                              <div className="small text-muted" style={{
+                                display: "-webkit-box",
+                                WebkitLineClamp: 3,
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
+                                lineHeight: "1.3"
+                              }}>
+                                {formData.description}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Images Count */}
+                          {formData.images.length > 0 && (
+                            <div className="mb-2">
+                              <small className="text-muted">
+                                <strong>Hình ảnh:</strong> {formData.images.length} ảnh
+                              </small>
+                            </div>
+                          )}
+
+                          {/* Seller Info */}
+                          <div className="mt-2 pt-2 border-top">
+                            <small className="text-muted">
+                              <strong>Người bán:</strong> {user?.name || user?.username || user?.email || "Chưa có thông tin"}
+                            </small>
+                          </div>
                         </Card.Body>
                       </Card>
                     </Col>

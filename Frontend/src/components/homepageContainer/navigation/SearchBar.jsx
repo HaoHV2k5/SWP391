@@ -1,14 +1,25 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Form, InputGroup } from 'react-bootstrap';
 import { Search } from 'lucide-react';
 
 const SearchBar = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const suggestionsRef = useRef(null);
+  const searchRef = useRef(null);
 
   const handleSearch = (e) => {
     e.preventDefault();
     // Logic tìm kiếm
     console.log('Tìm kiếm:', searchTerm);
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    setSearchTerm(suggestion.title);
+    setShowSuggestions(false);
+    // Logic xử lý khi click vào suggestion
+    console.log('Chọn suggestion:', suggestion);
   };
 
   return (
