@@ -24,6 +24,7 @@ public class UserController {
     private final MailService mailService;
     private final WalletTransactionService walletTransactionService;
     private  final TransactionService transactionService;
+    private final UserPackageTransactionService userPackageTransactionService;
 
 
     @Value("${email.login.facebook}")
@@ -143,8 +144,33 @@ public class UserController {
         List<TransactionHistoryResponse> responses = transactionService.getTranctionByUserid(user.getId());
         return ApiResponse.<List<TransactionHistoryResponse>>builder()
                 .data(responses)
-                .message("lấy danh sách wallet transactions của user thành công ")
+                .message("lấy danh sách mua gói  transactions của user thành công ")
                 .build();
+    }
+
+// usr xem lich su cac goi minh da mua
+    @GetMapping("/package/history")
+    public ApiResponse<List<UserPackageTransactionResponse>> getTransactionPackageUserid(Authentication authentication){
+        String username = authentication.getName();
+        User user = userService.getUserByUsername(username);
+        List<UserPackageTransactionResponse> responses = userPackageTransactionService.getUserPackageTransactions(user.getId());
+        return ApiResponse.< List<UserPackageTransactionResponse>>builder()
+                .data(responses)
+                .message("lấy danh sách lịch  cac goi da mua  của user thành công ")
+                .build();
+    }
+
+    //usr lay goi dang su dung
+    @GetMapping("/package/current")
+    public ApiResponse<PostingPackageResponse> getPostingPackageCurrent(Authentication authentication){
+        String userName = authentication.getName();
+        User usr = userService.getUserByUsername(userName);
+        PostingPackageResponse postingPackageResponse = userService.getPackageCurrent(usr.getId());
+        return  ApiResponse.<PostingPackageResponse>builder()
+                .data(postingPackageResponse)
+                .message("đã lấy thành công gói hiện tại user đang sử dụng")
+                .build();
+
     }
 
 
