@@ -10,8 +10,8 @@ import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import { getToastDefaults } from "./utils/notificationManager";
 import "react-toastify/dist/ReactToastify.css";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
+import Navbar from "./components/homepageContainer/navigation/Navbar";
+import Footer from "./components/homepageContainer/layout/Footer";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -24,10 +24,10 @@ import SavedPosts from "./pages/member/SavedPosts";
 import ViewHistory from "./pages/member/ViewHistory";
 import AccountPage from "./pages/AccountPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
-import FacebookCallbackPage from "./pages/FacebookCallbackPage";
 import "./App.css";
-import CategoryPage from "./components/homepageContainer/layout/CategoryPage";
-import ProductDetailPage from "./components/homepageContainer/layout/ProductDetailPage";
+import CategoryRouter from "./components/homepageContainer/navigation/CategoryRouter";
+import ProductDetailPage from "./pages/home/ProductDetailPage";
+import TagPage from "./pages/home/TagPage";
 import { SavedProductsProvider } from "./components/homepageContainer/contexts/SavedProductsContext";
 import { normalizeLoginResponse, persistAuth, isStaff } from "./utils/auth";
 import ProtectedStaffRoute from "./routes/ProtectedStaffRoute";
@@ -141,12 +141,9 @@ function AppContent() {
         <Route path="/view-history" element={<ViewHistory user={user} />} />
         <Route path="/post-ad" element={<PostAd user={user} />} />
         <Route path="/verify-otp" element={<OTPVerificationPage />} />
-        <Route
-          path="/facebook-callback"
-          element={<FacebookCallbackPage onLogin={handleLogin} />}
-        />
-        <Route path="/products/:type" element={<CategoryPage />} />
+        <Route path="/products/:type" element={<CategoryRouter />} />
         <Route path="/product/:id" element={<ProductDetailPage />} />
+        <Route path="/tag/:slug" element={<TagPage />} />
       </Routes>
 
       {/* Chỉ hiển thị Footer cho trang chủ và OTP, không hiển thị cho staff và admin */}
