@@ -26,18 +26,12 @@ const displayService = {
           const isAdmin =
             roles.includes("ROLE_ADMIN") ||
             userData?.user?.role === "ROLE_ADMIN";
-          const username =
-            userData?.username ||
-            userData?.user?.username ||
-            userData?.email ||
-            userData?.user?.email;
 
           if (isAdmin) {
             endpoint = "/products/seller/staff_approved/admin";
-          } else if (username) {
-            endpoint = `/products/seller?username=${encodeURIComponent(
-              username
-            )}`;
+          } else {
+            // Member và Guest đều xem sản phẩm công khai trên homepage
+            endpoint = "/products";
           }
         } catch (e) {
           console.error("❌ getPublicList: Error parsing userData:", e);
