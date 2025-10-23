@@ -277,6 +277,14 @@ private String emailLoginFacebook;
         return userPostingPackageMapper.toPostingPackageResponse(userPostingPackage);
     }
 
+    public void updateAvatar(User user,String avatar){
+        if(avatar.isEmpty()){
+            throw new AppException(ErrorCode.AVATAR_INVALID);
+        }
+        user.setAvatar(avatar);
+        userRepository.save(user);
+    }
+
 
 
 
