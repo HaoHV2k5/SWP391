@@ -29,9 +29,7 @@ public class UserPackageTransactionService {
     // lay goi tin ma nguoi ban mua
     public UserPostingPackage getUserPostingPackageByUserId(Long userId){
         UserPostingPackage userPosingPackage = userPackageTransactionRepository.findPostingPackageByUserIdAndActiveTrue(userId);
-        if(userPosingPackage == null){
-            throw new AppException(ErrorCode.PACKAGE_NOT_BUY);
-        }
+        // Trả về null thay vì throw exception nếu user chưa mua gói
         return userPosingPackage;
     }
 

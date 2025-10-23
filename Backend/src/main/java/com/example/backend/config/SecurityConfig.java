@@ -43,6 +43,10 @@ public class SecurityConfig  {
             "/tag/**",
             "/kyc/submit",  // Chỉ cho phép submit KYC không cần auth
             "/kyc/test",    // Test endpoint
+            "/api/payment/test",     // Payment test endpoint
+            "/api/payment/simple-test", // Simple payment test
+            "/api/payment/create-wallet", // Create wallet endpoint
+            "/api/payment/create-wallet-for-current-user", // Create wallet for current user
 
             "/api/v1/products/active",
             "/api/v1/products/{id}",

@@ -28,10 +28,33 @@ public class WalletService {
           var user = userRepository.findByRoles(role);
 
 
-           Wallet wallet = walletRepository.findByUserId(user.get().getId()).orElseThrow(() -> new AppException(ErrorCode.WALLET_NOT_EXIST));
+           Wallet wallet = walletRepository.findByUserId(user.get().getId())
+                   .orElseGet(() -> {
+                       // Tạo wallet admin nếu chưa có
+                       Wallet newWallet = Wallet.builder()
+                               .user(user.get())
+                               .balance(BigDecimal.ZERO)
+                               .build();
+                       return walletRepository.save(newWallet);
+                   });
            return wallet.getBalance();
 
 
+        }
+
+        public BigDecimal getBalanceByUserId(Long userId) {
+            Wallet wallet = walletRepository.findByUserId(userId)
+                    .orElseGet(() -> {
+                        // Tạo wallet mới nếu chưa có
+                        User user = userRepository.findById(userId)
+                                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+                        Wallet newWallet = Wallet.builder()
+                                .user(user)
+                                .balance(BigDecimal.ZERO)
+                                .build();
+                        return walletRepository.save(newWallet);
+                    });
+            return wallet.getBalance();
         }
 
 }
