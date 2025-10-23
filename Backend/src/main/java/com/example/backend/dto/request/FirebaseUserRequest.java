@@ -23,3 +23,4 @@ public class FirebaseUserRequest {
     
     private String firebaseToken; // Optional, for verification
 }
+

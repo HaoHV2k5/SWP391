@@ -1,21 +1,10 @@
 // src/services/apiClient.js
 import axios from "axios";
 
-const rawBase = import.meta.env.VITE_API_BASE_URL;
-const fallbackBase = "http://localhost:3979";
-const API_BASE = (rawBase && rawBase.trim() ? rawBase : fallbackBase).replace(
-  /\/$/,
-  ""
-);
+// Force baseURL to be correct (without /api prefix)
+const API_BASE = "http://localhost:3979";
 
-if (!rawBase || !rawBase.trim()) {
-  console.warn(
-    "[apiClient] VITE_API_BASE_URL chưa được nạp. Đang dùng fallback:",
-    API_BASE
-  );
-} else {
-  console.log("[apiClient] Base URL =", API_BASE); // 👈 thêm dòng này để bạn thấy đúng /api
-}
+console.log("[apiClient] Base URL =", API_BASE);
 
 const api = axios.create({
   baseURL: API_BASE,

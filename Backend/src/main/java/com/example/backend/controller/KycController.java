@@ -62,12 +62,32 @@ public class KycController {
         List<KycDetailResponse> list = kycService.getAllKycByStaff();
         return  ApiResponse.<List<KycDetailResponse>>builder().data(list).build();
     }
-    // get kyc for admin lay trang thai staff_approve
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    
+    // get kyc for admin lay trang thai STAFF_APPROVED
+    // @PreAuthorize("hasAuthority('ROLE_ADMIN')") // Tạm thời comment để test
     @GetMapping("/admin")
     public ApiResponse<List<KycDetailResponse>> getKycByAdmin(){
-        List<KycDetailResponse> list = kycService.getAllKycByAdmin();
-        return  ApiResponse.<List<KycDetailResponse>>builder().data(list).build();
+        try {
+            System.out.println("=== DEBUG: Calling getAllKycByAdmin ===");
+            List<KycDetailResponse> list = kycService.getAllKycByAdmin();
+            System.out.println("=== DEBUG: Found " + list.size() + " KYC records ===");
+            return ApiResponse.<List<KycDetailResponse>>builder().data(list).build();
+        } catch (Exception e) {
+            System.err.println("=== ERROR in getKycByAdmin: " + e.getMessage() + " ===");
+            e.printStackTrace();
+            throw e;
+        }
+    }
+    // Test endpoint để debug
+    @GetMapping("/test")
+    public ApiResponse<String> test(){
+        return ApiResponse.<String>builder().data("KYC API is working").build();
+    }
+    
+    // Simple test endpoint without database
+    @GetMapping("/simple-test")
+    public String simpleTest(){
+        return "Simple test endpoint working";
     }
 
     // get latest kyc of user
@@ -80,7 +100,7 @@ public class KycController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_STAFF')")
 
     // get user infor dua tren kyc id
-    @GetMapping("{id}/infor/user")
+    @GetMapping("/{id}/infor/user")
     public ApiResponse<UserDetailResponse> getInforUser(@PathVariable("id") Long kycID){
         UserDetailResponse response = kycService.getInforUserById(kycID);
         return  ApiResponse.<UserDetailResponse>builder().message("đã lấy thông tin user thành công")

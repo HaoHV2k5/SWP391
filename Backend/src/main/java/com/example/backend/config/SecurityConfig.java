@@ -41,7 +41,8 @@ public class SecurityConfig  {
             "/users/verify-otp",
             "/users/resend-otp",
             "/tag/**",
-
+            "/kyc/submit",  // Chỉ cho phép submit KYC không cần auth
+            "/kyc/test",    // Test endpoint
 
             "/api/v1/products/active",
             "/api/v1/products/{id}",

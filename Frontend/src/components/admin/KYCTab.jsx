@@ -1,327 +1,391 @@
+import { useState, useEffect } from "react";
 import { Filter, Download, CheckCircle, XCircle, Eye } from "lucide-react";
+import { Button, Table, Tag, Space, Input, Modal, message, Tabs } from "antd";
+import {
+  ExclamationCircleOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
+import apiClient from "../../services/apiClient";
 
 const KYCTab = () => {
-  const kycData = [
+  const [activeSubTab, setActiveSubTab] = useState("pending");
+  const [kycData, setKycData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [query, setQuery] = useState("");
+  const [selectedKyc, setSelectedKyc] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+
+  // Fetch KYC data for admin (all statuses)
+  const fetchKycData = async () => {
+    setLoading(true);
+    try {
+      // Test API trước
+      const testResponse = await apiClient.get("/kyc/test");
+      console.log("Test API response:", testResponse.data);
+
+      // Sau đó gọi API admin
+      const response = await apiClient.get("/kyc/admin");
+      console.log("Admin API response:", response.data);
+
+      setKycData(response.data.data || []);
+    } catch (error) {
+      console.error("Error fetching KYC data:", error);
+      message.error("Lỗi kết nối server");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filter data based on sub-tab for admin
+  const getFilteredData = () => {
+    let filtered = kycData;
+
+    // Admin có thể xem tất cả KYC (STAFF_APPROVED, ADMIN_APPROVED, REJECTED)
+    switch (activeSubTab) {
+      case "pending":
+        // Hiển thị STAFF_APPROVED (chờ admin duyệt)
+        filtered = kycData.filter((item) => item.status === "STAFF_APPROVED");
+        break;
+      case "approved":
+        // Hiển thị ADMIN_APPROVED (đã duyệt)
+        filtered = kycData.filter((item) => item.status === "ADMIN_APPROVED");
+        break;
+      case "rejected":
+        // Hiển thị REJECTED (đã từ chối)
+        filtered = kycData.filter((item) => item.status === "REJECTED");
+        break;
+      default:
+        filtered = kycData;
+    }
+
+    // Apply search filter
+    if (query) {
+      filtered = filtered.filter(
+        (item) =>
+          item.id?.toString().includes(query) ||
+          item.userId?.toString().includes(query) ||
+          item.status?.toLowerCase().includes(query.toLowerCase())
+      );
+    }
+
+    return filtered;
+  };
+
+  // Approve KYC
+  const handleApprove = async (kycId) => {
+    try {
+      const response = await apiClient.post(`/kyc/${kycId}/admin/approve`);
+      if (response.data.code === 1000) {
+        message.success("Duyệt KYC thành công");
+        fetchKycData(); // Refresh data
+      } else {
+        message.error("Lỗi khi duyệt KYC");
+      }
+    } catch (error) {
+      console.error("Error approving KYC:", error);
+      message.error("Lỗi kết nối server");
+    }
+  };
+
+  // Reject KYC
+  const handleReject = async (kycId, reason) => {
+    try {
+      const response = await apiClient.post(`/kyc/${kycId}/reject`, {
+        reason: reason,
+      });
+      if (response.data.code === 1000) {
+        message.success("Từ chối KYC thành công");
+        fetchKycData(); // Refresh data
+      } else {
+        message.error("Lỗi khi từ chối KYC");
+      }
+    } catch (error) {
+      console.error("Error rejecting KYC:", error);
+      message.error("Lỗi kết nối server");
+    }
+  };
+
+  // Get user info for KYC
+  const getUserInfo = async (kycId) => {
+    try {
+      const response = await apiClient.get(`/kyc/${kycId}/infor/user`);
+      if (response.data.code === 1000) {
+        return response.data.data;
+      }
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+    }
+    return null;
+  };
+
+  // Show detail modal
+  const showDetail = async (kyc) => {
+    const user = await getUserInfo(kyc.id);
+    setSelectedKyc(kyc);
+    setUserInfo(user);
+    setShowDetailModal(true);
+  };
+
+  // Status tag component
+  const getStatusTag = (status) => {
+    const statusMap = {
+      PENDING: { color: "warning", text: "Chờ Staff duyệt" },
+      STAFF_APPROVED: { color: "processing", text: "Chờ Admin duyệt" },
+      ADMIN_APPROVED: { color: "success", text: "Đã duyệt" },
+      REJECTED: { color: "error", text: "Đã từ chối" },
+    };
+    return statusMap[status] || { color: "default", text: status };
+  };
+
+  // Table columns
+  const columns = [
     {
-      id: 1,
-      name: "Nguyễn Văn A",
-      email: "nguyenvana@email.com",
-      phone: "0123456789",
-      status: "pending",
-      submitDate: "2024-01-15",
-      images: ["cc_front.jpg", "cc_back.jpg", "selfie.jpg"],
+      title: "ID",
+      dataIndex: "id",
+      key: "id",
+      width: 80,
+      render: (id) => `#${id}`,
     },
     {
-      id: 2,
-      name: "Trần Thị B",
-      email: "tranthib@email.com",
-      phone: "0987654321",
-      status: "approved",
-      submitDate: "2024-01-14",
-      images: ["cc_front.jpg", "cc_back.jpg", "selfie.jpg"],
+      title: "User ID",
+      dataIndex: "userId",
+      key: "userId",
+      width: 100,
     },
     {
-      id: 3,
-      name: "Lê Văn C",
-      email: "levanc@email.com",
-      phone: "0369258147",
-      status: "rejected",
-      submitDate: "2024-01-13",
-      images: ["cc_front.jpg", "cc_back.jpg", "selfie.jpg"],
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => {
+        const tag = getStatusTag(status);
+        return <Tag color={tag.color}>{tag.text}</Tag>;
+      },
+    },
+    {
+      title: "Ngày gửi",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date) => new Date(date).toLocaleDateString("vi-VN"),
+    },
+    {
+      title: "Thao tác",
+      key: "actions",
+      width: 200,
+      render: (_, record) => (
+        <Space>
+          <Button
+            type="primary"
+            size="small"
+            onClick={() => showDetail(record)}
+          >
+            Chi tiết
+          </Button>
+          {record.status === "STAFF_APPROVED" && (
+            <>
+              <Button
+                type="primary"
+                size="small"
+                onClick={() => {
+                  Modal.confirm({
+                    title: "Xác nhận duyệt KYC?",
+                    icon: <ExclamationCircleOutlined />,
+                    onOk: () => handleApprove(record.id),
+                  });
+                }}
+              >
+                Duyệt
+              </Button>
+              <Button
+                danger
+                size="small"
+                onClick={() => {
+                  Modal.confirm({
+                    title: "Xác nhận từ chối KYC?",
+                    icon: <ExclamationCircleOutlined />,
+                    content: "Bạn có chắc chắn muốn từ chối KYC này?",
+                    onOk: () => handleReject(record.id, "Admin từ chối"),
+                  });
+                }}
+              >
+                Từ chối
+              </Button>
+            </>
+          )}
+        </Space>
+      ),
     },
   ];
 
+  // Sub-tab items for admin
+  const subTabItems = [
+    {
+      key: "pending",
+      label: "Chờ Admin duyệt",
+      children: null, // Will be handled by getFilteredData
+    },
+    {
+      key: "approved",
+      label: "Đã duyệt",
+      children: null,
+    },
+    {
+      key: "rejected",
+      label: "Đã từ chối",
+      children: null,
+    },
+  ];
+
+  useEffect(() => {
+    fetchKycData();
+  }, []);
+
+  const filteredData = getFilteredData();
+
   return (
-    <div
-      style={{
-        backgroundColor: "rgba(26, 26, 46, 0.8)",
-        backdropFilter: "blur(20px)",
-        border: "1px solid rgba(255, 255, 255, 0.1)",
-        borderRadius: "15px",
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
-        padding: "2rem",
-        color: "white",
-      }}
-    >
+    <div style={{ padding: "1rem", color: "white" }}>
+      {/* Header */}
+      <div style={{ marginBottom: "1rem" }}>
+        <h2 style={{ color: "white", marginBottom: "0.5rem" }}>
+          Quản lý KYC - Admin
+        </h2>
+        <p style={{ color: "rgba(255, 255, 255, 0.7)" }}>
+          Duyệt các yêu cầu KYC đã được Staff phê duyệt
+        </p>
+      </div>
+
+      {/* Search and Refresh */}
       <div
         style={{
+          marginBottom: "1rem",
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "2rem",
-        }}
-      >
-        <h3 style={{ color: "#ffffff", margin: 0 }}>
-          Duyệt KYC - Xác thực danh tính
-        </h3>
-        <div style={{ display: "flex", gap: "1rem" }}>
-          <button className="btn btn-secondary">
-            <Filter size={16} className="mr-1" />
-            Lọc
-          </button>
-          <button className="btn btn-primary">
-            <Download size={16} className="mr-1" />
-            Xuất báo cáo
-          </button>
-        </div>
-      </div>
-
-      {/* KYC Stats */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
           gap: "1rem",
-          marginBottom: "2rem",
+          alignItems: "center",
         }}
       >
-        <div
-          style={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            color: "white",
-            padding: "1.5rem",
-            borderRadius: "10px",
-            textAlign: "center",
-          }}
+        <Button
+          icon={<ReloadOutlined />}
+          onClick={fetchKycData}
+          loading={loading}
         >
-          <h4 style={{ margin: "0 0 0.5rem 0", fontSize: "1.5rem" }}>15</h4>
-          <p style={{ margin: 0, opacity: 0.9 }}>Chờ duyệt</p>
-        </div>
-        <div
-          style={{
-            background: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-            color: "white",
-            padding: "1.5rem",
-            borderRadius: "10px",
-            textAlign: "center",
-          }}
-        >
-          <h4 style={{ margin: "0 0 0.5rem 0", fontSize: "1.5rem" }}>128</h4>
-          <p style={{ margin: 0, opacity: 0.9 }}>Đã duyệt</p>
-        </div>
-        <div
-          style={{
-            background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-            color: "white",
-            padding: "1.5rem",
-            borderRadius: "10px",
-            textAlign: "center",
-          }}
-        >
-          <h4 style={{ margin: "0 0 0.5rem 0", fontSize: "1.5rem" }}>8</h4>
-          <p style={{ margin: 0, opacity: 0.9 }}>Từ chối</p>
-        </div>
-        <div
-          style={{
-            background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-            color: "white",
-            padding: "1.5rem",
-            borderRadius: "10px",
-            textAlign: "center",
-          }}
-        >
-          <h4 style={{ margin: "0 0 0.5rem 0", fontSize: "1.5rem" }}>151</h4>
-          <p style={{ margin: 0, opacity: 0.9 }}>Tổng cộng</p>
-        </div>
+          Tải lại
+        </Button>
+        <Input
+          placeholder="Tìm kiếm theo ID, User ID, trạng thái..."
+          prefix={<SearchOutlined />}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          style={{ width: 300 }}
+        />
       </div>
 
-      {/* KYC List */}
-      <div style={{ overflowX: "auto" }}>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            color: "#ffffff",
-          }}
-        >
-          <thead>
-            <tr style={{ borderBottom: "2px solid rgba(255, 255, 255, 0.2)" }}>
-              <th
-                style={{ padding: "1rem", textAlign: "left", color: "#ffffff" }}
-              >
-                ID
-              </th>
-              <th
-                style={{ padding: "1rem", textAlign: "left", color: "#ffffff" }}
-              >
-                Tên
-              </th>
-              <th
-                style={{ padding: "1rem", textAlign: "left", color: "#ffffff" }}
-              >
-                Email
-              </th>
-              <th
-                style={{ padding: "1rem", textAlign: "left", color: "#ffffff" }}
-              >
-                Số điện thoại
-              </th>
-              <th
-                style={{ padding: "1rem", textAlign: "left", color: "#ffffff" }}
-              >
-                Trạng thái
-              </th>
-              <th
-                style={{ padding: "1rem", textAlign: "left", color: "#ffffff" }}
-              >
-                Ngày nộp
-              </th>
-              <th
-                style={{ padding: "1rem", textAlign: "left", color: "#ffffff" }}
-              >
-                Hình ảnh
-              </th>
-              <th
-                style={{ padding: "1rem", textAlign: "left", color: "#ffffff" }}
-              >
-                Thao tác
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {kycData.map((kyc) => (
-              <tr
-                key={kyc.id}
-                style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.1)" }}
-              >
-                <td style={{ padding: "1rem", color: "#ffffff" }}>#{kyc.id}</td>
-                <td style={{ padding: "1rem", color: "#ffffff" }}>
-                  {kyc.name}
-                </td>
-                <td style={{ padding: "1rem", color: "#ffffff" }}>
-                  {kyc.email}
-                </td>
-                <td style={{ padding: "1rem", color: "#ffffff" }}>
-                  {kyc.phone}
-                </td>
-                <td style={{ padding: "1rem" }}>
-                  <span
+      {/* Sub-tabs */}
+      <Tabs
+        activeKey={activeSubTab}
+        onChange={setActiveSubTab}
+        items={subTabItems}
+        style={{ marginBottom: "1rem" }}
+      />
+
+      {/* Table */}
+      <Table
+        columns={columns}
+        dataSource={filteredData}
+        loading={loading}
+        rowKey="id"
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total) => `Tổng ${total} bản ghi`,
+        }}
+        style={{
+          backgroundColor: "rgba(255, 255, 255, 0.05)",
+          borderRadius: "8px",
+        }}
+      />
+
+      {/* Detail Modal */}
+      <Modal
+        title="Chi tiết KYC"
+        open={showDetailModal}
+        onCancel={() => setShowDetailModal(false)}
+        footer={null}
+        width={800}
+      >
+        {selectedKyc && (
+          <div>
+            <h3>Thông tin KYC</h3>
+            <p>
+              <strong>ID:</strong> #{selectedKyc.id}
+            </p>
+            <p>
+              <strong>Trạng thái:</strong>{" "}
+              {getStatusTag(selectedKyc.status).text}
+            </p>
+            <p>
+              <strong>Ngày gửi:</strong>{" "}
+              {new Date(selectedKyc.createdAt).toLocaleString("vi-VN")}
+            </p>
+
+            {userInfo && (
+              <>
+                <h3 style={{ marginTop: "1rem" }}>Thông tin người dùng</h3>
+                <p>
+                  <strong>Tên:</strong> {userInfo.fullname}
+                </p>
+                <p>
+                  <strong>Email:</strong> {userInfo.email}
+                </p>
+                <p>
+                  <strong>Số điện thoại:</strong> {userInfo.phone}
+                </p>
+                <p>
+                  <strong>Ngày sinh:</strong> {userInfo.yob}
+                </p>
+                <p>
+                  <strong>Địa chỉ:</strong> {userInfo.address}
+                </p>
+              </>
+            )}
+
+            <h3 style={{ marginTop: "1rem" }}>Ảnh CMND</h3>
+            <div style={{ display: "flex", gap: "1rem", marginTop: "0.5rem" }}>
+              {selectedKyc.frontImageUrl && (
+                <div>
+                  <p>Mặt trước:</p>
+                  <img
+                    src={selectedKyc.frontImageUrl}
+                    alt="Mặt trước CMND"
                     style={{
-                      padding: "0.25rem 0.75rem",
-                      borderRadius: "20px",
-                      fontSize: "0.875rem",
-                      fontWeight: "500",
-                      backgroundColor:
-                        kyc.status === "pending"
-                          ? "#fff3cd"
-                          : kyc.status === "approved"
-                          ? "#d4edda"
-                          : "#f8d7da",
-                      color:
-                        kyc.status === "pending"
-                          ? "#856404"
-                          : kyc.status === "approved"
-                          ? "#155724"
-                          : "#721c24",
+                      width: 200,
+                      height: 120,
+                      objectFit: "cover",
+                      borderRadius: "4px",
                     }}
-                  >
-                    {kyc.status === "pending"
-                      ? "Chờ duyệt"
-                      : kyc.status === "approved"
-                      ? "Đã duyệt"
-                      : "Từ chối"}
-                  </span>
-                </td>
-                <td style={{ padding: "1rem", color: "#ffffff" }}>
-                  {kyc.submitDate}
-                </td>
-                <td style={{ padding: "1rem" }}>
-                  <div style={{ display: "flex", gap: "0.5rem" }}>
-                    {kyc.images.map((image, index) => (
-                      <button
-                        key={index}
-                        style={{
-                          padding: "0.5rem",
-                          background: "#f8f9fa",
-                          border: "1px solid #dee2e6",
-                          borderRadius: "5px",
-                          cursor: "pointer",
-                          fontSize: "0.75rem",
-                        }}
-                        onClick={() => {
-                          // Xem hình ảnh
-                          alert(`Xem hình ảnh: ${image}`);
-                        }}
-                      >
-                        {image}
-                      </button>
-                    ))}
-                  </div>
-                </td>
-                <td style={{ padding: "1rem" }}>
-                  <div style={{ display: "flex", gap: "0.5rem" }}>
-                    {kyc.status === "pending" && (
-                      <>
-                        <button
-                          className="btn btn-primary"
-                          style={{
-                            padding: "0.5rem 1rem",
-                            fontSize: "0.875rem",
-                            background: "#28a745",
-                            border: "none",
-                            borderRadius: "5px",
-                            color: "white",
-                            cursor: "pointer",
-                          }}
-                          onClick={() => {
-                            // Duyệt KYC
-                            alert(`Duyệt KYC cho ${kyc.name}`);
-                          }}
-                        >
-                          <CheckCircle
-                            size={16}
-                            style={{ marginRight: "0.25rem" }}
-                          />
-                          Duyệt
-                        </button>
-                        <button
-                          className="btn btn-secondary"
-                          style={{
-                            padding: "0.5rem 1rem",
-                            fontSize: "0.875rem",
-                            background: "#dc3545",
-                            border: "none",
-                            borderRadius: "5px",
-                            color: "white",
-                            cursor: "pointer",
-                          }}
-                          onClick={() => {
-                            // Từ chối KYC
-                            alert(`Từ chối KYC cho ${kyc.name}`);
-                          }}
-                        >
-                          <XCircle
-                            size={16}
-                            style={{ marginRight: "0.25rem" }}
-                          />
-                          Từ chối
-                        </button>
-                      </>
-                    )}
-                    <button
-                      className="btn btn-secondary"
-                      style={{
-                        padding: "0.5rem",
-                        background: "#6c757d",
-                        border: "none",
-                        borderRadius: "5px",
-                        color: "white",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => {
-                        // Xem chi tiết
-                        alert(`Xem chi tiết KYC của ${kyc.name}`);
-                      }}
-                    >
-                      <Eye size={16} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                  />
+                </div>
+              )}
+              {selectedKyc.backImageUrl && (
+                <div>
+                  <p>Mặt sau:</p>
+                  <img
+                    src={selectedKyc.backImageUrl}
+                    alt="Mặt sau CMND"
+                    style={{
+                      width: 200,
+                      height: 120,
+                      objectFit: "cover",
+                      borderRadius: "4px",
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
