@@ -104,7 +104,13 @@ const ProductCard = ({ product }) => {
             <Button
               variant={saved ? "danger" : "light"}
               size="sm"
-              onClick={() => toggle(product)}
+              onClick={async () => {
+                try {
+                  await toggle(product);
+                } catch (error) {
+                  console.error("Error toggling wishlist:", error);
+                }
+              }}
               style={{ padding: "4px 8px" }}
             >
               <i className={saved ? "bi bi-heart-fill" : "bi bi-heart"}></i>

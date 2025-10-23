@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 const UserMenuItems = ({ onItemClick }) => {
   const menuItems = [
     { to: "/account", label: "Tài khoản" },
+    { to: "/kyc", label: "Xác thực danh tính" },
     { to: "/my-posts", label: "Tin đăng của tôi" },
     { to: "/saved-posts", label: "Tin đã lưu" },
     { to: "/orders", label: "Đơn hàng" },

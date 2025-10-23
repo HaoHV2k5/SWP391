@@ -24,12 +24,10 @@ public class OrderResponse {
     private String productName;
 
     private BigDecimal offeredPrice;
-
-    private String message;
+    
 
     private OrderStatus status;
 
-    private String rejectionReason;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

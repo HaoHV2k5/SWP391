@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Col, Row, Badge, Alert } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import BaseFilterBar from '../../components/homepageContainer/filters/BaseFilterBar';
 import { useFilter } from '../../hooks/useFilter';
+import usePagination from '../../hooks/usePagination';
 import ProductCard from '../../components/homepageContainer/home/ProductCard';
+import LoadMoreButton from '../../components/homepageContainer/home/LoadMoreButton';
 import useProducts from '../../hooks/useProducts';
 import searchService from '../../services/searchService';
 
@@ -15,9 +17,23 @@ const TagPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Sử dụng pagination hook
+  const { visibleCount, handleLoadMore, resetPagination } = usePagination(6);
+
   // Lấy sản phẩm từ BE và áp dụng filter
   const { products, loading: productsLoading, error: productsError } = useProducts();
   const { filteredProducts, handleFiltersChange } = useFilter(products, ['priceRange', 'year']);
+
+  // Reset pagination khi chuyển tag hoặc khi products thay đổi
+  useEffect(() => {
+    resetPagination();
+  }, [slug, products.length]);
+
+  // Reset pagination khi filter thay đổi
+  const handleFilterChange = (filters) => {
+    handleFiltersChange(filters);
+    resetPagination();
+  };
 
   useEffect(() => {
     const fetchProductsByTag = async () => {
@@ -65,6 +81,10 @@ const TagPage = () => {
     finalProducts = filteredProducts.filter(p => tagProductIds.has(p.id));
   }
 
+  // Pagination
+  const displayedProducts = finalProducts.slice(0, visibleCount);
+  const hasMore = visibleCount < finalProducts.length;
+
   // Format tên hiển thị cho tag với dấu tiếng Việt
   const formatTagName = (tagSlug) => {
     // Mapping từ slug không dấu sang có dấu
@@ -84,7 +104,7 @@ const TagPage = () => {
     <div className="container py-4">
       {/* Filter bar cho price, year */}
       <BaseFilterBar 
-        onFilterChange={handleFiltersChange}
+        onFilterChange={handleFilterChange}
         filterTypes={['priceRange', 'year']}
         showVehicleType={false}
       />
@@ -105,13 +125,19 @@ const TagPage = () => {
           <p>Không tìm thấy sản phẩm nào cho tag "{formatTagName(slug)}".</p>
         </Alert>
       ) : (
-        <Row className='g-4'>
-          {finalProducts.map((product) => (
-            <Col key={product.id} xs={12} md={6} lg={4}>
-              <ProductCard product={product} />
-            </Col>
-          ))}
-        </Row>
+        <>
+          <Row className='g-4'>
+            {displayedProducts.map((product) => (
+              <Col key={product.id} xs={12} md={6} lg={4}>
+                <ProductCard product={product} />
+              </Col>
+            ))}
+          </Row>
+
+          {hasMore && (
+            <LoadMoreButton onClick={() => handleLoadMore(finalProducts.length)} />
+          )}
+        </>
       )}
     </div>
   );

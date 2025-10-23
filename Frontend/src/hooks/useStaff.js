@@ -169,7 +169,13 @@ export const useKyc = () => {
         const id = getKycId(idOrRow);
         const fn = kycApi.approve || kycApi.approveKyc;
         await fn(id);
-        await loadKyc(); // reload thay vì filter local
+
+        // Optimistic remove: bỏ ngay item khỏi danh sách
+        setKycList((prev) => prev.filter((x) => getKycId(x) !== id));
+
+        // (tuỳ thích) Có thể gọi loadKyc() nếu bạn muốn đồng bộ lại
+        // await loadKyc();
+
         showSuccessNotification("Duyệt KYC thành công");
       } catch (err) {
         showErrorNotification(handleApiError(err, "Không thể duyệt KYC"));
@@ -177,26 +183,28 @@ export const useKyc = () => {
         setLoading(false);
       }
     },
-    [loadKyc]
+    [] // không phụ thuộc loadKyc để tránh reload lại ngay
   );
 
-  const rejectKyc = useCallback(
-    async (idOrRow, reason) => {
-      setLoading(true);
-      try {
-        const id = getKycId(idOrRow);
-        const fn = kycApi.reject || kycApi.rejectKyc;
-        await fn(id, reason);
-        await loadKyc(); // reload thay vì filter local
-        showSuccessNotification("Đã từ chối KYC");
-      } catch (err) {
-        showErrorNotification(handleApiError(err, "Không thể từ chối KYC"));
-      } finally {
-        setLoading(false);
-      }
-    },
-    [loadKyc]
-  );
+  const rejectKyc = useCallback(async (idOrRow, reason) => {
+    setLoading(true);
+    try {
+      const id = getKycId(idOrRow);
+      const fn = kycApi.reject || kycApi.rejectKyc;
+      await fn(id, reason);
+
+      //  Optimistic remove
+      setKycList((prev) => prev.filter((x) => getKycId(x) !== id));
+
+      // (tuỳ chọn) // await loadKyc();
+
+      showSuccessNotification("Đã từ chối KYC");
+    } catch (err) {
+      showErrorNotification(handleApiError(err, "Không thể từ chối KYC"));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     loadKyc();

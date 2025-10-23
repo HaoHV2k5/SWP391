@@ -11,12 +11,16 @@ import java.util.Map;
 import com.example.backend.dto.request.ContractCreateTemplateRequest;
 import com.example.backend.entity.Contract;
 import com.example.backend.entity.Order;
+import com.example.backend.entity.Product;
 import com.example.backend.entity.User;
 import com.example.backend.enums.ContractStatus;
+import com.example.backend.enums.OrderStatus;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
 
 import com.example.backend.repository.ContractRepository;
+import com.example.backend.repository.OrderRespository;
+import com.example.backend.repository.ProductRepository;
 import com.example.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -36,7 +40,8 @@ public class EversignService {
     private final RestTemplate restTemplate;
     private final OrderService orderService;
     private final ContractRepository contractRepository;
-
+    private final OrderRespository orderRespository;
+    private final ProductRepository productRepository;
 
     @Value("${eversign.api.key}")
     private String apiKey;
@@ -114,8 +119,16 @@ public class EversignService {
                             2. Hoặc bên bán gửi yêu cầu có kèm mã vận chuyển và hình ảnh xác minh giao hàng.
                             Nếu đơn hàng lỗi, bên mua có quyền gửi khiếu nại trong 3 ngày.
                         """;
-
+                // cap nhat trang thai order dc nhan
                 Order order = orderService.findById(req.getOrderId());
+                order.setStatus(OrderStatus.ACCEPTED);
+                orderRespository.save(order);
+                Product product = order.getProduct();
+                product.setPosted(false);
+                productRepository.save(product);
+                // tu choi va gui email cho tat ca cac ng bi tu choi
+                orderService.rejectAll(req.getOrderId());
+
 
                 Contract contract = Contract.builder()
                         .contractCode(documentHash.toString())

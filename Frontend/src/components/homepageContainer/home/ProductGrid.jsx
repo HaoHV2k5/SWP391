@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import ProductCard from "./ProductCard";
+import LoadMoreButton from "./LoadMoreButton";
+import usePagination from "../../../hooks/usePagination";
 
 const ProductGrid = ({
   products,
@@ -9,17 +11,17 @@ const ProductGrid = ({
   const displayProducts = hasActiveFilters ? filteredProducts : products;
   const showEmptyState = hasActiveFilters && filteredProducts.length === 0;
 
-  const limit = 6; // số lượng sản phẩm hiển thị mỗi lần
-  const [visibleCount, setVisibleCount] = useState(limit);
+  // Sử dụng pagination hook
+  const { visibleCount, handleLoadMore, resetPagination } = usePagination(6);
+
+  // Reset pagination khi products thay đổi
+  useEffect(() => {
+    resetPagination();
+  }, [displayProducts.length]);
 
   // Lấy danh sách sản phẩm sẽ render (giới hạn theo visibleCount)
   const visibleProducts = displayProducts.slice(0, visibleCount);
   const hasMore = visibleCount < displayProducts.length;
-
-  // Hàm xử lý khi bấm nút “Xem thêm”
-  const handleLoadMore = () => {
-    setVisibleCount((prev) => Math.min(prev + limit, displayProducts.length));
-  };
 
   return (
     <section style={{ padding: "30px 0", background: "#fff" }}>
@@ -59,16 +61,9 @@ const ProductGrid = ({
         </div>
 
         {!showEmptyState && hasMore && (
-          <div style={{ textAlign: "center", marginTop: "20px" }}>
-            <button
-              onClick={handleLoadMore}
-              style={{
-                cursor: "pointer",
-              }}
-            >
-              Xem thêm
-            </button>
-          </div>
+          <LoadMoreButton
+            onClick={() => handleLoadMore(displayProducts.length)}
+          />
         )}
 
         {!showEmptyState && !hasMore && (
