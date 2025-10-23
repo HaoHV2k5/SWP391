@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Form, InputGroup } from 'react-bootstrap';
 import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -8,10 +8,13 @@ import searchService from '../../../services/searchService';
 const SearchBar = () => {
   // State quản lý search
   const [searchTerm, setSearchTerm] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
-  const suggestionsRef = useRef(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const navigate = useNavigate();
   const searchRef = useRef(null);
+  const suggestionsRef = useRef(null);
 
   // Đóng suggestions khi click outside
   useEffect(() => {
@@ -110,13 +113,6 @@ const SearchBar = () => {
       navigate(`/product/${suggestion.id}`);
     }
     setShowSuggestions(false);
-  };
-
-  const handleSuggestionClick = (suggestion) => {
-    setSearchTerm(suggestion.title);
-    setShowSuggestions(false);
-    // Logic xử lý khi click vào suggestion
-    console.log('Chọn suggestion:', suggestion);
   };
 
   return (
