@@ -46,7 +46,7 @@ public class SearchService {
     }
 
 
-    public List<ProductResponse> searchVehicles(String request){
+    public List<ProductResponse> searchProductByParam(String request){
         List<String> keyword = extractWords(request);
 
         String fullTextKeyWord = String.join(" ", keyword);

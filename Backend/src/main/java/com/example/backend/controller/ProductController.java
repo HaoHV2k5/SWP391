@@ -169,7 +169,7 @@ public class ProductController {
 
     }
 
-    //lay danh sach cac san pham da dang ban của seller
+    //lay danh sach cac san pham da dang ban của 1 seller
     @GetMapping("/seller")
     public ApiResponse<List<ProductResponse>> sellerProductsPost(@RequestParam String username) {
         List<ProductResponse> list = productService.getProductsBySellerPost(username);
@@ -178,7 +178,7 @@ public class ProductController {
                 .data(list).build();
 
     }
-// lay tat ca san pham product post
+// lay tat ca san pham da dang ban tren he thong
     @GetMapping
     public ApiResponse<List<ProductResponse>> getProductsActive() {
         List<ProductResponse> list = productService.getAllProductPosted();
@@ -191,7 +191,7 @@ public class ProductController {
 
 
     // seller chuyen bai dang sang trang thai public
-
+    @PreAuthorize("hasAuthority('ROLE_SELLER')")
     @PostMapping("/post/seller")
     public ApiResponse<ProductResponse> getSellerProductsPost(@RequestParam Long productId) {
         ProductResponse response = productService.postProduct(productId);
@@ -200,7 +200,8 @@ public class ProductController {
                 .data(response).build();
 
     }
-
+// update bai dang tin
+@PreAuthorize("hasAuthority('ROLE_SELLER')")
     @PutMapping("/update")
     public ApiResponse<ProductResponse> updateProduct(@RequestParam Long productId, @RequestBody @Valid UpdateProductRequest request){
             ProductResponse productResponse = productService.updateProduct(productId, request);

@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,7 +66,7 @@ public class UserController {
         return ApiResponse.<Void>builder().message("A new OTP has been sent to your email.").build();
 
     }
-
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @GetMapping("/me")
     public ApiResponse<UserDetailResponse> getCurrentUser(Authentication authentication) {
         String username = authentication.getName();
@@ -96,6 +97,7 @@ public class UserController {
                 .data(ResetPasswordResponse.builder().success(result).build()).build();
     }
 
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     // nhap email khi dang nhap vao bang fb
     @PostMapping("/phone/input")
     public ApiResponse<UserDetailResponse> inputPhoneInfo(@RequestBody @Valid PhoneInfoRequest request) {
@@ -103,7 +105,7 @@ public class UserController {
         return ApiResponse.<UserDetailResponse>builder().data(user).build();
 
     }
-
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @PutMapping("/update")
 
     public ApiResponse<UserListResponse> updateUser(Authentication authentication,
@@ -116,7 +118,7 @@ public class UserController {
                 .message("User updated successfully")
                 .build();
     }
-
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @PutMapping("/change/password")
     public ApiResponse<Boolean> updatePasswordUser(Authentication authentication,@RequestBody @Valid  UpdatePasswordRequest request) {
         String  username = authentication.getName();
@@ -125,6 +127,7 @@ public class UserController {
         return ApiResponse.<Boolean>builder().message("Password updated successfully").build();
     }
     // user lay history waller transaction cua minh
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @GetMapping("/walletTransaction")
     public ApiResponse<List<WalletTransactionResponse>> getWalletTransactionByUserID(Authentication authentication){
         String username = authentication.getName();
@@ -138,6 +141,7 @@ public class UserController {
 
     // user lay danh sach history
     @GetMapping("/transaction")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     public ApiResponse<List<TransactionHistoryResponse>> getTransactionUserid(Authentication authentication){
         String username = authentication.getName();
         User user = userService.getUserByUsername(username);
@@ -148,30 +152,7 @@ public class UserController {
                 .build();
     }
 
-// usr xem lich su cac goi minh da mua
-    @GetMapping("/package/history")
-    public ApiResponse<List<PackageBuyHistoryResponse>> getTransactionPackageUserid(Authentication authentication){
-        String username = authentication.getName();
-        User user = userService.getUserByUsername(username);
-        List<PackageBuyHistoryResponse> responses = userPackageTransactionService.getUserPackageTransactions(user.getId());
-        return ApiResponse.< List<PackageBuyHistoryResponse>>builder()
-                .data(responses)
-                .message("lấy danh sách các gói  của user đã mua thành công ")
-                .build();
-    }
 
-    //usr lay goi dang su dung
-    @GetMapping("/package/current")
-    public ApiResponse<PostingPackageResponse> getPostingPackageCurrent(Authentication authentication){
-        String userName = authentication.getName();
-        User usr = userService.getUserByUsername(userName);
-        PostingPackageResponse postingPackageResponse = userService.getPackageCurrent(usr.getId());
-        return  ApiResponse.<PostingPackageResponse>builder()
-                .data(postingPackageResponse)
-                .message("đã lấy thành công gói hiện tại user đang sử dụng")
-                .build();
-
-    }
 
 
 
