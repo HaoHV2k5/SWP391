@@ -131,7 +131,7 @@ const DashboardTab = () => {
             <b>Complaint PENDING:</b> {cmp.list.length}
           </div>
           <Input.Search
-            placeholder="Tìm kiếm mọi thứ…"
+            placeholder="Tìm Kiếm Theo Tiêu Đề..."
             style={{ maxWidth: 340, marginLeft: "auto" }}
             value={q}
             onChange={(e) => setQ(e.target.value)}

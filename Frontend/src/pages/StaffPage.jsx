@@ -1,7 +1,16 @@
 // src/pages/StaffPage.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Layout, Menu, Breadcrumb, Avatar, Dropdown, Space, theme } from "antd";
+import {
+  Layout,
+  Menu,
+  Breadcrumb,
+  Avatar,
+  Dropdown,
+  Space,
+  theme,
+  Button,
+} from "antd";
 import {
   PieChartOutlined,
   AppstoreOutlined,
@@ -16,6 +25,7 @@ import ProductsTab from "../components/staff/ProductsTab";
 import KYCTab from "../components/staff/KYCTab";
 import ComplaintTab from "../components/staff/ComplaintTab";
 import DashboardTab from "../components/staff/DashboardTab";
+import UserProfileButton from "../components/staff/common/UserProfileButton";
 import "../styles/staff/index.css";
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -45,30 +55,6 @@ const StaffPage = ({ user, onLogout }) => {
     getItem("Khiếu nại", TAB_KEYS.COMPLAINTS, <ExclamationCircleOutlined />),
     getItem("Tổng quan", TAB_KEYS.DASHBOARD, <PieChartOutlined />),
   ];
-
-  const dropdownItems = {
-    items: [
-      { key: "profile", label: "Hồ sơ", icon: <UserOutlined /> },
-      {
-        key: "logout",
-        label: (
-          <button
-            onClick={onLogout}
-            style={{
-              background: "transparent",
-              border: 0,
-              color: "#044107ff",
-              cursor: "pointer",
-            }}
-          >
-            Đăng xuất
-          </button>
-        ),
-        icon: <LogoutOutlined />,
-        danger: true,
-      },
-    ],
-  };
 
   if (isCheckingAuth) {
     return (
@@ -115,16 +101,14 @@ const StaffPage = ({ user, onLogout }) => {
             <div style={{ fontWeight: 800 }}>
               {titles[activeTab] || "Staff Console"}
             </div>
-            <Dropdown menu={dropdownItems} trigger={["click"]}>
-              <a onClick={(e) => e.preventDefault()}>
-                <Space>
-                  <Avatar icon={<UserOutlined />} />
-                  <span>
-                    {user?.user?.fullName || user?.fullname || "Staff"}
-                  </span>
-                </Space>
-              </a>
-            </Dropdown>
+            <Space>
+              {/* Nút mở Drawer cập nhật tài khoản */}
+              <UserProfileButton
+                displayName={user?.user?.fullName || user?.fullname || "Staff"}
+              />{" "}
+              {/* Nút đăng xuất giữ nguyên logic onLogout đã có */}{" "}
+              <Button onClick={onLogout}>Đăng xuất</Button>{" "}
+            </Space>
           </div>
         </Header>
 

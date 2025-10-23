@@ -27,10 +27,9 @@ import { vnDate, statusTag, resolveImageUrl } from "../../utils/staffUtils";
 /* ====== Lý do từ chối (giống ProductsTab) ====== */
 const REJECT_REASONS = [
   { value: "Thông tin không hợp lệ" },
-  { value: "Hình ảnh không rõ ràng/vi phạm" },
+  { value: "Hình ảnh không rõ ràng" },
   { value: "Thiếu thông tin quan trọng" },
-  { value: "Tin trùng lặp" },
-  { value: "Vi phạm chính sách" },
+  { value: "Không đúng thông tin" },
   { value: "OTHER", label: "Khác..." },
 ];
 
