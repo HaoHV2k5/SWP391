@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import UserProfileCard from '../components/account/UserProfileCard';
 import EditProfileModal from '../components/account/EditProfileModal';
 import PersonalInfo from '../components/account/PersonalInfo';
-import AccountStats from '../components/account/AccountStats';
 import { memberService } from '../services/memberService';
 
 const AccountPage = ({ user }) => {
@@ -121,9 +120,9 @@ const AccountPage = ({ user }) => {
         <UserProfileCard 
           user={mergedUser} 
           onEdit={() => setShowEdit(true)}
+          onAvatarChange={loadProfile}
         />
         <PersonalInfo user={mergedUser} />
-        <AccountStats />
       </div>
       {showEdit && (
         <EditProfileModal
