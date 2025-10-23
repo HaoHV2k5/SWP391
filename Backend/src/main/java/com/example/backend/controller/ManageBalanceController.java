@@ -1,9 +1,6 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.response.ApiResponse;
-import com.example.backend.dto.response.TransactionHistoryResponse;
-import com.example.backend.dto.response.UserPackageTransactionResponse;
-import com.example.backend.dto.response.WalletTransactionResponse;
+import com.example.backend.dto.response.*;
 import com.example.backend.service.TransactionService;
 import com.example.backend.service.UserPackageTransactionService;
 import com.example.backend.service.WalletService;
@@ -64,7 +61,7 @@ public class ManageBalanceController {
         BigDecimal balance = walletService.getBalanceAdmin();
         return ApiResponse.<BigDecimal>builder()
                 .data(balance)
-                .message("Lấy toàn bộ WalletTransaction recharge thành công")
+                .message("xem số tiền trong ví admin thành công")
                 .build();
     }
 
@@ -83,18 +80,18 @@ public class ManageBalanceController {
         List<TransactionHistoryResponse> responses = transactionService.getTranctionByUserid(userId);
         return ApiResponse.<List<TransactionHistoryResponse>>builder()
                 .data(responses)
-                .message("lấy danh sách wallet transactions của user thành công ")
+                .message("lấy danh sách  transactions của user thành công ")
                 .build();
     }
 
     // xem cac goi ma user da mua
 
     @GetMapping("/user/transaction/package")
-    public ApiResponse<List<UserPackageTransactionResponse>> getTransactionPackageUserid(@RequestParam Long userId){
-        List<UserPackageTransactionResponse> responses = userPackageTransactionService.getUserPackageTransactions(userId);
-        return ApiResponse.< List<UserPackageTransactionResponse>>builder()
+    public ApiResponse<List<PackageBuyHistoryResponse>> getTransactionPackageUserid(@RequestParam Long userId){
+        List<PackageBuyHistoryResponse> responses = userPackageTransactionService.getUserPackageTransactions(userId);
+        return ApiResponse.< List<PackageBuyHistoryResponse>>builder()
                 .data(responses)
-                .message("lấy danh sách wallet transactions của user thành công ")
+                .message("lấy danh sách gói mà user đã mua thành công ")
                 .build();
     }
 

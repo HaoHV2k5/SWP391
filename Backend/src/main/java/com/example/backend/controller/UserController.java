@@ -150,13 +150,13 @@ public class UserController {
 
 // usr xem lich su cac goi minh da mua
     @GetMapping("/package/history")
-    public ApiResponse<List<UserPackageTransactionResponse>> getTransactionPackageUserid(Authentication authentication){
+    public ApiResponse<List<PackageBuyHistoryResponse>> getTransactionPackageUserid(Authentication authentication){
         String username = authentication.getName();
         User user = userService.getUserByUsername(username);
-        List<UserPackageTransactionResponse> responses = userPackageTransactionService.getUserPackageTransactions(user.getId());
-        return ApiResponse.< List<UserPackageTransactionResponse>>builder()
+        List<PackageBuyHistoryResponse> responses = userPackageTransactionService.getUserPackageTransactions(user.getId());
+        return ApiResponse.< List<PackageBuyHistoryResponse>>builder()
                 .data(responses)
-                .message("lấy danh sách lịch  cac goi da mua  của user thành công ")
+                .message("lấy danh sách các gói  của user đã mua thành công ")
                 .build();
     }
 
