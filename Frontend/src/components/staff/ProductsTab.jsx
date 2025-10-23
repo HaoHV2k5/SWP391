@@ -28,10 +28,9 @@ import { productsApi } from "../../services/staffApi";
 
 const REJECT_REASONS = [
   { value: "Thông tin không hợp lệ" },
-  { value: "Hình ảnh không rõ ràng/vi phạm" },
+  { value: "Hình ảnh không rõ ràng" },
   { value: "Giá không hợp lý" },
   { value: "Tin trùng lặp" },
-  { value: "Vi phạm chính sách" },
   { value: "Thiếu thông tin quan trọng" },
   { value: "Sai danh mục" },
   { value: "OTHER", label: "Khác..." },
