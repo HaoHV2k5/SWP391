@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Button, Badge, Alert, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
 import MemberHeader from "../../components/member/MemberHeader";
-import displayService from "../../services/displayService";
+import { useSavedProducts } from "../../components/homepageContainer/contexts/SavedProductsContext";
 import "../../styles/member/index.css";
 
 const SavedPosts = ({ user }) => {
@@ -11,26 +11,7 @@ const SavedPosts = ({ user }) => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  const [savedPosts, setSavedPosts] = useState([]);
-  const [loadingPosts, setLoadingPosts] = useState(false);
-
-  const loadSavedPosts = async () => {
-    setLoadingPosts(true);
-    try {
-      const result = await displayService.getPublicList();
-      if (result.success) {
-        setSavedPosts(result.data);
-      } else {
-        toast.error(result.message);
-        setSavedPosts([]);
-      }
-    } catch (error) {
-      toast.error("Có lỗi xảy ra khi tải danh sách tin đã lưu");
-      setSavedPosts([]);
-    } finally {
-      setLoadingPosts(false);
-    }
-  };
+  const { savedProducts, remove, loading: contextLoading } = useSavedProducts();
 
   useEffect(() => {
     if (!user) {
@@ -46,7 +27,6 @@ const SavedPosts = ({ user }) => {
       navigate("/");
       return;
     }
-    loadSavedPosts();
   }, [user, navigate]);
 
   const formatCurrency = (amount) => {
@@ -63,14 +43,8 @@ const SavedPosts = ({ user }) => {
   const handleRemoveFromSaved = async (postId) => {
     setLoading(true);
     try {
-      // Gọi API bỏ lưu post (cần implement endpoint này trong backend)
-      // const result = await productService.toggleSavePost(postId);
-      // if (result.success) {
-        setSavedPosts(savedPosts.filter(post => post.id !== postId));
-        toast.success("Đã bỏ lưu tin đăng!");
-      // } else {
-      //   toast.error(result.message);
-      // }
+      await remove(postId);
+      toast.success("Đã bỏ lưu tin đăng!");
     } catch (error) {
       console.error("Error removing from saved:", error);
       toast.error("Có lỗi xảy ra khi bỏ lưu tin đăng!");
@@ -149,7 +123,7 @@ const SavedPosts = ({ user }) => {
               <Col lg={3} md={6}>
                 <Card className="text-white border-0 h-100" style={{ background: "linear-gradient(135deg, #e91e63 0%, #c2185b 100%)" }}>
                   <Card.Body className="text-center p-3">
-                    <h4 className="fw-bold mb-1">{savedPosts.length}</h4>
+                    <h4 className="fw-bold mb-1">{savedProducts.length}</h4>
                     <small className="opacity-75">Tin đã lưu</small>
                   </Card.Body>
                 </Card>
@@ -157,7 +131,7 @@ const SavedPosts = ({ user }) => {
               <Col lg={3} md={6}>
                 <Card className="text-white border-0 h-100" style={{ background: "linear-gradient(135deg, #00A86B 0%, #2BB673 100%)" }}>
                   <Card.Body className="text-center p-3">
-                    <h4 className="fw-bold mb-1">{savedPosts.filter(p => p.isAvailable).length}</h4>
+                    <h4 className="fw-bold mb-1">{savedProducts.filter(p => p.isAvailable).length}</h4>
                     <small className="opacity-75">Tin còn khả dụng</small>
                   </Card.Body>
                 </Card>
@@ -165,7 +139,7 @@ const SavedPosts = ({ user }) => {
               <Col lg={3} md={6}>
                 <Card className="text-white border-0 h-100" style={{ background: "linear-gradient(135deg, #6c757d 0%, #5a6268 100%)" }}>
                   <Card.Body className="text-center p-3">
-                    <h4 className="fw-bold mb-1">{savedPosts.filter(p => !p.isAvailable).length}</h4>
+                    <h4 className="fw-bold mb-1">{savedProducts.filter(p => !p.isAvailable).length}</h4>
                     <small className="opacity-75">Tin hết hạn</small>
                   </Card.Body>
                 </Card>
@@ -173,7 +147,7 @@ const SavedPosts = ({ user }) => {
               <Col lg={3} md={6}>
                 <Card className="text-white border-0 h-100" style={{ background: "linear-gradient(135deg, #ff9800 0%, #f57c00 100%)" }}>
                   <Card.Body className="text-center p-3">
-                    <h4 className="fw-bold mb-1">{new Set(savedPosts.map(p => p.category)).size}</h4>
+                    <h4 className="fw-bold mb-1">{new Set(savedProducts.map(p => p.category)).size}</h4>
                     <small className="opacity-75">Danh mục</small>
                   </Card.Body>
                 </Card>
@@ -182,7 +156,7 @@ const SavedPosts = ({ user }) => {
 
             {/* Page Title */}
             <div className="d-flex justify-content-between align-items-center mb-4">
-              <h3 className="h5 mb-0 text-dark">Tin đã lưu ({savedPosts.length})</h3>
+              <h3 className="h5 mb-0 text-dark">Tin đã lưu ({savedProducts.length})</h3>
               <Button 
                 variant="outline-success" 
                 onClick={() => navigate("/")}
@@ -193,12 +167,12 @@ const SavedPosts = ({ user }) => {
             </div>
 
             {/* Saved Posts List */}
-            {loadingPosts ? (
+            {contextLoading ? (
               <div className="text-center py-5">
                 <Spinner animation="border" variant="success" className="mb-3" />
                 <p className="text-muted">Đang tải danh sách tin đã lưu...</p>
               </div>
-            ) : savedPosts.length === 0 ? (
+            ) : savedProducts.length === 0 ? (
               <Alert variant="info" className="text-center py-5">
                 <h5>Bạn chưa lưu tin đăng nào</h5>
                 <p className="mb-3">Hãy lưu những tin đăng yêu thích để xem lại sau!</p>
@@ -208,7 +182,7 @@ const SavedPosts = ({ user }) => {
               </Alert>
             ) : (
               <Row className="g-4">
-                {savedPosts.map((post) => (
+                {savedProducts.map((post) => (
                   <Col lg={6} key={post.id}>
                     <Card className={`h-100 shadow-sm border-0 ${!post.isAvailable ? 'opacity-75' : ''}`}>
                       <Row className="g-0 h-100">

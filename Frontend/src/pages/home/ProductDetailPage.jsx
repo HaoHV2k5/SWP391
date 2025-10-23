@@ -23,9 +23,13 @@ const ProductDetailPage = () => {
   const { toggle, isSaved } = useSavedProducts();
   const saved = data?.id ? isSaved(data.id) : false;
   
-  const handleSaveClick = () => {
+  const handleSaveClick = async () => {
     if (data) {
-      toggle(data);
+      try {
+        await toggle(data);
+      } catch (error) {
+        console.error("Error toggling wishlist:", error);
+      }
     }
   };
   if (loading) {
