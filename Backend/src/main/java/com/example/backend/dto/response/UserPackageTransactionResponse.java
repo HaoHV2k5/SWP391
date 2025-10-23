@@ -13,8 +13,8 @@ public class UserPackageTransactionResponse {
     private Long id;
     private Long userId;
     private Long packageId;
-    LocalDateTime endTime;
-    LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private LocalDateTime startTime;
 
 
 }

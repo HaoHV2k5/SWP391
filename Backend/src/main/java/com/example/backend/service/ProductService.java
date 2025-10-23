@@ -39,13 +39,24 @@ public class ProductService {
 
     @Transactional
     public ProductResponse createProduct(CreateProductRequest request, String username) {
+        Tags tags = null;
+        String productType = request.getProductType().name();
+        if("VEHICLE".equalsIgnoreCase(productType)){
+            tags = tagsRepository.findByBrandAndModelAndYearModel(
+                    request.getVehicle().getBrand(),
+                    request.getVehicle().getModel(),
+                    request.getVehicle().getYearManufactured()
+            );
+        }
+        else if ("BATTERY".equalsIgnoreCase(productType)){
+            tags = tagsRepository.findByBrandAndModelAndYearModel(
+                    request.getBattery().getBrand(),
+                    request.getBattery().getModel(),
+                    request.getBattery().getYearManufactured()
 
+            );
+        }
 
-        Tags tags = tagsRepository.findByBrandAndModelAndYearModel(
-                request.getVehicle().getBrand(),
-                request.getVehicle().getModel(),
-                request.getVehicle().getYearManufactured()
-        );
 
         // Tìm user theo username
         User seller = userRepository.findByUsername(username)
@@ -60,7 +71,7 @@ public class ProductService {
                 .orElseThrow(() -> new AppException(ErrorCode.POSTING_PACKAGE_NOT_FOUND));
 
 
-        int duration = postingPackage.getDuration();
+
         LocalDateTime now =LocalDateTime.now();
         LocalDateTime endAt =userPackage.getEndTime();
 
