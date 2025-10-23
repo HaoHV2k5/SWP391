@@ -1,15 +1,13 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.request.BuyProductRequest;
+import com.example.backend.dto.request.RejectOrderRequest;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.OrderResponse;
 import com.example.backend.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/order")
@@ -24,6 +22,12 @@ public class OrderController {
                 .message("đã gửi yêu cầu mua sản phẩm tới ngươ bán")
                 .build();
 
+    }
+
+    @PostMapping("/reject")
+    public ApiResponse<Void> rejectOrder(@RequestParam Long orderId) {
+        orderService.rejectOrder(orderId);
+        return ApiResponse.<Void>builder().message("đã từ chối order request thành công").build();
     }
 
 }
