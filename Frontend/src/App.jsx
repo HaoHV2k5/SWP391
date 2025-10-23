@@ -26,6 +26,7 @@ import SavedPosts from "./pages/member/SavedPosts";
 import ViewHistory from "./pages/member/ViewHistory";
 import AccountPage from "./pages/AccountPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
+import KycPage from "./pages/kyc/KycPage";
 import "./App.css";
 import CategoryRouter from "./components/homepageContainer/navigation/CategoryRouter";
 import ProductDetailPage from "./pages/home/ProductDetailPage";
@@ -151,6 +152,7 @@ function AppContent() {
 
         {/* Member */}
         <Route path="/account" element={<AccountPage user={user} />} />
+        <Route path="/kyc" element={<KycPage user={user} />} />
         <Route path="/my-posts" element={<MyPosts user={user} />} />
         <Route path="/saved-posts" element={<SavedPosts user={user} />} />
         <Route path="/orders" element={<MemberOrders user={user} />} />
