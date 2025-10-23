@@ -1,7 +1,6 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.request.BuyProductRequest;
-import com.example.backend.dto.request.RejectOrderRequest;
 import com.example.backend.dto.response.OrderResponse;
 import com.example.backend.entity.Order;
 import com.example.backend.entity.Product;
@@ -25,7 +24,6 @@ public class OrderService {
     private final UserRepository userRepository;
     private final OrderRespository orderRespository;
     private final OrderMapper orderMapper;
-    private final MailService mailService;
 
     public OrderResponse buyOrder(BuyProductRequest request){
         Product product = productRepository.findById(request.getProductId()).get();
@@ -72,4 +70,8 @@ public class OrderService {
         orderRespository.deleteById(orderId);
     }
 
+    public List<OrderResponse> getOrdersByProductId(Long productId) {
+        List<Order> orders = orderRespository.findAllByProductId(productId);
+        return orders.stream().map(orderMapper::toOrderResponse).toList();
+    }
 }
