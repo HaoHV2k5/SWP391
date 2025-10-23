@@ -5,6 +5,7 @@ import {
   Route,
   useLocation,
   useNavigate,
+  Navigate,
 } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
@@ -17,6 +18,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AdminPage from "./pages/AdminPage";
 import StaffPage from "./pages/StaffPage";
+
 import MemberOrders from "./pages/member/MemberOrders";
 import PostAd from "./pages/member/PostAd";
 import MyPosts from "./pages/member/MyPosts";
@@ -37,6 +39,7 @@ function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // --- Nhận token qua query (Google) hoặc khôi phục từ localStorage ---
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get("token");
@@ -59,30 +62,29 @@ function AppContent() {
         () => toast.success(`Chào mừng ${name}! Đăng nhập Google thành công!`),
         100
       );
+      // Xoá query trên URL
       window.history.replaceState({}, document.title, window.location.pathname);
       return;
     }
 
-    const checkUserData = () => {
-      const userData = localStorage.getItem("userData");
-      const token = localStorage.getItem("token");
-      if (userData) {
-        try {
-          const parsed = JSON.parse(userData);
-          if (!token && parsed.token)
-            localStorage.setItem("token", parsed.token);
-          setUser(parsed);
-        } catch {
-          localStorage.removeItem("userData");
-          localStorage.removeItem("token");
+    // Khôi phục từ localStorage
+    const userData = localStorage.getItem("userData");
+    const storedToken = localStorage.getItem("token");
+    if (userData) {
+      try {
+        const parsed = JSON.parse(userData);
+        if (!storedToken && parsed.token) {
+          localStorage.setItem("token", parsed.token);
         }
+        setUser(parsed);
+      } catch {
+        localStorage.removeItem("userData");
+        localStorage.removeItem("token");
       }
-    };
-    checkUserData();
+    }
   }, []);
 
   const handleLogin = (loginResponse) => {
-    // loginResponse chính là object bạn log ra (code:1000, data:{token, refreshToken, user...})
     const normalized = normalizeLoginResponse(loginResponse);
     const userData = persistAuth(normalized);
     setUser(userData);
@@ -93,39 +95,51 @@ function AppContent() {
     localStorage.removeItem("token");
     localStorage.removeItem("userData");
     toast.success("Đăng xuất thành công!");
+    navigate("/", { replace: true });
   };
 
+  // --- Xác định bối cảnh trang để ẩn Navbar/Footer ---
+  const path = location.pathname;
   const isAuthPage =
-    location.pathname === "/login" || location.pathname === "/register";
-  const isStaffPage = location.pathname === "/staff";
+    path === "/login" ||
+    path === "/register" ||
+    path === "/facebook-callback" ||
+    path === "/verify-otp";
+
+  const isStaffPage = path === "/staff";
+  const isAdminPage = path.startsWith("/admin");
+
   const currentRole = user?.user?.role || user?.role;
   const isStaffUser = user && isStaff(currentRole);
 
-  // Kiểm tra xem có phải trang admin không
-  const isAdminPage = location.pathname.startsWith("/admin");
-
-  // Kiểm tra quyền truy cập và tự động chuyển hướng staff
+  // --- Auto-redirect staff sau khi đăng nhập (tránh loop) ---
   useEffect(() => {
-    if (isStaffUser && !isAuthPage && !isStaffPage) {
+    if (isStaffUser && !isAuthPage && !isStaffPage && !isAdminPage) {
       toast.info("Chuyển hướng đến trang Staff...");
-      setTimeout(() => navigate("/staff", { replace: true }), 600);
+      const t = setTimeout(() => navigate("/staff", { replace: true }), 600);
+      return () => clearTimeout(t);
     }
-  }, [isStaffUser, isAuthPage, isStaffPage, navigate]);
+  }, [isStaffUser, isAuthPage, isStaffPage, isAdminPage, navigate]);
 
   return (
     <div className="App">
-      {/* Chỉ hiển thị Navbar cho trang chủ và OTP, không hiển thị cho staff và admin */}
+      {/* Ẩn Navbar trên trang auth, staff, admin */}
       {!isAuthPage && !isStaffPage && !isAdminPage && (
         <Navbar user={user} onLogout={handleLogout} />
       )}
+
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
         <Route path="/register" element={<RegisterPage />} />
+
+        {/* Admin */}
         <Route path="/admin" element={<AdminPage user={user} />} />
         <Route path="/admin/users" element={<AdminPage user={user} />} />
         <Route path="/admin/products" element={<AdminPage user={user} />} />
         <Route path="/admin/kyc" element={<AdminPage user={user} />} />
+
+        {/* Staff */}
         <Route
           path="/staff"
           element={
@@ -134,22 +148,27 @@ function AppContent() {
             </ProtectedStaffRoute>
           }
         />
+
+        {/* Member */}
         <Route path="/account" element={<AccountPage user={user} />} />
         <Route path="/my-posts" element={<MyPosts user={user} />} />
         <Route path="/saved-posts" element={<SavedPosts user={user} />} />
         <Route path="/orders" element={<MemberOrders user={user} />} />
         <Route path="/view-history" element={<ViewHistory user={user} />} />
         <Route path="/post-ad" element={<PostAd user={user} />} />
+
+        {/* Fallback tránh “No routes matched …” */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+
         <Route path="/verify-otp" element={<OTPVerificationPage />} />
         <Route path="/products/:type" element={<CategoryRouter />} />
         <Route path="/product/:id" element={<ProductDetailPage />} />
         <Route path="/tag/:slug" element={<TagPage />} />
       </Routes>
 
-      {/* Chỉ hiển thị Footer cho trang chủ và OTP, không hiển thị cho staff và admin */}
+      {/* Ẩn Footer trên trang auth, staff, admin */}
       {!isAuthPage && !isStaffPage && !isAdminPage && <Footer />}
 
-      {/* Toast Container */}
       <ToastContainer {...getToastDefaults()} theme="light" />
     </div>
   );
