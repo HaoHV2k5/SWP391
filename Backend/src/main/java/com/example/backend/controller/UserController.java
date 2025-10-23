@@ -153,6 +153,15 @@ public class UserController {
     }
 
 
+    @PutMapping("/update/image/profile")
+    public ApiResponse<Void> updateAvatar(Authentication authentication,@RequestParam String img){
+        String userName = authentication.getName();
+        User user = userService.getUserByUsername(userName);
+        userService.updateAvatar(user,img);
+        return ApiResponse.<Void>builder().message("Avatar đã update thành công").build();
+    }
+
+
 
 
 
