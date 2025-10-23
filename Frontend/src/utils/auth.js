@@ -36,6 +36,7 @@ export const getRoleFromToken = (token) => {
  * Chuẩn hoá dữ liệu login từ BE thành định dạng FE đang dùng
  */
 export const normalizeLoginResponse = (loginRes) => {
+  console.log("🔍 normalizeLoginResponse called with:", loginRes);
   const raw = loginRes?.data || loginRes;
   const token = raw?.token || loginRes?.token;
   const refreshToken = raw?.refreshToken || loginRes?.refreshToken;
@@ -55,21 +56,31 @@ export const normalizeLoginResponse = (loginRes) => {
   const roleFromToken = token ? getRoleFromToken(token) : null;
   const role = user.role || roleFromToken || "ROLE_USER";
 
-  return { token, refreshToken, user: { ...mapped, role }, role };
+  const result = { token, refreshToken, user: { ...mapped, role }, role };
+  console.log("🔍 normalizeLoginResponse result:", result);
+  return result;
 };
 
 /**
  * Lưu token/refreshToken/user vào localStorage theo format FE
  */
 export const persistAuth = ({ token, refreshToken, user, role }) => {
+  console.log("🔍 persistAuth called with:", {
+    token,
+    refreshToken,
+    user,
+    role,
+  });
   const userData = {
     ...user,
     role: role || user?.role,
     token, // giữ token trong userData cho tương thích code cũ
   };
+  console.log("🔍 userData to save:", userData);
   localStorage.setItem("token", token || "");
   localStorage.setItem("refreshToken", refreshToken || "");
   localStorage.setItem("userData", JSON.stringify(userData));
+  console.log("✅ Data saved to localStorage");
   return userData;
 };
 
