@@ -66,7 +66,7 @@ public class UserController {
         return ApiResponse.<Void>builder().message("A new OTP has been sent to your email.").build();
 
     }
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+
     @GetMapping("/me")
     public ApiResponse<UserDetailResponse> getCurrentUser(Authentication authentication) {
         String username = authentication.getName();
@@ -97,7 +97,7 @@ public class UserController {
                 .data(ResetPasswordResponse.builder().success(result).build()).build();
     }
 
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+
     // nhap email khi dang nhap vao bang fb
     @PostMapping("/phone/input")
     public ApiResponse<UserDetailResponse> inputPhoneInfo(@RequestBody @Valid PhoneInfoRequest request) {
@@ -105,7 +105,7 @@ public class UserController {
         return ApiResponse.<UserDetailResponse>builder().data(user).build();
 
     }
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+
     @PutMapping("/update")
 
     public ApiResponse<UserListResponse> updateUser(Authentication authentication,
@@ -118,7 +118,7 @@ public class UserController {
                 .message("User updated successfully")
                 .build();
     }
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+
     @PutMapping("/change/password")
     public ApiResponse<Boolean> updatePasswordUser(Authentication authentication,@RequestBody @Valid  UpdatePasswordRequest request) {
         String  username = authentication.getName();
@@ -127,7 +127,7 @@ public class UserController {
         return ApiResponse.<Boolean>builder().message("Password updated successfully").build();
     }
     // user lay history waller transaction cua minh
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+
     @GetMapping("/walletTransaction")
     public ApiResponse<List<WalletTransactionResponse>> getWalletTransactionByUserID(Authentication authentication){
         String username = authentication.getName();
@@ -141,7 +141,7 @@ public class UserController {
 
     // user lay danh sach history
     @GetMapping("/transaction")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+
     public ApiResponse<List<TransactionHistoryResponse>> getTransactionUserid(Authentication authentication){
         String username = authentication.getName();
         User user = userService.getUserByUsername(username);
