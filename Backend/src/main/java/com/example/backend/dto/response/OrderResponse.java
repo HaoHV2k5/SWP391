@@ -24,7 +24,7 @@ public class OrderResponse {
     private String productName;
 
     private BigDecimal offeredPrice;
-    
+
 
     private OrderStatus status;
 

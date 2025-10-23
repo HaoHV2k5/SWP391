@@ -31,6 +31,7 @@ public class KycController {
         KycDetailResponse res = kycService.submit(userId, frontImage, backImage);
         return ApiResponse.<KycDetailResponse>builder().data(res).build();
     }
+
     // approve for staff => status = STAFF_APPROVE
     @PreAuthorize("hasAuthority('APPROVE_KYC')")
     @PostMapping("/{id}/staff/approve")
@@ -38,6 +39,7 @@ public class KycController {
         KycDetailResponse res = kycService.staffApprove(id);
         return ApiResponse.<KycDetailResponse>builder().data(res).message("KYC approved").build();
     }
+
     // approve for admin => status = ADMIN_APPROVED
     @PreAuthorize("hasAuthority('APPROVE_KYC')")
     @PostMapping("/{id}/admin/approve")
@@ -45,23 +47,23 @@ public class KycController {
         KycDetailResponse res = kycService.adminApprove(id);
         return ApiResponse.<KycDetailResponse>builder().data(res).message("KYC approved").build();
     }
-    @PreAuthorize("hasAuthority('REJECT_KYC')")
-
     // reject kyc for staff/ admin
+
+    @PreAuthorize("hasAnyAuthority('ROLE_STAFF','ROLE_ADMIN')")
     @PostMapping("/{id}/reject")
     public ApiResponse<KycDetailResponse> reject(@PathVariable("id") Long id, @RequestBody KycDecisionRequest request){
         KycDetailResponse res = kycService.reject(id, request);
         return ApiResponse.<KycDetailResponse>builder().data(res).message("KYC rejected").build();
     }
     // get kyc for staff lay trang thai pending
-    @PreAuthorize("hasAuthority('GET_KYC')")
+    @PreAuthorize("hasAuthority('ROLE_STAFF')")
     @GetMapping("/staff")
     public ApiResponse<List<KycDetailResponse>> getKycByStaff(){
         List<KycDetailResponse> list = kycService.getAllKycByStaff();
         return  ApiResponse.<List<KycDetailResponse>>builder().data(list).build();
     }
     // get kyc for admin lay trang thai staff_approve
-    @PreAuthorize("hasAuthority('GET_KYC')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping("/admin")
     public ApiResponse<List<KycDetailResponse>> getKycByAdmin(){
         List<KycDetailResponse> list = kycService.getAllKycByAdmin();
@@ -75,6 +77,7 @@ public class KycController {
         KycDetailResponse response = kycService.getKYCUsing(userId);
         return  ApiResponse.<KycDetailResponse>builder().data(response).build();
     }
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_STAFF')")
 
     // get user infor dua tren kyc id
     @GetMapping("{id}/infor/user")

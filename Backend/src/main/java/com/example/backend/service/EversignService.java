@@ -31,6 +31,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpEntity;
 
+import com.example.backend.mapper.ContractMapper;
+import com.example.backend.dto.response.ContractResponse;
+
 
 import lombok.RequiredArgsConstructor;
 
@@ -42,6 +45,7 @@ public class EversignService {
     private final ContractRepository contractRepository;
     private final OrderRespository orderRespository;
     private final ProductRepository productRepository;
+    private final ContractMapper contractMapper;
 
     @Value("${eversign.api.key}")
     private String apiKey;
@@ -214,6 +218,7 @@ public class EversignService {
             return false;
         }
     }
+
 
 
 }
