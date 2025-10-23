@@ -13,7 +13,6 @@ const displayService = {
     try {
       // Không gọi /auth/me (BE không có). Đọc từ localStorage để xác định quyền/username
       const userDataRaw = localStorage.getItem("userData");
-      console.log("🔍 getPublicList: userDataRaw:", userDataRaw);
 
       if (userDataRaw) {
         try {
@@ -33,13 +32,6 @@ const displayService = {
             userData?.email ||
             userData?.user?.email;
 
-          console.log(
-            "🔍 getPublicList: isAdmin:",
-            isAdmin,
-            "username:",
-            username
-          );
-
           if (isAdmin) {
             endpoint = "/products/seller/staff_approved/admin";
           } else if (username) {
@@ -58,23 +50,17 @@ const displayService = {
         endpoint = "/products"; // BE hiện có GET /products trả danh sách đã post
       }
 
-      console.log("🔍 getPublicList: Using endpoint:", endpoint);
       const response = await apiClient.get(endpoint);
-      console.log("📡 getPublicList: API response:", response);
       // BE thường bọc dữ liệu trong ApiResponse { data, message }
       const data =
         response?.data?.data ?? response?.data?.content ?? response?.data;
-      console.log("📦 getPublicList: Final data:", data);
+      
+      console.log("📦 getPublicList: Loaded", Array.isArray(data) ? data.length : 0, "products from", endpoint);
       return { success: true, data: Array.isArray(data) ? data : [] };
     } catch (error) {
-      console.error("❌ getPublicList: API error:", error);
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
-      console.error("getPublicList thất bại", {
-        endpoint,
-        status,
-        backendMessage,
-      });
+      
       // Nếu không có token và bị chặn/không tìm thấy, trả rỗng để không vỡ UI
       if (
         !localStorage.getItem("token") &&
@@ -88,6 +74,7 @@ const displayService = {
         return { success: true, data: [] };
       }
       
+      console.error("❌ getPublicList failed:", endpoint, status, backendMessage);
       return { success: false, message: `Lỗi tải sản phẩm (${status || "network"}): ${backendMessage || "Không rõ"}` };
     }
   }

@@ -17,6 +17,7 @@ import { toast } from "react-toastify";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import MemberHeader from "../../components/member/MemberHeader";
 import productService from "../../services/productService";
+import { memberService } from "../../services/memberService";
 import "../../styles/member/index.css";
 
 const MyPosts = ({ user }) => {
@@ -37,6 +38,7 @@ const MyPosts = ({ user }) => {
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [filterStatus, setFilterStatus] = useState("ALL");
+  const [postingProducts, setPostingProducts] = useState(new Set());
 
   const loadPosts = async () => {
     setLoadingPosts(true);
@@ -225,6 +227,31 @@ const MyPosts = ({ user }) => {
       toast.error("Có lỗi xảy ra khi đăng lại tin!");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePostProduct = async (productId) => {
+    try {
+      setPostingProducts(prev => new Set(prev).add(productId));
+      
+      const result = await memberService.postProduct(productId);
+      
+      if (result.success) {
+        toast.success(result.message || "Đã POST sản phẩm thành công!");
+        // Reload danh sách để cập nhật trạng thái
+        await loadPosts();
+      } else {
+        toast.error(result.message || "Không thể POST sản phẩm");
+      }
+    } catch (err) {
+      toast.error("Lỗi khi POST sản phẩm");
+      console.error("Error posting product:", err);
+    } finally {
+      setPostingProducts(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(productId);
+        return newSet;
+      });
     }
   };
 
@@ -486,6 +513,15 @@ const MyPosts = ({ user }) => {
                           >
                             Chỉnh sửa
                           </Dropdown.Item>
+                          {post.status === "ADMIN_APPROVED" && (
+                            <Dropdown.Item
+                              onClick={() => handlePostProduct(post.id)}
+                              disabled={postingProducts.has(post.id)}
+                              className="text-success"
+                            >
+                              {postingProducts.has(post.id) ? "Đang POST..." : "POST sản phẩm"}
+                            </Dropdown.Item>
+                          )}
                           {(post.status === "expired" ||
                             post.status === "sold") && (
                             <Dropdown.Item
@@ -576,6 +612,34 @@ const MyPosts = ({ user }) => {
                       <span>{post.views || 0} lượt xem</span>
                       <span>{post.likes || 0} lượt thích</span>
                     </div>
+
+                    {/* POST Button for ADMIN_APPROVED products */}
+                    {post.status === "ADMIN_APPROVED" && (
+                      <div className="mt-2">
+                        <Button
+                          variant="success"
+                          size="sm"
+                          onClick={() => handlePostProduct(post.id)}
+                          disabled={postingProducts.has(post.id)}
+                          className="w-100"
+                        >
+                          {postingProducts.has(post.id) ? (
+                            <>
+                              <Spinner animation="border" size="sm" className="me-2" />
+                              Đang POST...
+                            </>
+                          ) : (
+                            <>
+                              <i className="bi bi-check-circle me-2"></i>
+                              POST sản phẩm
+                            </>
+                          )}
+                        </Button>
+                        <small className="text-muted d-block mt-1 text-center">
+                          Nhấn để hiển thị sản phẩm trên trang chủ
+                        </small>
+                      </div>
+                    )}
                   </div>
 
                   {/* Date Info */}
