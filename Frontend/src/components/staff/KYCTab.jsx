@@ -11,12 +11,30 @@ import {
   Row,
   Col,
   Empty,
+  Tooltip,
+  Select,
 } from "antd";
-import { ReloadOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import {
+  ReloadOutlined,
+  ExclamationCircleOutlined,
+  EyeOutlined,
+  EyeInvisibleOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import { usePendingKyc } from "../../hooks/useStaff";
 import { vnDate, statusTag, resolveImageUrl } from "../../utils/staffUtils";
 
-/** Lấy 2 ảnh CCCD (front/back) từ rất nhiều tên key có thể có */
+/* ====== Lý do từ chối (giống ProductsTab) ====== */
+const REJECT_REASONS = [
+  { value: "Thông tin không hợp lệ" },
+  { value: "Hình ảnh không rõ ràng/vi phạm" },
+  { value: "Thiếu thông tin quan trọng" },
+  { value: "Tin trùng lặp" },
+  { value: "Vi phạm chính sách" },
+  { value: "OTHER", label: "Khác..." },
+];
+
+/* ====== Helper lấy ảnh front/back từ nhiều key ====== */
 function extractKycImages(rec = {}) {
   const tryKeys = (o, keys) => {
     for (const k of keys) {
@@ -25,8 +43,6 @@ function extractKycImages(rec = {}) {
     }
     return null;
   };
-
-  // Các tên key hay gặp BE đặt khác nhau
   const frontRaw = tryKeys(rec, [
     "frontUrl",
     "frontURL",
@@ -39,7 +55,6 @@ function extractKycImages(rec = {}) {
     "cccdFront",
     "imageFront",
   ]);
-
   const backRaw = tryKeys(rec, [
     "backUrl",
     "backURL",
@@ -52,11 +67,9 @@ function extractKycImages(rec = {}) {
     "cccdBack",
     "imageBack",
   ]);
-
   const front = resolveImageUrl(frontRaw);
   const back = resolveImageUrl(backRaw);
 
-  // Nếu BE trả mảng images có đúng 2 ảnh, vẫn hỗ trợ
   let fallback = [];
   const listCandidates = [
     rec.images,
@@ -78,18 +91,69 @@ function extractKycImages(rec = {}) {
       break;
     }
   }
-
-  // Ưu tiên front/back; nếu không có thì trả mảng fallback
   const pair = [front, back].filter(Boolean);
   return pair.length ? pair : fallback.slice(0, 2);
 }
 
+/* bỏ dấu để tìm kiếm mềm */
+const norm = (s) =>
+  (s ?? "")
+    .toString()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
+
+// helper hiển thị 1 cặp nhãn/giá trị
+const KV = ({ label, value }) => (
+  <div style={{ marginBottom: 10 }}>
+    <div style={{ fontSize: 12, color: "#888", marginBottom: 4 }}>{label}</div>
+    <Input readOnly value={value ?? "—"} />
+  </div>
+);
+
 const KYCTab = () => {
   const { list, reload, approve, reject, loading, initial, loadUserInfo } =
     usePendingKyc();
+
+  // tìm kiếm
+  const [query, setQuery] = useState("");
+
+  // chi tiết
   const [detail, setDetail] = useState(null);
-  const [reasonModal, setReasonModal] = useState({ open: false, id: null });
-  const [reason, setReason] = useState("");
+
+  // chọn lý do từ chối (giống ProductsTab)
+  const [rejectDlg, setRejectDlg] = useState({
+    open: false,
+    id: null,
+    reasonKey: null,
+    customText: "",
+  });
+
+  // Gallery preview (giống ProductsTab)
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewItems, setPreviewItems] = useState([]); // mảng url string
+  const [previewIndex, setPreviewIndex] = useState(0);
+  const openImages = (row, startIndex = 0) => {
+    const urls = extractKycImages(row)
+      .map(String)
+      .map((u) => u.trim())
+      .filter(Boolean);
+    if (!urls.length) return;
+    setPreviewItems(urls);
+    setPreviewIndex(Math.max(0, Math.min(startIndex, urls.length - 1)));
+    setPreviewOpen(true);
+  };
+
+  const dataFiltered = useMemo(() => {
+    const q = norm(query);
+    if (!q) return list;
+    return (list || []).filter((r) => {
+      const parts = [r.id, r.userId, r.status, r.username, r.email]
+        .filter((x) => x !== undefined && x !== null)
+        .map((x) => norm(x));
+      return parts.some((p) => p.includes(q));
+    });
+  }, [list, query]);
 
   const columns = useMemo(
     () => [
@@ -117,21 +181,18 @@ const KYCTab = () => {
       {
         title: "Ảnh",
         key: "images",
+        width: 120,
         render: (_, r) => {
           const imgs = extractKycImages(r);
-          if (!imgs.length) return "—";
+          const hasImgs = imgs.length > 0;
           return (
-            <Space>
-              {imgs.map((u, i) => (
-                <Image
-                  key={i}
-                  src={u}
-                  width={48}
-                  height={36}
-                  style={{ objectFit: "cover", borderRadius: 6 }}
-                />
-              ))}
-            </Space>
+            <Tooltip title={hasImgs ? "Xem tất cả ảnh" : "Không có ảnh"}>
+              <Button
+                icon={hasImgs ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                onClick={() => hasImgs && openImages(r)}
+                disabled={!hasImgs}
+              />
+            </Tooltip>
           );
         },
       },
@@ -152,7 +213,14 @@ const KYCTab = () => {
             <Button
               danger
               loading={loading}
-              onClick={() => setReasonModal({ open: true, id: r.id })}
+              onClick={() =>
+                setRejectDlg({
+                  open: true,
+                  id: r.id,
+                  reasonKey: null,
+                  customText: "",
+                })
+              }
             >
               Từ chối
             </Button>
@@ -170,24 +238,13 @@ const KYCTab = () => {
       okText: "Duyệt",
       cancelText: "Hủy",
       onOk: async () => {
-        await approve(id);
+        await approve(id); // hook đã xử lý ẩn record ngay sau khi duyệt
       },
     });
   };
 
-  const doReject = async () => {
-    const id = reasonModal.id;
-    if (!id) return;
-    const text = reason.trim();
-    if (text.length < 3) return;
-    await reject(id, text);
-    setReason("");
-    setReasonModal({ open: false, id: null });
-  };
-
   const openDetail = async (rec) => {
     const userResp = await loadUserInfo(rec.id);
-    // unwrap nếu BE trả {code, message, data}
     const user = userResp?.data ?? userResp?.user ?? userResp ?? null;
     setDetail({ ...rec, __user: user });
   };
@@ -196,35 +253,52 @@ const KYCTab = () => {
 
   return (
     <div>
-      <Space style={{ marginBottom: 12 }}>
+      {/* Thanh công cụ: Tải lại + Tìm kiếm */}
+      <Space
+        style={{
+          marginBottom: 12,
+          width: "100%",
+          justifyContent: "space-between",
+        }}
+      >
         <Button icon={<ReloadOutlined />} onClick={reload}>
           Tải lại
         </Button>
+        <Input
+          allowClear
+          prefix={<SearchOutlined />}
+          placeholder="Tìm kiếm mọi thứ..."
+          style={{ width: 360 }}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
       </Space>
 
       <Table
         rowKey={(r) => r.id}
         loading={initial}
         columns={columns}
-        dataSource={list}
+        dataSource={dataFiltered}
         pagination={{ pageSize: 10 }}
       />
 
-      {/* Modal từ chối */}
-      <Modal
-        title="Nhập lý do từ chối"
-        open={reasonModal.open}
-        onCancel={() => setReasonModal({ open: false, id: null })}
-        onOk={doReject}
-        okButtonProps={{ disabled: !reason.trim() || reason.trim().length < 3 }}
-      >
-        <Input.TextArea
-          rows={4}
-          placeholder="Lý do (tối thiểu 3 ký tự)"
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-        />
-      </Modal>
+      {/* Gallery Preview: giống ProductsTab (ẩn thẻ <Image/>) */}
+      {previewOpen && (
+        <div style={{ display: "none" }}>
+          <Image.PreviewGroup
+            preview={{
+              visible: previewOpen,
+              current: previewIndex,
+              onVisibleChange: (v) => setPreviewOpen(v),
+              onChange: (current) => setPreviewIndex(current),
+            }}
+          >
+            {previewItems.map((src, i) => (
+              <Image key={src + i} src={src} />
+            ))}
+          </Image.PreviewGroup>
+        </div>
+      )}
 
       {/* Modal chi tiết */}
       <Modal
@@ -232,57 +306,132 @@ const KYCTab = () => {
         open={!!detail}
         onCancel={() => setDetail(null)}
         footer={null}
-        width={920}
+        width={1000}
       >
         {detail && (
           <Row gutter={16}>
-            <Col span={12}>
-              <div style={{ marginBottom: 8 }}>
-                <b>User ID:</b> {detail.userId}
-              </div>
-              <div style={{ marginBottom: 8 }}>
-                <b>Gửi lúc:</b> {vnDate(detail.createdAt || detail.created_at)}
-              </div>
-              <div style={{ marginBottom: 8 }}>
-                <b>Trạng thái:</b> {statusTag(detail.status).text}
-              </div>
-              <div style={{ marginBottom: 8 }}>
-                <b>User:</b>{" "}
-                {detail.__user?.username || detail.__user?.email || "—"}
-              </div>
-              <pre
-                style={{
-                  background: "#f5f5f5",
-                  padding: 12,
-                  borderRadius: 8,
-                  maxHeight: 260,
-                  overflow: "auto",
-                }}
-              >
-                {JSON.stringify(detail.__user ?? {}, null, 2)}
-              </pre>
-            </Col>
-
-            <Col span={12}>
+            {/* Cột trái: gallery ảnh giống ProductsTab */}
+            <Col span={10}>
               {imgs.length ? (
                 <Image.PreviewGroup>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr",
-                      gap: 8,
-                    }}
-                  >
-                    {imgs.map((u, i) => (
-                      <Image key={i} src={u} width="100%" />
-                    ))}
-                  </div>
+                  {imgs.slice(0, 12).map((u, i) => (
+                    <Image
+                      key={i}
+                      src={u}
+                      width="100%"
+                      style={{ marginBottom: 8, objectFit: "cover" }}
+                    />
+                  ))}
                 </Image.PreviewGroup>
               ) : (
                 <Empty description="Không có ảnh" />
               )}
             </Col>
+
+            {/* Cột phải: thông tin theo dạng KV + tag trạng thái */}
+            <Col span={14}>
+              <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 12 }}>
+                Thông tin KYC
+              </div>
+
+              <KV label="User ID" value={detail.userId} />
+              <KV
+                label="Tài khoản"
+                value={
+                  detail.__user?.username ||
+                  detail.__user?.email ||
+                  detail.username ||
+                  detail.email
+                }
+              />
+              <KV
+                label="Họ tên"
+                value={detail.__user?.fullName || detail.__user?.fullname}
+              />
+              <KV label="Số điện thoại" value={detail.__user?.phone} />
+              <KV label="Giới tính" value={detail.__user?.gender} />
+              <KV label="Năm sinh" value={detail.__user?.yob} />
+              <KV label="Địa chỉ" value={detail.__user?.address} />
+
+              <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, color: "#888", marginBottom: 4 }}>
+                    Trạng thái
+                  </div>
+                  <Tag color={statusTag(detail.status).color}>
+                    {statusTag(detail.status).text}
+                  </Tag>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, color: "#888", marginBottom: 4 }}>
+                    Gửi lúc
+                  </div>
+                  <Input
+                    readOnly
+                    value={vnDate(detail.createdAt || detail.created_at)}
+                  />
+                </div>
+              </div>
+            </Col>
           </Row>
+        )}
+      </Modal>
+
+      {/* Modal chọn lý do từ chối (giống ProductsTab) */}
+      <Modal
+        title="Chọn lý do từ chối"
+        open={rejectDlg.open}
+        okText="Xác nhận"
+        cancelText="Hủy"
+        onCancel={() =>
+          setRejectDlg({
+            open: false,
+            id: null,
+            reasonKey: null,
+            customText: "",
+          })
+        }
+        onOk={async () => {
+          const { reasonKey, customText, id } = rejectDlg;
+          const finalReason =
+            reasonKey === "OTHER"
+              ? (customText || "").trim()
+              : (
+                  REJECT_REASONS.find((r) => r.value === reasonKey)?.label ||
+                  reasonKey ||
+                  ""
+                ).trim();
+          if (!finalReason || finalReason.length < 3) return;
+          await reject(id, finalReason); // hook sẽ loại khỏi list ngay
+          setRejectDlg({
+            open: false,
+            id: null,
+            reasonKey: null,
+            customText: "",
+          });
+        }}
+      >
+        <div style={{ marginBottom: 8 }}>Vui lòng chọn một lý do:</div>
+        <Select
+          style={{ width: "100%" }}
+          placeholder="— Chọn lý do —"
+          value={rejectDlg.reasonKey || undefined}
+          onChange={(v) => setRejectDlg((s) => ({ ...s, reasonKey: v }))}
+          options={REJECT_REASONS.map((r) => ({
+            label: r.label || r.value,
+            value: r.value,
+          }))}
+        />
+        {rejectDlg.reasonKey === "OTHER" && (
+          <Input.TextArea
+            rows={4}
+            style={{ marginTop: 10 }}
+            placeholder="Nhập lý do chi tiết (tối thiểu 3 ký tự)"
+            value={rejectDlg.customText}
+            onChange={(e) =>
+              setRejectDlg((s) => ({ ...s, customText: e.target.value }))
+            }
+          />
         )}
       </Modal>
     </div>
