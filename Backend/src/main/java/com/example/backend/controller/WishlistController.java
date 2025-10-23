@@ -8,6 +8,7 @@ import com.example.backend.entity.Wishlist;
 import com.example.backend.service.ProductService;
 import com.example.backend.service.WishlistService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,8 +20,9 @@ public class WishlistController {
     private final WishlistService wishlistService;
     private final ProductService productService;
 
-
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @PostMapping("/add")
+
     public ApiResponse<Boolean> addWishlist(@RequestBody AddProductIntoWishlistRequest request) {
         Product product = productService.getProduct(request.getProductId());
         boolean result = wishlistService.addProductIntoWishlist(product, request.getUserId());
@@ -29,7 +31,7 @@ public class WishlistController {
                 .data(result)
                 .build();
     }
-
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @GetMapping
     public ApiResponse<List<ProductResponse>> getWishlist(@RequestParam Long userId){
         List<ProductResponse> list = wishlistService.getAllProductsInWishlist(userId);
@@ -38,7 +40,7 @@ public class WishlistController {
                 .message("Đã lấy toàn bộ sản phẩm trong wishlist thành công!")
                 .build();
     }
-
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @DeleteMapping("/delete")
     public  ApiResponse<Void> deleteWishlist(@RequestParam Long productId, @RequestParam Long userId){
         Product product = productService.getProduct(productId);

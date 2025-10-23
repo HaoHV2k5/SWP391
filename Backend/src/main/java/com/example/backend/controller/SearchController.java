@@ -27,14 +27,14 @@ public class SearchController {
     }
 
     @GetMapping("/{slugs}")
-    public ApiResponse<List<ProductResponse>> findBySlugs(@PathVariable String slugs) {
+    public ApiResponse<List<ProductResponse>> searchByTag(@PathVariable String slugs) {
         List<ProductResponse> list = searchService.getProductByTagSlug(slugs);
         return  ApiResponse.<List<ProductResponse>>builder().data(list).build();
     }
 
-    @GetMapping("/vehicle/search")
+    @GetMapping("/product/search")
     public ApiResponse<List<ProductResponse>> searchByVehicle(@RequestParam String request) {
-        List<ProductResponse> list = searchService.searchVehicles(request);
+        List<ProductResponse> list = searchService.searchProductByParam(request);
         return  ApiResponse.<List<ProductResponse>>builder().data(list).build();
 
     }

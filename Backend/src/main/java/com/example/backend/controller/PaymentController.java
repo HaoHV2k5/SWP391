@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URLEncoder;
@@ -27,12 +28,14 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     // nap vao vi
+    @PreAuthorize("hasAuthority('ROLE_SELLER')")
     @PostMapping("/recharge")
     public ApiResponse<Map<String, Object>> createPayment(HttpServletRequest req, @RequestParam Long userId) {
         Map<String, Object> map = paymentService.generateLinkPayment(req, userId);
         return ApiResponse.<Map<String, Object>>builder().data(map).build();
     }
 // mua goi
+@PreAuthorize("hasAuthority('ROLE_SELLER')")
     @PostMapping("/buy-package")
     public ApiResponse<Boolean> buyPackage(@RequestBody BuyPackageRequest request) {
        boolean ans = paymentService.handleBuyTransaction(request.getUserId(),request.getPackageId());

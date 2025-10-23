@@ -31,6 +31,7 @@ public class KycService {
     private final CloudinaryService cloudinaryService;
     private final UserMapper userMapper;
 
+    @PreAuthorize("hasAnyAuthority('ROLE_SELLER', 'ROLE_USER')")
     public KycDetailResponse submit(Long userId, MultipartFile frontImage, MultipartFile backImage){
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         String frontUrl = cloudinaryService.upload(frontImage);
@@ -44,7 +45,7 @@ public class KycService {
         KycSubmission saved = kycSubmissionRepository.save(sub);
         return toResponse(saved);
     }
-
+    @PreAuthorize("hasAuthority('ROLE_STAFF')")
     public KycDetailResponse staffApprove(Long kycId){
         KycSubmission sub = kycSubmissionRepository.findById(kycId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         User user = sub.getUser();
@@ -58,6 +59,7 @@ public class KycService {
 
         return toResponse(kycSubmissionRepository.save(sub));
     }
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public KycDetailResponse adminApprove(Long kycId){
         KycSubmission sub = kycSubmissionRepository.findById(kycId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
@@ -71,6 +73,7 @@ public class KycService {
         return toResponse(kycSubmissionRepository.save(sub));
     }
 
+    @PreAuthorize("hasAuthority('REJECT')")
 
     public KycDetailResponse reject(Long kycId, KycDecisionRequest request){
         KycSubmission sub = kycSubmissionRepository.findById(kycId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
@@ -92,6 +95,7 @@ public class KycService {
                 .build();
     }
 
+    @PreAuthorize("hasAuthority('ROLE_STAFF')")
 
     public List<KycDetailResponse> getAllKycByStaff(){
         List<KycSubmission> subs = kycSubmissionRepository.findByStatus(KycStatus.PENDING);
@@ -104,6 +108,7 @@ public class KycService {
     }
 
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
 
     public List<KycDetailResponse> getAllKycByAdmin(){
         List<KycSubmission> subs = kycSubmissionRepository.findByStatus(KycStatus.STAFF_APPROVED);
@@ -115,14 +120,15 @@ public class KycService {
         return response;
     }
 
-    public KycDetailResponse getAllKYC(Long id){
+   @PreAuthorize("hasAnyAuthority('ROLE_SELLER', 'ROLE_USER')")
+    public KycDetailResponse getKYCUsing(Long id){
         User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         KycSubmission subs = kycSubmissionRepository.findFirstByUserOrderByCreatedAtDesc(user).orElseThrow(() -> new AppException(ErrorCode.KYC_NOT_EXISTED));
 
 
         return toResponse(subs);
     }
-
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_STAFF')")
     public UserDetailResponse getInforUserById(Long id){
         KycSubmission kyc = kycSubmissionRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.KYC_NOT_EXISTED));
         User user = kyc.getUser();
