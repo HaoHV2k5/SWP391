@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 
 import com.example.backend.dto.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,7 +28,9 @@ public class ContractController {
 
     private final EversignService eversignService;
 
+
     // Endpoint duy nhất: tạo hợp đồng dùng template eversign
+    @PreAuthorize("hasAuthority('ROLE_SELLER')")
     @PostMapping("/create-using-template")
     public ApiResponse<Map<String, Object>> createContractWithTemplate(@RequestBody ContractCreateTemplateRequest request) {
         Map<String, Object> map = eversignService.createDocumentUsingTemplate(request);

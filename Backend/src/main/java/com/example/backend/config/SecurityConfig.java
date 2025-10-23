@@ -39,9 +39,9 @@ public class SecurityConfig  {
             "/users/register",
             "/users/verify-otp",
             "/users/resend-otp",
-            "/permissions/**",
-            "/roles/**",
-            "/admin/**",
+            "/tag/**",
+            
+
             "/api/v1/products/active",
             "/api/v1/products/{id}",
             "/api/payment/vnpay-return",

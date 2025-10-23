@@ -2,15 +2,14 @@ package com.example.backend.service;
 
 import com.example.backend.dto.request.*;
 import com.example.backend.dto.response.CreationUserResponse;
+import com.example.backend.dto.response.PostingPackageResponse;
 import com.example.backend.dto.response.UserDetailResponse;
 import com.example.backend.dto.response.UserListResponse;
-import com.example.backend.entity.Role;
-import com.example.backend.entity.User;
-import com.example.backend.entity.Wallet;
-import com.example.backend.entity.Wishlist;
+import com.example.backend.entity.*;
 import com.example.backend.enums.Roles;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
+import com.example.backend.mapper.UserPostingPackageMapper;
 import com.example.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import com.example.backend.mapper.UserMapper;
@@ -32,9 +31,10 @@ public class UserService {
     private final MailService mailService;
     private final RoleRepository roleRepository;
     private final OtpService otpService;
-    private final UserOtpRepository userOtpRepository;
+    private final UserPostingPackageMapper  userPostingPackageMapper    ;
     private final WalletRepository walletRepository;
     private final WishlistRepository wishlistRepository;
+    private final UserPackageTransactionService userPackageTransactionService;
 
 @Value("${email.login.facebook}")
 private String emailLoginFacebook;
@@ -270,6 +270,12 @@ private String emailLoginFacebook;
         userRepository.save(user);
     }
 
+
+    public PostingPackageResponse getPackageCurrent(Long userId){
+        UserPostingPackage userPostingPackage = userPackageTransactionService.getUserPostingPackageByUserId(userId);
+
+        return userPostingPackageMapper.toPostingPackageResponse(userPostingPackage);
+    }
 
 
 

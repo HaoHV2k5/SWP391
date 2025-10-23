@@ -72,7 +72,7 @@ public class KycController {
 
     @GetMapping("/user")
     public ApiResponse<KycDetailResponse> getKycByUser(@RequestParam Long userId){
-        KycDetailResponse response = kycService.getAllKYC(userId);
+        KycDetailResponse response = kycService.getKYCUsing(userId);
         return  ApiResponse.<KycDetailResponse>builder().data(response).build();
     }
 

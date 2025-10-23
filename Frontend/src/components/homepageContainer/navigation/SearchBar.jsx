@@ -169,7 +169,7 @@ const SearchBar = () => {
                     <div className="suggestion-title">
                       {suggestion.title}
                     </div>
-                    <div className="suggestion-type text-muted" style={{fontSize: '0.8em'}}>
+<div className="suggestion-type text-muted" style={{fontSize: '0.8em'}}>
                       {suggestion.type === 'tag' ? 'Tag' :
                        suggestion.type === 'brand' ? 'Thương hiệu' :
                        suggestion.type === 'model' ? 'Mẫu xe' :

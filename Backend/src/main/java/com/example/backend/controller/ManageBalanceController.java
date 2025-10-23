@@ -1,15 +1,12 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.response.ApiResponse;
-import com.example.backend.dto.response.TransactionHistoryResponse;
-import com.example.backend.dto.response.UserPackageTransactionResponse;
-import com.example.backend.dto.response.WalletTransactionResponse;
-import com.example.backend.service.TransactionService;
-import com.example.backend.service.UserPackageTransactionService;
-import com.example.backend.service.WalletService;
-import com.example.backend.service.WalletTransactionService;
+import com.example.backend.dto.response.*;
+import com.example.backend.entity.User;
+import com.example.backend.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,17 +17,18 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api")
 public class ManageBalanceController {
     private final TransactionService transactionService;
     private final WalletTransactionService walletTransactionService;
     private final WalletService walletService;
     private final UserPackageTransactionService  userPackageTransactionService;
-
+    private final UserService userService;
 
 
     // lay lich su mua goi
-    @GetMapping("/transaction/history")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/admin/transaction/history")
     public ApiResponse<List<TransactionHistoryResponse>> getTractions(){
         List<TransactionHistoryResponse> responses = transactionService.getTranction();
         return ApiResponse.<List<TransactionHistoryResponse>>builder()
@@ -39,8 +37,8 @@ public class ManageBalanceController {
                 .build();
     }
     // lay lich su toan bo bien dong so du
-
-    @GetMapping("/wallettransactions")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/admin/wallettransactions")
     public ApiResponse<List<WalletTransactionResponse>> getAllWalletTransactions() {
         List<WalletTransactionResponse> responses = walletTransactionService.getAllWalletTransactions();
         return ApiResponse.<List<WalletTransactionResponse>>builder()
@@ -49,7 +47,8 @@ public class ManageBalanceController {
                 .build();
     }
     // lay cac giao dich nap tien
-    @GetMapping("/wallettransactions/recharge")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/admin/wallettransactions/recharge")
     public ApiResponse<List<WalletTransactionResponse>> getAllWalletTransactionsRecharge() {
         List<WalletTransactionResponse> responses = walletTransactionService.getAllWalletTransactionsRecharging();
         return ApiResponse.<List<WalletTransactionResponse>>builder()
@@ -59,17 +58,19 @@ public class ManageBalanceController {
     }
 
     // xem duoc tien trong vi admin
-    @GetMapping("/balance")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/admin/balance")
     public ApiResponse<BigDecimal> getAdminBalance() {
         BigDecimal balance = walletService.getBalanceAdmin();
         return ApiResponse.<BigDecimal>builder()
                 .data(balance)
-                .message("Lấy toàn bộ WalletTransaction recharge thành công")
+                .message("xem số tiền trong ví admin thành công")
                 .build();
     }
 
     // xem lich su giao dong cua so du trong vi  cua 1 user cu the
-    @GetMapping("/user/walletTransaction")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/admin/user/walletTransaction")
     public ApiResponse<List<WalletTransactionResponse>> getWalletTransactionByUserID(@RequestParam Long userId){
         List<WalletTransactionResponse> responses = walletTransactionService.getAllWalletTransactionsByUserID(userId);
         return ApiResponse.<List<WalletTransactionResponse>>builder()
@@ -78,24 +79,54 @@ public class ManageBalanceController {
                 .build();
     }
     // xem lich su mua goi  cua 1 user cu the
-    @GetMapping("/user/transaction")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/admin/user/transaction")
     public ApiResponse<List<TransactionHistoryResponse>> getTransactionUserid(@RequestParam Long userId){
         List<TransactionHistoryResponse> responses = transactionService.getTranctionByUserid(userId);
         return ApiResponse.<List<TransactionHistoryResponse>>builder()
                 .data(responses)
-                .message("lấy danh sách wallet transactions của user thành công ")
+                .message("lấy danh sách  transactions của user thành công ")
                 .build();
     }
 
     // xem cac goi ma user da mua
 
-    @GetMapping("/user/transaction/package")
-    public ApiResponse<List<UserPackageTransactionResponse>> getTransactionPackageUserid(@RequestParam Long userId){
-        List<UserPackageTransactionResponse> responses = userPackageTransactionService.getUserPackageTransactions(userId);
-        return ApiResponse.< List<UserPackageTransactionResponse>>builder()
+    @GetMapping("/admin/user/transaction/package")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ApiResponse<List<PackageBuyHistoryResponse>> getTransactionPackageUserid(@RequestParam Long userId){
+        List<PackageBuyHistoryResponse> responses = userPackageTransactionService.getUserPackageTransactions(userId);
+        return ApiResponse.< List<PackageBuyHistoryResponse>>builder()
                 .data(responses)
-                .message("lấy danh sách wallet transactions của user thành công ")
+                .message("lấy danh sách gói mà user đã mua thành công ")
                 .build();
+    }
+
+
+
+    // usr xem lich su cac goi minh da mua
+
+    @GetMapping("/user/package/history")
+    public ApiResponse<List<PackageBuyHistoryResponse>> getTransactionPackageUserid(Authentication authentication){
+        String username = authentication.getName();
+        User user = userService.getUserByUsername(username);
+        List<PackageBuyHistoryResponse> responses = userPackageTransactionService.getUserPackageTransactions(user.getId());
+        return ApiResponse.< List<PackageBuyHistoryResponse>>builder()
+                .data(responses)
+                .message("lấy danh sách các gói  của user đã mua thành công ")
+                .build();
+    }
+
+    //usr lay goi dang su dung
+    @GetMapping("/user/package/current")
+    public ApiResponse<PostingPackageResponse> getPostingPackageCurrent(Authentication authentication){
+        String userName = authentication.getName();
+        User usr = userService.getUserByUsername(userName);
+        PostingPackageResponse postingPackageResponse = userService.getPackageCurrent(usr.getId());
+        return  ApiResponse.<PostingPackageResponse>builder()
+                .data(postingPackageResponse)
+                .message("đã lấy thành công gói hiện tại user đang sử dụng")
+                .build();
+
     }
 
 

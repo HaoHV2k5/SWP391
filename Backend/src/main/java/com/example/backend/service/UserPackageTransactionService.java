@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+import com.example.backend.dto.response.PackageBuyHistoryResponse;
 import com.example.backend.dto.response.UserPackageTransactionResponse;
 import com.example.backend.entity.PostingPackage;
 import com.example.backend.entity.UserPostingPackage;
@@ -21,12 +22,12 @@ public class UserPackageTransactionService {
     private final UserPackageTransactionMapper  userPackageTransactionMapper;
     private final PostingPackageRepository postingPackageRepository;
 
-    public List<UserPackageTransactionResponse> getUserPackageTransactions(Long userId){
+    public List<PackageBuyHistoryResponse> getUserPackageTransactions(Long userId){
         List<UserPostingPackage> list = userPackageTransactionRepository.findByUserId(userId);
-        return userPackageTransactionMapper.toUserPackageTransactionResponsesList(list);
+        return userPackageTransactionMapper.toPackageBuyHistoryResponsesList(list);
     }
     // lay goi tin ma nguoi ban mua
-    public UserPostingPackage getPUserostingPackageByUserId(Long userId){
+    public UserPostingPackage getUserPostingPackageByUserId(Long userId){
         UserPostingPackage userPosingPackage = userPackageTransactionRepository.findPostingPackageByUserIdAndActiveTrue(userId);
         if(userPosingPackage == null){
             throw new AppException(ErrorCode.PACKAGE_NOT_BUY);

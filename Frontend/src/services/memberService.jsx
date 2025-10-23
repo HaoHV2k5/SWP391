@@ -91,6 +91,41 @@ export const memberService = {
       };
     }
   },
+
+  // POST sản phẩm đã được admin duyệt
+  async postProduct(productId) {
+    try {
+      const response = await apiClient.post(`/products/post/seller?productId=${productId}`);
+      return {
+        success: true,
+        data: response.data,
+        message: "Đã POST sản phẩm thành công! Sản phẩm sẽ hiển thị trên trang chủ.",
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Không thể POST sản phẩm",
+      };
+    }
+  },
+
+  // Lấy danh sách sản phẩm đã được admin approve của seller
+  async getApprovedProducts(sellerId) {
+    try {
+      const response = await apiClient.get(`/products/seller/${sellerId}`);
+      return {
+        success: true,
+        data: response.data?.data || response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Không thể lấy danh sách sản phẩm đã duyệt",
+      };
+    }
+  },
 };
 
 export default memberService;
