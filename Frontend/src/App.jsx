@@ -51,88 +51,54 @@ function AppContent() {
         console.log("🔥 Firebase Auth State Changed:", firebaseUser);
 
         if (firebaseUser) {
-          // User is signed in
-          console.log("✅ User is signed in:", firebaseUser.email);
+          // User is signed in with Firebase
+          console.log("✅ Firebase user is signed in:", firebaseUser.email);
           try {
-            // Sync Firebase user với backend để lấy backend token
-            console.log("🔄 Syncing Firebase user with backend...");
-            const syncResult =
-              await firebaseAuthService.syncFirebaseUserWithBackend(
-                firebaseUser
-              );
-
-            if (syncResult.success) {
-              // Sử dụng backend token và user data
-              const userData = {
-                id: syncResult.userData?.id || firebaseUser.uid,
-                email: firebaseUser.email,
-                fullName: firebaseUser.displayName,
-                avatar: firebaseUser.photoURL,
-                role: syncResult.userData?.role || "member",
-                token: syncResult.backendToken, // Sử dụng backend token
-                provider:
-                  firebaseUser.providerData[0]?.providerId || "firebase",
-                firebaseUid: firebaseUser.uid,
-              };
-
-              console.log("✅ User synced with backend:", userData);
-              localStorage.setItem("token", syncResult.backendToken);
-              localStorage.setItem("userData", JSON.stringify(userData));
-              setUser(userData);
-
-              // Chuyển hướng về homepage sau khi đăng nhập thành công
-              if (location.pathname === "/login") {
-                console.log("🔄 Redirecting to homepage...");
-                navigate("/", { replace: true });
-              }
-            } else {
-              // Fallback: sử dụng Firebase token
-              console.warn(
-                "⚠️ Backend sync failed, using Firebase token:",
-                syncResult.message
-              );
-              const token = await firebaseUser.getIdToken();
-              const userData = {
-                id: firebaseUser.uid,
-                email: firebaseUser.email,
-                fullName: firebaseUser.displayName,
-                avatar: firebaseUser.photoURL,
-                role: "member",
-                token: token,
-                provider:
-                  firebaseUser.providerData[0]?.providerId || "firebase",
-                firebaseUid: firebaseUser.uid,
-              };
-
-              localStorage.setItem("token", token);
-              localStorage.setItem("userData", JSON.stringify(userData));
-              setUser(userData);
-            }
-          } catch (error) {
-            console.error(
-              "❌ Error syncing Firebase user with backend:",
-              error
-            );
-            // Fallback: sử dụng Firebase token
-            const token = await firebaseUser.getIdToken();
+            // Directly use Firebase token and user data
+            const firebaseToken = await firebaseUser.getIdToken();
             const userData = {
               id: firebaseUser.uid,
               email: firebaseUser.email,
               fullName: firebaseUser.displayName,
               avatar: firebaseUser.photoURL,
-              role: "member",
-              token: token,
+              role: "member", // Default role
               provider: firebaseUser.providerData[0]?.providerId || "firebase",
+              token: firebaseToken,
               firebaseUid: firebaseUser.uid,
+              username: firebaseUser.email, // For compatibility
+              verified: true,
+              locked: false,
             };
 
-            localStorage.setItem("token", token);
+            console.log("💾 Saving Firebase user data:", userData);
+            localStorage.setItem("token", firebaseToken);
             localStorage.setItem("userData", JSON.stringify(userData));
             setUser(userData);
+
+            // Redirect to homepage after successful login
+            if (location.pathname === "/login") {
+              console.log("🔄 Redirecting to homepage...");
+              navigate("/", { replace: true });
+            }
+          } catch (error) {
+            console.error("Error getting Firebase token:", error);
           }
         } else {
-          // User is signed out
-          console.log("❌ User is signed out");
+          // Firebase user is signed out
+          console.log("❌ Firebase user is signed out");
+
+          // Check if we have a regular user logged in
+          const existingToken = localStorage.getItem("token");
+          const existingUserData = localStorage.getItem("userData");
+
+          if (existingToken && existingUserData && !user?.firebaseUid) {
+            // We have a regular user logged in, don't clear it
+            console.log("✅ Regular user still logged in, keeping state");
+            return;
+          }
+
+          // Only clear if no regular user is logged in
+          console.log("🧹 Clearing user state (no regular user)");
           setUser(null);
           localStorage.removeItem("token");
           localStorage.removeItem("userData");
@@ -142,17 +108,53 @@ function AppContent() {
 
     // Cleanup subscription on unmount
     return () => unsubscribe();
-  }, [location.pathname, navigate]);
+  }, [location.pathname, navigate, user?.firebaseUid]);
+
+  // --- Load user from localStorage on app start ---
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userData = localStorage.getItem("userData");
+
+    if (token && userData) {
+      try {
+        const parsedUserData = JSON.parse(userData);
+        setUser(parsedUserData);
+        console.log("✅ User loaded from localStorage:", parsedUserData);
+      } catch (error) {
+        console.error("Error parsing userData from localStorage:", error);
+        localStorage.removeItem("token");
+        localStorage.removeItem("userData");
+      }
+    }
+  }, []);
 
   const handleLogin = (loginResponse) => {
-    const normalized = normalizeLoginResponse(loginResponse);
-    const userData = persistAuth(normalized);
-    setUser(userData);
+    console.log("🔍 handleLogin called with:", loginResponse);
+    try {
+      const normalized = normalizeLoginResponse(loginResponse);
+      console.log("🔍 normalized:", normalized);
+      const userData = persistAuth(normalized);
+      console.log("🔍 userData:", userData);
+      setUser(userData);
+      console.log("✅ User state updated successfully");
+    } catch (error) {
+      console.error("❌ Error in handleLogin:", error);
+    }
   };
 
   const handleLogout = async () => {
     try {
-      await firebaseAuthService.signOut();
+      // Nếu là Firebase user, gọi Firebase signOut
+      if (user?.firebaseUid) {
+        await firebaseAuthService.signOut();
+      }
+
+      // Clear local state và localStorage
+      setUser(null);
+      localStorage.removeItem("token");
+      localStorage.removeItem("userData");
+      localStorage.removeItem("refreshToken");
+
       toast.success("Đăng xuất thành công!");
       navigate("/", { replace: true });
     } catch (error) {
@@ -161,6 +163,7 @@ function AppContent() {
       setUser(null);
       localStorage.removeItem("token");
       localStorage.removeItem("userData");
+      localStorage.removeItem("refreshToken");
       toast.success("Đăng xuất thành công!");
       navigate("/", { replace: true });
     }

@@ -160,8 +160,7 @@ const LoginPage = ({ onLogin }) => {
       console.log("📋 Google login result:", result);
 
       if (result.success) {
-        console.log("✅ Google login successful, calling onLogin...");
-        onLogin(result.data);
+        console.log("✅ Google login successful!");
         toast.success("Đăng nhập Google thành công!");
 
         // Chuyển hướng về homepage
@@ -192,8 +191,7 @@ const LoginPage = ({ onLogin }) => {
       console.log("📋 Facebook login result:", result);
 
       if (result.success) {
-        console.log("✅ Facebook login successful, calling onLogin...");
-        onLogin(result.data);
+        console.log("✅ Facebook login successful!");
         toast.success("Đăng nhập Facebook thành công!");
 
         // Chuyển hướng về homepage
@@ -308,7 +306,9 @@ const LoginPage = ({ onLogin }) => {
               },
             };
 
+            console.log("🔍 Calling onLogin with userData:", userData);
             onLogin(userData);
+            console.log("✅ onLogin called successfully");
 
             // Navigate dựa trên role thực tế từ backend
             if (userRole === "ROLE_ADMIN") {

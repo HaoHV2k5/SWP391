@@ -6,8 +6,6 @@ import {
   FacebookAuthProvider,
 } from "firebase/auth";
 import { auth, googleProvider, facebookProvider } from "../firebase/config";
-import userSyncService from "./userSyncService";
-import apiClient from "./apiClient";
 
 class FirebaseAuthService {
   constructor() {
@@ -147,83 +145,6 @@ class FirebaseAuthService {
     return null;
   }
 
-  // Sync Firebase user với backend - đơn giản hóa
-  async syncFirebaseUserWithBackend(firebaseUser) {
-    try {
-      console.log("🔄 Firebase user authenticated successfully!");
-
-      // Lấy Firebase token
-      const firebaseToken = await firebaseUser.getIdToken();
-
-      // Tạo user data với Firebase token
-      const userData = {
-        id: firebaseUser.uid,
-        email: firebaseUser.email,
-        fullName: firebaseUser.displayName,
-        avatar: firebaseUser.photoURL,
-        role: "member",
-        provider: firebaseUser.providerData[0]?.providerId || "firebase",
-        firebaseUid: firebaseUser.uid,
-        username: firebaseUser.email,
-        verified: true,
-        locked: false,
-      };
-
-      console.log("✅ Firebase user ready:", userData);
-
-      return {
-        success: true,
-        backendToken: firebaseToken, // Sử dụng Firebase token
-        userData: userData,
-        message: "Firebase Authentication hoạt động độc lập",
-      };
-    } catch (error) {
-      console.error("❌ Error getting Firebase token:", error);
-      return {
-        success: false,
-        message: "Lỗi lấy Firebase token",
-      };
-    }
-  }
-
-  // Fallback khi có lỗi
-  async createFirebaseUserFallback(firebaseUser) {
-    try {
-      console.log("🔄 Creating Firebase user fallback...");
-
-      const firebaseToken = await firebaseUser.getIdToken();
-
-      const userData = {
-        id: firebaseUser.uid,
-        email: firebaseUser.email,
-        fullName: firebaseUser.displayName,
-        avatar: firebaseUser.photoURL,
-        role: "member",
-        provider: firebaseUser.providerData[0]?.providerId || "firebase",
-        firebaseUid: firebaseUser.uid,
-        username: firebaseUser.email,
-        verified: true,
-        locked: false,
-      };
-
-      console.log("✅ Firebase fallback user created:", userData);
-
-      return {
-        success: true,
-        backendToken: firebaseToken,
-        userData: userData,
-        warning: "Sử dụng Firebase token - Backend chưa có sẵn",
-      };
-    } catch (error) {
-      console.error("❌ Error creating Firebase fallback:", error);
-
-      return {
-        success: false,
-        message: "Lỗi tạo Firebase fallback user",
-      };
-    }
-  }
-
   // Error message mapping
   getErrorMessage(errorCode) {
     const errorMessages = {
@@ -243,7 +164,6 @@ class FirebaseAuthService {
       "auth/requires-recent-login":
         "Vui lòng đăng nhập lại để thực hiện hành động này",
     };
-
     return errorMessages[errorCode] || "Có lỗi xảy ra khi đăng nhập";
   }
 }
