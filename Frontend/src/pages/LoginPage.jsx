@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, User, Mail, Lock, Phone, Calendar } from "lucide-react";
 import { toast } from "react-toastify";
-import { facebookAuthService } from "../services/authService";
+import firebaseAuthService from "../services/firebaseAuthService";
 
 const LoginPage = ({ onLogin }) => {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -125,7 +126,6 @@ const LoginPage = ({ onLogin }) => {
 
     setFieldErrors(errors);
   };
-  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -150,13 +150,67 @@ const LoginPage = ({ onLogin }) => {
     }
   };
 
-  // Xử lý Facebook login
-  const handleFacebookLogin = () => {
+  // Xử lý Google login với Firebase
+  const handleGoogleLogin = async () => {
     try {
-      facebookAuthService.loginWithFacebook();
+      setLoading(true);
+      console.log("🔄 Starting Google login...");
+
+      const result = await firebaseAuthService.signInWithGoogle();
+      console.log("📋 Google login result:", result);
+
+      if (result.success) {
+        console.log("✅ Google login successful, calling onLogin...");
+        onLogin(result.data);
+        toast.success("Đăng nhập Google thành công!");
+
+        // Chuyển hướng về homepage
+        setTimeout(() => {
+          navigate("/");
+        }, 1000);
+      } else if (result.cancelled) {
+        // User đã hủy đăng nhập, không hiển thị lỗi
+        console.log("User cancelled Google login");
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error("Google login error:", error);
+      toast.error("Lỗi đăng nhập Google");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Xử lý Facebook login với Firebase
+  const handleFacebookLogin = async () => {
+    try {
+      setLoading(true);
+      console.log("🔄 Starting Facebook login...");
+
+      const result = await firebaseAuthService.signInWithFacebook();
+      console.log("📋 Facebook login result:", result);
+
+      if (result.success) {
+        console.log("✅ Facebook login successful, calling onLogin...");
+        onLogin(result.data);
+        toast.success("Đăng nhập Facebook thành công!");
+
+        // Chuyển hướng về homepage
+        setTimeout(() => {
+          navigate("/");
+        }, 1000);
+      } else if (result.cancelled) {
+        // User đã hủy đăng nhập, không hiển thị lỗi
+        console.log("User cancelled Facebook login");
+      } else {
+        toast.error(result.message);
+      }
     } catch (error) {
       console.error("Facebook login error:", error);
       toast.error("Lỗi đăng nhập Facebook");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -787,11 +841,8 @@ const LoginPage = ({ onLogin }) => {
 
         <div style={{ textAlign: "center", margin: "1.5rem 0 0.5rem 0" }}>
           <button
-            onClick={() => {
-              // Redirect đến BE để xử lý Google OAuth2
-              window.location.href =
-                "http://localhost:3979/oauth2/authorization/google";
-            }}
+            onClick={handleGoogleLogin}
+            disabled={loading}
             style={{
               width: "100%",
               padding: "12px 24px",
@@ -839,6 +890,7 @@ const LoginPage = ({ onLogin }) => {
 
           <button
             onClick={handleFacebookLogin}
+            disabled={loading}
             style={{
               width: "100%",
               padding: "12px 24px",

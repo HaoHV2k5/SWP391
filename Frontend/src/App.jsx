@@ -33,56 +33,114 @@ import TagPage from "./pages/home/TagPage";
 import { SavedProductsProvider } from "./components/homepageContainer/contexts/SavedProductsContext";
 import { normalizeLoginResponse, persistAuth, isStaff } from "./utils/auth";
 import ProtectedStaffRoute from "./routes/ProtectedStaffRoute";
+import firebaseAuthService from "./services/firebaseAuthService";
 
 function AppContent() {
   const [user, setUser] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
 
-  // --- Nhận token qua query (Google) hoặc khôi phục từ localStorage ---
+  // --- Firebase Auth State Listener ---
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get("token");
-    const email = urlParams.get("email");
-    const name = urlParams.get("name");
+    console.log("🔥 Setting up Firebase Auth State Listener...");
 
-    if (token && email && name) {
-      const userData = {
-        id: email,
-        email,
-        fullName: name,
-        avatar: "",
-        role: "member",
-        token,
-      };
-      localStorage.setItem("token", token);
-      localStorage.setItem("userData", JSON.stringify(userData));
-      setUser(userData);
-      setTimeout(
-        () => toast.success(`Chào mừng ${name}! Đăng nhập Google thành công!`),
-        100
-      );
-      // Xoá query trên URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-      return;
-    }
+    const unsubscribe = firebaseAuthService.onAuthStateChanged(
+      async (firebaseUser) => {
+        console.log("🔥 Firebase Auth State Changed:", firebaseUser);
 
-    // Khôi phục từ localStorage
-    const userData = localStorage.getItem("userData");
-    const storedToken = localStorage.getItem("token");
-    if (userData) {
-      try {
-        const parsed = JSON.parse(userData);
-        if (!storedToken && parsed.token) {
-          localStorage.setItem("token", parsed.token);
+        if (firebaseUser) {
+          // User is signed in
+          console.log("✅ User is signed in:", firebaseUser.email);
+          try {
+            // Sync Firebase user với backend để lấy backend token
+            console.log("🔄 Syncing Firebase user with backend...");
+            const syncResult =
+              await firebaseAuthService.syncFirebaseUserWithBackend(
+                firebaseUser
+              );
+
+            if (syncResult.success) {
+              // Sử dụng backend token và user data
+              const userData = {
+                id: syncResult.userData?.id || firebaseUser.uid,
+                email: firebaseUser.email,
+                fullName: firebaseUser.displayName,
+                avatar: firebaseUser.photoURL,
+                role: syncResult.userData?.role || "member",
+                token: syncResult.backendToken, // Sử dụng backend token
+                provider:
+                  firebaseUser.providerData[0]?.providerId || "firebase",
+                firebaseUid: firebaseUser.uid,
+              };
+
+              console.log("✅ User synced with backend:", userData);
+              localStorage.setItem("token", syncResult.backendToken);
+              localStorage.setItem("userData", JSON.stringify(userData));
+              setUser(userData);
+
+              // Chuyển hướng về homepage sau khi đăng nhập thành công
+              if (location.pathname === "/login") {
+                console.log("🔄 Redirecting to homepage...");
+                navigate("/", { replace: true });
+              }
+            } else {
+              // Fallback: sử dụng Firebase token
+              console.warn(
+                "⚠️ Backend sync failed, using Firebase token:",
+                syncResult.message
+              );
+              const token = await firebaseUser.getIdToken();
+              const userData = {
+                id: firebaseUser.uid,
+                email: firebaseUser.email,
+                fullName: firebaseUser.displayName,
+                avatar: firebaseUser.photoURL,
+                role: "member",
+                token: token,
+                provider:
+                  firebaseUser.providerData[0]?.providerId || "firebase",
+                firebaseUid: firebaseUser.uid,
+              };
+
+              localStorage.setItem("token", token);
+              localStorage.setItem("userData", JSON.stringify(userData));
+              setUser(userData);
+            }
+          } catch (error) {
+            console.error(
+              "❌ Error syncing Firebase user with backend:",
+              error
+            );
+            // Fallback: sử dụng Firebase token
+            const token = await firebaseUser.getIdToken();
+            const userData = {
+              id: firebaseUser.uid,
+              email: firebaseUser.email,
+              fullName: firebaseUser.displayName,
+              avatar: firebaseUser.photoURL,
+              role: "member",
+              token: token,
+              provider: firebaseUser.providerData[0]?.providerId || "firebase",
+              firebaseUid: firebaseUser.uid,
+            };
+
+            localStorage.setItem("token", token);
+            localStorage.setItem("userData", JSON.stringify(userData));
+            setUser(userData);
+          }
+        } else {
+          // User is signed out
+          console.log("❌ User is signed out");
+          setUser(null);
+          localStorage.removeItem("token");
+          localStorage.removeItem("userData");
         }
-        setUser(parsed);
-      } catch {
-        localStorage.removeItem("userData");
-        localStorage.removeItem("token");
       }
-    }
-  }, []);
+    );
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, [location.pathname, navigate]);
 
   const handleLogin = (loginResponse) => {
     const normalized = normalizeLoginResponse(loginResponse);
@@ -90,21 +148,26 @@ function AppContent() {
     setUser(userData);
   };
 
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("userData");
-    toast.success("Đăng xuất thành công!");
-    navigate("/", { replace: true });
+  const handleLogout = async () => {
+    try {
+      await firebaseAuthService.signOut();
+      toast.success("Đăng xuất thành công!");
+      navigate("/", { replace: true });
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Fallback: clear local state even if Firebase logout fails
+      setUser(null);
+      localStorage.removeItem("token");
+      localStorage.removeItem("userData");
+      toast.success("Đăng xuất thành công!");
+      navigate("/", { replace: true });
+    }
   };
 
   // --- Xác định bối cảnh trang để ẩn Navbar/Footer ---
   const path = location.pathname;
   const isAuthPage =
-    path === "/login" ||
-    path === "/register" ||
-    path === "/facebook-callback" ||
-    path === "/verify-otp";
+    path === "/login" || path === "/register" || path === "/verify-otp";
 
   const isStaffPage = path === "/staff";
   const isAdminPage = path.startsWith("/admin");
