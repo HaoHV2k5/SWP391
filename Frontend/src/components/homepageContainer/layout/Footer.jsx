@@ -5,9 +5,9 @@ const appConstants = {
   EMAIL: 'support@electricstore.com',
   PHONE: '1900-xxxx'
 };
-import { paymentData, supportLinks, aboutLinks, socialData } from '../data/footerData';
-import FooterColumn from './homepageContainer/layout/FooterColumn';
-import './homepageContainer/styles/Footer.css';
+import { paymentData, supportLinks, aboutLinks, socialData } from '../../../data/footerData';
+import FooterColumn from '../layout/FooterColumn';
+import '../styles/Footer.css';
 
 const Footer = () => {
   const scrollToTop = () => {

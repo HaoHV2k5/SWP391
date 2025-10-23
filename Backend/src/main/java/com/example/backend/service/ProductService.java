@@ -51,7 +51,7 @@ public class ProductService {
         User seller = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        UserPostingPackage userPackage = userPackageTransactionService.getPUserostingPackageByUserId(seller.getId());
+        UserPostingPackage userPackage = userPackageTransactionService.getUserPostingPackageByUserId(seller.getId());
         if(userPackage.getPostPossible() <= 0){
             throw  new AppException(ErrorCode.POSTING_OVER_LIMIT);
         }

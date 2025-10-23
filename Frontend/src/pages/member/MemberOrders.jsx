@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Spinner } from "react-bootstrap";
 import MemberHeader from "../../components/member/MemberHeader";
 import OrdersTab from "../../components/member/OrdersTab";
-import productService from "../../services/productService";
+import displayService from "../../services/displayService";
 import "../../styles/member/index.css";
 
 const MemberOrders = ({ user }) => {
@@ -21,7 +21,7 @@ const MemberOrders = ({ user }) => {
     try {
       // Sử dụng getPublicList để lấy posts, sau đó convert thành orders format
       // Hoặc có thể tạo endpoint riêng cho orders
-      const result = await productService.getPublicList();
+      const result = await displayService.getPublicList();
       if (result.success) {
         // Tạm thời convert posts thành orders format
         // Trong thực tế cần có endpoint riêng cho orders

@@ -3,8 +3,7 @@ package com.example.backend.controller;
 import com.example.backend.dto.request.*;
 import com.example.backend.dto.response.*;
 import com.example.backend.entity.User;
-import com.example.backend.service.MailService;
-import com.example.backend.service.OtpService;
+import com.example.backend.service.*;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import com.example.backend.service.UserService;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,6 +22,11 @@ public class UserController {
     private final UserService userService;
     private final OtpService otpService;
     private final MailService mailService;
+    private final WalletTransactionService walletTransactionService;
+    private  final TransactionService transactionService;
+    private final UserPackageTransactionService userPackageTransactionService;
+
+
     @Value("${email.login.facebook}")
     private String emailLoginFacebook;
 
@@ -119,8 +124,54 @@ public class UserController {
         userService.updatePassword(user,request.getPassword());
         return ApiResponse.<Boolean>builder().message("Password updated successfully").build();
     }
+    // user lay history waller transaction cua minh
+    @GetMapping("/walletTransaction")
+    public ApiResponse<List<WalletTransactionResponse>> getWalletTransactionByUserID(Authentication authentication){
+        String username = authentication.getName();
+        User user = userService.getUserByUsername(username);
+        List<WalletTransactionResponse> responses = walletTransactionService.getAllWalletTransactionsByUserID(user.getId());
+        return ApiResponse.<List<WalletTransactionResponse>>builder()
+                .data(responses)
+                .message("lấy danh sách wallet transactions của user thành công ")
+                .build();
+    }
 
+    // user lay danh sach history
+    @GetMapping("/transaction")
+    public ApiResponse<List<TransactionHistoryResponse>> getTransactionUserid(Authentication authentication){
+        String username = authentication.getName();
+        User user = userService.getUserByUsername(username);
+        List<TransactionHistoryResponse> responses = transactionService.getTranctionByUserid(user.getId());
+        return ApiResponse.<List<TransactionHistoryResponse>>builder()
+                .data(responses)
+                .message("lấy danh sách mua gói  transactions của user thành công ")
+                .build();
+    }
 
+// usr xem lich su cac goi minh da mua
+    @GetMapping("/package/history")
+    public ApiResponse<List<UserPackageTransactionResponse>> getTransactionPackageUserid(Authentication authentication){
+        String username = authentication.getName();
+        User user = userService.getUserByUsername(username);
+        List<UserPackageTransactionResponse> responses = userPackageTransactionService.getUserPackageTransactions(user.getId());
+        return ApiResponse.< List<UserPackageTransactionResponse>>builder()
+                .data(responses)
+                .message("lấy danh sách lịch  cac goi da mua  của user thành công ")
+                .build();
+    }
+
+    //usr lay goi dang su dung
+    @GetMapping("/package/current")
+    public ApiResponse<PostingPackageResponse> getPostingPackageCurrent(Authentication authentication){
+        String userName = authentication.getName();
+        User usr = userService.getUserByUsername(userName);
+        PostingPackageResponse postingPackageResponse = userService.getPackageCurrent(usr.getId());
+        return  ApiResponse.<PostingPackageResponse>builder()
+                .data(postingPackageResponse)
+                .message("đã lấy thành công gói hiện tại user đang sử dụng")
+                .build();
+
+    }
 
 
 

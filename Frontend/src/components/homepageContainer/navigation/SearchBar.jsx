@@ -15,6 +15,7 @@ const SearchBar = () => {
   const navigate = useNavigate();
   const searchRef = useRef(null);
   const suggestionsRef = useRef(null);
+  const searchRef = useRef(null);
 
   // Đóng suggestions khi click outside
   useEffect(() => {
@@ -87,6 +88,31 @@ const SearchBar = () => {
       toast.error('Có lỗi xảy ra khi tìm kiếm. Vui lòng thử lại!');
     }
     
+    setShowSuggestions(false);
+  };
+
+  // Xử lý click vào suggestion
+  const handleSuggestionClick = (suggestion) => {
+    if (suggestion.type === 'tag') {
+      // Sử dụng slug từ BE nếu có, fallback về id
+      const tagPath = suggestion.slug ? `/tag/${suggestion.slug}` : `/tag/${suggestion.id}`;
+      navigate(tagPath);
+    } else if (suggestion.type === 'keyword') {
+      setSearchTerm(suggestion.title);
+      navigate(`/?search=${encodeURIComponent(suggestion.title)}`);
+    } else if (suggestion.type === 'product') {
+      navigate(`/product/${suggestion.id}`);
+    } else if (suggestion.type === 'brand') {
+      // Chuyển đến trang xe máy điện với filter brand
+      setSearchTerm(suggestion.title);
+      navigate(`/products/electric-scooter?brand=${encodeURIComponent(suggestion.title)}`);
+    } else if (suggestion.type === 'model') {
+      // Chuyển đến trang xe máy điện với filter model
+      setSearchTerm(suggestion.title);
+      navigate(`/products/electric-scooter?model=${encodeURIComponent(suggestion.title)}`);
+    } else {
+      navigate(`/product/${suggestion.id}`);
+    }
     setShowSuggestions(false);
   };
 
