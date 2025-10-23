@@ -63,6 +63,7 @@ public enum ErrorCode {
     WISHLIST_NOT_EXISTED(1048, "Người dùng không có wishlist", HttpStatus.BAD_REQUEST),
     LOGIN_FAIL(1049, "Tài khoản hay mật khẩu không chính xác, hãy thử lại!", HttpStatus.BAD_REQUEST),
     CONTRACT_BUID_FALID(1050, "Hợp đồng không thể tạo được", HttpStatus.BAD_REQUEST),
+    REJECT_ORDER_VALID(1051, "Order này đang được đã được tạm thời kí hợp đồng, không đươợc reject order lúc này", HttpStatus.BAD_REQUEST),
 
 
     ;

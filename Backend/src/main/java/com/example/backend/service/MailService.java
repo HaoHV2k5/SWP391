@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+import com.example.backend.entity.Order;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -70,6 +71,27 @@ public class MailService {
         javaMailSender.send(mimeMessage);
 
 
+
+
+    }
+
+    public void sendRejectProduct(Order order){
+        Context context = new Context();
+        context.setVariable("buyerName", order.getBuyer().getFullname());
+        context.setVariable("productName", order.getProduct().getTitle());
+        context.setVariable("sellerName", order.getSeller().getFullname());
+        context.setVariable("productLink", "localhost:3939/product/" + order.getProduct().getId());
+        String html =  templateEngine.process("email/",context);
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
+        try {
+            messageHelper.setSubject("EVDrive - Đơn hàng của bạn đã bị từ chối");
+            messageHelper.setTo((order.getBuyer().getEmail()));
+            messageHelper.setText(html,true);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
+        javaMailSender.send(mimeMessage);
 
 
     }

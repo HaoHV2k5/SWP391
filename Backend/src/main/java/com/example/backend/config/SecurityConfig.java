@@ -40,7 +40,7 @@ public class SecurityConfig  {
             "/users/verify-otp",
             "/users/resend-otp",
             "/tag/**",
-            
+
 
             "/api/v1/products/active",
             "/api/v1/products/{id}",

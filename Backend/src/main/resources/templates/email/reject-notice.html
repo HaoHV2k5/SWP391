@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thông báo từ chối đơn hàng</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f7fb;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 650px;
+            margin: 30px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #007bff, #00c851);
+            color: white;
+            text-align: center;
+            padding: 25px 20px;
+        }
+        .header h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+        .header p {
+            margin: 5px 0 0;
+            font-size: 14px;
+        }
+        .content {
+            padding: 25px 30px;
+            line-height: 1.6;
+        }
+        .content h2 {
+            color: #007bff;
+            margin-bottom: 15px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 22px;
+            margin-top: 15px;
+            background: #00c851;
+            color: white !important;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer {
+            background-color: #f1f3f5;
+            text-align: center;
+            padding: 15px;
+            font-size: 13px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>⚡ EcoDrive Marketplace</h1>
+        <p>Giải pháp năng lượng xanh cho tương lai</p>
+    </div>
+    <div class="content">
+        <h2>Đơn hàng của bạn đã bị từ chối</h2>
+        <p>Xin chào <strong th:text="${buyerName}">Người mua</strong>,</p>
+        <p>Yêu cầu mua sản phẩm <strong th:text="${productName}">Tên sản phẩm</strong>
+            của bạn đã bị người bán <strong th:text="${sellerName}">Tên người bán</strong> từ chối.</p>
+        <p>Bạn có thể xem thêm các sản phẩm xe điện và pin tương tự trên EcoDrive.</p>
+
+        <a th:href="${productLink}" class="btn">🔋 Xem sản phẩm khác</a>
+
+        <p style="margin-top: 20px;">Cảm ơn bạn đã tin tưởng và đồng hành cùng chúng tôi trong hành trình xanh 🌱</p>
+    </div>
+    <div class="footer">
+        &copy; 2025 EcoDrive Inc. | Hệ thống giao dịch xe điện và pin thông minh
+    </div>
+</div>
+</body>
+</html>
