@@ -31,6 +31,7 @@ import "./App.css";
 import CategoryRouter from "./components/homepageContainer/navigation/CategoryRouter";
 import ProductDetailPage from "./pages/home/ProductDetailPage";
 import TagPage from "./pages/home/TagPage";
+import SearchResultsPage from "./pages/home/SearchResultsPage";
 import { SavedProductsProvider } from "./components/homepageContainer/contexts/SavedProductsContext";
 import { normalizeLoginResponse, persistAuth, isStaff } from "./utils/auth";
 import ProtectedStaffRoute from "./routes/ProtectedStaffRoute";
@@ -131,6 +132,7 @@ function AppContent() {
 
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/search" element={<SearchResultsPage />} />
         <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
         <Route path="/register" element={<RegisterPage />} />
 

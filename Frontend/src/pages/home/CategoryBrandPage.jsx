@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 import { Col, Row, Badge, Alert } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import BaseFilterBar from '../../components/homepageContainer/filters/BaseFilterBar';
 import { useFilter } from '../../hooks/useFilter';
+import usePagination from '../../hooks/usePagination';
 import ProductCard from '../../components/homepageContainer/home/ProductCard';
+import LoadMoreButton from '../../components/homepageContainer/home/LoadMoreButton';
 import useProducts from '../../hooks/useProducts';
 
 const CategoryBrandPage = () => {
@@ -12,9 +14,23 @@ const CategoryBrandPage = () => {
   const location = useLocation();
   const [urlFilters, setUrlFilters] = useState({});
 
+  // Sử dụng pagination hook
+  const { visibleCount, handleLoadMore, resetPagination } = usePagination(6);
+
   // Lấy sản phẩm từ BE và áp dụng filter
   const { products, loading, error } = useProducts();
   const { filteredProducts, handleFiltersChange } = useFilter(products, ['priceRange', 'year']);
+
+  // Reset pagination khi chuyển category/brand/model hoặc khi products thay đổi
+  useEffect(() => {
+    resetPagination();
+  }, [type, location.search, products.length]);
+
+  // Reset pagination khi filter thay đổi
+  const handleFilterChange = (filters) => {
+    handleFiltersChange(filters);
+    resetPagination();
+  };
 
   // Xử lý URL parameters
   useEffect(() => {
@@ -76,6 +92,9 @@ const CategoryBrandPage = () => {
     });
   }
 
+  // Pagination
+  const displayedProducts = categoryProducts.slice(0, visibleCount);
+  const hasMore = visibleCount < categoryProducts.length;
 
   // Format tên hiển thị cho category
   const formatType = (str) => {
@@ -90,7 +109,7 @@ const CategoryBrandPage = () => {
     <div className="container py-4">
       {/* Filter bar cho price, year (bỏ brand khi đang hiển thị brand) */}
       <BaseFilterBar 
-        onFilterChange={handleFiltersChange}
+        onFilterChange={handleFilterChange}
         filterTypes={['priceRange', 'year']}
         showVehicleType={false}
       />
@@ -125,13 +144,19 @@ const CategoryBrandPage = () => {
           </p>
         </Alert>
       ) : (
-        <Row className='g-4'>
-          {categoryProducts.map((product) => (
-            <Col key={product.id} xs={12} md={6} lg={4}>
-              <ProductCard product={product} />
-            </Col>
-          ))}
-        </Row>
+        <>
+          <Row className='g-4'>
+            {displayedProducts.map((product) => (
+              <Col key={product.id} xs={12} md={6} lg={4}>
+                <ProductCard product={product} />
+              </Col>
+            ))}
+          </Row>
+
+          {hasMore && (
+            <LoadMoreButton onClick={() => handleLoadMore(categoryProducts.length)} />
+          )}
+        </>
       )}
     </div>
   )
