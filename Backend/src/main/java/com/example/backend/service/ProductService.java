@@ -190,7 +190,7 @@ public class ProductService {
     }
 
     public List<ProductResponse> getAllProductPosted(){
-        List<Product> list = productRepository.findProductByIsPosted(true);
+        List<Product> list = productRepository.findAllPostedProducts();
         return productMapper.toResponseList(list);
     }
     @Transactional

@@ -1,8 +1,8 @@
+// src/services/apiClient.js
 import axios from "axios";
 
-// Ưu tiên .env, nếu rỗng thì fallback
 const rawBase = import.meta.env.VITE_API_BASE_URL;
-const fallbackBase = "http://localhost:3979/api"; // thêm /api luôn cho chắc
+const fallbackBase = "http://localhost:3979";
 const API_BASE = (rawBase && rawBase.trim() ? rawBase : fallbackBase).replace(
   /\/$/,
   ""
@@ -13,6 +13,8 @@ if (!rawBase || !rawBase.trim()) {
     "[apiClient] VITE_API_BASE_URL chưa được nạp. Đang dùng fallback:",
     API_BASE
   );
+} else {
+  console.log("[apiClient] Base URL =", API_BASE); // 👈 thêm dòng này để bạn thấy đúng /api
 }
 
 const api = axios.create({
@@ -20,7 +22,6 @@ const api = axios.create({
   withCredentials: false,
 });
 
-// helper: đọc token từ localStorage
 const readToken = () => {
   const direct = localStorage.getItem("token");
   if (direct) return direct;
@@ -33,7 +34,6 @@ const readToken = () => {
   }
 };
 
-// helper: kiểm tra JWT exp
 const isExpired = (jwt) => {
   try {
     const [, payload] = jwt.split(".");
@@ -58,7 +58,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Nếu server trả trang login (HTML) hoặc 401
 api.interceptors.response.use(
   (res) => res,
   (err) => {
@@ -69,7 +68,6 @@ api.interceptors.response.use(
     if (status === 401 || looksLikeHtml) {
       localStorage.removeItem("token");
       localStorage.removeItem("userData");
-      // Đẩy về login nếu đang ở trang staff
       if (location.pathname.startsWith("/staff")) {
         location.replace("/login");
       }

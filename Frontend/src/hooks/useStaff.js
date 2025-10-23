@@ -50,6 +50,9 @@ export const useProducts = () => {
       const raw = res?.data ?? res ?? {};
       console.log("[STAFF] /products/pending payload:", raw);
       setProducts(pickArrayDeep(raw));
+      if (typeof raw === "string" && raw.startsWith("<!DOCTYPE html>")) {
+        throw new Error("Server trả HTML (có thể là trang login)"); // sẽ rơi vào catch và showErrorNotification
+      }
     } catch (err) {
       showErrorNotification(handleApiError(err, "Không thể tải tin đăng"));
       setProducts([]);
@@ -132,6 +135,9 @@ export const useKyc = () => {
       const res =
         (await kycApi.getPending?.()) ?? (await kycApi.getKycList?.());
       const raw = res?.data ?? res ?? {};
+      if (typeof raw === "string" && raw.startsWith("<!DOCTYPE html>")) {
+        throw new Error("Server trả HTML (có thể là trang login)"); // sẽ rơi vào catch và showErrorNotification
+      }
       console.log("[STAFF] /kyc/staff payload:", raw);
       const items = pickArrayDeep(raw).map((x) => ({
         ...x,

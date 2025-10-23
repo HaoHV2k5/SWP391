@@ -62,6 +62,9 @@ public class SecurityConfig  {
                         .requestMatchers("/api/payment/payment-return", "/api/payment/callback").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.GET,"products").permitAll()
+                        .requestMatchers("/ws/**", "/topic/**", "/app/**").permitAll()
+                        .requestMatchers("/api/eversign/webhook").permitAll()
+                        .requestMatchers("/ws").permitAll()
                         .anyRequest().authenticated()   
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(  jwtDecoder() ).jwtAuthenticationConverter(jwtAuthenticationConverter())))
@@ -99,7 +102,7 @@ public class SecurityConfig  {
     @Bean
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000", "http://localhost:3979" ));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000", "http://localhost:3979","https://*.ngrok-free.dev" ));
         configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(Arrays.asList("Authorization","Cache-Control","Content-Type"));
@@ -109,6 +112,19 @@ public class SecurityConfig  {
 
     }
 
+
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.addAllowedOriginPattern("*"); // ⚠️ Cho phép tất cả domain test
+//        configuration.addAllowedMethod("*");
+//        configuration.addAllowedHeader("*");
+//        configuration.setAllowCredentials(true);
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//        return source;
+//    }
 
 
 

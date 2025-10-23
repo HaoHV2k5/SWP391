@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Button, Badge, Alert, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
 import MemberHeader from "../../components/member/MemberHeader";
-import productService from "../../services/productService";
+import displayService from "../../services/displayService";
 import "../../styles/member/index.css";
 
 const SavedPosts = ({ user }) => {
@@ -17,7 +17,7 @@ const SavedPosts = ({ user }) => {
   const loadSavedPosts = async () => {
     setLoadingPosts(true);
     try {
-      const result = await productService.getPublicList();
+      const result = await displayService.getPublicList();
       if (result.success) {
         setSavedPosts(result.data);
       } else {
