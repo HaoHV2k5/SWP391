@@ -52,11 +52,34 @@ public class ContractController {
         return ApiResponse.<String>builder().message(result).build();
 
     }
-    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    // api lay toan bo hop dong ma userid da tham gia
+    @PreAuthorize("hasAnyAuthority('ROLE_SELLER','ROLE_USER')")
     @GetMapping("/contracts/user/{userId}")
     public ApiResponse<List<ContractResponse>> getContractsByUser(@PathVariable Long userId) {
         List<ContractResponse> contracts = constractService.getContractUserInvolved(userId);
         return ApiResponse.<List<ContractResponse>>builder().data(contracts).message("Lấy hợp đồng mà user đã tham gia thành công").build();
     }
+
+    // api lay danh sach hop dong bi cancel
+    @PreAuthorize("hasAnyAuthority('ROLE_SELLER','ROLE_USER')")
+    @GetMapping("/contracts/cancel")
+    public ApiResponse<List<ContractResponse>> getContractsCancle(@RequestParam Long userid){
+        List<ContractResponse> list = constractService.getContractUserCancelled(userid);
+        return ApiResponse.<List<ContractResponse>>builder()
+                .data(list)
+                .message("đã lấy danh sách hợp đồng bị cancel thành công!")
+                .build();
+    }
+
+
+    //api xoa hop dong
+
+    // api download hợp đồng dựa vào document_hash
+
+    //api lay danh sach hop dong pending
+
+    //api lau danh sach hop dong signed
+
+
 
 }
