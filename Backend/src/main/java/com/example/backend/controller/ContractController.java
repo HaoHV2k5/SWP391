@@ -77,7 +77,15 @@ public class ContractController {
     // api download hợp đồng dựa vào document_hash
 
     //api lay danh sach hop dong pending
-
+    @PreAuthorize("hasAnyAuthority('ROLE_SELLER','ROLE_USER')")
+    @GetMapping("/contracts/pending")
+    public ApiResponse<List<ContractResponse>> getContractsPending(@RequestParam Long userid){
+        List<ContractResponse> list = constractService.getContractUserPending(userid);
+        return ApiResponse.<List<ContractResponse>>builder()
+                .data(list)
+                .message("đã lấy danh sách hợp đồng đang chờ kí thành công!")
+                .build();
+    }
     //api lau danh sach hop dong signed
 
 
