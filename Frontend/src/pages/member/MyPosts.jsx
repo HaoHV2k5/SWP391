@@ -269,9 +269,6 @@ const MyPosts = ({ user }) => {
       case "search-history":
         navigate("/member/search-history");
         break;
-      case "view-history":
-        navigate("/member/view-history");
-        break;
       case "orders":
         navigate("/member/orders");
         break;

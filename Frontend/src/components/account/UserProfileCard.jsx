@@ -32,12 +32,15 @@ const UserProfileCard = ({ user, onEdit, onAvatarChange }) => {
     // Fallback: Lấy avatar từ localStorage
     const userId = localStorage.getItem('userId') || user?.id || 'default';
     const localAvatar = localStorage.getItem(`avatar_${userId}`);
+    
+    
     return localAvatar;
   };
 
   const handleChangeAvatar = () => {
     fileInputRef.current?.click();
   };
+
 
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
@@ -103,6 +106,7 @@ const UserProfileCard = ({ user, onEdit, onAvatarChange }) => {
     const handleAvatarChange = (event) => {
       const { userId, avatar } = event.detail;
       const currentUserId = localStorage.getItem('userId') || user?.id || 'default';
+      
       if (userId === currentUserId) {
         setAvatar(avatar);
       }
@@ -117,6 +121,40 @@ const UserProfileCard = ({ user, onEdit, onAvatarChange }) => {
       window.removeEventListener('avatarChanged', handleAvatarChange);
     };
   }, [user]);
+
+  // Force re-render khi user thay đổi
+  useEffect(() => {
+    const currentAvatar = getCurrentAvatar();
+    if (currentAvatar) {
+      setAvatar(currentAvatar);
+    }
+  }, [user?.id, user?.email]);
+
+  // Auto-sync avatar khi component mount
+  useEffect(() => {
+    const syncAvatar = () => {
+      const userId = localStorage.getItem('userId') || user?.id || 'default';
+      const existingAvatar = localStorage.getItem(`avatar_${userId}`);
+      
+      if (existingAvatar && !avatar) {
+        setAvatar(existingAvatar);
+      }
+    };
+
+    // Sync ngay lập tức
+    syncAvatar();
+
+    // Sync sau 100ms để đảm bảo localStorage đã sẵn sàng
+    const timeoutId = setTimeout(syncAvatar, 100);
+
+    // Periodic sync mỗi 2 giây
+    const intervalId = setInterval(syncAvatar, 2000);
+
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+    };
+  }, []);
 
   const currentAvatar = avatar || getCurrentAvatar();
 
@@ -231,6 +269,7 @@ const UserProfileCard = ({ user, onEdit, onAvatarChange }) => {
           <Edit3 size={16} />
           Chỉnh sửa
         </button>
+
       </div>
 
       {/* Hidden file input */}

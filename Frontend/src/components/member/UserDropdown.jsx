@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import UserAvatar from "./UserAvatar";
@@ -8,6 +8,7 @@ import WalletNavbar from "./WalletNavbar";
 
 const UserDropdown = ({ user, onLogout }) => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const dropdownRef = useRef(null);
 
   const handleItemClick = () => {
     setShowUserDropdown(false);
@@ -17,6 +18,23 @@ const UserDropdown = ({ user, onLogout }) => {
     setShowUserDropdown(false);
     onLogout();
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowUserDropdown(false);
+      }
+    };
+
+    if (showUserDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserDropdown]);
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -42,6 +60,7 @@ const UserDropdown = ({ user, onLogout }) => {
       )}
 
       <div
+        ref={dropdownRef}
         className="user-dropdown"
         style={{
           display: "flex",
@@ -59,7 +78,7 @@ const UserDropdown = ({ user, onLogout }) => {
         }}
         onClick={() => setShowUserDropdown(!showUserDropdown)}
         onMouseEnter={(e) => {
-          if (!showUserDropdown) {
+if (!showUserDropdown) {
             e.currentTarget.style.backgroundColor = "#f8f9fa";
           }
         }}

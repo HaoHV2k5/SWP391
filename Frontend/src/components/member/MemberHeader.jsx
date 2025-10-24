@@ -9,8 +9,6 @@ const MemberHeader = ({ activeTab }) => {
         return "Tin đăng của tôi";
       case "saved-posts":
         return "Tin đã lưu";
-      case "view-history":
-        return "Lịch sử xem tin";
       case "orders":
         return "Đơn hàng của tôi";
       default:
