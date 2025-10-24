@@ -1,0 +1,150 @@
+import { apiClient } from "./authService";
+
+// ==================== ORDER SERVICE ====================
+// Dịch vụ quản lý đơn hàng: tạo order request, từ chối order, xem danh sách orders
+
+const orderService = {
+  // 🛒 Tạo order request (mua sản phẩm)
+  // 📍 Endpoint: /order/create
+  // 👥 Users: Member (ROLE_USER)
+  async createOrder(productId, userId) {
+    try {
+      const requestData = {
+        productId: productId,
+        userId: userId
+      };
+
+      console.log("🚀 Creating order request:", requestData);
+
+      const response = await apiClient.post("/order/create", requestData);
+      const data = response?.data?.data ?? response?.data;
+      
+      console.log("✅ Order created successfully:", data);
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error("❌ Create order error:", error);
+      
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      
+      let errorMessage = "Tạo đơn hàng thất bại";
+      
+      if (status === 401) {
+        errorMessage = "Bạn cần đăng nhập để mua sản phẩm";
+      } else if (status === 403) {
+        errorMessage = "Bạn không có quyền mua sản phẩm. Chỉ có member/user mới có thể mua hàng. Vui lòng liên hệ admin để được hỗ trợ.";
+      } else if (status === 400) {
+        if (backendMessage?.includes('sản phẩm') || backendMessage?.includes('product')) {
+          errorMessage = "Sản phẩm không tồn tại hoặc đã được bán";
+        } else if (backendMessage?.includes('user') || backendMessage?.includes('người dùng')) {
+          errorMessage = "Thông tin người dùng không hợp lệ";
+        } else {
+          errorMessage = backendMessage || "Thông tin không hợp lệ";
+        }
+      } else if (status === 404) {
+        errorMessage = "Không tìm thấy sản phẩm hoặc người dùng";
+      } else if (status === 500) {
+        errorMessage = "Lỗi hệ thống. Vui lòng thử lại sau";
+      } else if (!status) {
+        errorMessage = "Lỗi kết nối mạng. Vui lòng kiểm tra internet";
+      }
+      
+      return {
+        success: false,
+        message: errorMessage,
+        status: status,
+        originalMessage: backendMessage
+      };
+    }
+  },
+
+  // ❌ Từ chối order
+  // 📍 Endpoint: /order/reject
+  // 👥 Users: Seller (ROLE_SELLER)
+  async rejectOrder(orderId) {
+    try {
+      console.log("🚀 Rejecting order:", orderId);
+
+      const response = await apiClient.post("/order/reject", null, {
+        params: { orderId: orderId }
+      });
+      
+      console.log("✅ Order rejected successfully");
+      
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error("❌ Reject order error:", error);
+      
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      
+      let errorMessage = "Từ chối đơn hàng thất bại";
+      
+      if (status === 401) {
+        errorMessage = "Bạn cần đăng nhập để thực hiện thao tác này";
+      } else if (status === 403) {
+        errorMessage = "Bạn không có quyền từ chối đơn hàng này";
+      } else if (status === 400) {
+        if (backendMessage?.includes('ACCEPTED') || backendMessage?.includes('đã được chấp nhận')) {
+          errorMessage = "Không thể từ chối đơn hàng đã được chấp nhận";
+        } else {
+          errorMessage = backendMessage || "Không thể từ chối đơn hàng";
+        }
+      } else if (status === 404) {
+        errorMessage = "Không tìm thấy đơn hàng";
+      } else if (status === 500) {
+        errorMessage = "Lỗi hệ thống. Vui lòng thử lại sau";
+      }
+      
+      return {
+        success: false,
+        message: errorMessage,
+        status: status,
+        originalMessage: backendMessage
+      };
+    }
+  },
+
+  // 📋 Lấy danh sách orders của sản phẩm
+  // 📍 Endpoint: /order/product/{productId}/orders
+  // 👥 Users: Seller (ROLE_SELLER)
+  async getOrdersByProduct(productId) {
+    try {
+      console.log("🚀 Getting orders for product:", productId);
+
+      const response = await apiClient.get(`/order/product/${productId}/orders`);
+      const data = response?.data?.data ?? response?.data;
+      
+      console.log("✅ Orders retrieved successfully:", data);
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error("❌ Get orders error:", error);
+      
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      
+      let errorMessage = "Lấy danh sách đơn hàng thất bại";
+      
+      if (status === 401) {
+        errorMessage = "Bạn cần đăng nhập để xem đơn hàng";
+      } else if (status === 403) {
+        errorMessage = "Bạn không có quyền xem đơn hàng của sản phẩm này";
+      } else if (status === 404) {
+        errorMessage = "Không tìm thấy sản phẩm hoặc đơn hàng";
+      } else if (status === 500) {
+        errorMessage = "Lỗi hệ thống. Vui lòng thử lại sau";
+      }
+      
+      return {
+        success: false,
+        message: errorMessage,
+        status: status,
+        originalMessage: backendMessage
+      };
+    }
+  }
+};
+
+export default orderService;

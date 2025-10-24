@@ -7,6 +7,7 @@ const UserMenuItems = ({ onItemClick }) => {
     { to: "/kyc", label: "Xác thực danh tính" },
     { to: "/payment", label: "Quản lý ví & gói" },
     { to: "/my-posts", label: "Tin đăng của tôi" },
+    { to: "/my-orders", label: "Yêu cầu mua hàng" },
     { to: "/saved-posts", label: "Tin đã lưu" },
     { to: "/orders", label: "Đơn hàng" },
   ];

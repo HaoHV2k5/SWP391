@@ -97,12 +97,43 @@ const productService = {
     }
   },
 
+  // 📋 PHỤ: Lấy danh sách sản phẩm của user (alias cho getMyPosts)
+  // 📍 Endpoints: /products/history/seller/{userId}, /products/seller?username=xxx
+  // 👥 Users: Member, Seller (cần đăng nhập)
+  async getMyProducts(userId) {
+    try {
+      let username = null;
+
+      // Lấy username từ localStorage nếu không có userId
+      if (!userId) {
+        const raw = localStorage.getItem("userData");
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            userId = parsed?.userId || parsed?.user?.id || parsed?.id || null;
+            username = parsed?.username || parsed?.user?.username || parsed?.email || parsed?.user?.email || null;
+          } catch {}
+        }
+      }
+
+      // Sử dụng getMyPosts với userId
+      return await this.getMyPosts(username);
+    } catch (error) {
+      console.error("❌ getMyProducts error:", error);
+      return {
+        success: false,
+        message: "Lỗi khi tải danh sách sản phẩm của tôi"
+      };
+    }
+  },
+
   // ==================== PRODUCT MANAGEMENT API ====================
   // ➕ Tạo tin đăng mới (yêu cầu ROLE_SELLER trên BE)
   // 📍 Endpoint: /products/create?username=xxx
   // 👥 Users: Seller (cần đăng nhập + quyền SELLER)
   async createProduct(form, username) {
     try {
+      // Enhanced username extraction
       if (!username) {
         const raw = localStorage.getItem("userData");
         if (raw) {
@@ -114,19 +145,42 @@ const productService = {
               parsed?.email ||
               parsed?.user?.email ||
               null;
-          } catch {}
+          } catch (e) {
+            return { success: false, message: "Không thể lấy thông tin người dùng từ localStorage" };
+          }
         }
+      }
+      
+      if (!username) {
+        return { success: false, message: "Vui lòng đăng nhập trước khi đăng tin" };
       }
 
       const formData = new FormData();
       const productType = form.category || "VEHICLE";
 
+      // Enhanced validation before sending
+      if (!form.brand || form.brand === "") {
+        return { success: false, message: "Vui lòng chọn thương hiệu" };
+      }
+      
+      if (!form.model || form.model.trim().length < 2) {
+        return { success: false, message: "Model phải ít nhất 2 ký tự" };
+      }
+      
+      if (!form.yearManufactured || form.yearManufactured < 1900 || form.yearManufactured > new Date().getFullYear() + 1) {
+        return { success: false, message: "Năm sản xuất không hợp lệ" };
+      }
+
       // Các field bắt buộc theo CreateProductRequest
       formData.append("title", form.title || "");
+      
       // Đảm bảo price là số hợp lệ
       const price = parseFloat(form.price);
       if (!price || price <= 0) {
         return { success: false, message: "Giá sản phẩm phải lớn hơn 0" };
+      }
+      if (price < 1000) {
+        return { success: false, message: "Giá sản phẩm phải tối thiểu 1,000 VNĐ" };
       }
       formData.append("price", price);
       formData.append("productType", productType);
@@ -138,37 +192,97 @@ const productService = {
 
       // Gửi vehicle/battery object theo yêu cầu của backend
       if (productType === "VEHICLE") {
-        formData.append("vehicle.brand", form.brand || "Unknown");
-        formData.append("vehicle.model", form.model || "Unknown");
-        formData.append("vehicle.yearManufactured", form.yearManufactured || new Date().getFullYear());
+        formData.append("vehicle.brand", form.brand);
+        formData.append("vehicle.model", form.model.trim());
+        formData.append("vehicle.yearManufactured", form.yearManufactured);
       } else if (productType === "BATTERY") {
-        formData.append("battery.brand", form.brand || "Unknown");
-        formData.append("battery.model", form.model || "Unknown");
-        formData.append("battery.yearManufactured", form.yearManufactured || new Date().getFullYear());
-        formData.append("battery.batteryLevel", form.batteryLevel || 80);
+        formData.append("battery.brand", form.brand);
+        formData.append("battery.model", form.model.trim());
+        formData.append("battery.yearManufactured", form.yearManufactured);
+        
+        // Validate battery level
+        const batteryLevel = parseInt(form.batteryLevel);
+        if (isNaN(batteryLevel) || batteryLevel < 0 || batteryLevel > 100) {
+          return { success: false, message: "Mức pin phải từ 0-100%" };
+        }
+        formData.append("battery.batteryLevel", batteryLevel);
       }
 
-      // Images (nếu có)
+      // Enhanced image validation
       if (Array.isArray(form.images) && form.images.length > 0) {
-        form.images.forEach((file) => file && formData.append("images", file));
+        if (form.images.length > 5) {
+          return { success: false, message: "Chỉ được tải lên tối đa 5 ảnh" };
+        }
+        
+        for (let i = 0; i < form.images.length; i++) {
+          const file = form.images[i];
+          if (file && file.size > 5 * 1024 * 1024) { // 5MB
+            return { success: false, message: `Ảnh ${i + 1} quá lớn (tối đa 5MB)` };
+          }
+          if (file) {
+            formData.append("images", file);
+          }
+        }
       }
 
       const url = username
         ? `/products/create?username=${encodeURIComponent(username)}`
         : "/products/create";
+      
+      console.log("🚀 Sending create product request:", {
+        title: form.title,
+        productType,
+        price,
+        brand: form.brand,
+        model: form.model,
+        yearManufactured: form.yearManufactured,
+        imageCount: form.images?.length || 0
+      });
+      
       const response = await apiClient.post(url, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+      
       const data = response?.data?.data ?? response?.data;
+      console.log("✅ Create product success:", data);
+      
       return { success: true, data };
     } catch (error) {
+      console.error("❌ Create product error:", error);
+      
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
+      
+      // Enhanced error message handling
+      let errorMessage = "Đăng tin thất bại";
+      
+      if (status === 401) {
+        errorMessage = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
+      } else if (status === 403) {
+        errorMessage = "Không có quyền đăng bán. Vui lòng liên hệ admin.";
+      } else if (status === 400) {
+        if (backendMessage?.includes('KYC') || backendMessage?.includes('kyc')) {
+          errorMessage = "KYC chưa được duyệt. Vui lòng hoàn thành KYC trước.";
+        } else if (backendMessage?.includes('gói') || backendMessage?.includes('hạn đăng tin') || backendMessage?.includes('quá hạn')) {
+          errorMessage = "Gói đăng tin đã hết hạn hoặc vượt giới hạn.";
+        } else if (backendMessage?.includes('TITLE_REQUIRED') || backendMessage?.includes('PRICE_REQUIRED')) {
+          errorMessage = "Vui lòng điền đầy đủ thông tin bắt buộc.";
+        } else {
+          errorMessage = backendMessage || "Thông tin không hợp lệ.";
+        }
+      } else if (status === 404) {
+        errorMessage = "Không tìm thấy thông tin người dùng.";
+      } else if (status === 500) {
+        errorMessage = "Lỗi hệ thống. Vui lòng thử lại sau.";
+      } else if (!status) {
+        errorMessage = "Lỗi kết nối mạng. Vui lòng kiểm tra internet.";
+      }
+      
       return {
         success: false,
-        message: `Đăng tin thất bại (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: errorMessage,
+        status: status,
+        originalMessage: backendMessage
       };
     }
   },
