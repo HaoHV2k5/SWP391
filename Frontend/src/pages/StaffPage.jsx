@@ -42,7 +42,7 @@ const StaffPage = ({ user, onLogout }) => {
   const productsHook = useProducts();
   const kycHook = useKyc();
   const statsHook = useStats();
-  const { isCheckingAuth } = useStaffAuth(user); // ❗ KHÔNG truyền navigate ở đây
+  const { isCheckingAuth } = useStaffAuth(user); //KHÔNG truyền navigate ở đây
 
   useEffect(() => {
     // ❗ dùng reload(), không phải loadStats()
@@ -50,9 +50,13 @@ const StaffPage = ({ user, onLogout }) => {
   }, [statsHook]);
 
   const menuItems = [
-    getItem("Tin đăng", TAB_KEYS.PRODUCTS, <AppstoreOutlined />),
-    getItem("KYC", TAB_KEYS.KYC, <TeamOutlined />),
-    getItem("Khiếu nại", TAB_KEYS.COMPLAINTS, <ExclamationCircleOutlined />),
+    getItem("Quản Lý Tin đăng", TAB_KEYS.PRODUCTS, <AppstoreOutlined />),
+    getItem("Quản Lý KYC", TAB_KEYS.KYC, <TeamOutlined />),
+    getItem(
+      "Quản Lý Khiếu nại",
+      TAB_KEYS.COMPLAINTS,
+      <ExclamationCircleOutlined />
+    ),
     getItem("Tổng quan", TAB_KEYS.DASHBOARD, <PieChartOutlined />),
   ];
 
