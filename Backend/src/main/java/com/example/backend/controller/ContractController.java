@@ -88,6 +88,16 @@ public class ContractController {
     }
     //api lau danh sach hop dong signed
 
+    @PreAuthorize("hasAnyAuthority('ROLE_SELLER','ROLE_USER')")
+    @GetMapping("/contracts/signed")
+    public ApiResponse<List<ContractResponse>> getContractsSign(@RequestParam Long userid){
+        List<ContractResponse> list = constractService.getContractUserPending(userid);
+        return ApiResponse.<List<ContractResponse>>builder()
+                .data(list)
+                .message("đã lấy danh sách hợp đồng đã kí thành công!")
+                .build();
+    }
+
 
 
 }
