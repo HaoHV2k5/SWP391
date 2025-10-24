@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>An toàn mua bán - ElectricStore</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .header {
+            background: #2BB673;
+            padding: 15px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        
+        .logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+        }
+        
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .page-title {
+            font-size: 16px;
+            color: white;
+        }
+        
+        .btn-home {
+            padding: 8px 20px;
+            background: white;
+            color: #333;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-home:hover {
+            background: #333;
+            color: white;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+            margin: 30px auto;
+            max-width: 1200px;
+            padding: 0 20px;
+        }
+        
+        .sidebar {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        
+        .sidebar h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #2BB673;
+            padding-bottom: 10px;
+        }
+        
+        .sidebar ul {
+            list-style: none;
+        }
+        
+        .sidebar li {
+            margin-bottom: 10px;
+        }
+        
+        .sidebar a {
+            color: #666;
+            text-decoration: none;
+            display: block;
+            padding: 8px 10px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .sidebar a:hover {
+            background: #2BB673;
+            color: white;
+        }
+        
+        .sidebar a.active {
+            background: #2BB673;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .content h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .content h2 {
+            font-size: 20px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .content p {
+            margin-bottom: 15px;
+            color: #666;
+        }
+        
+        .safety-card {
+            background: #e8f5f0;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #2BB673;
+        }
+        
+        .safety-card h3 {
+            color: #2BB673;
+            margin-bottom: 10px;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .danger-box {
+            background: #f8d7da;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 40px;
+        }
+        
+        .footer a {
+            color: #2BB673;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <a href="/" class="logo-link">
+                        <img src="/logo.jpg" alt="ElectricStore" class="logo">
+                        <span class="logo-text">ElectricStore</span>
+                    </a>
+                    <span class="page-title">| An toàn mua bán</span>
+                </div>
+                <a href="/" class="btn-home">← Về trang chủ</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="sidebar">
+            <h3>Về ElectricStore</h3>
+            <ul>
+                <li><a href="/supportpage/about.html">Giới thiệu</a></li>
+                <li><a href="/supportpage/terms.html">Quy chế hoạt động sàn</a></li>
+                <li><a href="/supportpage/dispute.html">Giải quyết tranh chấp</a></li>
+                <li><a href="/supportpage/careers.html">Tuyển dụng</a></li>
+                <li><a href="/supportpage/media.html">Truyền thông</a></li>
+                <li><a href="/supportpage/blog.html">Blog</a></li>
+            </ul>
+            
+            <h3 style="margin-top: 30px;">Hỗ trợ khách hàng</h3>
+            <ul>
+                <li><a href="/supportpage/help.html">Trung tâm trợ giúp</a></li>
+                <li><a href="/supportpage/safety.html" class="active">An toàn mua bán</a></li>
+                <li><a href="/supportpage/contact.html">Liên hệ hỗ trợ</a></li>
+            </ul>
+            
+            <h3 style="margin-top: 30px;">Chính sách</h3>
+            <ul>
+                <li><a href="/supportpage/privacy.html">Chính sách bảo mật</a></li>
+            </ul>
+        </div>
+
+        <div class="content">
+            <h1>Hướng dẫn mua bán an toàn</h1>
+            
+            <p>
+                ElectricStore cam kết tạo ra môi trường mua bán an toàn cho người dùng. 
+                Hãy đọc kỹ hướng dẫn này để bảo vệ bản thân khỏi rủi ro.
+            </p>
+
+            <h2>🛡️ Cho người mua</h2>
+
+            <div class="safety-card">
+                <h3>1. Kiểm tra thông tin người bán</h3>
+                <p>
+                    ✓ Xem đánh giá và phản hồi từ người mua khác<br>
+                    ✓ Kiểm tra lịch sử bán hàng<br>
+                    ✓ Xác minh tài khoản đã xác thực (có dấu tick xanh)<br>
+                    ✓ Tránh giao dịch với tài khoản mới, ít hoạt động
+                </p>
+            </div>
+
+            <div class="safety-card">
+                <h3>2. Nghiên cứu sản phẩm kỹ lưỡng</h3>
+                <p>
+                    ✓ Đọc kỹ mô tả sản phẩm<br>
+                    ✓ Xem tất cả hình ảnh chi tiết<br>
+                    ✓ Hỏi người bán về tình trạng thực tế<br>
+                    ✓ So sánh giá với thị trường (giá quá rẻ = nghi ngờ)<br>
+                    ✓ Yêu cầu video/ảnh thêm nếu cần
+                </p>
+            </div>
+
+            <div class="safety-card">
+                <h3>3. Giao dịch an toàn</h3>
+                <p>
+                    ✓ Gặp mặt ở nơi công cộng, đông người<br>
+                    ✓ Mang theo người thân khi gặp gỡ<br>
+                    ✓ Kiểm tra hàng kỹ trước khi thanh toán<br>
+                    ✓ Test sản phẩm điện tử tại chỗ<br>
+                    ✓ Sử dụng phương thức thanh toán an toàn
+                </p>
+            </div>
+
+            <div class="safety-card">
+                <h3>4. Phương thức thanh toán</h3>
+                <p>
+                    ✓ <strong>An toàn:</strong> COD (thanh toán khi nhận hàng), chuyển khoản qua ElectricStore<br>
+                    ✓ <strong>Cẩn trọng:</strong> Chuyển khoản trực tiếp<br>
+                    ✓ <strong>Tránh:</strong> Chuyển tiền trước 100% cho người lạ
+                </p>
+            </div>
+
+            <h2>💼 Cho người bán</h2>
+
+            <div class="safety-card">
+                <h3>1. Đăng tin chính xác</h3>
+                <p>
+                    ✓ Chụp ảnh thật của sản phẩm<br>
+                    ✓ Mô tả đầy đủ, trung thực về tình trạng<br>
+                    ✓ Ghi rõ giá và chính sách bảo hành<br>
+                    ✓ Không phóng đại, không gian lận
+                </p>
+            </div>
+
+            <div class="safety-card">
+                <h3>2. Giao tiếp chuyên nghiệp</h3>
+                <p>
+                    ✓ Phản hồi tin nhắn nhanh chóng<br>
+                    ✓ Trả lời câu hỏi một cách trung thực<br>
+                    ✓ Không yêu cầu giao dịch bên ngoài nền tảng<br>
+                    ✓ Lịch sự, tôn trọng người mua
+                </p>
+            </div>
+
+            <div class="safety-card">
+                <h3>3. Giao hàng an toàn</h3>
+                <p>
+                    ✓ Đóng gói cẩn thận, chắc chắn<br>
+                    ✓ Chụp ảnh/quay video trước khi giao<br>
+                    ✓ Sử dụng dịch vụ vận chuyển uy tín<br>
+                    ✓ Cung cấp mã vận đơn cho người mua<br>
+                    ✓ Mua bảo hiểm cho hàng giá trị cao
+                </p>
+            </div>
+
+            <h2>🚨 Nhận biết lừa đảo</h2>
+
+            <div class="danger-box">
+                <h3>⚠️ Dấu hiệu cảnh báo:</h3>
+                <p>
+                    ❌ Giá quá rẻ so với thị trường<br>
+                    ❌ Yêu cầu chuyển tiền ngay lập tức<br>
+                    ❌ Không cho xem hàng trước<br>
+                    ❌ Thông tin liên hệ không rõ ràng<br>
+                    ❌ Tài khoản mới, không có lịch sử<br>
+                    ❌ Yêu cầu giao dịch bên ngoài nền tảng<br>
+                    ❌ Không có đánh giá hoặc toàn đánh giá xấu
+                </p>
+            </div>
+
+            <div class="warning-box">
+                <h3>🎣 Các chiêu trò lừa đảo phổ biến:</h3>
+                <p>
+                    <strong>1. Lừa đảo chuyển tiền trước:</strong> Yêu cầu chuyển tiền cọc/đặt hàng rồi biến mất<br>
+                    <strong>2. Hàng giả:</strong> Bán hàng nhái, hàng dựng giá rẻ<br>
+                    <strong>3. Lừa link giả:</strong> Gửi link giả mạo để đánh cắp thông tin<br>
+                    <strong>4. Mạo danh:</strong> Giả làm nhân viên ElectricStore để lừa đảo<br>
+                    <strong>5. Bait and switch:</strong> Hàng quảng cáo khác với hàng giao
+                </p>
+            </div>
+
+            <h2>📢 Báo cáo vi phạm</h2>
+            
+            <div class="safety-card">
+                <h3>Nếu bạn gặp phải lừa đảo hoặc vi phạm:</h3>
+                <p>
+                    <strong>1. Báo cáo ngay trên nền tảng</strong><br>
+                    - Nhấn nút "Báo cáo" trên tin đăng hoặc tài khoản<br>
+                    - Cung cấp bằng chứng: ảnh chụp, tin nhắn, video
+                </p>
+                <p>
+                    <strong>2. Liên hệ bộ phận hỗ trợ</strong><br>
+                    📧 Email: security@electricstore.com<br>
+                    📞 Hotline: 1900 1234<br>
+                    💬 Chat trực tuyến trên website
+                </p>
+                <p>
+                    <strong>3. Báo cơ quan chức năng</strong><br>
+                    - Công an phường/xã (nếu bị lừa đảo)<br>
+                    - Tổng đài 113<br>
+                    - Cục An toàn thông tin: 0243.7738768
+                </p>
+            </div>
+
+            <div class="warning-box">
+                <p>
+                    <strong>💡 Ghi nhớ:</strong><br>
+                    "Nếu điều gì đó nghe có vẻ quá tốt để là thật, 
+                    thì có thể nó không phải là thật!"
+                </p>
+                <p>
+                    Hãy luôn cảnh giác và tin vào trực giác của bạn. 
+                    ElectricStore luôn sẵn sàng hỗ trợ bạn mua bán an toàn!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2024 ElectricStore. All rights reserved.</p>
+    </div>
+</body>
+</html>
+

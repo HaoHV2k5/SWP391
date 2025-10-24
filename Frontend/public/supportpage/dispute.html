@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giới thiệu - ElectricStore</title>
+    <title>Giải quyết tranh chấp - ElectricStore</title>
     <style>
         * {
             margin: 0;
@@ -24,7 +24,6 @@
             padding: 0 20px;
         }
         
-        /* Header */
         .header {
             background: #2BB673;
             padding: 15px 0;
@@ -82,7 +81,6 @@
             color: white;
         }
         
-        /* Main Content */
         .main-content {
             display: grid;
             grid-template-columns: 250px 1fr;
@@ -92,7 +90,6 @@
             padding: 0 20px;
         }
         
-        /* Sidebar */
         .sidebar {
             background: white;
             padding: 20px;
@@ -137,7 +134,6 @@
             font-weight: 600;
         }
         
-        /* Content */
         .content {
             background: white;
             padding: 30px;
@@ -171,32 +167,26 @@
             border-left: 4px solid #2BB673;
         }
         
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-        
-        .info-card {
-            background: #f9f9f9;
+        .warning-box {
+            background: #fff3cd;
             padding: 20px;
             border-radius: 8px;
-            text-align: center;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
         }
         
-        .info-card h3 {
-            font-size: 18px;
+        .step-box {
+            background: #e8f5f0;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .step-box h3 {
+            color: #2BB673;
             margin-bottom: 10px;
-            color: #333;
         }
         
-        .info-card p {
-            color: #666;
-            margin: 0;
-        }
-        
-        /* Footer */
         .footer {
             background: #333;
             color: white;
@@ -211,7 +201,6 @@
             margin: 0 10px;
         }
         
-        /* Responsive */
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -220,15 +209,10 @@
             .content {
                 padding: 20px;
             }
-            
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
     <div class="header">
         <div class="container">
             <div class="header-content">
@@ -237,22 +221,20 @@
                         <img src="/logo.jpg" alt="ElectricStore" class="logo">
                         <span class="logo-text">ElectricStore</span>
                     </a>
-                    <span class="page-title">| Giới thiệu</span>
+                    <span class="page-title">| Giải quyết tranh chấp</span>
                 </div>
                 <a href="/" class="btn-home">← Về trang chủ</a>
             </div>
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
-        <!-- Sidebar -->
         <div class="sidebar">
             <h3>Về ElectricStore</h3>
             <ul>
-                <li><a href="/supportpage/about.html" class="active">Giới thiệu</a></li>
+                <li><a href="/supportpage/about.html">Giới thiệu</a></li>
                 <li><a href="/supportpage/terms.html">Quy chế hoạt động sàn</a></li>
-                <li><a href="/supportpage/dispute.html">Giải quyết tranh chấp</a></li>
+                <li><a href="/supportpage/dispute.html" class="active">Giải quyết tranh chấp</a></li>
                 <li><a href="/supportpage/careers.html">Tuyển dụng</a></li>
                 <li><a href="/supportpage/media.html">Truyền thông</a></li>
                 <li><a href="/supportpage/blog.html">Blog</a></li>
@@ -271,88 +253,114 @@
             </ul>
         </div>
 
-        <!-- Content -->
         <div class="content">
-            <h1>Giới thiệu về ElectricStore</h1>
+            <h1>Chính sách giải quyết tranh chấp</h1>
             
             <p>
-                ElectricStore là nền tảng mua bán thiết bị điện tử hàng đầu Việt Nam, 
-                kết nối người mua và người bán trong lĩnh vực công nghệ.
+                ElectricStore cam kết hỗ trợ giải quyết mọi tranh chấp giữa người mua và người bán 
+                một cách công bằng, minh bạch và nhanh chóng.
             </p>
 
+            <h2>1. Các loại tranh chấp phổ biến</h2>
             <div class="info-box">
-                <h2>Về chúng tôi</h2>
                 <p>
-                    Được thành lập vào năm 2020, ElectricStore đã trở thành địa chỉ tin cậy 
-                    cho hàng triệu người dùng muốn mua bán thiết bị điện tử. Chúng tôi cung cấp 
-                    một nền tảng an toàn, tiện lợi và đáng tin cậy cho cả người mua và người bán.
+                    • <strong>Sản phẩm không đúng mô tả:</strong> Hàng nhận khác với hình ảnh/mô tả<br>
+                    • <strong>Sản phẩm lỗi:</strong> Hàng bị hư hỏng, không hoạt động<br>
+                    • <strong>Không nhận được hàng:</strong> Người bán không giao hàng sau thanh toán<br>
+                    • <strong>Người mua không thanh toán:</strong> Đã nhận hàng nhưng không trả tiền<br>
+                    • <strong>Vấn đề hoàn tiền:</strong> Tranh chấp về chính sách đổi trả
                 </p>
             </div>
 
-            <div class="info-grid">
-                <div class="info-card">
-                    <h3>2M+</h3>
-                    <p>Người dùng tin tưởng</p>
-                </div>
-                <div class="info-card">
-                    <h3>500K+</h3>
-                    <p>Sản phẩm đa dạng</p>
-                </div>
-                <div class="info-card">
-                    <h3>98%</h3>
-                    <p>Khách hàng hài lòng</p>
-                </div>
+            <h2>2. Quy trình giải quyết tranh chấp</h2>
+
+            <div class="step-box">
+                <h3>Bước 1: Thương lượng trực tiếp</h3>
+                <p>
+                    Hai bên liên hệ và trao đổi để tìm ra giải pháp chung. 
+                    Thời gian: 3-5 ngày làm việc.
+                </p>
             </div>
 
-            <h2>Sứ mệnh</h2>
-            <p>
-                Cung cấp nền tảng mua bán thiết bị điện tử an toàn, tiện lợi và đáng tin cậy, 
-                giúp người dùng dễ dàng tìm kiếm và giao dịch các sản phẩm công nghệ chất lượng cao.
-            </p>
-
-            <h2>Tầm nhìn</h2>
-            <p>
-                Trở thành nền tảng thương mại điện tử hàng đầu Đông Nam Á trong lĩnh vực 
-                thiết bị điện tử, mang đến trải nghiệm mua sắm tốt nhất cho khách hàng.
-            </p>
-
-            <h2>Giá trị cốt lõi</h2>
-            <div class="info-grid">
-                <div class="info-card">
-                    <h3>An toàn</h3>
-                    <p>Đảm bảo giao dịch an toàn với hệ thống bảo mật tiên tiến</p>
-                </div>
-                <div class="info-card">
-                    <h3>Tin cậy</h3>
-                    <p>Xây dựng niềm tin thông qua minh bạch và trung thực</p>
-                </div>
-                <div class="info-card">
-                    <h3>Đổi mới</h3>
-                    <p>Liên tục cải tiến và phát triển công nghệ mới</p>
-                </div>
+            <div class="step-box">
+                <h3>Bước 2: Yêu cầu hỗ trợ từ ElectricStore</h3>
+                <p>
+                    Nếu không thỏa thuận được, liên hệ bộ phận CSKH để được hỗ trợ. 
+                    Cung cấp đầy đủ bằng chứng: ảnh, video, tin nhắn.
+                </p>
             </div>
 
-            <h2>Dịch vụ của chúng tôi</h2>
+            <div class="step-box">
+                <h3>Bước 3: ElectricStore xử lý và ra quyết định</h3>
+                <p>
+                    Đội ngũ của chúng tôi sẽ xem xét và đưa ra phương án giải quyết công bằng 
+                    trong vòng 7-10 ngày làm việc.
+                </p>
+            </div>
+
+            <h2>3. Bằng chứng cần thiết</h2>
+            <div class="info-box">
+                <p>Để xử lý nhanh chóng, vui lòng cung cấp:</p>
+                <p>
+                    ✓ Ảnh/video sản phẩm thực tế<br>
+                    ✓ Ảnh chụp màn hình cuộc trò chuyện<br>
+                    ✓ Hóa đơn, biên nhận thanh toán<br>
+                    ✓ Mã vận đơn (nếu có)<br>
+                    ✓ Bất kỳ bằng chứng nào liên quan
+                </p>
+            </div>
+
+            <h2>4. Thời hạn khiếu nại</h2>
+            <div class="warning-box">
+                <p>
+                    <strong>Lưu ý quan trọng:</strong><br>
+                    • Khiếu nại phải được gửi trong vòng <strong>7 ngày</strong> kể từ khi nhận hàng<br>
+                    • Sau thời hạn này, ElectricStore sẽ không chịu trách nhiệm xử lý<br>
+                    • Đối với sản phẩm điện tử: 3 ngày đầu kiểm tra kỹ
+                </p>
+            </div>
+
+            <h2>5. Chính sách hoàn tiền</h2>
             <p>
-                • Mua bán điện thoại di động từ các thương hiệu nổi tiếng<br>
-                • Laptop, máy tính bảng và phụ kiện công nghệ<br>
-                • Thiết bị điện tử gia dụng<br>
-                • Hệ thống đánh giá và review sản phẩm<br>
-                • Thanh toán an toàn, bảo vệ người mua
+                ElectricStore sẽ hỗ trợ hoàn tiền trong các trường hợp:
+            </p>
+            <div class="info-box">
+                <p>
+                    ✓ Người bán giao hàng giả/hàng lỗi và không giải quyết<br>
+                    ✓ Không nhận được hàng sau 30 ngày<br>
+                    ✓ Sản phẩm không đúng mô tả nghiêm trọng<br>
+                    ✓ Người bán vi phạm quy chế nghiêm trọng
+                </p>
+                <p>
+                    <strong>Thời gian hoàn tiền:</strong> 5-7 ngày làm việc sau khi có quyết định
+                </p>
+            </div>
+
+            <h2>6. Xử lý vi phạm</h2>
+            <p>
+                Tùy mức độ vi phạm, ElectricStore có thể:
+            </p>
+            <p>
+                • <strong>Cảnh cáo:</strong> Vi phạm lần đầu, mức độ nhẹ<br>
+                • <strong>Khóa tính năng:</strong> Tạm khóa đăng tin/mua hàng 7-30 ngày<br>
+                • <strong>Khóa vĩnh viễn:</strong> Vi phạm nghiêm trọng hoặc tái phạm<br>
+                • <strong>Chuyển cơ quan chức năng:</strong> Trường hợp lừa đảo
             </p>
 
             <div class="info-box">
-                <h2>Liên hệ với chúng tôi</h2>
-                <p><strong>Email:</strong> support@electricstore.com</p>
-                <p><strong>Hotline:</strong> 1900 1234</p>
-                <p><strong>Địa chỉ:</strong> Tầng 6, Tòa nhà Center, Số 1 Lưu Hữu Phước, Đông Hòa, Dĩ An, Bình Dương</p>
+                <h2>Liên hệ hỗ trợ tranh chấp</h2>
+                <p>
+                    <strong>📧 Email:</strong> dispute@electricstore.com<br>
+                    <strong>📞 Hotline:</strong> 1900 1234 (Thứ 2-7: 8h-20h)<br>
+                    <strong>💬 Chat:</strong> Trực tuyến trên website
+                </p>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
     <div class="footer">
         <p>&copy; 2024 ElectricStore. All rights reserved.</p>
     </div>
 </body>
 </html>
+
