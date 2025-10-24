@@ -5,7 +5,7 @@ import {
   GoogleAuthProvider,
   FacebookAuthProvider,
 } from "firebase/auth";
-import { auth, googleProvider, facebookProvider } from "../firebase/config";
+import { auth, googleProvider, facebookProvider } from "../firebase/config.js";
 
 class FirebaseAuthService {
   constructor() {
