@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giới thiệu - ElectricStore</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        .header {
+            background: #ffd700;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 12px 0;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: #333;
+        }
+        
+        .logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+        }
+        
+        .logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .separator {
+            color: #666;
+            margin: 0 8px;
+        }
+        
+        .page-title {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #0066cc;
+            border-color: #0066cc;
+        }
+        
+        .btn-outline:hover {
+            background: #0066cc;
+            color: white;
+        }
+        
+        /* Breadcrumb */
+        .breadcrumb {
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 12px 0;
+        }
+        
+        .breadcrumb-link {
+            color: #0066cc;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .breadcrumb-link:hover {
+            text-decoration: underline;
+        }
+        
+        .breadcrumb-separator {
+            margin: 0 8px;
+            color: #666;
+        }
+        
+        .breadcrumb-current {
+            color: #333;
+            font-size: 14px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: 24px 0;
+        }
+        
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 24px;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 20px;
+        }
+        
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar-item {
+            margin-bottom: 4px;
+        }
+        
+        .sidebar-link {
+            display: block;
+            padding: 8px 12px;
+            color: #666;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar-link:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .sidebar-item.active .sidebar-link {
+            background: #0066cc;
+            color: white;
+        }
+        
+        /* Content */
+        .content {
+            background: white;
+            border-radius: 8px;
+            padding: 32px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .content-header {
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .content-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+        }
+        
+        .page-description {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            margin-bottom: 32px;
+        }
+        
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            padding: 24px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            display: block;
+            font-size: 24px;
+            font-weight: 700;
+            color: #0066cc;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* Content Sections */
+        .content-section {
+            margin-bottom: 40px;
+        }
+        
+        .content-section h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #0066cc;
+        }
+        
+        /* Overview Grid */
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .overview-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .overview-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .overview-card p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        /* Mission & Vision */
+        .mission-vision-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 20px;
+        }
+        
+        .mission-card, .vision-card {
+            background: #f8f9fa;
+            padding: 24px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .card-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .mission-card .card-header {
+            color: #0066cc;
+        }
+        
+        .vision-card .card-header {
+            color: #28a745;
+        }
+        
+        .mission-card p, .vision-card p {
+            color: #666;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        /* Values Grid */
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .value-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .value-card h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .value-card p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .service-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .service-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .service-card p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        /* Contact CTA */
+        .contact-cta {
+            background: #f8f9fa;
+            padding: 32px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .contact-cta h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+        
+        .contact-cta p {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-primary {
+            background: #0066cc;
+            color: white;
+            border-color: #0066cc;
+        }
+        
+        .btn-primary:hover {
+            background: #0052a3;
+            border-color: #0052a3;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #333;
+            color: white;
+            padding: 24px 0;
+            margin-top: 40px;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .sidebar {
+                order: 2;
+            }
+            
+            .content {
+                order: 1;
+                padding: 20px;
+            }
+            
+            .hero-stats {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .overview-grid,
+            .values-grid,
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .mission-vision-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 16px;
+            }
+            
+            .content {
+                padding: 16px;
+            }
+            
+            .content-header h1 {
+                font-size: 24px;
+            }
+            
+            .hero-stats {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <a href="/" class="logo-link">
+                        <img src="/logo.jpg" alt="ElectricStore" class="logo">
+                        <span class="logo-text">ElectricStore</span>
+                    </a>
+                    <span class="separator">|</span>
+                    <span class="page-title">Giới thiệu</span>
+                </div>
+                <div class="header-actions">
+                    <a href="/" class="btn btn-outline">Về trang chủ</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <div class="container">
+            <a href="/" class="breadcrumb-link">Trang chủ</a>
+            <span class="breadcrumb-separator">&gt;</span>
+            <span class="breadcrumb-current">Giới thiệu</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <div class="content-wrapper">
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <div class="sidebar-section">
+                        <h3 class="sidebar-title">Thông tin công ty</h3>
+                        <ul class="sidebar-menu">
+                            <li class="sidebar-item active">
+                                <a href="/about.html" class="sidebar-link">Giới thiệu</a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a href="/privacy.html" class="sidebar-link">Chính sách bảo mật</a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a href="/terms.html" class="sidebar-link">Điều khoản sử dụng</a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a href="/help.html" class="sidebar-link">Trung tâm trợ giúp</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="content">
+                    <div class="content-header">
+                        <h1>Giới thiệu về ElectricStore</h1>
+                        <p class="page-description">
+                            ElectricStore là nền tảng mua bán thiết bị điện tử hàng đầu Việt Nam, 
+                            kết nối người mua và người bán trong lĩnh vực công nghệ.
+                        </p>
+                    </div>
+
+                    <!-- Hero Section -->
+                    <div class="hero-section">
+                        <div class="hero-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">2M+</span>
+                                <span class="stat-label">Người dùng</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">500K+</span>
+                                <span class="stat-label">Sản phẩm</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">98%</span>
+                                <span class="stat-label">Hài lòng</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Company Overview -->
+                    <section class="content-section">
+                        <h2>Về chúng tôi</h2>
+                        <div class="overview-grid">
+                            <div class="overview-card">
+                                <h3>Thành lập 2020</h3>
+                                <p>Với hơn 4 năm kinh nghiệm trong lĩnh vực thương mại điện tử</p>
+                            </div>
+                            
+                            <div class="overview-card">
+                                <h3>2M+ Người dùng</h3>
+                                <p>Hàng triệu người dùng tin tưởng và sử dụng dịch vụ của chúng tôi</p>
+                            </div>
+                            
+                            <div class="overview-card">
+                                <h3>Mục tiêu</h3>
+                                <p>Trở thành nền tảng mua bán thiết bị điện tử số 1 Việt Nam</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Mission & Vision -->
+                    <section class="content-section">
+                        <div class="mission-vision-grid">
+                            <div class="mission-card">
+                                <div class="card-header">
+                                    <h3>Sứ mệnh</h3>
+                                </div>
+                                <p>
+                                    Cung cấp nền tảng mua bán thiết bị điện tử an toàn, tiện lợi và đáng tin cậy, 
+                                    giúp người dùng dễ dàng tìm kiếm và mua bán các sản phẩm công nghệ chất lượng cao.
+                                </p>
+                            </div>
+                            
+                            <div class="vision-card">
+                                <div class="card-header">
+                                    <h3>Tầm nhìn</h3>
+                                </div>
+                                <p>
+                                    Trở thành nền tảng thương mại điện tử hàng đầu Đông Nam Á, 
+                                    kết nối người mua và người bán trong lĩnh vực công nghệ một cách hiệu quả và bền vững.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Core Values -->
+                    <section class="content-section">
+                        <h2>Giá trị cốt lõi</h2>
+                        <div class="values-grid">
+                            <div class="value-card">
+                                <h4>An toàn</h4>
+                                <p>Đảm bảo giao dịch an toàn với hệ thống bảo mật tiên tiến</p>
+                            </div>
+                            
+                            <div class="value-card">
+                                <h4>Tin cậy</h4>
+                                <p>Xây dựng niềm tin thông qua minh bạch và trung thực</p>
+                            </div>
+                            
+                            <div class="value-card">
+                                <h4>Đổi mới</h4>
+                                <p>Liên tục cải tiến và phát triển công nghệ mới</p>
+                            </div>
+                            
+                            <div class="value-card">
+                                <h4>Hướng khách hàng</h4>
+                                <p>Đặt nhu cầu và trải nghiệm khách hàng lên hàng đầu</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Services -->
+                    <section class="content-section">
+                        <h2>Dịch vụ của chúng tôi</h2>
+                        <div class="services-grid">
+                            <div class="service-card">
+                                <h3>Mua bán điện thoại</h3>
+                                <p>Nền tảng mua bán điện thoại di động từ các thương hiệu nổi tiếng</p>
+                            </div>
+                            
+                            <div class="service-card">
+                                <h3>Thiết bị điện tử</h3>
+                                <p>Laptop, máy tính, phụ kiện và các thiết bị công nghệ khác</p>
+                            </div>
+                            
+                            <div class="service-card">
+                                <h3>So sánh giá</h3>
+                                <p>Công cụ so sánh giá giúp tìm sản phẩm tốt nhất</p>
+                            </div>
+                            
+                            <div class="service-card">
+                                <h3>Đánh giá sản phẩm</h3>
+                                <p>Hệ thống đánh giá và review từ người dùng thực tế</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Contact CTA -->
+                    <section class="content-section">
+                        <div class="contact-cta">
+                            <h2>Liên hệ với chúng tôi</h2>
+                            <p>Bạn có câu hỏi hoặc cần hỗ trợ? Hãy liên hệ với chúng tôi!</p>
+                            <div class="cta-buttons">
+                                <a href="/help.html" class="btn btn-primary">
+                                    Liên hệ ngay
+                                </a>
+                                <a href="/" class="btn btn-outline">
+                                    Về trang chủ
+                                </a>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2024 ElectricStore. Tất cả quyền được bảo lưu.</p>
+                <div class="footer-links">
+                    <a href="/privacy.html">Chính sách bảo mật</a>
+                    <a href="/terms.html">Điều khoản sử dụng</a>
+                    <a href="/help.html">Trợ giúp</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
