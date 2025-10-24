@@ -273,12 +273,7 @@ private String emailLoginFacebook;
 
     public PostingPackageResponse getPackageCurrent(Long userId){
         UserPostingPackage userPostingPackage = userPackageTransactionService.getUserPostingPackageByUserId(userId);
-        
-        // Nếu user chưa mua gói nào, trả về null
-        if(userPostingPackage == null){
-            return null;
-        }
-        
+
         return userPostingPackageMapper.toPostingPackageResponse(userPostingPackage);
     }
 

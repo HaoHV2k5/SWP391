@@ -3,7 +3,6 @@ package com.example.backend.service;
 import com.example.backend.dto.request.IntrospectRequest;
 import com.example.backend.dto.request.LoginRequest;
 import com.example.backend.dto.request.RefreshRequest;
-import com.example.backend.dto.request.FirebaseUserRequest;
 import com.example.backend.dto.response.IntrospectResponse;
 import com.example.backend.dto.response.LoginResponse;
 import com.example.backend.dto.response.RefreshResponse;
@@ -33,7 +32,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.Optional;
 
 
 @Service
@@ -204,99 +202,6 @@ public class AuthService {
 
         return RefreshResponse.builder().token(token).refreshToken(refresh).build();
 
-    }
-
-    // Firebase Authentication methods
-    public LoginResponse syncFirebaseUser(FirebaseUserRequest request) {
-        log.info("Syncing Firebase user: {}", request.getEmail());
-        
-        // Tìm user theo Firebase UID hoặc email
-        Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
-        User user;
-        
-        if (existingUser.isPresent()) {
-            // User đã tồn tại, cập nhật thông tin Firebase
-            user = existingUser.get();
-            user.setFirebaseUid(request.getFirebaseUid());
-            user.setAvatar(request.getAvatar());
-            user.setVerified(true); // Firebase user đã verified
-            userRepository.save(user);
-            log.info("Updated existing user with Firebase info: {}", user.getEmail());
-        } else {
-            // Tạo user mới từ Firebase
-            user = createFirebaseUser(request);
-            log.info("Created new Firebase user: {}", user.getEmail());
-        }
-        
-        // Tạo JWT token
-        String token = jwtService.generateToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
-        
-        return LoginResponse.builder()
-                .authenticated(true)
-                .token(token)
-                .refreshToken(refreshToken)
-                .user(userMapper.toUserDetailResponse(user))
-                .build();
-    }
-    
-    public LoginResponse registerFirebaseUser(FirebaseUserRequest request) {
-        log.info("Registering new Firebase user: {}", request.getEmail());
-        
-        // Kiểm tra user đã tồn tại chưa
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new AppException(ErrorCode.ACCOUNT_EXISTED);
-        }
-        
-        // Tạo user mới
-        User user = createFirebaseUser(request);
-        
-        // Tạo JWT token
-        String token = jwtService.generateToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
-        
-        return LoginResponse.builder()
-                .authenticated(true)
-                .token(token)
-                .refreshToken(refreshToken)
-                .user(userMapper.toUserDetailResponse(user))
-                .build();
-    }
-    
-    public Map<String, Object> checkUserExists(String firebaseUid) {
-        Map<String, Object> result = new HashMap<>();
-        
-        Optional<User> user = userRepository.findByFirebaseUid(firebaseUid);
-        if (user.isPresent()) {
-            result.put("exists", true);
-            result.put("user", userMapper.toUserDetailResponse(user.get()));
-        } else {
-            result.put("exists", false);
-        }
-        
-        return result;
-    }
-    
-    private User createFirebaseUser(FirebaseUserRequest request) {
-        User user = new User();
-        user.setUsername(request.getEmail());
-        user.setEmail(request.getEmail());
-        user.setFullname(request.getFullName());
-        user.setAvatar(request.getAvatar());
-        user.setFirebaseUid(request.getFirebaseUid());
-        user.setPassword(passwordUser); // Firebase user không cần password
-        user.setVerified(true); // Firebase user đã verified
-        user.setLocked(false);
-        
-        // Set role member cho Firebase user
-        HashSet<Role> roles = new HashSet<>();
-        roleRepository.findById(Roles.USER.name()).ifPresent(roles::add);
-        user.setRoles(roles);
-        
-        user = userRepository.save(user);
-        userService.initWalletAndWishlist(user);
-        
-        return user;
     }
 
 

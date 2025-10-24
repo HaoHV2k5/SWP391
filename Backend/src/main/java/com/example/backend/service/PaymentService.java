@@ -62,66 +62,6 @@ public class PaymentService {
             );
         }
     }
-
-    public String generateLinkPayment(int amount, String orderInfo, String orderType, Long userId) {
-        try {
-            Map<String, String> vnpParams = new HashMap<>();
-            String txnRef = Config.getRandomNumber(8);
-            
-            vnpParams.put("vnp_Version", "2.1.0");
-            vnpParams.put("vnp_Command", "pay");
-            vnpParams.put("vnp_TmnCode", Config.vnp_TmnCode);
-            vnpParams.put("vnp_TxnRef", txnRef);
-            vnpParams.put("vnp_OrderInfo", orderInfo);
-            vnpParams.put("vnp_OrderType", orderType);
-            vnpParams.put("vnp_Amount", String.valueOf(amount * 100));
-            vnpParams.put("vnp_CurrCode", "VND");
-            vnpParams.put("vnp_Locale", "vn");
-            vnpParams.put("vnp_ReturnUrl", Config.vnp_Returnurl);
-            vnpParams.put("vnp_IpAddr", "127.0.0.1");
-
-            Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-            vnpParams.put("vnp_CreateDate", sdf.format(cld.getTime()));
-            cld.add(Calendar.MINUTE, 15);
-            vnpParams.put("vnp_ExpireDate", sdf.format(cld.getTime()));
-
-            // Billing info
-            addBillingInfo(vnpParams, userId);
-
-            // Sort params
-            List<String> fieldNames = new ArrayList<>(vnpParams.keySet());
-            Collections.sort(fieldNames);
-
-            StringBuilder query = new StringBuilder();
-            Iterator<String> itr = fieldNames.iterator();
-            while (itr.hasNext()) {
-                String fieldName = itr.next();
-                String fieldValue = vnpParams.get(fieldName);
-                if ((fieldValue != null) && (fieldValue.length() > 0)) {
-                    query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString()));
-                    query.append('=');
-                    query.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
-                    if (itr.hasNext()) {
-                        query.append('&');
-                    }
-                }
-            }
-
-            String queryUrl = query.toString();
-            String vnpSecureHash = Config.hmacSHA512(Config.vnp_HashSecret, queryUrl);
-            query.append("&vnp_SecureHash=").append(vnpSecureHash);
-            
-            // Lưu giao dịch
-            saveTransaction(amount, userId, txnRef, orderInfo, orderType);
-            
-            return Config.vnp_PayUrl + "?" + query;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
     private Map<String, String> buildVnpParams(HttpServletRequest req) throws UnsupportedEncodingException {
         Map<String, String> params = new HashMap<>();
         String txnRef = Config.getRandomNumber(8);
@@ -132,13 +72,7 @@ public class PaymentService {
         params.put("vnp_TxnRef", txnRef);
         params.put("vnp_OrderInfo", req.getParameter("vnp_OrderInfo"));
         params.put("vnp_OrderType", req.getParameter("ordertype"));
-        
-        // Handle amount parameter safely
-        String amountParam = req.getParameter("amount");
-        if (amountParam == null || amountParam.trim().isEmpty()) {
-            amountParam = "100000"; // Default amount: 100,000 VND
-        }
-        params.put("vnp_Amount", String.valueOf(Integer.parseInt(amountParam) * 100));
+        params.put("vnp_Amount", String.valueOf(Integer.parseInt(req.getParameter("amount")) * 100));
         params.put("vnp_CurrCode", "VND");
         params.put("vnp_Locale", Optional.ofNullable(req.getParameter("language")).orElse("vn"));
         params.put("vnp_ReturnUrl", Config.vnp_Returnurl);
@@ -165,21 +99,6 @@ public class PaymentService {
             params.put("vnp_Bill_FirstName", parts[0]);
             params.put("vnp_Bill_LastName", parts[parts.length - 1]);
         }
-    }
-
-    private void addBillingInfo(Map<String, String> params, Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        
-        params.put("vnp_Bill_FirstName", user.getFullname() != null ? user.getFullname() : "User");
-        params.put("vnp_Bill_LastName", "");
-        params.put("vnp_Bill_Address", user.getAddress() != null ? user.getAddress() : "Vietnam");
-        params.put("vnp_Bill_City", "Ho Chi Minh");
-        params.put("vnp_Bill_Country", "Vietnam");
-        params.put("vnp_Bill_State", "Ho Chi Minh");
-        params.put("vnp_Bill_PostCode", "700000");
-        params.put("vnp_Bill_Email", user.getEmail() != null ? user.getEmail() : "user@example.com");
-        params.put("vnp_Bill_Phone", user.getPhone() != null ? user.getPhone() : "0123456789");
     }
     private String buildPaymentUrl(Map<String, String> params) throws UnsupportedEncodingException {
         List<String> fieldNames = new ArrayList<>(params.keySet());
@@ -208,59 +127,11 @@ public class PaymentService {
     }
     private void saveTransaction(HttpServletRequest req, Long userId, String txnRef) {
 
-        // Handle amount parameter safely
-        String amountParam = req.getParameter("amount");
-        if (amountParam == null || amountParam.trim().isEmpty()) {
-            amountParam = "100000"; // Default amount: 100,000 VND
-        }
-        BigDecimal amount = BigDecimal.valueOf(Integer.parseInt(amountParam));
+        BigDecimal amount = BigDecimal.valueOf(Integer.parseInt(req.getParameter("amount")));
         Wallet wallet = walletRepository.findByUserId(userId)
-                .orElseGet(() -> {
-                    // Tạo wallet mới nếu chưa có
-                    User user = userRepository.findById(userId)
-                            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-                    Wallet newWallet = Wallet.builder()
-                            .user(user)
-                            .balance(BigDecimal.ZERO)
-                            .build();
-                    return walletRepository.save(newWallet);
-                });
+                .orElseThrow(() -> new AppException(ErrorCode.WALLET_NOT_EXIST));
         handleRechargeTransaction(wallet, txnRef, amount);
 
-    }
-
-    private void saveTransaction(int amount, Long userId, String txnRef, String orderInfo, String orderType) {
-        try {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-            
-            Wallet wallet = walletRepository.findByUserId(userId)
-                    .orElseGet(() -> {
-                        Wallet newWallet = Wallet.builder()
-                                .user(user)
-                                .balance(BigDecimal.ZERO)
-                                .build();
-                        return walletRepository.save(newWallet);
-                    });
-
-            // Tạo WalletTransaction
-            WalletTransaction walletTransaction = WalletTransaction.builder()
-                    .wallet(wallet)
-                    .amount(BigDecimal.valueOf(amount))
-                    .transactionCode(txnRef)
-                    .description(orderInfo)
-                    .typeWalletTraction(WalletTransactionType.RECHARGE)
-                    .status(WalletTransactionStatus.PENDING.name())
-                    .balanceBefore(wallet.getBalance())
-                    .balanceAfter(wallet.getBalance())
-                    .createdAt(LocalDateTime.now())
-                    .build();
-            
-            walletTransactionRepository.save(walletTransaction);
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
     private void handleRechargeTransaction(Wallet wallet, String txnRef, BigDecimal amount) {
         WalletTransaction walletTx = WalletTransaction.builder()
@@ -285,15 +156,7 @@ public class PaymentService {
 
         PostingPackage postingPackage = postingPackageRepository.findById(packageId)
                 .orElseThrow(() -> new AppException(ErrorCode.POSTING_PACKAGE_NOT_FOUND));
-        Wallet wallet = walletRepository.findByUserId(userId)
-                .orElseGet(() -> {
-                    // Tạo wallet mới nếu chưa có
-                    Wallet newWallet = Wallet.builder()
-                            .user(user)
-                            .balance(BigDecimal.ZERO)
-                            .build();
-                    return walletRepository.save(newWallet);
-                });
+        Wallet wallet = walletRepository.findByUserId(userId).orElseThrow(() -> new AppException(ErrorCode.WALLET_NOT_EXIST));
         String transactionCode = Config.getRandomNumber(8);
 
         Transaction transaction = Transaction.builder()
@@ -428,17 +291,8 @@ public class PaymentService {
         if (signValue.equalsIgnoreCase(vnp_SecureHash)) {
             // Nếu chữ ký hợp lệ, kiểm tra mã phản hồi
             String responseCode = request.getParameter("vnp_ResponseCode");
-            String txnRef = request.getParameter("vnp_TxnRef");
-            
             if ("00".equals(responseCode)) {
-                // Thanh toán thành công - cập nhật số dư ví
-                try {
-                    updateWalletBalance(txnRef, request);
-                    result = "Giao dịch thành công - Số dư đã được cập nhật";
-                } catch (Exception e) {
-                    log.error("Error updating wallet balance: " + e.getMessage());
-                    result = "Giao dịch thành công nhưng có lỗi khi cập nhật số dư";
-                }
+                result = "Giao dịch thành công";
             } else {
                 result = "Giao dịch không thành công (mã: " + responseCode + ")";
             }
@@ -447,54 +301,6 @@ public class PaymentService {
         }
 
         return result;
-    }
-
-    private void updateWalletBalance(String txnRef, HttpServletRequest request) {
-        try {
-            // Tìm giao dịch theo transaction code
-            WalletTransaction walletTx = walletTransactionRepository.findByTransactionCode(txnRef)
-                    .orElseThrow(() -> new RuntimeException("Transaction not found: " + txnRef));
-
-            // Lấy số tiền từ VNPay response
-            String amountStr = request.getParameter("vnp_Amount");
-            BigDecimal amount = new BigDecimal(amountStr).divide(BigDecimal.valueOf(100))
-                    .setScale(2, BigDecimal.ROUND_HALF_UP);
-
-            // Kiểm tra số tiền có khớp không
-            if (walletTx.getAmount().compareTo(amount) != 0) {
-                log.warn("Amount mismatch - walletTx: " + walletTx.getAmount() + ", vnpay: " + amount);
-                return;
-            }
-
-            // Kiểm tra trạng thái giao dịch
-            if (!"PENDING".equals(walletTx.getStatus())) {
-                log.warn("Transaction already processed: " + walletTx.getStatus());
-                return;
-            }
-
-            // Cập nhật số dư ví
-            Wallet wallet = walletTx.getWallet();
-            BigDecimal balanceBefore = wallet.getBalance();
-            BigDecimal balanceAfter = balanceBefore.add(amount);
-
-            wallet.setBalance(balanceAfter);
-            wallet.setLastTransactionAt(LocalDateTime.now());
-            walletRepository.save(wallet);
-
-            // Cập nhật trạng thái giao dịch
-            walletTx.setStatus(WalletTransactionStatus.COMPLETED.name());
-            walletTx.setBalanceBefore(balanceBefore);
-            walletTx.setBalanceAfter(balanceAfter);
-            walletTx.setCompletedAt(LocalDateTime.now());
-            walletTransactionRepository.save(walletTx);
-
-            log.info("Wallet balance updated successfully - User: " + wallet.getUser().getId() + 
-                    ", Amount: " + amount + ", New Balance: " + balanceAfter);
-
-        } catch (Exception e) {
-            log.error("Error updating wallet balance for txnRef: " + txnRef, e);
-            throw e;
-        }
     }
 
 
@@ -542,33 +348,13 @@ public class PaymentService {
                 walletTx.setStatus(WalletTransactionStatus.COMPLETED.name());
                 walletTx.setCompletedAt(LocalDateTime.now());
 
-                Wallet wallet = walletRepository.findById(walletTx.getWallet().getId())
-                        .orElseGet(() -> {
-                            // Tạo wallet mới nếu không tìm thấy
-                            User user = userRepository.findById(walletTx.getWallet().getUser().getId())
-                                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-                            Wallet newWallet = Wallet.builder()
-                                    .user(user)
-                                    .balance(BigDecimal.ZERO)
-                                    .build();
-                            return walletRepository.save(newWallet);
-                        });
+                Wallet wallet = walletRepository.findById(walletTx.getWallet().getId()).orElseThrow(() -> new AppException(ErrorCode.WALLET_NOT_EXIST));
                 wallet.setBalance(wallet.getBalance().add(amount));
                 walletTx.setBalanceAfter(wallet.getBalance().add(amount));
                 wallet.setLastTransactionAt(LocalDateTime.now());
                 walletRepository.save(wallet);
                 // add amount for wallet admin
-                Wallet walletAdmin = walletRepository.findById(1L)
-                        .orElseGet(() -> {
-                            // Tạo wallet admin nếu không có
-                            User adminUser = userRepository.findById(1L)
-                                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-                            Wallet newAdminWallet = Wallet.builder()
-                                    .user(adminUser)
-                                    .balance(BigDecimal.ZERO)
-                                    .build();
-                            return walletRepository.save(newAdminWallet);
-                        });
+                Wallet walletAdmin = walletRepository.findById(1L).orElseThrow(() -> new AppException(ErrorCode.WALLET_NOT_EXIST));
                 walletAdmin.setBalance(walletAdmin.getBalance().add(amount));
             } else {
                 log.warn("giao dich thât bại");

@@ -20,7 +20,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-// import com.example.backend.config.FirebaseAuthenticationFilter; // Commented out
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -41,12 +40,7 @@ public class SecurityConfig  {
             "/users/verify-otp",
             "/users/resend-otp",
             "/tag/**",
-            "/kyc/submit",  // Chỉ cho phép submit KYC không cần auth
-            "/kyc/test",    // Test endpoint
-            "/api/payment/test",     // Payment test endpoint
-            "/api/payment/simple-test", // Simple payment test
-            "/api/payment/create-wallet", // Create wallet endpoint
-            "/api/payment/create-wallet-for-current-user", // Create wallet for current user
+
 
             "/api/v1/products/active",
             "/api/v1/products/{id}",
@@ -64,8 +58,6 @@ public class SecurityConfig  {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {//cogig chặn quyền truy cập ai mới có được quyền dùng
         http.csrf(AbstractHttpConfigurer::disable)
-                // Tạm thời comment Firebase filter để tránh circular dependency
-                // .addFilterBefore(firebaseAuthenticationFilter, org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationFilter.class)
                 .authorizeHttpRequests(request -> request.requestMatchers(WHITE_LIST).permitAll()
                         .requestMatchers("/api/payment/payment-return", "/api/payment/callback").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
