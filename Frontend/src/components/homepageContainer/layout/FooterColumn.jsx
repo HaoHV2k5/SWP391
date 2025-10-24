@@ -37,11 +37,35 @@ const FooterColumn = ({ title, type, data, className = "" }) => {
           <div>
             <h4 className="footer-column-title">{title}</h4>
             <div className="footer-links">
-              {data.map((item, index) => (
-                <Link key={index} to="#" className="footer-link">
-                  {item}
-                </Link>
-              ))}
+              {data.map((item, index) => {
+                // Map specific links to external HTML pages
+                let linkTo = "#";
+                if (item === "Giới thiệu") {
+                  linkTo = "/about.html";
+                } else if (item === "Trung tâm trợ giúp") {
+                  linkTo = "/help.html";
+                } else if (item === "Liên hệ hỗ trợ") {
+                  linkTo = "/help.html";
+                } else if (item === "Chính sách bảo mật") {
+                  linkTo = "/privacy.html";
+                } else if (item === "Quy chế hoạt động sàn") {
+                  linkTo = "/terms.html";
+                } else if (item === "Giải quyết tranh chấp") {
+                  linkTo = "/dispute.html";
+                } else if (item === "Tuyển dụng") {
+                  linkTo = "/careers.html";
+                } else if (item === "Truyền thông") {
+                  linkTo = "/media.html";
+                } else if (item === "Blog") {
+                  linkTo = "/blog.html";
+                }
+                
+                return (
+                  <a key={index} href={linkTo} className="footer-link">
+                    {item}
+                  </a>
+                );
+              })}
             </div>
           </div>
         );
