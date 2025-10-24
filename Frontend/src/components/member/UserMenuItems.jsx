@@ -9,7 +9,6 @@ const UserMenuItems = ({ onItemClick }) => {
     { to: "/my-posts", label: "Tin đăng của tôi" },
     { to: "/saved-posts", label: "Tin đã lưu" },
     { to: "/orders", label: "Đơn hàng" },
-    { to: "/view-history", label: "Lịch sử xem tin" },
   ];
 
   return (

@@ -16,6 +16,8 @@ const UserAvatar = ({ user, size = "32px" }) => {
     // Fallback: Lấy avatar từ localStorage
     const userId = localStorage.getItem('userId') || user?.id || 'default';
     const localAvatar = localStorage.getItem(`avatar_${userId}`);
+    
+    
     return localAvatar;
   };
 
@@ -24,6 +26,7 @@ const UserAvatar = ({ user, size = "32px" }) => {
     const handleAvatarChange = (event) => {
       const { userId, avatar } = event.detail;
       const currentUserId = localStorage.getItem('userId') || user?.id || 'default';
+      
       if (userId === currentUserId) {
         setAvatar(avatar);
       }

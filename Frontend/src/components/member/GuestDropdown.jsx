@@ -1,18 +1,37 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import LoginRegisterButtons from './LoginRegisterButtons';
 import UserMenuItems from './UserMenuItems';
 
 const GuestDropdown = () => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const dropdownRef = useRef(null);
 
   const handleItemClick = () => {
     setShowUserDropdown(false);
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowUserDropdown(false);
+      }
+    };
+
+    if (showUserDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserDropdown]);
+
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
       <div
+        ref={dropdownRef}
         className="user-dropdown"
         style={{
           display: "flex",
@@ -34,7 +53,7 @@ const GuestDropdown = () => {
           e.currentTarget.style.backgroundColor = "#f8f9fa";
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "white";
+e.currentTarget.style.backgroundColor = "white";
         }}
       >
         <div style={{
