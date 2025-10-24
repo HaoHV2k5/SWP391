@@ -22,9 +22,19 @@ const PostAd = ({ user }) => {
     batteryLevel: 80
   });
 
+  const [fieldErrors, setFieldErrors] = useState({});
+
   const categories = [
     { value: "VEHICLE", label: "Xe điện (Vehicle)" },
     { value: "BATTERY", label: "Pin & Sạc (Battery)" }
+  ];
+
+  const brands = [
+    { value: "Dibao", label: "Dibao" },
+    { value: "Osakar", label: "Osakar" },
+    { value: "Pega", label: "Pega" },
+    { value: "Vinfast", label: "Vinfast" },
+    { value: "Yadea", label: "Yadea" }
   ];
 
 
@@ -55,12 +65,65 @@ const PostAd = ({ user }) => {
     }
   }, [user, navigate]);
 
+  // Real-time validation
+  const validateField = (name, value) => {
+    const errors = { ...fieldErrors };
+    
+    switch (name) {
+      case 'price':
+        const price = parseFloat(value);
+        if (!price || price < 1000) {
+          errors.price = "Giá phải tối thiểu 1,000 VNĐ";
+        } else {
+          delete errors.price;
+        }
+        break;
+      case 'brand':
+        if (!value || value === "") {
+          errors.brand = "Vui lòng chọn thương hiệu";
+        } else {
+          delete errors.brand;
+        }
+        break;
+      case 'model':
+        if (!value || value.trim().length < 2) {
+          errors.model = "Model phải ít nhất 2 ký tự";
+        } else {
+          delete errors.model;
+        }
+        break;
+      case 'yearManufactured':
+        const currentYear = new Date().getFullYear();
+        if (!value || value < 1900 || value > currentYear + 1) {
+          errors.yearManufactured = `Năm sản xuất phải từ 1900-${currentYear + 1}`;
+        } else {
+          delete errors.yearManufactured;
+        }
+        break;
+      case 'batteryLevel':
+        if (formData.category === "BATTERY") {
+          const batteryLevel = parseInt(value);
+          if (isNaN(batteryLevel) || batteryLevel < 0 || batteryLevel > 100) {
+            errors.batteryLevel = "Mức pin phải từ 0-100%";
+          } else {
+            delete errors.batteryLevel;
+          }
+        }
+        break;
+    }
+    
+    setFieldErrors(errors);
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+    
+    // Real-time validation
+    validateField(name, value);
   };
 
   const handleImageUpload = (e) => {
@@ -76,12 +139,105 @@ const PostAd = ({ user }) => {
     }));
   };
 
+  // Validation function
+  const validateForm = () => {
+    const errors = [];
+    
+    // Validate price
+    const price = parseFloat(formData.price);
+    if (!price || price < 1000) {
+      errors.push("Giá phải tối thiểu 1,000 VNĐ");
+    }
+    
+    // Validate brand/model
+    if (!formData.brand || formData.brand === "") {
+      errors.push("Vui lòng chọn thương hiệu");
+    }
+    
+    if (!formData.model || formData.model.trim().length < 2) {
+      errors.push("Model phải ít nhất 2 ký tự");
+    }
+    
+    // Validate year
+    const currentYear = new Date().getFullYear();
+    if (!formData.yearManufactured || 
+        formData.yearManufactured < 1900 || 
+        formData.yearManufactured > currentYear + 1) {
+      errors.push("Năm sản xuất không hợp lệ (1900-" + (currentYear + 1) + ")");
+    }
+    
+    // Validate battery level for BATTERY category
+    if (formData.category === "BATTERY") {
+      const batteryLevel = parseInt(formData.batteryLevel);
+      if (!batteryLevel || batteryLevel < 0 || batteryLevel > 100) {
+        errors.push("Mức pin phải từ 0-100%");
+      }
+    }
+    
+    // Validate images
+    if (formData.images.length > 5) {
+      errors.push("Chỉ được tải lên tối đa 5 ảnh");
+    }
+    
+    // Check image sizes
+    for (let i = 0; i < formData.images.length; i++) {
+      if (formData.images[i].size > 5 * 1024 * 1024) { // 5MB
+        errors.push(`Ảnh ${i + 1} quá lớn (tối đa 5MB)`);
+      }
+    }
+    
+    return errors;
+  };
+
+  // Enhanced error handling
+  const handleError = (error) => {
+    const status = error?.response?.status;
+    const backendMessage = error?.response?.data?.message || error?.message;
+    
+    switch (status) {
+      case 401:
+        toast.error("Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        break;
+      case 403:
+        toast.error("Tài khoản của bạn chưa có quyền đăng bán (ROLE_SELLER). Vui lòng liên hệ admin.");
+        break;
+      case 400:
+        if (backendMessage?.includes('KYC') || backendMessage?.includes('kyc')) {
+          toast.error("KYC chưa được duyệt. Vui lòng hoàn thành KYC trước khi đăng tin.", {
+            autoClose: 7000
+          });
+        } else if (backendMessage?.includes('gói') || backendMessage?.includes('hạn đăng tin') || backendMessage?.includes('quá hạn') || backendMessage?.includes('POSTING_OVER_LIMIT') || backendMessage?.includes('PACKAGE_EXPIRED')) {
+          toast.error(`${backendMessage}\n\n Vui lòng mua gói đăng tin để tiếp tục.`, {
+            autoClose: 7000
+          });
+        } else if (backendMessage?.includes('TITLE_REQUIRED') || backendMessage?.includes('PRICE_REQUIRED') || backendMessage?.includes('PRODUCT_TYPE_REQUIRED')) {
+          toast.error("Vui lòng điền đầy đủ thông tin bắt buộc.");
+        } else if (backendMessage?.includes('TITLE_TOO_LONG') || backendMessage?.includes('DESCRIPTION_TOO_LONG')) {
+          toast.error("Nội dung quá dài. Vui lòng rút gọn.");
+        } else {
+          toast.error(`${backendMessage || 'Vui lòng kiểm tra lại thông tin'}`);
+        }
+        break;
+      case 404:
+        toast.error("Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.");
+        break;
+      case 500:
+        toast.error("Lỗi hệ thống. Vui lòng thử lại sau hoặc liên hệ hỗ trợ.");
+        break;
+      default:
+        toast.error(`Đăng tin thất bại: ${backendMessage || 'Vui lòng thử lại'}`);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.category || !formData.price || !formData.description || 
-        !formData.brand || !formData.model || !formData.yearManufactured) {
-      toast.error("Vui lòng điền đầy đủ thông tin bắt buộc!");
+    // Pre-validation
+    const validationErrors = validateForm();
+    if (validationErrors.length > 0) {
+      validationErrors.forEach(error => {
+        toast.error(error);
+      });
       return;
     }
 
@@ -97,25 +253,7 @@ const PostAd = ({ user }) => {
       toast.success("Đăng tin thành công! Tin của bạn đang chờ duyệt.");
       navigate("/my-posts");
     } catch (error) {
-      const status = error?.response?.status;
-      const backendMessage = error?.response?.data?.message || error?.message;
-      
-      if (status === 401) {
-        toast.error("Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn.");
-      } else if (status === 403) {
-        toast.error("Tài khoản của bạn chưa có quyền đăng bán (ROLE_SELLER).");
-      } else if (status === 400) {
-        // Kiểm tra lỗi liên quan đến gói đăng tin
-        if (backendMessage?.includes('gói') || backendMessage?.includes('hạn đăng tin') || backendMessage?.includes('quá hạn')) {
-          toast.error(`⚠️ ${backendMessage}\n\n💡 Vui lòng mua gói đăng tin để tiếp tục.`, {
-            autoClose: 5000
-          });
-        } else {
-          toast.error(`Đăng tin thất bại: ${backendMessage || 'Vui lòng thử lại'}`);
-        }
-      } else {
-        toast.error(`Đăng tin thất bại: ${backendMessage || 'Vui lòng thử lại'}`);
-      }
+      handleError(error);
     } finally {
       setLoading(false);
     }
@@ -197,12 +335,18 @@ const PostAd = ({ user }) => {
                               value={formData.price}
                               onChange={handleInputChange}
                               placeholder="VD: 15000000"
-                              min="0"
+                              min="1000"
                               required
+                              isInvalid={!!fieldErrors.price}
                             />
                             <Form.Text className="text-muted">
-                              Đơn vị: VNĐ
+                              Đơn vị: VNĐ (tối thiểu 1,000 VNĐ)
                             </Form.Text>
+                            {fieldErrors.price && (
+                              <Form.Control.Feedback type="invalid">
+                                {fieldErrors.price}
+                              </Form.Control.Feedback>
+                            )}
                           </Form.Group>
                         </Col>
                       </Row>
@@ -212,14 +356,23 @@ const PostAd = ({ user }) => {
                         <Col md={4}>
                           <Form.Group className="mb-3">
                             <Form.Label className="fw-bold">Thương hiệu <span className="text-danger">*</span></Form.Label>
-                            <Form.Control
-                              type="text"
+                            <Form.Select
                               name="brand"
                               value={formData.brand}
                               onChange={handleInputChange}
-                              placeholder="VD: VinFast, Honda, Yamaha"
                               required
-                            />
+                              isInvalid={!!fieldErrors.brand}
+                            >
+                              <option value="">Chọn thương hiệu</option>
+                              {brands.map(brand => (
+                                <option key={brand.value} value={brand.value}>{brand.label}</option>
+                              ))}
+                            </Form.Select>
+                            {fieldErrors.brand && (
+                              <Form.Control.Feedback type="invalid">
+                                {fieldErrors.brand}
+                              </Form.Control.Feedback>
+                            )}
                           </Form.Group>
                         </Col>
                         <Col md={4}>
@@ -232,7 +385,13 @@ const PostAd = ({ user }) => {
                               onChange={handleInputChange}
                               placeholder="VD: Klara S, Air Blade"
                               required
+                              isInvalid={!!fieldErrors.model}
                             />
+                            {fieldErrors.model && (
+                              <Form.Control.Feedback type="invalid">
+                                {fieldErrors.model}
+                              </Form.Control.Feedback>
+                            )}
                           </Form.Group>
                         </Col>
                         <Col md={4}>
@@ -246,7 +405,13 @@ const PostAd = ({ user }) => {
                               min="1900"
                               max="2030"
                               required
+                              isInvalid={!!fieldErrors.yearManufactured}
                             />
+                            {fieldErrors.yearManufactured && (
+                              <Form.Control.Feedback type="invalid">
+                                {fieldErrors.yearManufactured}
+                              </Form.Control.Feedback>
+                            )}
                           </Form.Group>
                         </Col>
                       </Row>
@@ -404,7 +569,7 @@ const PostAd = ({ user }) => {
                       type="submit"
                       variant="success"
                       size="lg"
-                      disabled={loading}
+                      disabled={loading || Object.keys(fieldErrors).length > 0}
                       className="px-4"
                     >
                       {loading ? (

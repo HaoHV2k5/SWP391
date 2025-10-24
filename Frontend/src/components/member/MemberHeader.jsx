@@ -11,6 +11,8 @@ const MemberHeader = ({ activeTab }) => {
         return "Tin đã lưu";
       case "orders":
         return "Đơn hàng của tôi";
+      case "my-orders":
+        return "Yêu cầu mua hàng";
       default:
         return "Trang chủ";
     }
