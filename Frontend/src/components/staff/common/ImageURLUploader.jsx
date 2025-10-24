@@ -31,7 +31,7 @@ const dedup = (arr) =>
   Array.from(new Set(arr.map((s) => s.trim()))).filter(Boolean);
 
 export default function ImageUrlUpload({
-  value = [], // ✅ MẢNG URL ảnh — đúng theo Swagger: images: string[]
+  value = [], // MẢNG URL ảnh — đúng theo Swagger: images: string[]
   onChange, // (urls: string[]) => void
   max = 12,
   disabled = false,
