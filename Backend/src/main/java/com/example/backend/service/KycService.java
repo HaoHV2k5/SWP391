@@ -111,14 +111,10 @@ public class KycService {
 
 
     public List<KycDetailResponse> getAllKycByAdmin(){
-        // Admin có thể xem tất cả KYC (STAFF_APPROVED, ADMIN_APPROVED, REJECTED)
-        List<KycSubmission> subs = kycSubmissionRepository.findAll();
+        List<KycSubmission> subs = kycSubmissionRepository.findByStatus(KycStatus.STAFF_APPROVED);
         List<KycDetailResponse> response = new ArrayList<>();
         for(KycSubmission sub : subs){
-            // Chỉ lấy KYC không còn PENDING (đã được staff xử lý)
-            if (sub.getStatus() != KycStatus.PENDING) {
-                response.add(toResponse(sub));
-            }
+            response.add(toResponse(sub));
         }
 
         return response;

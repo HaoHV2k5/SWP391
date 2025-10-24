@@ -3,7 +3,6 @@ package com.example.backend.controller;
 import com.example.backend.dto.request.IntrospectRequest;
 import com.example.backend.dto.request.LoginRequest;
 import com.example.backend.dto.request.RefreshRequest;
-import com.example.backend.dto.request.FirebaseUserRequest;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.IntrospectResponse;
 import com.example.backend.dto.response.LoginResponse;
@@ -16,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.text.ParseException;
 import java.util.Map;
 
@@ -60,25 +58,6 @@ public class AuthController {
                     .build();
         }
         Map<String, Object> result = authService.googleLogin(token);
-        return ApiResponse.<Map<String, Object>>builder().data(result).build();
-    }
-
-    // Firebase Authentication endpoints
-    @PostMapping("/sync-firebase-user")
-    public ApiResponse<LoginResponse> syncFirebaseUser(@RequestBody @Valid FirebaseUserRequest request) {
-        LoginResponse result = authService.syncFirebaseUser(request);
-        return ApiResponse.<LoginResponse>builder().data(result).build();
-    }
-
-    @PostMapping("/register-firebase-user")
-    public ApiResponse<LoginResponse> registerFirebaseUser(@RequestBody @Valid FirebaseUserRequest request) {
-        LoginResponse result = authService.registerFirebaseUser(request);
-        return ApiResponse.<LoginResponse>builder().data(result).build();
-    }
-
-    @GetMapping("/check-user/{firebaseUid}")
-    public ApiResponse<Map<String, Object>> checkUserExists(@PathVariable String firebaseUid) {
-        Map<String, Object> result = authService.checkUserExists(firebaseUid);
         return ApiResponse.<Map<String, Object>>builder().data(result).build();
     }
 

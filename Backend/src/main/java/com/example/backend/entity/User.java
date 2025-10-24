@@ -41,7 +41,6 @@ public class User {
     private String phone;
     @Column(columnDefinition = "NVARCHAR(255)")
     private String address;
-    private String firebaseUid; // Firebase UID for Firebase Authentication
     @ManyToMany
     private Set<Role> roles;
     @Builder.Default
