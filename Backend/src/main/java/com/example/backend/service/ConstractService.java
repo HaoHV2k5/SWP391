@@ -31,4 +31,9 @@ public class ConstractService {
         return contractMapper.toContractResponseList(list);
     }
 
+    public List<ContractResponse> getContractUserSign(Long userId) {
+        List<Contract> list = contractRepository.findAllConstractByStatus(userId, ContractStatus.SIGNED);
+        return contractMapper.toContractResponseList(list);
+    }
+
 }
