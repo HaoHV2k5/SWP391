@@ -26,4 +26,9 @@ public class ConstractService {
         return contractMapper.toContractResponseList(list);
     }
 
+    public List<ContractResponse> getContractUserPending(Long userId) {
+        List<Contract> list = contractRepository.findAllConstractByStatus(userId, ContractStatus.PENDING);
+        return contractMapper.toContractResponseList(list);
+    }
+
 }
