@@ -13,8 +13,9 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8f9fa;
+            background: #f5f5f5;
             color: #333;
+            line-height: 1.6;
         }
         
         .container {
@@ -25,9 +26,9 @@
         
         /* Header */
         .header {
-            background: #ffd700;
-            border-bottom: 1px solid #e0e0e0;
-            padding: 12px 0;
+            background: #2BB673;
+            padding: 15px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .header-content {
@@ -39,447 +40,246 @@
         .logo-section {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 15px;
         }
         
         .logo-link {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             text-decoration: none;
-            color: #333;
         }
         
         .logo {
-            width: 32px;
-            height: 32px;
-            border-radius: 4px;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
         }
         
         .logo-text {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
-            color: #333;
-        }
-        
-        .separator {
-            color: #666;
-            margin: 0 8px;
+            color: white;
         }
         
         .page-title {
             font-size: 16px;
-            color: #333;
-            font-weight: 500;
-        }
-        
-        .header-actions {
-            display: flex;
-            gap: 12px;
-        }
-        
-        .btn {
-            padding: 8px 16px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
-        }
-        
-        .btn-outline {
-            background: transparent;
-            color: #0066cc;
-            border-color: #0066cc;
-        }
-        
-        .btn-outline:hover {
-            background: #0066cc;
             color: white;
         }
         
-        /* Breadcrumb */
-        .breadcrumb {
+        .btn-home {
+            padding: 8px 20px;
             background: white;
-            border-bottom: 1px solid #e0e0e0;
-            padding: 12px 0;
-        }
-        
-        .breadcrumb-link {
-            color: #0066cc;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        
-        .breadcrumb-link:hover {
-            text-decoration: underline;
-        }
-        
-        .breadcrumb-separator {
-            margin: 0 8px;
-            color: #666;
-        }
-        
-        .breadcrumb-current {
             color: #333;
-            font-size: 14px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-home:hover {
+            background: #333;
+            color: white;
         }
         
         /* Main Content */
         .main-content {
-            padding: 24px 0;
-        }
-        
-        .content-wrapper {
             display: grid;
             grid-template-columns: 250px 1fr;
-            gap: 24px;
+            gap: 20px;
+            margin: 30px auto;
+            max-width: 1200px;
+            padding: 0 20px;
         }
         
         /* Sidebar */
         .sidebar {
             background: white;
-            border-radius: 8px;
             padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             height: fit-content;
         }
         
-        .sidebar-section {
-            margin-bottom: 20px;
-        }
-        
-        .sidebar-title {
+        .sidebar h3 {
             font-size: 16px;
-            font-weight: 600;
+            margin-bottom: 15px;
             color: #333;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 2px solid #2BB673;
+            padding-bottom: 10px;
         }
         
-        .sidebar-menu {
+        .sidebar ul {
             list-style: none;
-            padding: 0;
-            margin: 0;
         }
         
-        .sidebar-item {
-            margin-bottom: 4px;
+        .sidebar li {
+            margin-bottom: 10px;
         }
         
-        .sidebar-link {
-            display: block;
-            padding: 8px 12px;
+        .sidebar a {
             color: #666;
             text-decoration: none;
+            display: block;
+            padding: 8px 10px;
             border-radius: 4px;
-            font-size: 14px;
-            transition: all 0.2s ease;
+            transition: all 0.3s;
         }
         
-        .sidebar-link:hover {
-            background: #f0f0f0;
-            color: #333;
-        }
-        
-        .sidebar-item.active .sidebar-link {
-            background: #0066cc;
+        .sidebar a:hover {
+            background: #2BB673;
             color: white;
+        }
+        
+        .sidebar a.active {
+            background: #2BB673;
+            color: white;
+            font-weight: 600;
         }
         
         /* Content */
         .content {
             background: white;
+            padding: 30px;
             border-radius: 8px;
-            padding: 32px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
-        .content-header {
-            margin-bottom: 32px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .content-header h1 {
+        .content h1 {
             font-size: 28px;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 12px;
-        }
-        
-        .privacy-intro {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 24px;
-            border-left: 4px solid #0066cc;
-        }
-        
-        .privacy-intro p {
-            font-size: 14px;
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 12px;
-        }
-        
-        .privacy-intro p:last-child {
-            margin-bottom: 0;
-        }
-        
-        /* Content Sections */
-        .content-section {
-            margin-bottom: 40px;
-        }
-        
-        .content-section h2 {
-            font-size: 22px;
-            font-weight: 600;
-            color: #333;
             margin-bottom: 20px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #0066cc;
+            color: #333;
         }
         
-        .section-number {
-            color: #0066cc;
-            font-weight: 700;
-            margin-right: 8px;
+        .content h2 {
+            font-size: 20px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #333;
         }
         
-        /* Info Collection Grid */
-        .info-collection-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
+        .content p {
+            margin-bottom: 15px;
+            color: #666;
         }
         
-        .info-card {
-            background: #f8f9fa;
+        .intro-box {
+            background: #e8f5f0;
             padding: 20px;
             border-radius: 8px;
-            border: 1px solid #e0e0e0;
+            margin: 20px 0;
+            border-left: 4px solid #2BB673;
         }
         
-        .info-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
-            color: #0066cc;
+        .intro-box p {
+            margin-bottom: 10px;
         }
         
-        .info-header h3 {
-            font-size: 16px;
-            font-weight: 600;
-            margin: 0;
+        .section-box {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
         }
         
-        .info-list {
+        .section-box h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .section-box ul {
             list-style: none;
             padding: 0;
-            margin: 0;
         }
         
-        .info-list li {
-            padding: 4px 0;
-            font-size: 14px;
+        .section-box li {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
             color: #666;
-            border-bottom: 1px solid #e0e0e0;
         }
         
-        .info-list li:last-child {
-            border-bottom: none;
+        .section-box li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #ffd700;
+            font-weight: bold;
         }
         
-        /* Usage Grid */
-        .usage-grid {
+        .info-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
-            margin-top: 20px;
+            margin: 20px 0;
         }
         
-        .usage-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 16px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-        }
-        
-        .usage-content h4 {
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 4px;
-        }
-        
-        .usage-content p {
-            font-size: 14px;
-            color: #666;
-            margin: 0;
-        }
-        
-        /* Protection Measures */
-        .protection-measures {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        .protection-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 16px;
+        .info-card {
+            background: #f9f9f9;
             padding: 20px;
-            background: #f8f9fa;
             border-radius: 8px;
-            border: 1px solid #e0e0e0;
+            border-top: 3px solid #2BB673;
         }
         
-        .protection-content h4 {
-            font-size: 16px;
-            font-weight: 600;
+        .info-card h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
             color: #333;
-            margin-bottom: 8px;
         }
         
-        .protection-content p {
-            font-size: 14px;
+        .info-card p {
             color: #666;
             margin: 0;
         }
         
-        /* Rights List */
-        .rights-list {
-            margin-top: 20px;
-        }
-        
-        .right-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .right-item:last-child {
-            border-bottom: none;
-        }
-        
-        .right-number {
-            background: #0066cc;
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 600;
-            flex-shrink: 0;
-        }
-        
-        .right-text {
-            font-size: 14px;
-            color: #333;
-        }
-        
-        /* Contact Info */
-        .contact-info {
-            background: #f8f9fa;
-            padding: 24px;
+        .highlight-box {
+            background: #e8f5e9;
+            padding: 20px;
             border-radius: 8px;
-            border: 1px solid #e0e0e0;
+            margin: 20px 0;
+            border-left: 4px solid #4caf50;
         }
         
-        .contact-details {
-            margin-top: 16px;
+        .contact-box {
+            background: #f9f9f9;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 30px 0;
+            border: 2px solid #2BB673;
         }
         
-        .contact-details p {
-            margin: 8px 0;
-            font-size: 14px;
-            color: #333;
+        .contact-box h2 {
+            margin-top: 0;
         }
         
         /* Footer */
         .footer {
             background: #333;
             color: white;
-            padding: 24px 0;
+            text-align: center;
+            padding: 20px 0;
             margin-top: 40px;
         }
         
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .footer-links {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .footer-links a {
-            color: #ccc;
+        .footer a {
+            color: #2BB673;
             text-decoration: none;
-            font-size: 14px;
+            margin: 0 10px;
         }
         
-        .footer-links a:hover {
-            color: white;
-        }
-        
-        /* Responsive Design */
+        /* Responsive */
         @media (max-width: 768px) {
-            .content-wrapper {
+            .main-content {
                 grid-template-columns: 1fr;
-                gap: 16px;
-            }
-            
-            .sidebar {
-                order: 2;
             }
             
             .content {
-                order: 1;
                 padding: 20px;
             }
             
-            .info-collection-grid,
-            .usage-grid,
-            .protection-measures {
+            .info-grid {
                 grid-template-columns: 1fr;
-            }
-            
-            .footer-content {
-                flex-direction: column;
-                gap: 12px;
-                text-align: center;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .container {
-                padding: 0 16px;
-            }
-            
-            .content {
-                padding: 16px;
-            }
-            
-            .content-header h1 {
-                font-size: 24px;
             }
         }
     </style>
@@ -494,290 +294,213 @@
                         <img src="/logo.jpg" alt="ElectricStore" class="logo">
                         <span class="logo-text">ElectricStore</span>
                     </a>
-                    <span class="separator">|</span>
-                    <span class="page-title">Trung tâm trợ giúp</span>
+                    <span class="page-title">| Chính sách bảo mật</span>
                 </div>
-                <div class="header-actions">
-                    <a href="/" class="btn btn-outline">Về trang chủ</a>
-                </div>
+                <a href="/" class="btn-home">← Về trang chủ</a>
             </div>
-        </div>
-    </div>
-
-    <!-- Breadcrumb -->
-    <div class="breadcrumb">
-        <div class="container">
-            <a href="/" class="breadcrumb-link">Trang chủ</a>
-            <span class="breadcrumb-separator">&gt;</span>
-            <a href="/help.html" class="breadcrumb-link">Trung tâm trợ giúp</a>
-            <span class="breadcrumb-separator">&gt;</span>
-            <span class="breadcrumb-current">Chính sách bảo mật</span>
         </div>
     </div>
 
     <!-- Main Content -->
     <div class="main-content">
-        <div class="container">
-            <div class="content-wrapper">
-                <!-- Sidebar -->
-                <div class="sidebar">
-                    <div class="sidebar-section">
-                        <h3 class="sidebar-title">Quy định chung</h3>
-                        <ul class="sidebar-menu">
-                            <li class="sidebar-item">
-                                <a href="/about.html" class="sidebar-link">Giới thiệu ElectricStore</a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="/terms.html" class="sidebar-link">Quy chế hoạt động website</a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="/app-terms.html" class="sidebar-link">Quy chế hoạt động ứng dụng</a>
-                            </li>
-                            <li class="sidebar-item active">
-                                <a href="/privacy.html" class="sidebar-link">Chính sách bảo mật của ElectricStore</a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="/dispute.html" class="sidebar-link">Cơ chế giải quyết tranh chấp</a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="/account-rules.html" class="sidebar-link">Quy chế tài khoản</a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="/social-terms.html" class="sidebar-link">Thỏa thuận mạng xã hội</a>
-                            </li>
-                        </ul>
-                    </div>
-                    
-                    <div class="sidebar-section">
-                        <h3 class="sidebar-title">Quy định đăng tin</h3>
-                        <ul class="sidebar-menu">
-                            <li class="sidebar-item">
-                                <a href="/posting-rules.html" class="sidebar-link">Quy định đăng tin</a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="/product-categories.html" class="sidebar-link">Danh mục sản phẩm</a>
-                            </li>
-                        </ul>
-                    </div>
-                    
-                    <div class="sidebar-section">
-                        <h3 class="sidebar-title">Quy định về tính năng</h3>
-                        <ul class="sidebar-menu">
-                            <li class="sidebar-item">
-                                <a href="/payment-rules.html" class="sidebar-link">Quy định thanh toán</a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="/shipping-rules.html" class="sidebar-link">Quy định vận chuyển</a>
-                            </li>
-                        </ul>
-                    </div>
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h3>Về ElectricStore</h3>
+            <ul>
+                <li><a href="/supportpage/about.html">Giới thiệu</a></li>
+                <li><a href="/supportpage/terms.html">Quy chế hoạt động sàn</a></li>
+                <li><a href="/supportpage/dispute.html">Giải quyết tranh chấp</a></li>
+                <li><a href="/supportpage/careers.html">Tuyển dụng</a></li>
+                <li><a href="/supportpage/media.html">Truyền thông</a></li>
+                <li><a href="/supportpage/blog.html">Blog</a></li>
+            </ul>
+            
+            <h3 style="margin-top: 30px;">Hỗ trợ khách hàng</h3>
+            <ul>
+                <li><a href="/supportpage/help.html">Trung tâm trợ giúp</a></li>
+                <li><a href="/supportpage/safety.html">An toàn mua bán</a></li>
+                <li><a href="/supportpage/contact.html">Liên hệ hỗ trợ</a></li>
+            </ul>
+            
+            <h3 style="margin-top: 30px;">Chính sách</h3>
+            <ul>
+                <li><a href="/supportpage/privacy.html" class="active">Chính sách bảo mật</a></li>
+            </ul>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <h1>Chính sách bảo mật của ElectricStore</h1>
+            
+            <div class="intro-box">
+                <p>
+                    <strong>ElectricStore</strong> cam kết bảo vệ thông tin cá nhân của người dùng. 
+                    Chính sách này mô tả cách chúng tôi thu thập, sử dụng, và bảo vệ thông tin của bạn.
+                </p>
+                <p>
+                    Bằng việc sử dụng dịch vụ của chúng tôi, bạn đồng ý với các điều khoản 
+                    trong chính sách này.
+                </p>
+                <p>
+                    <em>Cập nhật lần cuối: Tháng 10, 2024</em>
+                </p>
+            </div>
+
+            <h2>1. Thu thập thông tin</h2>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>📋 Thông tin tài khoản</h3>
+                    <p>
+                        Họ tên, email, số điện thoại, địa chỉ, 
+                        ảnh đại diện và thông tin đăng nhập
+                    </p>
                 </div>
 
-                <!-- Content -->
-                <div class="content">
-                    <div class="content-header">
-                        <h1>Chính sách bảo mật của ElectricStore</h1>
-                        <div class="privacy-intro">
-                            <p>
-                                ElectricStore cam kết bảo vệ thông tin cá nhân của người dùng. 
-                                Chính sách này mô tả cách chúng tôi thu thập, sử dụng, tiết lộ, 
-                                lưu trữ và xử lý thông tin cá nhân của bạn khi bạn truy cập 
-                                <strong> electricstore.com</strong> hoặc các ứng dụng chính thức 
-                                Android/iOS của chúng tôi.
-                            </p>
-                            <p>
-                                Bằng việc sử dụng dịch vụ của chúng tôi, bạn đồng ý với các điều khoản 
-                                trong chính sách này. Nếu bạn không đồng ý, vui lòng không sử dụng dịch vụ.
-                            </p>
-                            <p>
-                                Chúng tôi có thể cập nhật chính sách này theo thời gian. 
-                                Vui lòng kiểm tra thường xuyên để cập nhật các thay đổi.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Section 1 -->
-                    <section class="content-section">
-                        <h2>
-                            <span class="section-number">1.</span>
-                            Chúng tôi sẽ thu thập những thông tin cá nhân nào?
-                        </h2>
-                        
-                        <div class="info-collection-grid">
-                            <div class="info-card">
-                                <div class="info-header">
-                                    <h3>a) Thông tin tài khoản</h3>
-                                </div>
-                                <ul class="info-list">
-                                    <li>Họ và tên, địa chỉ email</li>
-                                    <li>Địa chỉ, giới tính, ngày sinh</li>
-                                    <li>Ảnh đại diện, số điện thoại di động</li>
-                                    <li>Các thông tin bắt buộc và tùy chọn khác</li>
-                                </ul>
-                            </div>
-                            
-                            <div class="info-card">
-                                <div class="info-header">
-                                    <h3>b) Dữ liệu truy cập</h3>
-                                </div>
-                                <ul class="info-list">
-                                    <li>Địa chỉ IP, thông tin trình duyệt</li>
-                                    <li>Các trang đã truy cập, thời gian hoạt động</li>
-                                    <li>Dữ liệu sử dụng ứng dụng</li>
-                                </ul>
-                            </div>
-                            
-                            <div class="info-card">
-                                <div class="info-header">
-                                    <h3>c) Dữ liệu vị trí</h3>
-                                </div>
-                                <ul class="info-list">
-                                    <li>Vị trí điện thoại di động</li>
-                                    <li>Thông tin vị trí từ ảnh/video đã tải lên</li>
-                                    <li>Dữ liệu GPS (nếu được cấp quyền)</li>
-                                </ul>
-                            </div>
-                            
-                            <div class="info-card">
-                                <div class="info-header">
-                                    <h3>d) Lịch sử giao tiếp</h3>
-                                </div>
-                                <ul class="info-list">
-                                    <li>Nội dung tin nhắn giữa người dùng</li>
-                                    <li>Lịch sử cuộc gọi, video call</li>
-                                    <li>Dữ liệu tương tác trên nền tảng</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- Section 2 -->
-                    <section class="content-section">
-                        <h2>
-                            <span class="section-number">2.</span>
-                            Chúng tôi sử dụng thông tin cá nhân như thế nào?
-                        </h2>
-                        
-                        <div class="usage-grid">
-                            <div class="usage-item">
-                                <div class="usage-content">
-                                    <h4>Bảo mật và xác thực</h4>
-                                    <p>Xác minh danh tính, bảo vệ tài khoản khỏi truy cập trái phép</p>
-                                </div>
-                            </div>
-                            
-                            <div class="usage-item">
-                                <div class="usage-content">
-                                    <h4>Cải thiện dịch vụ</h4>
-                                    <p>Phân tích hành vi người dùng để nâng cao trải nghiệm</p>
-                                </div>
-                            </div>
-                            
-                            <div class="usage-item">
-                                <div class="usage-content">
-                                    <h4>Giao tiếp</h4>
-                                    <p>Gửi thông báo, cập nhật về dịch vụ và sản phẩm</p>
-                                </div>
-                            </div>
-                            
-                            <div class="usage-item">
-                                <div class="usage-content">
-                                    <h4>Tuân thủ pháp luật</h4>
-                                    <p>Thực hiện các nghĩa vụ pháp lý và quy định</p>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- Section 3 -->
-                    <section class="content-section">
-                        <h2>
-                            <span class="section-number">3.</span>
-                            Chúng tôi bảo vệ thông tin của bạn như thế nào?
-                        </h2>
-                        
-                        <div class="protection-measures">
-                            <div class="protection-item">
-                                <div class="protection-content">
-                                    <h4>Mã hóa dữ liệu</h4>
-                                    <p>Sử dụng mã hóa SSL/TLS để bảo vệ dữ liệu truyền tải</p>
-                                </div>
-                            </div>
-                            
-                            <div class="protection-item">
-                                <div class="protection-content">
-                                    <h4>Kiểm soát truy cập</h4>
-                                    <p>Hạn chế quyền truy cập chỉ cho nhân viên có thẩm quyền</p>
-                                </div>
-                            </div>
-                            
-                            <div class="protection-item">
-                                <div class="protection-content">
-                                    <h4>Giám sát bảo mật</h4>
-                                    <p>Hệ thống giám sát 24/7 để phát hiện các mối đe dọa</p>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- Section 4 -->
-                    <section class="content-section">
-                        <h2>
-                            <span class="section-number">4.</span>
-                            Quyền của bạn
-                        </h2>
-                        
-                        <div class="rights-list">
-                            <div class="right-item">
-                                <span class="right-number">1.</span>
-                                <span class="right-text">Quyền truy cập và chỉnh sửa thông tin cá nhân</span>
-                            </div>
-                            <div class="right-item">
-                                <span class="right-number">2.</span>
-                                <span class="right-text">Quyền xóa tài khoản và dữ liệu cá nhân</span>
-                            </div>
-                            <div class="right-item">
-                                <span class="right-number">3.</span>
-                                <span class="right-text">Quyền từ chối nhận thông tin marketing</span>
-                            </div>
-                            <div class="right-item">
-                                <span class="right-number">4.</span>
-                                <span class="right-text">Quyền khiếu nại về việc xử lý dữ liệu</span>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- Contact -->
-                    <section class="content-section">
-                        <div class="contact-info">
-                            <h2>Liên hệ với chúng tôi</h2>
-                            <p>
-                                Nếu bạn có câu hỏi về chính sách bảo mật này, vui lòng liên hệ:
-                            </p>
-                            <div class="contact-details">
-                                <p><strong>Email:</strong> privacy@electricstore.com</p>
-                                <p><strong>Điện thoại:</strong> 1900 1234</p>
-                                <p><strong>Địa chỉ:</strong> Tầng 6, Tòa nhà Center, Số 1 Lưu Hữu Phước, Đông Hòa, Dĩ An, Bình Dương</p>
-                            </div>
-                        </div>
-                    </section>
+                <div class="info-card">
+                    <h3>💻 Dữ liệu sử dụng</h3>
+                    <p>
+                        Địa chỉ IP, trình duyệt, thời gian truy cập, 
+                        lịch sử tìm kiếm và giao dịch
+                    </p>
                 </div>
+
+                <div class="info-card">
+                    <h3>📍 Dữ liệu vị trí</h3>
+                    <p>
+                        Vị trí GPS (khi được cấp quyền) để 
+                        cải thiện dịch vụ giao hàng
+                    </p>
+                </div>
+
+                <div class="info-card">
+                    <h3>💬 Lịch sử giao tiếp</h3>
+                    <p>
+                        Tin nhắn, đánh giá, phản hồi và 
+                        tương tác trên nền tảng
+                    </p>
+                </div>
+            </div>
+
+            <h2>2. Sử dụng thông tin</h2>
+            
+            <div class="section-box">
+                <h3>Chúng tôi sử dụng thông tin của bạn để:</h3>
+                <ul>
+                    <li>Xác thực và bảo vệ tài khoản của bạn</li>
+                    <li>Xử lý giao dịch mua bán</li>
+                    <li>Cải thiện chất lượng dịch vụ</li>
+                    <li>Gửi thông báo quan trọng về đơn hàng</li>
+                    <li>Phân tích hành vi người dùng</li>
+                    <li>Ngăn chặn gian lận và lạm dụng</li>
+                    <li>Tuân thủ các quy định pháp luật</li>
+                </ul>
+            </div>
+
+            <h2>3. Bảo vệ thông tin</h2>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>🔒 Mã hóa dữ liệu</h3>
+                    <p>
+                        Sử dụng SSL/TLS để mã hóa dữ liệu 
+                        truyền tải giữa bạn và máy chủ
+                    </p>
+                </div>
+
+                <div class="info-card">
+                    <h3>🛡️ Tường lửa bảo mật</h3>
+                    <p>
+                        Hệ thống tường lửa tiên tiến bảo vệ 
+                        khỏi truy cập trái phép
+                    </p>
+                </div>
+
+                <div class="info-card">
+                    <h3>👁️ Giám sát 24/7</h3>
+                    <p>
+                        Giám sát hệ thống liên tục để phát hiện 
+                        và ngăn chặn mối đe dọa
+                    </p>
+                </div>
+
+                <div class="info-card">
+                    <h3>🔐 Kiểm soát truy cập</h3>
+                    <p>
+                        Chỉ nhân viên có thẩm quyền mới được 
+                        truy cập dữ liệu cá nhân
+                    </p>
+                </div>
+            </div>
+
+            <h2>4. Quyền của bạn</h2>
+            
+            <div class="highlight-box">
+                <h3>Bạn có quyền:</h3>
+                <p>
+                    ✓ <strong>Truy cập:</strong> Xem thông tin cá nhân của bạn<br>
+                    ✓ <strong>Chỉnh sửa:</strong> Cập nhật thông tin không chính xác<br>
+                    ✓ <strong>Xóa:</strong> Yêu cầu xóa tài khoản và dữ liệu<br>
+                    ✓ <strong>Từ chối:</strong> Không nhận email marketing<br>
+                    ✓ <strong>Khiếu nại:</strong> Về việc xử lý dữ liệu cá nhân
+                </p>
+            </div>
+
+            <h2>5. Chia sẻ thông tin</h2>
+            
+            <div class="section-box">
+                <p>
+                    Chúng tôi <strong>KHÔNG</strong> bán thông tin cá nhân của bạn. 
+                    Thông tin chỉ được chia sẻ trong các trường hợp:
+                </p>
+                <ul>
+                    <li>Với bên bán/mua khi có giao dịch</li>
+                    <li>Với đối tác vận chuyển để giao hàng</li>
+                    <li>Với cơ quan nhà nước khi có yêu cầu pháp lý</li>
+                    <li>Với nhà cung cấp dịch vụ thanh toán</li>
+                </ul>
+            </div>
+
+            <h2>6. Cookie và công nghệ theo dõi</h2>
+            
+            <p>
+                Chúng tôi sử dụng cookie và công nghệ tương tự để cải thiện trải nghiệm người dùng, 
+                phân tích lưu lượng truy cập và cá nhân hóa nội dung. Bạn có thể tắt cookie trong 
+                trình duyệt nhưng một số tính năng có thể bị ảnh hưởng.
+            </p>
+
+            <h2>7. Bảo mật trẻ em</h2>
+            
+            <p>
+                Dịch vụ của chúng tôi không dành cho người dưới 16 tuổi. Chúng tôi không cố ý 
+                thu thập thông tin từ trẻ em. Nếu bạn phát hiện điều này, vui lòng liên hệ ngay.
+            </p>
+
+            <h2>8. Cập nhật chính sách</h2>
+            
+            <p>
+                Chúng tôi có thể cập nhật chính sách này theo thời gian. Những thay đổi quan trọng 
+                sẽ được thông báo qua email hoặc trên website. Việc tiếp tục sử dụng dịch vụ sau 
+                khi có thay đổi đồng nghĩa với việc bạn chấp nhận chính sách mới.
+            </p>
+
+            <div class="contact-box">
+                <h2>Liên hệ với chúng tôi</h2>
+                <p>
+                    Nếu bạn có câu hỏi về chính sách bảo mật này, vui lòng liên hệ:
+                </p>
+                <p>
+                    <strong>📧 Email:</strong> privacy@electricstore.com<br>
+                    <strong>📞 Hotline:</strong> 1900 1234<br>
+                    <strong>📍 Địa chỉ:</strong> Tầng 6, Tòa nhà Center, Số 1 Lưu Hữu Phước, Đông Hòa, Dĩ An, Bình Dương
+                </p>
             </div>
         </div>
     </div>
 
     <!-- Footer -->
     <div class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <p>&copy; 2024 ElectricStore. Tất cả quyền được bảo lưu.</p>
-                <div class="footer-links">
-                    <a href="/privacy.html">Chính sách bảo mật</a>
-                    <a href="/terms.html">Điều khoản sử dụng</a>
-                    <a href="/help.html">Trợ giúp</a>
-                </div>
-            </div>
-        </div>
+        <p>&copy; 2024 ElectricStore. All rights reserved.</p>
     </div>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giới thiệu - ElectricStore</title>
+    <title>Tuyển dụng - ElectricStore</title>
     <style>
         * {
             margin: 0;
@@ -24,7 +24,6 @@
             padding: 0 20px;
         }
         
-        /* Header */
         .header {
             background: #2BB673;
             padding: 15px 0;
@@ -82,7 +81,6 @@
             color: white;
         }
         
-        /* Main Content */
         .main-content {
             display: grid;
             grid-template-columns: 250px 1fr;
@@ -92,7 +90,6 @@
             padding: 0 20px;
         }
         
-        /* Sidebar */
         .sidebar {
             background: white;
             padding: 20px;
@@ -137,7 +134,6 @@
             font-weight: 600;
         }
         
-        /* Content */
         .content {
             background: white;
             padding: 30px;
@@ -163,40 +159,58 @@
             color: #666;
         }
         
-        .info-box {
+        .job-card {
             background: #f9f9f9;
             padding: 20px;
             border-radius: 8px;
-            margin: 20px 0;
+            margin: 15px 0;
             border-left: 4px solid #2BB673;
         }
         
-        .info-grid {
+        .job-card h3 {
+            color: #2BB673;
+            margin-bottom: 10px;
+        }
+        
+        .job-card .job-meta {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .benefit-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
             margin: 20px 0;
         }
         
-        .info-card {
-            background: #f9f9f9;
-            padding: 20px;
+        .benefit-item {
+            background: #e8f5f0;
+            padding: 15px;
             border-radius: 8px;
             text-align: center;
         }
         
-        .info-card h3 {
-            font-size: 18px;
+        .benefit-item .icon {
+            font-size: 30px;
             margin-bottom: 10px;
-            color: #333;
         }
         
-        .info-card p {
-            color: #666;
-            margin: 0;
+        .apply-box {
+            background: #2BB673;
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 30px 0;
+            text-align: center;
         }
         
-        /* Footer */
+        .apply-box h2 {
+            color: white;
+            margin-top: 0;
+        }
+        
         .footer {
             background: #333;
             color: white;
@@ -211,7 +225,6 @@
             margin: 0 10px;
         }
         
-        /* Responsive */
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -221,14 +234,13 @@
                 padding: 20px;
             }
             
-            .info-grid {
+            .benefit-grid {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
     <div class="header">
         <div class="container">
             <div class="header-content">
@@ -237,23 +249,21 @@
                         <img src="/logo.jpg" alt="ElectricStore" class="logo">
                         <span class="logo-text">ElectricStore</span>
                     </a>
-                    <span class="page-title">| Giới thiệu</span>
+                    <span class="page-title">| Tuyển dụng</span>
                 </div>
                 <a href="/" class="btn-home">← Về trang chủ</a>
             </div>
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
-        <!-- Sidebar -->
         <div class="sidebar">
             <h3>Về ElectricStore</h3>
             <ul>
-                <li><a href="/supportpage/about.html" class="active">Giới thiệu</a></li>
+                <li><a href="/supportpage/about.html">Giới thiệu</a></li>
                 <li><a href="/supportpage/terms.html">Quy chế hoạt động sàn</a></li>
                 <li><a href="/supportpage/dispute.html">Giải quyết tranh chấp</a></li>
-                <li><a href="/supportpage/careers.html">Tuyển dụng</a></li>
+                <li><a href="/supportpage/careers.html" class="active">Tuyển dụng</a></li>
                 <li><a href="/supportpage/media.html">Truyền thông</a></li>
                 <li><a href="/supportpage/blog.html">Blog</a></li>
             </ul>
@@ -271,88 +281,119 @@
             </ul>
         </div>
 
-        <!-- Content -->
         <div class="content">
-            <h1>Giới thiệu về ElectricStore</h1>
+            <h1>Cơ hội nghề nghiệp tại ElectricStore</h1>
             
             <p>
-                ElectricStore là nền tảng mua bán thiết bị điện tử hàng đầu Việt Nam, 
-                kết nối người mua và người bán trong lĩnh vực công nghệ.
+                Gia nhập đội ngũ ElectricStore - nơi bạn có thể phát triển sự nghiệp trong 
+                lĩnh vực thương mại điện tử đầy tiềm năng!
             </p>
 
-            <div class="info-box">
-                <h2>Về chúng tôi</h2>
+            <h2>Tại sao làm việc tại ElectricStore?</h2>
+            
+            <div class="benefit-grid">
+                <div class="benefit-item">
+                    <div class="icon">💰</div>
+                    <strong>Lương cạnh tranh</strong>
+                    <p>Thu nhập hấp dẫn + thưởng hiệu suất</p>
+                </div>
+                
+                <div class="benefit-item">
+                    <div class="icon">📈</div>
+                    <strong>Phát triển</strong>
+                    <p>Môi trường năng động, cơ hội thăng tiến</p>
+                </div>
+                
+                <div class="benefit-item">
+                    <div class="icon">🏥</div>
+                    <strong>Phúc lợi</strong>
+                    <p>BHXH, BHYT đầy đủ + du lịch hàng năm</p>
+                </div>
+                
+                <div class="benefit-item">
+                    <div class="icon">⚖️</div>
+                    <strong>Work-life balance</strong>
+                    <p>Làm việc 5 ngày/tuần, esnek hours</p>
+                </div>
+            </div>
+
+            <h2>Vị trí đang tuyển dụng</h2>
+
+            <div class="job-card">
+                <h3>Backend Developer (NodeJS/Java)</h3>
+                <div class="job-meta">📍 TP.HCM | 💼 Full-time | 💵 20-35 triệu</div>
                 <p>
-                    Được thành lập vào năm 2020, ElectricStore đã trở thành địa chỉ tin cậy 
-                    cho hàng triệu người dùng muốn mua bán thiết bị điện tử. Chúng tôi cung cấp 
-                    một nền tảng an toàn, tiện lợi và đáng tin cậy cho cả người mua và người bán.
+                    <strong>Yêu cầu:</strong> 2+ năm kinh nghiệm NodeJS/Java, hiểu biết về REST API, 
+                    Database (MySQL, MongoDB), microservices.
                 </p>
             </div>
 
-            <div class="info-grid">
-                <div class="info-card">
-                    <h3>2M+</h3>
-                    <p>Người dùng tin tưởng</p>
-                </div>
-                <div class="info-card">
-                    <h3>500K+</h3>
-                    <p>Sản phẩm đa dạng</p>
-                </div>
-                <div class="info-card">
-                    <h3>98%</h3>
-                    <p>Khách hàng hài lòng</p>
-                </div>
+            <div class="job-card">
+                <h3>Frontend Developer (ReactJS)</h3>
+                <div class="job-meta">📍 TP.HCM | 💼 Full-time | 💵 18-30 triệu</div>
+                <p>
+                    <strong>Yêu cầu:</strong> 2+ năm kinh nghiệm ReactJS, Redux, HTML/CSS/JavaScript, 
+                    responsive design.
+                </p>
             </div>
 
-            <h2>Sứ mệnh</h2>
-            <p>
-                Cung cấp nền tảng mua bán thiết bị điện tử an toàn, tiện lợi và đáng tin cậy, 
-                giúp người dùng dễ dàng tìm kiếm và giao dịch các sản phẩm công nghệ chất lượng cao.
-            </p>
-
-            <h2>Tầm nhìn</h2>
-            <p>
-                Trở thành nền tảng thương mại điện tử hàng đầu Đông Nam Á trong lĩnh vực 
-                thiết bị điện tử, mang đến trải nghiệm mua sắm tốt nhất cho khách hàng.
-            </p>
-
-            <h2>Giá trị cốt lõi</h2>
-            <div class="info-grid">
-                <div class="info-card">
-                    <h3>An toàn</h3>
-                    <p>Đảm bảo giao dịch an toàn với hệ thống bảo mật tiên tiến</p>
-                </div>
-                <div class="info-card">
-                    <h3>Tin cậy</h3>
-                    <p>Xây dựng niềm tin thông qua minh bạch và trung thực</p>
-                </div>
-                <div class="info-card">
-                    <h3>Đổi mới</h3>
-                    <p>Liên tục cải tiến và phát triển công nghệ mới</p>
-                </div>
+            <div class="job-card">
+                <h3>Product Manager</h3>
+                <div class="job-meta">📍 TP.HCM | 💼 Full-time | 💵 25-40 triệu</div>
+                <p>
+                    <strong>Yêu cầu:</strong> 3+ năm kinh nghiệm quản lý sản phẩm, hiểu về 
+                    e-commerce, khả năng phân tích dữ liệu.
+                </p>
             </div>
 
-            <h2>Dịch vụ của chúng tôi</h2>
+            <div class="job-card">
+                <h3>UI/UX Designer</h3>
+                <div class="job-meta">📍 TP.HCM | 💼 Full-time | 💵 15-25 triệu</div>
+                <p>
+                    <strong>Yêu cầu:</strong> 2+ năm kinh nghiệm, thành thạo Figma/Sketch, 
+                    portfolio về web/mobile design.
+                </p>
+            </div>
+
+            <div class="job-card">
+                <h3>Customer Service Executive</h3>
+                <div class="job-meta">📍 TP.HCM | 💼 Full-time | 💵 10-15 triệu</div>
+                <p>
+                    <strong>Yêu cầu:</strong> Khả năng giao tiếp tốt, kiên nhẫn, 
+                    có thể làm việc theo ca (bao gồm cuối tuần).
+                </p>
+            </div>
+
+            <h2>Quy trình tuyển dụng</h2>
             <p>
-                • Mua bán điện thoại di động từ các thương hiệu nổi tiếng<br>
-                • Laptop, máy tính bảng và phụ kiện công nghệ<br>
-                • Thiết bị điện tử gia dụng<br>
-                • Hệ thống đánh giá và review sản phẩm<br>
-                • Thanh toán an toàn, bảo vệ người mua
+                <strong>Bước 1:</strong> Nộp hồ sơ qua email<br>
+                <strong>Bước 2:</strong> Sàng lọc CV (3-5 ngày)<br>
+                <strong>Bước 3:</strong> Phỏng vấn qua điện thoại (15-20 phút)<br>
+                <strong>Bước 4:</strong> Phỏng vấn chuyên môn (1-2 vòng)<br>
+                <strong>Bước 5:</strong> Offer và onboarding<br>
+                <strong>Bước 6:</strong> Bắt đầu công việc!
             </p>
 
-            <div class="info-box">
-                <h2>Liên hệ với chúng tôi</h2>
-                <p><strong>Email:</strong> support@electricstore.com</p>
-                <p><strong>Hotline:</strong> 1900 1234</p>
-                <p><strong>Địa chỉ:</strong> Tầng 6, Tòa nhà Center, Số 1 Lưu Hữu Phước, Đông Hòa, Dĩ An, Bình Dương</p>
+            <div class="apply-box">
+                <h2>Sẵn sàng tham gia ElectricStore?</h2>
+                <p>
+                    Gửi CV và portfolio của bạn về:<br>
+                    <strong>📧 recruitment@electricstore.com</strong>
+                </p>
+                <p>
+                    Tiêu đề email: [Vị trí ứng tuyển] - [Họ tên]<br>
+                    VD: [Backend Developer] - Nguyen Van A
+                </p>
+                <p style="margin-top: 20px;">
+                    Hoặc liên hệ: <strong>📞 1900 1234</strong> (Thứ 2-6: 9h-18h)
+                </p>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
     <div class="footer">
         <p>&copy; 2024 ElectricStore. All rights reserved.</p>
     </div>
 </body>
 </html>
+

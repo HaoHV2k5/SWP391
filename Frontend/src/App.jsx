@@ -26,7 +26,6 @@ import SavedPosts from "./pages/member/SavedPosts";
 import AccountPage from "./pages/AccountPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
 import KycPage from "./pages/kyc/KycPage";
-import PaymentDashboard from "./components/seller/PaymentDashboard";
 import "./App.css";
 import CategoryRouter from "./components/homepageContainer/navigation/CategoryRouter";
 import ProductDetailPage from "./pages/home/ProductDetailPage";
@@ -35,144 +34,78 @@ import SearchResultsPage from "./pages/home/SearchResultsPage";
 import { SavedProductsProvider } from "./components/homepageContainer/contexts/SavedProductsContext";
 import { normalizeLoginResponse, persistAuth, isStaff } from "./utils/auth";
 import ProtectedStaffRoute from "./routes/ProtectedStaffRoute";
-import firebaseAuthService from "./services/firebaseAuthService";
 
 function AppContent() {
   const [user, setUser] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
 
-  // --- Firebase Auth State Listener ---
+  // --- Nhận token qua query (Google) hoặc khôi phục từ localStorage ---
   useEffect(() => {
-    console.log("🔥 Setting up Firebase Auth State Listener...");
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
+    const email = urlParams.get("email");
+    const name = urlParams.get("name");
 
-    const unsubscribe = firebaseAuthService.onAuthStateChanged(
-      async (firebaseUser) => {
-        console.log("🔥 Firebase Auth State Changed:", firebaseUser);
+    if (token && email && name) {
+      const userData = {
+        id: email,
+        email,
+        fullName: name,
+        avatar: "",
+        role: "member",
+        token,
+      };
+      localStorage.setItem("token", token);
+      localStorage.setItem("userData", JSON.stringify(userData));
+      setUser(userData);
+      setTimeout(
+        () => toast.success(`Chào mừng ${name}! Đăng nhập Google thành công!`),
+        100
+      );
+      // Xoá query trên URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
 
-        if (firebaseUser) {
-          // User is signed in with Firebase
-          console.log("✅ Firebase user is signed in:", firebaseUser.email);
-          try {
-            // Directly use Firebase token and user data
-            const firebaseToken = await firebaseUser.getIdToken();
-            const userData = {
-              id: firebaseUser.uid,
-              email: firebaseUser.email,
-              fullName: firebaseUser.displayName,
-              avatar: firebaseUser.photoURL,
-              role: "member", // Default role
-              provider: firebaseUser.providerData[0]?.providerId || "firebase",
-              token: firebaseToken,
-              firebaseUid: firebaseUser.uid,
-              username: firebaseUser.email, // For compatibility
-              verified: true,
-              locked: false,
-            };
-
-            console.log("💾 Saving Firebase user data:", userData);
-            localStorage.setItem("token", firebaseToken);
-            localStorage.setItem("userData", JSON.stringify(userData));
-            setUser(userData);
-
-            // Redirect to homepage after successful login
-            if (location.pathname === "/login") {
-              console.log("🔄 Redirecting to homepage...");
-              navigate("/", { replace: true });
-            }
-          } catch (error) {
-            console.error("Error getting Firebase token:", error);
-          }
-        } else {
-          // Firebase user is signed out
-          console.log("❌ Firebase user is signed out");
-
-          // Check if we have a regular user logged in
-          const existingToken = localStorage.getItem("token");
-          const existingUserData = localStorage.getItem("userData");
-
-          if (existingToken && existingUserData && !user?.firebaseUid) {
-            // We have a regular user logged in, don't clear it
-            console.log("✅ Regular user still logged in, keeping state");
-            return;
-          }
-
-          // Only clear if no regular user is logged in
-          console.log("🧹 Clearing user state (no regular user)");
-          setUser(null);
-          localStorage.removeItem("token");
-          localStorage.removeItem("userData");
-        }
-      }
-    );
-
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
-  }, [location.pathname, navigate, user?.firebaseUid]);
-
-  // --- Load user from localStorage on app start ---
-  useEffect(() => {
-    const token = localStorage.getItem("token");
+    // Khôi phục từ localStorage
     const userData = localStorage.getItem("userData");
-
-    if (token && userData) {
+    const storedToken = localStorage.getItem("token");
+    if (userData) {
       try {
-        const parsedUserData = JSON.parse(userData);
-        setUser(parsedUserData);
-        console.log("✅ User loaded from localStorage:", parsedUserData);
-      } catch (error) {
-        console.error("Error parsing userData from localStorage:", error);
-        localStorage.removeItem("token");
+        const parsed = JSON.parse(userData);
+        if (!storedToken && parsed.token) {
+          localStorage.setItem("token", parsed.token);
+        }
+        setUser(parsed);
+      } catch {
         localStorage.removeItem("userData");
+        localStorage.removeItem("token");
       }
     }
   }, []);
 
   const handleLogin = (loginResponse) => {
-    console.log("🔍 handleLogin called with:", loginResponse);
-    try {
-      const normalized = normalizeLoginResponse(loginResponse);
-      console.log("🔍 normalized:", normalized);
-      const userData = persistAuth(normalized);
-      console.log("🔍 userData:", userData);
-      setUser(userData);
-      console.log("✅ User state updated successfully");
-    } catch (error) {
-      console.error("❌ Error in handleLogin:", error);
-    }
+    const normalized = normalizeLoginResponse(loginResponse);
+    const userData = persistAuth(normalized);
+    setUser(userData);
   };
 
-  const handleLogout = async () => {
-    try {
-      // Nếu là Firebase user, gọi Firebase signOut
-      if (user?.firebaseUid) {
-        await firebaseAuthService.signOut();
-      }
-
-      // Clear local state và localStorage
-      setUser(null);
-      localStorage.removeItem("token");
-      localStorage.removeItem("userData");
-      localStorage.removeItem("refreshToken");
-
-      toast.success("Đăng xuất thành công!");
-      navigate("/", { replace: true });
-    } catch (error) {
-      console.error("Logout error:", error);
-      // Fallback: clear local state even if Firebase logout fails
-      setUser(null);
-      localStorage.removeItem("token");
-      localStorage.removeItem("userData");
-      localStorage.removeItem("refreshToken");
-      toast.success("Đăng xuất thành công!");
-      navigate("/", { replace: true });
-    }
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem("token");
+    localStorage.removeItem("userData");
+    toast.success("Đăng xuất thành công!");
+    navigate("/", { replace: true });
   };
 
   // --- Xác định bối cảnh trang để ẩn Navbar/Footer ---
   const path = location.pathname;
   const isAuthPage =
-    path === "/login" || path === "/register" || path === "/verify-otp";
+    path === "/login" ||
+    path === "/register" ||
+    path === "/facebook-callback" ||
+    path === "/verify-otp";
 
   const isStaffPage = path === "/staff";
   const isAdminPage = path.startsWith("/admin");
@@ -221,7 +154,6 @@ function AppContent() {
         {/* Member */}
         <Route path="/account" element={<AccountPage user={user} />} />
         <Route path="/kyc" element={<KycPage user={user} />} />
-        <Route path="/payment" element={<PaymentDashboard user={user} />} />
         <Route path="/my-posts" element={<MyPosts user={user} />} />
         <Route path="/saved-posts" element={<SavedPosts user={user} />} />
         <Route path="/orders" element={<MemberOrders user={user} />} />

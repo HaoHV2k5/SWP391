@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liên hệ hỗ trợ - ElectricStore</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .header {
+            background: #2BB673;
+            padding: 15px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        
+        .logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+        }
+        
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .page-title {
+            font-size: 16px;
+            color: white;
+        }
+        
+        .btn-home {
+            padding: 8px 20px;
+            background: white;
+            color: #333;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-home:hover {
+            background: #333;
+            color: white;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+            margin: 30px auto;
+            max-width: 1200px;
+            padding: 0 20px;
+        }
+        
+        .sidebar {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        
+        .sidebar h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #2BB673;
+            padding-bottom: 10px;
+        }
+        
+        .sidebar ul {
+            list-style: none;
+        }
+        
+        .sidebar li {
+            margin-bottom: 10px;
+        }
+        
+        .sidebar a {
+            color: #666;
+            text-decoration: none;
+            display: block;
+            padding: 8px 10px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .sidebar a:hover {
+            background: #2BB673;
+            color: white;
+        }
+        
+        .sidebar a.active {
+            background: #2BB673;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .content h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .content h2 {
+            font-size: 20px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .content p {
+            margin-bottom: 15px;
+            color: #666;
+        }
+        
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .contact-card {
+            background: #f9f9f9;
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .contact-card .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .contact-card h3 {
+            color: #2BB673;
+            margin-bottom: 10px;
+        }
+        
+        .contact-card p {
+            margin: 5px 0;
+        }
+        
+        .form-box {
+            background: #f9f9f9;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .btn-submit {
+            background: #2BB673;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-submit:hover {
+            background: #229a5e;
+        }
+        
+        .office-box {
+            background: #e8f5f0;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+        
+        .footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 40px;
+        }
+        
+        .footer a {
+            color: #2BB673;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <a href="/" class="logo-link">
+                        <img src="/logo.jpg" alt="ElectricStore" class="logo">
+                        <span class="logo-text">ElectricStore</span>
+                    </a>
+                    <span class="page-title">| Liên hệ hỗ trợ</span>
+                </div>
+                <a href="/" class="btn-home">← Về trang chủ</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="sidebar">
+            <h3>Về ElectricStore</h3>
+            <ul>
+                <li><a href="/supportpage/about.html">Giới thiệu</a></li>
+                <li><a href="/supportpage/terms.html">Quy chế hoạt động sàn</a></li>
+                <li><a href="/supportpage/dispute.html">Giải quyết tranh chấp</a></li>
+                <li><a href="/supportpage/careers.html">Tuyển dụng</a></li>
+                <li><a href="/supportpage/media.html">Truyền thông</a></li>
+                <li><a href="/supportpage/blog.html">Blog</a></li>
+            </ul>
+            
+            <h3 style="margin-top: 30px;">Hỗ trợ khách hàng</h3>
+            <ul>
+                <li><a href="/supportpage/help.html">Trung tâm trợ giúp</a></li>
+                <li><a href="/supportpage/safety.html">An toàn mua bán</a></li>
+                <li><a href="/supportpage/contact.html" class="active">Liên hệ hỗ trợ</a></li>
+            </ul>
+            
+            <h3 style="margin-top: 30px;">Chính sách</h3>
+            <ul>
+                <li><a href="/supportpage/privacy.html">Chính sách bảo mật</a></li>
+            </ul>
+        </div>
+
+        <div class="content">
+            <h1>Liên hệ với chúng tôi</h1>
+            
+            <p>
+                Đội ngũ ElectricStore luôn sẵn sàng hỗ trợ bạn! Hãy chọn phương thức liên hệ 
+                phù hợp hoặc điền form bên dưới.
+            </p>
+
+            <h2>Các phương thức liên hệ</h2>
+
+            <div class="contact-grid">
+                <div class="contact-card">
+                    <div class="icon">📞</div>
+                    <h3>Hotline</h3>
+                    <p><strong>1900 1234</strong></p>
+                    <p>Thứ 2 - Chủ nhật</p>
+                    <p>8:00 - 22:00</p>
+                </div>
+
+                <div class="contact-card">
+                    <div class="icon">✉️</div>
+                    <h3>Email</h3>
+                    <p><strong>support@electricstore.com</strong></p>
+                    <p>Phản hồi trong 24h</p>
+                    <p>Hỗ trợ khách hàng</p>
+                </div>
+
+                <div class="contact-card">
+                    <div class="icon">💬</div>
+                    <h3>Chat trực tuyến</h3>
+                    <p><strong>Livechat 24/7</strong></p>
+                    <p>Góc dưới bên phải</p>
+                    <p>Trả lời ngay lập tức</p>
+                </div>
+
+                <div class="contact-card">
+                    <div class="icon">📱</div>
+                    <h3>Mạng xã hội</h3>
+                    <p><strong>Facebook</strong></p>
+                    <p>ElectricStore Official</p>
+                    <p>Inbox hỗ trợ</p>
+                </div>
+            </div>
+
+            <h2>Gửi yêu cầu hỗ trợ</h2>
+            
+            <div class="form-box">
+                <form>
+                    <div class="form-group">
+                        <label for="name">Họ và tên *</label>
+                        <input type="text" id="name" name="name" required placeholder="Nguyen Van A">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required placeholder="example@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Số điện thoại</label>
+                        <input type="tel" id="phone" name="phone" placeholder="0901234567">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject">Chủ đề *</label>
+                        <select id="subject" name="subject" required>
+                            <option value="">-- Chọn chủ đề --</option>
+                            <option value="technical">Vấn đề kỹ thuật</option>
+                            <option value="account">Tài khoản</option>
+                            <option value="order">Đơn hàng</option>
+                            <option value="payment">Thanh toán</option>
+                            <option value="report">Báo cáo vi phạm</option>
+                            <option value="feedback">Góp ý</option>
+                            <option value="other">Khác</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Nội dung *</label>
+                        <textarea id="message" name="message" required placeholder="Mô tả chi tiết vấn đề của bạn..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Gửi yêu cầu</button>
+                </form>
+            </div>
+
+            <h2>Văn phòng làm việc</h2>
+            
+            <div class="office-box">
+                <h3>Công ty TNHH ElectricStore</h3>
+                <p>
+                    <strong>📍 Địa chỉ:</strong><br>
+                    Tầng 6, Tòa nhà Center, Số 1 Lưu Hữu Phước,<br>
+                    Đông Hòa, Dĩ An, Bình Dương
+                </p>
+                <p style="margin-top: 15px;">
+                    <strong>📞 Điện thoại:</strong> 1900 1234<br>
+                    <strong>📧 Email:</strong> support@electricstore.com<br>
+                    <strong>🌐 Website:</strong> www.electricstore.com
+                </p>
+                <p style="margin-top: 15px;">
+                    <strong>⏰ Giờ làm việc:</strong><br>
+                    Thứ 2 - Thứ 6: 8:00 - 18:00<br>
+                    Thứ 7: 8:00 - 12:00<br>
+                    Chủ nhật: Nghỉ
+                </p>
+            </div>
+
+            <div class="office-box" style="background: #fff3cd;">
+                <h3>🚗 Hướng dẫn đến văn phòng</h3>
+                <p>
+                    • Từ TP.HCM: Đi theo Quốc lộ 1A về hướng Bình Dương<br>
+                    • Từ Thủ Đức: Đi Xa lộ Hà Nội, rẽ vào đường Lưu Hữu Phước<br>
+                    • Bãi đỗ xe: Có sẵn tại tầng hầm tòa nhà<br>
+                    • Xe bus: Tuyến số 25, 34 (Trạm Dĩ An)
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2024 ElectricStore. All rights reserved.</p>
+    </div>
+</body>
+</html>
+
