@@ -8,9 +8,9 @@ class BannerService {
       { 
         id: 1, 
         image: 'https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw90ac0a73/images/PDP-XMD/verox/img-top-verox-green.webp', 
-        alt: 'VinFast VF e34',
+        alt: 'VinFast Vero X',
         linkType: 'product',
-        productId: 1
+        productId: 91
       },
       { 
         id: 2, 
@@ -22,9 +22,9 @@ class BannerService {
       { 
         id: 3, 
         image: 'https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwc56a5d3b/images/PDP-XMD/evoneo/img-top-evoneo-black.webp', 
-        alt: 'VinFast EVOneo',
-        linkType: 'category',
-        categoryId: 'electric-vehicles'
+        alt: 'VinFast Evo Neo',
+        linkType: 'product',
+        productId: 90
       },
       { 
         id: 4, 
