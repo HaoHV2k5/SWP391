@@ -127,6 +127,19 @@ public class ContractController {
                 .build();
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_USER','ROLE_SELLER')")
+    @PostMapping("/contracts/{contractId}/pay")
+    public ApiResponse<String> paySignedContract(@PathVariable Long contractId) {
+        // Gọi service thực hiện thanh toán hợp đồng signed
+        boolean success = constractService.payContractAfterSigned(contractId);
+        if (success) {
+            return ApiResponse.<String>builder()
+                .message("Thanh toán thành công. Hệ thống đã giữ tiền cho đơn hàng.").build();
+        } else {
+            return ApiResponse.<String>builder()
+                .message("Thanh toán thất bại. Vui lòng kiểm tra số dư hoặc trạng thái hợp đồng!").build();
+        }
+    }
 
 
 }
