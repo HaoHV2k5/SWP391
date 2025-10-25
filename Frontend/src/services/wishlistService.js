@@ -1,21 +1,17 @@
 import apiClient from './apiClient';
 
 // ===========================================
-// GLOBAL STATE MANAGEMENT
+// STATE MANAGEMENT - Quản lý trạng thái wishlist
 // ===========================================
 
-let savedProducts = [];        // Danh sách sản phẩm đã lưu
-let loading = false;           // Trạng thái loading
-let currentUserId = null;      // ID user hiện tại
-let initialized = false;       // Đã khởi tạo chưa
-let listeners = [];            // Danh sách listeners để notify khi state thay đổi
-
-// ===========================================
-// UTILITY FUNCTIONS
-// ===========================================
+let savedProducts = [];     // Danh sách sản phẩm đã lưu
+let loading = false;        // Trạng thái đang tải
+let initialized = false;    // Đã khởi tạo chưa
+let currentUserId = null;   // ID user hiện tại
+let listeners = [];         // Danh sách listener để thông báo thay đổi
 
 /**
- * Thông báo cho tất cả listeners khi state thay đổi
+ * Thông báo cho tất cả listener khi state thay đổi
  */
 const notifyListeners = () => {
   listeners.forEach(listener => listener({
@@ -27,53 +23,31 @@ const notifyListeners = () => {
 };
 
 /**
- * Lấy user ID từ localStorage
- * Ưu tiên: userData > savedProducts > wallet_balance keys
+ * Lấy user ID từ localStorage (ưu tiên nguồn đáng tin cậy nhất)
  */
-const getCurrentUserId = () => {
+const getCurrentUserId = async () => {
   try {
     const userData = localStorage.getItem("userData");
-    const token = localStorage.getItem("token");
-    const refreshToken = localStorage.getItem("refreshToken");
-    
-    // Nếu có userData, parse và lấy userId
     if (userData) {
-      try {
-        const user = JSON.parse(userData);
-        const userId = user.user?.id || user.id || user.email || user.user?.email;
-        if (userId) return userId;
-      } catch (error) {
-        console.error("Error parsing userData:", error);
-      }
-    }
-    
-    // Fallback: lấy từ savedProducts
-    const savedProducts = localStorage.getItem("savedProducts");
-    if (savedProducts) {
-      try {
-        const products = JSON.parse(savedProducts);
-        if (products.length > 0 && products[0].userId) {
-          return products[0].userId;
+      const user = JSON.parse(userData);
+      const userId = user.id || user.userId || user.user?.id;
+      if (userId) {
+        const numericUserId = parseInt(userId);
+        if (!isNaN(numericUserId)) {
+          return numericUserId;
         }
-      } catch (error) {
-        console.error("Error parsing savedProducts:", error);
       }
     }
-    
-    // Fallback: lấy từ wallet_balance keys
-    const walletKeys = Object.keys(localStorage).filter(key => key.startsWith('wallet_balance_'));
-    if (walletKeys.length > 0) {
-      return walletKeys[0].replace('wallet_balance_', '');
-    }
-    
   } catch (error) {
-    console.error("Error getting user ID:", error);
+    console.error("❌ Error parsing userData:", error);
   }
+  
+  console.error("❌ Cannot get current user ID");
   return null;
 };
 
 /**
- * Kiểm tra user có đăng nhập không
+ * Kiểm tra user có đăng nhập không (dựa vào token)
  */
 const isUserLoggedIn = () => {
   const token = localStorage.getItem("token");
@@ -82,151 +56,137 @@ const isUserLoggedIn = () => {
 };
 
 // ===========================================
-// LOCAL STORAGE OPERATIONS
+// BACKEND API OPERATIONS - Gọi API Backend
 // ===========================================
 
 /**
- * Lưu sản phẩm vào localStorage với timestamp
+ * Lưu sản phẩm vào database qua API POST /wishlist/add
  */
-const saveToLocalStorage = (product, userId) => {
+const saveToDatabase = async (product) => {
   try {
-    const productWithMetadata = { 
-      ...product, 
-      userId,
-      addedAt: new Date().toISOString() // Thêm timestamp
-    };
-    const existingData = JSON.parse(localStorage.getItem("savedProducts")) || [];
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      console.warn("No userId found, cannot save to database");
+      return false;
+    }
+
+    const response = await apiClient.post('/wishlist/add', {
+      productId: product.id,
+      userId: userId
+    });
+
+    // Kiểm tra response theo format BE: {code: 1000, message: '...', data: true}
+    if (response.data && response.data.code === 1000 && response.data.data === true) {
+      console.log("✅ Product saved to database wishlist");
+      return true;
+    } else {
+      console.error("❌ Failed to save to database:", response.data?.message);
+      return false;
+    }
+  } catch (error) {
+    console.error("❌ Error saving to database:", error);
     
-    if (!existingData.some(p => p.id === product.id)) {
-      existingData.push(productWithMetadata);
-      localStorage.setItem("savedProducts", JSON.stringify(existingData));
+    // Xử lý lỗi 400 - Wishlist không tồn tại (không nên xảy ra với account mới)
+    if (error.response?.status === 400) {
+      const errorMessage = error.response?.data?.message || '';
+      
+      if (errorMessage.includes('WISHLIST_NOT_EXISTED') || 
+          errorMessage.includes('wishlist') ||
+          errorMessage.includes('Người dùng không có wishlist')) {
+        console.log("⚠️ Wishlist not existed - this should not happen with new accounts");
+        return false;
+      }
+    }
+    
+    return false;
+  }
+};
+
+/**
+ * Xóa sản phẩm khỏi database qua API DELETE /wishlist/delete
+ */
+const removeFromDatabase = async (productId) => {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      console.warn("No userId found, cannot remove from database");
+      return false;
+    }
+
+    const response = await apiClient.delete(`/wishlist/delete?productId=${productId}&userId=${userId}`);
+
+    // Kiểm tra response theo format BE: {code: 1000, message: '...'}
+    if (response.data && response.data.code === 1000) {
+      console.log("✅ Product removed from database wishlist");
+      return true;
+    } else {
+      console.error("❌ Failed to remove from database:", response.data?.message);
+      return false;
     }
   } catch (error) {
-    console.error("Error saving to localStorage:", error);
+    console.error("❌ Error removing from database:", error);
+    return false;
   }
 };
 
 /**
- * Xóa sản phẩm khỏi localStorage
- */
-const removeFromLocalStorage = (productId) => {
-  try {
-    const existingData = JSON.parse(localStorage.getItem("savedProducts")) || [];
-    const filteredData = existingData.filter(p => p.id !== productId);
-    localStorage.setItem("savedProducts", JSON.stringify(filteredData));
-  } catch (error) {
-    console.error("Error removing from localStorage:", error);
-  }
-};
-
-/**
- * Lưu sản phẩm vào guestWishlist (cho user chưa đăng nhập)
- */
-const saveToGuestWishlist = (product) => {
-  try {
-    const guestWishlist = JSON.parse(localStorage.getItem("guestWishlist")) || [];
-    if (!guestWishlist.some(p => p.id === product.id)) {
-      guestWishlist.push(product);
-      localStorage.setItem("guestWishlist", JSON.stringify(guestWishlist));
-    }
-  } catch (error) {
-    console.error("Error saving to guestWishlist:", error);
-  }
-};
-
-/**
- * Xóa sản phẩm khỏi guestWishlist
- */
-const removeFromGuestWishlist = (productId) => {
-  try {
-    const guestWishlist = JSON.parse(localStorage.getItem("guestWishlist")) || [];
-    const filteredGuestWishlist = guestWishlist.filter(p => p.id !== productId);
-    localStorage.setItem("guestWishlist", JSON.stringify(filteredGuestWishlist));
-  } catch (error) {
-    console.error("Error removing from guestWishlist:", error);
-  }
-};
-
-// ===========================================
-// DATA LOADING FUNCTIONS
-// ===========================================
-
-/**
- * Load dữ liệu từ localStorage (cho guest users)
- */
-const loadFromLocalStorage = () => {
-  try {
-    // Guest chỉ load từ savedProducts, không load guestWishlist
-    const savedProductsStored = JSON.parse(localStorage.getItem("savedProducts")) || [];
-    savedProducts = savedProductsStored;
-    initialized = true;
-    notifyListeners();
-  } catch (error) {
-    console.error("Error loading from localStorage:", error);
-    savedProducts = [];
-    initialized = true;
-    notifyListeners();
-  }
-};
-
-/**
- * Load dữ liệu từ Backend API
+ * Load danh sách wishlist từ Backend API GET /wishlist?userId=xxx
  */
 const loadWishlistFromBackend = async () => {
-  const freshUserId = getCurrentUserId();
-  const token = localStorage.getItem("token");
-  const refreshToken = localStorage.getItem("refreshToken");
+  const freshUserId = await getCurrentUserId();
   
-  // Nếu không có auth data, load từ localStorage
-  if (!freshUserId && !token && !refreshToken) {
-    loadFromLocalStorage();
+  if (!freshUserId) {
+    console.warn("No userId found, setting empty wishlist");
+    savedProducts = [];
+    loading = false;
+    initialized = true;
+    notifyListeners();
     return;
   }
-  
-  if (!token && !refreshToken) {
-    loadFromLocalStorage();
-    return;
-  }
-  
+
   loading = true;
   notifyListeners();
-  
+
   try {
     const response = await apiClient.get(`/wishlist?userId=${freshUserId}`);
-    if (response.data && response.data.success && response.data.data) {
+    
+    // Kiểm tra response theo format BE: {code: 1000, message: '...', data: [...]}
+    if (response.data && response.data.code === 1000 && response.data.data) {
       savedProducts = response.data.data || [];
+      console.log("✅ Loaded wishlist from database:", savedProducts.length, "products");
     } else {
-      // API response không thành công, fallback về localStorage
-      loadFromLocalStorage();
-      return;
+      console.log("⚠️ API response not successful, setting empty wishlist");
+      savedProducts = [];
     }
   } catch (error) {
-    console.error("Error loading wishlist:", error);
+    console.error("❌ Error loading wishlist:", error);
     
-    // Xử lý lỗi WISHLIST_NOT_EXISTED
-    if (error.response?.data?.message?.includes('WISHLIST_NOT_EXISTED') || 
-        error.response?.data?.message?.includes('wishlist')) {
-      console.log("⚠️ Wishlist not existed during load, creating new one...");
-      await handleWishlistNotExistedError(freshUserId);
+    // Xử lý các lỗi HTTP status code
+    if (error.response?.status === 400) {
+      const errorMessage = error.response?.data?.message || '';
       
-      // Retry load operation sau khi tạo wishlist
-      try {
-        const retryResponse = await apiClient.get(`/wishlist?userId=${freshUserId}`);
-        if (retryResponse.data && retryResponse.data.success && retryResponse.data.data) {
-          savedProducts = retryResponse.data.data || [];
-        } else {
-          loadFromLocalStorage();
-          return;
-        }
-      } catch (retryError) {
-        console.error("Retry load failed, falling back to localStorage:", retryError);
-        loadFromLocalStorage();
-        return;
+      if (errorMessage.includes('WISHLIST_NOT_EXISTED') || 
+          errorMessage.includes('wishlist') ||
+          errorMessage.includes('Người dùng không có wishlist')) {
+        console.log("⚠️ Wishlist not existed - this should not happen with new accounts");
+        savedProducts = [];
+      } else {
+        console.error("❌ Other 400 error:", errorMessage);
+        savedProducts = [];
       }
-    } else {
-      // Với mọi lỗi khác, fallback về localStorage
-      loadFromLocalStorage();
+    } else if (error.response?.status === 403) {
+      console.error("❌ Forbidden - User does not have ROLE_USER permission");
+      savedProducts = [];
+    } else if (error.response?.status === 500) {
+      console.error("❌ Backend server error:", error.response?.data?.message);
+      savedProducts = [];
+    } else if (error.response?.status === 401) {
+      console.log("⚠️ Unauthorized, redirecting to login");
+      setTimeout(() => window.location.href = '/login', 100);
       return;
+    } else {
+      console.error("❌ Unknown error:", error.response?.status);
+      savedProducts = [];
     }
   } finally {
     loading = false;
@@ -235,295 +195,93 @@ const loadWishlistFromBackend = async () => {
   }
 };
 
-/**
- * Sync guest wishlist với Backend sau khi login
- */
-const syncGuestWishlistWithBackend = async () => {
-  try {
-    const guestWishlist = JSON.parse(localStorage.getItem("guestWishlist")) || [];
-    const freshUserId = getCurrentUserId();
-    
-    if (guestWishlist.length > 0 && freshUserId) {
-      // Merge guest wishlist với savedProducts để hiển thị ngay
-      const existingSavedProducts = JSON.parse(localStorage.getItem("savedProducts")) || [];
-      const mergedProducts = [...existingSavedProducts];
-      
-      for (const product of guestWishlist) {
-        // Thêm vào merged products nếu chưa tồn tại
-        if (!mergedProducts.some(p => p.id === product.id)) {
-          mergedProducts.push({ ...product, userId: freshUserId });
-        }
-        
-        // Thử sync với Backend
-        try {
-          const response = await apiClient.post("/wishlist/add", { 
-            productId: product.id, 
-            userId: freshUserId 
-          });
-          if (response.data && response.data.success) {
-            // Sync thành công
-          } else {
-            // Sync thất bại, giữ trong localStorage
-          }
-        } catch (error) {
-          // Xử lý lỗi WISHLIST_NOT_EXISTED trong sync
-          if (error.response?.data?.message?.includes('WISHLIST_NOT_EXISTED') || 
-              error.response?.data?.message?.includes('wishlist')) {
-            console.log("⚠️ Wishlist not existed during sync, creating new one...");
-            await handleWishlistNotExistedError(freshUserId);
-            
-            // Retry sync sau khi tạo wishlist
-            try {
-              const retryResponse = await apiClient.post("/wishlist/add", { 
-                productId: product.id, 
-                userId: freshUserId 
-              });
-              if (retryResponse.data && retryResponse.data.success) {
-                console.log("✅ Product synced after creating wishlist");
-              }
-            } catch (retryError) {
-              console.error("Retry sync failed:", retryError);
-            }
-          }
-          // Sync thất bại, giữ trong localStorage
-        }
-      }
-      
-      // Cập nhật localStorage với dữ liệu đã merge
-      localStorage.setItem("savedProducts", JSON.stringify(mergedProducts));
-      
-      // Cập nhật state ngay lập tức
-      savedProducts = mergedProducts;
-      notifyListeners();
-      
-      // Xóa guestWishlist
-      localStorage.removeItem("guestWishlist");
-      
-      // Thử load từ Backend (sẽ fallback về localStorage nếu lỗi)
-      setTimeout(() => loadWishlistFromBackend(), 500);
-    }
-  } catch (error) {
-    console.error("Error syncing guest wishlist:", error);
-    loadFromLocalStorage();
-  }
-};
-
 // ===========================================
-// INITIALIZATION
+// CORE WISHLIST OPERATIONS - Các thao tác chính
 // ===========================================
 
 /**
- * Khởi tạo wishlist service
- */
-const initializeWishlist = () => {
-  const freshUserId = getCurrentUserId();
-  const token = localStorage.getItem("token");
-  const refreshToken = localStorage.getItem("refreshToken");
-  currentUserId = freshUserId;
-  
-  if ((freshUserId || token || refreshToken) && !initialized) {
-    // User đã đăng nhập
-    const guestWishlist = JSON.parse(localStorage.getItem("guestWishlist")) || [];
-    if (guestWishlist.length > 0) {
-      // Có guest wishlist cần sync
-      syncGuestWishlistWithBackend();
-    } else {
-      // Load từ Backend
-      loadWishlistFromBackend();
-    }
-  } else if (!initialized) {
-    // Guest user, load từ localStorage
-    loadFromLocalStorage();
-  }
-};
-
-// ===========================================
-// WISHLIST VALIDATION & CREATION
-// ===========================================
-
-/**
- * Xử lý khi wishlist không tồn tại
- * Backend tự tạo wishlist khi user đăng ký, Frontend chỉ fallback
- */
-const createWishlistForUser = async (userId) => {
-  console.log("⚠️ Wishlist not existed for user:", userId);
-  console.log("📝 Backend should auto-create wishlist during registration");
-  console.log("📝 Creating fallback wishlist in localStorage");
-  
-  // Backend tự tạo wishlist khi user đăng ký, Frontend chỉ fallback
-  const emptyWishlist = [];
-  localStorage.setItem("savedProducts", JSON.stringify(emptyWishlist));
-  return true;
-};
-
-/**
- * Validate One-to-One relationship (mỗi user chỉ có 1 wishlist)
- */
-const validateWishlistOwnership = (userId) => {
-  const savedProducts = JSON.parse(localStorage.getItem("savedProducts")) || [];
-  const userWishlist = savedProducts.filter(p => p.userId === userId);
-  return userWishlist.length > 0;
-};
-
-/**
- * Xử lý lỗi WISHLIST_NOT_EXISTED
- * Backend không có API tạo wishlist riêng, chỉ fallback về localStorage
- */
-const handleWishlistNotExistedError = async (userId) => {
-  console.log("⚠️ Wishlist not existed for user:", userId);
-  console.log("📝 Backend should have created wishlist during user registration");
-  console.log("📝 Falling back to localStorage for now");
-  
-  // Tạo fallback wishlist trong localStorage
-  await createWishlistForUser(userId);
-  return true;
-};
-
-// ===========================================
-// CORE WISHLIST OPERATIONS
-// ===========================================
-
-/**
- * Kiểm tra sản phẩm có được lưu không
- */
-const isSaved = (productId) => {
-  // Guest không thấy sản phẩm nào được lưu
-  if (!isUserLoggedIn()) {
-    return false;
-  }
-  
-  return savedProducts.some((p) => p?.id === productId);
-};
-
-/**
- * Thêm sản phẩm vào wishlist
+ * Thêm sản phẩm vào wishlist (Frontend + Backend)
  */
 const add = async (product) => {
-  if (!product || product.id == null) return;
-  if (isSaved(product.id)) return;
+  // Validate dữ liệu sản phẩm
+  if (!product || !product.id) {
+    console.error("❌ Invalid product data");
+    return false;
+  }
 
-  // Thêm vào state trước
-  savedProducts = [...savedProducts, product];
-  notifyListeners();
-
-  const freshUserId = getCurrentUserId();
-  const token = localStorage.getItem("token");
-  const refreshToken = localStorage.getItem("refreshToken");
-  
-  // Nếu chưa đăng nhập, lưu vào guestWishlist và redirect login
-  if (!token && !refreshToken) {
-    saveToGuestWishlist(product);
-    
-    // Xóa khỏi state vì guest không nên thấy
-    savedProducts = savedProducts.filter((p) => p.id !== product.id);
-    notifyListeners();
-    
+  // Kiểm tra đăng nhập
+  if (!isUserLoggedIn()) {
+    console.warn("⚠️ User not logged in, redirecting to login");
     if (window.location.pathname !== '/login') {
       setTimeout(() => {
         window.location.href = '/login';
       }, 100);
     }
-    return;
-  }
-  
-  // Lấy userId nếu cần
-  if (!freshUserId && token) {
-    const userData = localStorage.getItem("userData");
-    if (userData) {
-      try {
-        const user = JSON.parse(userData);
-        const userId = user.user?.id || user.id || user.email || user.user?.email;
-        if (userId) {
-          currentUserId = userId;
-        } else {
-          setTimeout(() => window.location.href = '/login', 100);
-          return;
-        }
-      } catch (error) {
-        setTimeout(() => window.location.href = '/login', 100);
-        return;
-      }
-    } else {
-      setTimeout(() => window.location.href = '/login', 100);
-      return;
-    }
+    return false;
   }
 
-  const finalUserId = freshUserId || currentUserId;
+  // Lấy user ID
+  const freshUserId = await getCurrentUserId();
+  if (!freshUserId) {
+    console.error("❌ Cannot get current user ID");
+    return false;
+  }
 
-  // Gọi Backend API
   try {
-    const response = await apiClient.post("/wishlist/add", { 
-      productId: product.id, 
-      userId: finalUserId 
-    });
-    
-    if (!response.data || !response.data.success) {
-      // API thất bại, fallback về localStorage
-      saveToLocalStorage(product, finalUserId);
+    // Lưu vào database trước
+    const success = await saveToDatabase(product);
+    if (success) {
+      console.log("✅ Product added to database wishlist");
+      // Cập nhật state frontend
+      savedProducts.push({ ...product, userId: freshUserId });
+      notifyListeners();
+      return true;
+    } else {
+      console.error("❌ Failed to save to database");
+      return false;
     }
   } catch (error) {
-    // Xử lý lỗi WISHLIST_NOT_EXISTED
-    if (error.response?.data?.message?.includes('WISHLIST_NOT_EXISTED') || 
-        error.response?.data?.message?.includes('wishlist')) {
-      console.log("⚠️ Wishlist not existed, creating new one...");
-      await handleWishlistNotExistedError(finalUserId);
-      
-      // Retry add operation sau khi tạo wishlist
-      try {
-        const retryResponse = await apiClient.post("/wishlist/add", { 
-          productId: product.id, 
-          userId: finalUserId 
-        });
-        if (retryResponse.data && retryResponse.data.success) {
-          console.log("✅ Product added after creating wishlist");
-          return;
-        }
-      } catch (retryError) {
-        console.error("Retry failed, falling back to localStorage:", retryError);
-      }
-    }
-    
-    // Với mọi lỗi khác, fallback về localStorage
-    saveToLocalStorage(product, finalUserId);
+    console.error("❌ Error adding to wishlist:", error);
+    return false;
   }
 };
 
 /**
- * Xóa sản phẩm khỏi wishlist
+ * Xóa sản phẩm khỏi wishlist (Frontend trước, Backend sau)
  */
 const remove = async (productId) => {
+  // Cập nhật state frontend ngay lập tức (UX tốt hơn)
   savedProducts = savedProducts.filter((p) => p.id !== productId);
   notifyListeners();
   
-  const freshUserId = getCurrentUserId();
-  const token = localStorage.getItem("token");
-  const refreshToken = localStorage.getItem("refreshToken");
-  
-  // Luôn xóa khỏi localStorage
-  removeFromLocalStorage(productId);
-  removeFromGuestWishlist(productId);
-  
-  // Gọi Backend API nếu đã đăng nhập
-  if ((freshUserId || token || refreshToken) && (token || refreshToken)) {
-    const finalUserId = freshUserId || currentUserId;
-    try {
-      const response = await apiClient.delete(`/wishlist/delete?productId=${productId}&userId=${finalUserId}`);
-      // Không cần xử lý response vì đã xóa khỏi localStorage
-    } catch (error) {
-      // Xử lý lỗi WISHLIST_NOT_EXISTED
-      if (error.response?.data?.message?.includes('WISHLIST_NOT_EXISTED') || 
-          error.response?.data?.message?.includes('wishlist')) {
-        console.log("⚠️ Wishlist not existed during delete, creating new one...");
-        await handleWishlistNotExistedError(finalUserId);
-      }
-      // Không cần xử lý error khác vì đã xóa khỏi localStorage
+  // Kiểm tra đăng nhập
+  if (!isUserLoggedIn()) {
+    console.warn("⚠️ User not logged in");
+    return;
+  }
+
+  // Lấy user ID
+  const freshUserId = await getCurrentUserId();
+  if (!freshUserId) {
+    console.error("❌ Cannot get current user ID");
+    return;
+  }
+
+  try {
+    // Xóa khỏi database
+    const success = await removeFromDatabase(productId);
+    if (success) {
+      console.log("✅ Product removed from database wishlist");
+    } else {
+      console.error("❌ Failed to remove from database");
     }
+  } catch (error) {
+    console.error("❌ Error removing from database:", error);
   }
 };
 
 /**
- * Toggle sản phẩm (thêm/xóa)
+ * Toggle sản phẩm (thêm nếu chưa có, xóa nếu đã có)
  */
 const toggle = async (product) => {
   if (!product || product.id == null) return;
@@ -536,7 +294,7 @@ const toggle = async (product) => {
 };
 
 // ===========================================
-// STATE MANAGEMENT
+// STATE MANAGEMENT - Quản lý trạng thái
 // ===========================================
 
 /**
@@ -550,14 +308,14 @@ const subscribe = (listener) => {
 };
 
 /**
- * Lấy state hiện tại
+ * Lấy state hiện tại của wishlist
  */
 const getCurrentState = () => {
   if (!initialized) {
-    loadFromLocalStorage();
+    initializeWishlist();
   }
   
-  // Guest trả về empty state
+  // Guest user trả về empty state
   if (!isUserLoggedIn()) {
     return {
       savedProducts: [],
@@ -576,7 +334,7 @@ const getCurrentState = () => {
 };
 
 /**
- * Reset wishlist service (khi logout)
+ * Reset toàn bộ state wishlist (khi logout)
  */
 const resetWishlist = () => {
   savedProducts = [];
@@ -587,69 +345,96 @@ const resetWishlist = () => {
 };
 
 /**
- * Force refresh wishlist (khi login)
+ * Force refresh wishlist (khi login hoặc đổi account)
  */
-const forceRefresh = () => {
+const forceRefresh = async () => {
+  console.log("🔄 Force refreshing wishlist...");
   initialized = false;
-  const freshUserId = getCurrentUserId();
+  const freshUserId = await getCurrentUserId();
+  
+  // Kiểm tra đổi account
+  if (currentUserId && currentUserId !== freshUserId) {
+    console.log("🔄 User changed from", currentUserId, "to", freshUserId, "- clearing old data");
+    savedProducts = [];
+  }
+  
   currentUserId = freshUserId;
   
   if (freshUserId) {
-    const guestWishlist = JSON.parse(localStorage.getItem("guestWishlist")) || [];
-    if (guestWishlist.length > 0) {
-      // Có guest wishlist cần sync
-      syncGuestWishlistWithBackend();
-    } else {
-      // Load từ Backend
-      loadWishlistFromBackend();
-    }
+    // Load từ Backend
+    loadWishlistFromBackend();
   } else {
-    initializeWishlist();
+    // Set empty nếu không có userId
+    savedProducts = [];
+    loading = false;
+    initialized = true;
+    notifyListeners();
   }
 };
 
 /**
- * Check và sync guest wishlist khi user login
+ * Cập nhật currentUserId khi user login (phát hiện đổi account)
  */
-const checkAndSyncGuestWishlist = () => {
-  const guestWishlist = JSON.parse(localStorage.getItem("guestWishlist")) || [];
-  const freshUserId = getCurrentUserId();
+const updateCurrentUserId = async () => {
+  const freshUserId = await getCurrentUserId();
   
-  if (guestWishlist.length > 0 && freshUserId) {
-    syncGuestWishlistWithBackend();
+  // Kiểm tra đổi account
+  if (currentUserId && currentUserId !== freshUserId) {
+    console.log("🔄 Account switched from", currentUserId, "to", freshUserId);
+    console.log("🔄 Clearing old wishlist data and refreshing...");
+    savedProducts = [];
+    initialized = false;
+  }
+  
+  currentUserId = freshUserId;
+  
+  // Force refresh nếu có user mới và chưa khởi tạo
+  if (freshUserId && !initialized) {
+    console.log("🔄 New user detected, initializing wishlist...");
+    forceRefresh();
   }
 };
 
 /**
- * Cập nhật currentUserId khi user login
+ * Kiểm tra sản phẩm đã được lưu trong wishlist chưa
  */
-const updateCurrentUserId = () => {
-  const freshUserId = getCurrentUserId();
-  currentUserId = freshUserId;
+const isSaved = (productId) => {
+  return savedProducts.some(p => p.id === productId);
+};
+
+/**
+ * Khởi tạo wishlist service (App startup)
+ */
+const initializeWishlist = async () => {
+  if (initialized) return;
+  
+  if (isUserLoggedIn()) {
+    console.log("🔄 Initializing wishlist for logged-in user...");
+    await loadWishlistFromBackend();
+  } else {
+    console.log("ℹ️ User not logged in, setting empty wishlist");
+    savedProducts = [];
+    loading = false;
+    initialized = true;
+    notifyListeners();
+  }
 };
 
 // ===========================================
-// EXPORT SERVICE
+// EXPORT SERVICE - Xuất service
 // ===========================================
 
 const wishlistService = {
-  // State management methods
-  initializeWishlist,
-  subscribe,
-  add,
-  remove,
-  toggle,
-  isSaved,
-  getCurrentState,
-  resetWishlist,
-  forceRefresh,
-  checkAndSyncGuestWishlist,
-  updateCurrentUserId,
-  
-  // New methods for enhanced functionality
-  createWishlistForUser,
-  validateWishlistOwnership,
-  handleWishlistNotExistedError
+  initializeWishlist,    // Khởi tạo service
+  subscribe,             // Subscribe state changes
+  add,                   // Thêm sản phẩm
+  remove,                // Xóa sản phẩm
+  toggle,                // Toggle sản phẩm
+  isSaved,               // Kiểm tra đã lưu
+  getCurrentState,       // Lấy state hiện tại
+  resetWishlist,         // Reset state
+  forceRefresh,          // Force refresh
+  updateCurrentUserId    // Cập nhật user ID
 };
 
 export default wishlistService;

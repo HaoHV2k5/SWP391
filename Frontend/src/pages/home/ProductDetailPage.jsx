@@ -2,9 +2,10 @@ import { Container, Spinner, Alert } from "react-bootstrap";
 import { useState, useEffect } from "react";
 import { useProductDetailLogic } from "../../hooks/useProductDetail";
 import wishlistService from "../../services/wishlistService";
+import BuyButton from "../../components/order/BuyButton";
 import "../../components/homepageContainer/styles/ProductDetail.css";
 
-const ProductDetailPage = () => {
+const ProductDetailPage = ({ user }) => {
   const {
     data,
     loading,
@@ -44,19 +45,6 @@ const ProductDetailPage = () => {
 
   const saved = data?.id ? wishlistService.isSaved(data.id) : false;
   
-  // Lấy thông tin user từ localStorage
-  const getUserFromStorage = () => {
-    try {
-      const userData = localStorage.getItem("userData");
-      return userData ? JSON.parse(userData) : null;
-    } catch (error) {
-      console.error("Error parsing user data:", error);
-      return null;
-    }
-  };
-  
-  const user = getUserFromStorage();
-  
   const handleSaveClick = async () => {
     if (data) {
       try {
@@ -66,6 +54,7 @@ const ProductDetailPage = () => {
       }
     }
   };
+  
   if (loading) {
     return (
       <Container className="py-5 text-center">

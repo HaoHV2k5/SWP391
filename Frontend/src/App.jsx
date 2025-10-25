@@ -230,7 +230,7 @@ function AppContent() {
 
         {/* PRODUCT ROUTES */}
         <Route path="/products/:type" element={<CategoryRouter />} />
-        <Route path="/product/:id" element={<ProductDetailPage />} />
+        <Route path="/product/:id" element={<ProductDetailPage user={user} />} />
         <Route path="/tag/:slug" element={<TagPage />} />
 
         {/* FALLBACK ROUTE */}
