@@ -2,7 +2,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import bannerService from '../../../services/bannerService';
+import bannerService from '../../../services/home/bannerService';
 
 // Import Swiper styles
 import 'swiper/css';

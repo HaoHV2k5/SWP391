@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Spinner } from "react-bootstrap";
 import MemberHeader from "../../components/member/MemberHeader";
 import OrdersTab from "../../components/member/OrdersTab";
-import displayService from "../../services/displayService";
+import displayService from "../../services/home/displayService";
 import "../../styles/member/index.css";
 
 const MemberOrders = ({ user }) => {

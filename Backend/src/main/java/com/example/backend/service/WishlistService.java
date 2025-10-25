@@ -59,8 +59,9 @@ public class WishlistService {
         Set<Product> setProduct = wishlist.getProducts();
         setProduct.remove(product);
         wishlist.setProducts(setProduct);
-
-
+        
+        // Save changes to database
+        wishlistRepository.save(wishlist);
     }
 
 
