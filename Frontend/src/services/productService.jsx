@@ -1,8 +1,8 @@
 import { apiClient, authService } from "./authService";
-import searchService from "./searchService";
-import displayService from "./displayService";
-import filterService from "./filterService";
-import productDetailService from "./productDetailService";
+import searchService from "./home/searchService";
+import displayService from "./home/displayService";
+import filterService from "./home/filterService";
+import productDetailService from "./home/productDetailService";
 
 // ==================== PRODUCT SERVICE ====================
 // Dịch vụ sản phẩm: gom tất cả các lời gọi API liên quan đến sản phẩm

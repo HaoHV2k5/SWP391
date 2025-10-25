@@ -3,7 +3,7 @@ import { Form, InputGroup } from 'react-bootstrap';
 import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import searchService from '../../../services/searchService';
+import searchService from '../../../services/home/searchService';
 
 const SearchBar = () => {
   // State quản lý search

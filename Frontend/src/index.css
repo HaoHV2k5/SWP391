@@ -61,7 +61,7 @@ button:focus-visible {
 
 /* Banner Component Styles */
 .banner-container {
-  width: 100%;
+  width: 75%;
   margin: 0 auto;
   border-radius: 12px;
   overflow: hidden;
@@ -70,7 +70,7 @@ button:focus-visible {
 
 .banner-swiper {
   width: 100%;
-  height: 400px;
+  height: 570px;
 }
 
 .banner-slide {

@@ -1,13 +1,31 @@
 import { Button, Card } from "react-bootstrap";
+import { useState, useEffect } from "react";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { useSavedProducts } from "../contexts/SavedProductsContext";
+import wishlistService from "../../../services/wishlistService";
 import { useNavigate } from "react-router-dom";
 
 const ProductCard = ({ product }) => {
   const { vehicleInfo, SellerInfo } = product;
-  const { toggle, isSaved } = useSavedProducts();
   const navigate = useNavigate();
-  const saved = isSaved(product.id);
+  const [state, setState] = useState({
+    savedProducts: [],
+    loading: false,
+    initialized: false
+  });
+
+  // Subscribe to wishlistService state changes
+  useEffect(() => {
+    const initialState = wishlistService.getCurrentState();
+    setState(initialState);
+
+    const unsubscribe = wishlistService.subscribe((newState) => {
+      setState(newState);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const saved = wishlistService.isSaved(product.id);
 
   const handleCardClick = (e) => {
     // Ngăn chặn event khi click vào heart button
@@ -100,18 +118,16 @@ const ProductCard = ({ product }) => {
               alignItems: "center",
             }}
           >
-            <span>{product.price}</span>
+            <span>{product.price || "Liên hệ"}</span>
             <Button
               variant={saved ? "danger" : "light"}
               size="sm"
-              onClick={async () => {
-                try {
-                  await toggle(product);
-                } catch (error) {
-                  console.error("Error toggling wishlist:", error);
-                }
+              onClick={async (e) => {
+                e.stopPropagation();
+                await wishlistService.toggle(product);
               }}
               style={{ padding: "4px 8px" }}
+              title={saved ? "Bỏ lưu" : "Lưu tin"}
             >
               <i className={saved ? "bi bi-heart-fill" : "bi bi-heart"}></i>
             </Button>
