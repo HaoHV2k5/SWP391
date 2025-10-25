@@ -12,7 +12,9 @@ import java.util.List;
 public interface OrderRespository extends JpaRepository<Order, Long> {
         void deleteAllByProductAndSeller(Product product, User seller);
         List<Order> findAllByProductAndSellerAndIdNot(Product product, User seller, Long orderId);
-        List<Order> findAllByProductId(Long productId);
+        List<Order> findAllByProductIdAndSellerAcceptedFalse(Long productId);
 
+
+        Order findByProductAndBuyer(Product product, User user);
 
 }

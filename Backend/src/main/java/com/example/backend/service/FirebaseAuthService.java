@@ -1,8 +1,6 @@
 package com.example.backend.service;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseToken;
-import com.google.firebase.auth.UserRecord;
+
 import com.example.backend.entity.User;
 import com.example.backend.entity.Role;
 import com.example.backend.repository.UserRepository;
