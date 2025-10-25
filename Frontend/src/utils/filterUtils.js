@@ -1,5 +1,5 @@
 // Utility functions cho filter
-import filterService from '../services/filterService';
+import filterService from '../services/home/filterService';
 
 // Hàm lọc sản phẩm theo các filter
 export const filterProducts = (products, filters) => {

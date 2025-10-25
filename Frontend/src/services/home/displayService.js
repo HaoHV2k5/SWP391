@@ -1,4 +1,4 @@
-import { apiClient } from "./authService";
+import apiClient from "../apiClient";
 
 // ==================== DISPLAY SERVICE ====================
 // Dịch vụ hiển thị sản phẩm: chuyên xử lý việc lấy và hiển thị danh sách sản phẩm
