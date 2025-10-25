@@ -22,6 +22,7 @@ import com.example.backend.repository.ContractRepository;
 import com.example.backend.repository.OrderRespository;
 import com.example.backend.repository.ProductRepository;
 import com.example.backend.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -37,6 +38,7 @@ import com.example.backend.dto.response.ContractResponse;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EversignService {
@@ -59,7 +61,17 @@ public class EversignService {
 
 
     public Map<String, Object> createDocumentUsingTemplate(ContractCreateTemplateRequest req) {
+        Order order = orderService.findById(req.getOrderId());
+        if(order.isSellerAccepted()){
+            throw new AppException(ErrorCode.CONTRACT_SIGN);
+        }
         try {
+
+
+            //kiem tra xem order có đc accept chưa
+
+
+
             //  1. Chuẩn bị nội dung gửi lên Eversign
             Map<String, Object> body = new HashMap<>();
             body.put("sandbox", 1); // test mode
@@ -91,10 +103,10 @@ public class EversignService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // ✅ 5. Tạo HttpEntity chứa body + headers
+            //  5. Tạo HttpEntity chứa body + headers
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
-            // ✅ 6. Gửi request POST tới Eversign
+            //  6. Gửi request POST tới Eversign
             String url = eversignUrl
                     + "/document?business_id=" + businessId
                     + "&access_key=" + apiKey;
@@ -109,6 +121,7 @@ public class EversignService {
             // 7. Xử lý phản hồi từ Eversign
             Map<String, Object> result = new HashMap<>();
             if (response.getBody() != null) {
+
                 Object documentHash = response.getBody().get("document_hash");
                 if(documentHash == null) {
                     throw new AppException(ErrorCode.CONTRACT_BUID_FALID);
@@ -123,9 +136,12 @@ public class EversignService {
                             2. Hoặc bên bán gửi yêu cầu có kèm mã vận chuyển và hình ảnh xác minh giao hàng.
                             Nếu đơn hàng lỗi, bên mua có quyền gửi khiếu nại trong 3 ngày.
                         """;
+
+
+
                 // cap nhat trang thai order dc nhan
-                Order order = orderService.findById(req.getOrderId());
                 order.setStatus(OrderStatus.ACCEPTED);
+                order.setSellerAccepted(true);
                 orderRespository.save(order);
                 Product product = order.getProduct();
                 product.setPosted(false);

@@ -28,6 +28,7 @@ import MemberOrders from "./pages/member/MemberOrders";
 import PostAd from "./pages/member/PostAd";
 import MyPosts from "./pages/member/MyPosts";
 import SavedPosts from "./pages/member/SavedPosts";
+import MyOrders from "./pages/member/MyOrders";
 import AccountPage from "./pages/AccountPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
 import KycPage from "./pages/kyc/KycPage";
@@ -224,6 +225,7 @@ function AppContent() {
         <Route path="/my-posts" element={<MyPosts user={user} />} />
         <Route path="/saved-posts" element={<SavedPosts user={user} />} />
         <Route path="/orders" element={<MemberOrders user={user} />} />
+        <Route path="/my-orders" element={<MyOrders user={user} />} />
         <Route path="/post-ad" element={<PostAd user={user} />} />
 
         {/* PRODUCT ROUTES */}

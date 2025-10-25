@@ -70,26 +70,6 @@ public class ManageBalanceController {
 
     // xem lich su giao dong cua so du trong vi  cua 1 user cu the
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @GetMapping("/admin/wallettransactions/{userId}")
-    public ApiResponse<List<WalletTransactionResponse>> getWalletTransactionsByUserId(@RequestParam Long userId) {
-        List<WalletTransactionResponse> responses = walletTransactionService.getAllWalletTransactionsByUserID(userId);
-        return ApiResponse.<List<WalletTransactionResponse>>builder()
-                .data(responses)
-                .message("Lấy WalletTransaction của user thành công")
-                .build();
-    }
-
-    // xem so du trong vi cua user hien tai
-    @GetMapping("/user/wallet/balance")
-    public ApiResponse<BigDecimal> getUserWalletBalance(Authentication authentication) {
-        String username = authentication.getName();
-        User user = userService.getUserByUsername(username);
-        BigDecimal balance = walletService.getBalanceByUserId(user.getId());
-        return ApiResponse.<BigDecimal>builder()
-                .data(balance)
-                .message("Lấy số dư ví thành công")
-                .build();
-    }
     @GetMapping("/admin/user/walletTransaction")
     public ApiResponse<List<WalletTransactionResponse>> getWalletTransactionByUserID(@RequestParam Long userId){
         List<WalletTransactionResponse> responses = walletTransactionService.getAllWalletTransactionsByUserID(userId);
@@ -142,14 +122,9 @@ public class ManageBalanceController {
         String userName = authentication.getName();
         User usr = userService.getUserByUsername(userName);
         PostingPackageResponse postingPackageResponse = userService.getPackageCurrent(usr.getId());
-        
-        String message = postingPackageResponse != null 
-            ? "đã lấy thành công gói hiện tại user đang sử dụng"
-            : "user chưa mua gói nào";
-            
         return  ApiResponse.<PostingPackageResponse>builder()
                 .data(postingPackageResponse)
-                .message(message)
+                .message("đã lấy thành công gói hiện tại user đang sử dụng")
                 .build();
 
     }

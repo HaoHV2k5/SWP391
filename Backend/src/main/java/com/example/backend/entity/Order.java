@@ -42,8 +42,9 @@ public class Order {
     @Builder.Default
     private OrderStatus status = OrderStatus.PENDING;
 
-    @Column(columnDefinition = "NVARCHAR(1000)")
-    private String rejectionReason;
+    @Column(name = "accepted")
+    @Builder.Default
+    private boolean sellerAccepted = false;
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private OrderEscrow orderEscrow;

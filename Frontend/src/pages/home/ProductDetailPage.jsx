@@ -44,6 +44,19 @@ const ProductDetailPage = () => {
 
   const saved = data?.id ? wishlistService.isSaved(data.id) : false;
   
+  // Lấy thông tin user từ localStorage
+  const getUserFromStorage = () => {
+    try {
+      const userData = localStorage.getItem("userData");
+      return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+      return null;
+    }
+  };
+  
+  const user = getUserFromStorage();
+  
   const handleSaveClick = async () => {
     if (data) {
       try {
@@ -229,9 +242,17 @@ const ProductDetailPage = () => {
                 </div>
               </div>
 
-              {/* Nút liên hệ */}
+              {/* Nút mua hàng và liên hệ */}
               <div className="action-buttons">
-                <button className="chat-button">
+                <BuyButton 
+                  product={data} 
+                  user={user}
+                  onOrderSuccess={(orderData) => {
+                    console.log("Order created successfully:", orderData);
+                    // Có thể thêm logic khác ở đây nếu cần
+                  }}
+                />
+                <button className="chat-button w-100">
                   <i className="bi bi-chat-dots me-2"></i>
                   Liên hệ người bán
                 </button>

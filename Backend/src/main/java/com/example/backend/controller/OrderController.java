@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderController {
     private final OrderService orderService;
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER','ROLE_SELLER')")
     @PostMapping("/create")
     public ApiResponse<OrderResponse> buyProduct(@RequestBody BuyProductRequest request) {
         OrderResponse order =orderService.buyOrder(request);

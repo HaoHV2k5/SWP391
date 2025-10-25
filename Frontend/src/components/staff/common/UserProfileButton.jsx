@@ -1,4 +1,3 @@
-// src/components/staff/common/UserProfileButton.jsx
 import { useEffect, useMemo, useState } from "react";
 import {
   Avatar,
@@ -18,37 +17,32 @@ import { userApi } from "../../../services/userApi";
 
 dayjs.extend(customParseFormat);
 
-/** Hỗ trợ đọc nhiều format từ DB/API */
-const YOB_FORMATS_IN = ["DD-MM-YYYY", "YYYY-MM-DD", "DD/MM/YYYY", "YYYY/MM/DD"];
-/** UI hiển thị */
-const YOB_FORMAT_UI = "DD-MM-YYYY";
-/** API gửi đi (tránh lỗi định dạng ở BE) */
-const YOB_FORMAT_API = "dd-MM-yyyy";
+// BE yêu cầu dd/MM/yyyy
+const YOB_OUT = "DD/MM/YYYY";
+// FE hiển thị đúng theo BE
+const YOB_DISPLAY = "DD/MM/YYYY";
+
+// nếu BE trả "22/03/2000" (đúng format) hoặc "2000-03-22" (ISO) → parse được
+const parseYobFromApi = (val) => {
+  if (!val) return null;
+  // thử dd/MM/yyyy
+  let d = dayjs(val, "DD/MM/YYYY", true);
+  if (d.isValid()) return d;
+  // thử ISO (yyyy-MM-dd)
+  d = dayjs(val, "YYYY-MM-DD", true);
+  if (d.isValid()) return d;
+  // fallback cuối
+  d = dayjs(val);
+  return d.isValid() ? d : null;
+};
+
+const fmtYobToApi = (d) => (d ? dayjs(d).format(YOB_OUT) : "");
 
 const GENDER_OPTS = [
   { value: "MALE", label: "Nam" },
   { value: "FEMALE", label: "Nữ" },
   { value: "OTHER", label: "Khác" },
 ];
-
-const parseYob = (val) => {
-  if (!val) return null;
-  for (const f of YOB_FORMATS_IN) {
-    const d = dayjs(val, f, true);
-    if (d.isValid()) return d;
-  }
-  // cuối cùng thử parse tự do
-  const free = dayjs(val);
-  return free.isValid() ? free : null;
-};
-
-const normalizeGenderIn = (g) => {
-  if (!g) return undefined;
-  const s = String(g).toUpperCase();
-  if (["NAM", "MALE", "M"].includes(s)) return "MALE";
-  if (["NỮ", "NU", "FEMALE", "F"].includes(s)) return "FEMALE";
-  return "OTHER";
-};
 
 const UserProfileButton = ({ displayName = "Staff" }) => {
   const [open, setOpen] = useState(false);
@@ -63,18 +57,14 @@ const UserProfileButton = ({ displayName = "Staff" }) => {
     setLoadingMe(true);
     try {
       const data = await userApi.getMe(); // GET /users/me
-      const norm = {
-        ...data,
-        gender: normalizeGenderIn(data?.gender),
-      };
-      setMe(norm);
+      setMe(data);
       form.setFieldsValue({
-        fullname: norm.fullname || "",
-        phone: norm.phone || "",
-        gender: norm.gender || undefined,
-        yob: parseYob(norm.yob),
-        avatar: norm.avatar || "",
-        address: norm.address || "",
+        fullname: data.fullname || "",
+        phone: data.phone || "",
+        gender: data.gender || undefined,
+        yob: parseYobFromApi(data.yob), // dayjs
+        avatar: data.avatar || "",
+        address: data.address || "",
       });
     } catch {
       message.error("Không thể tải thông tin người dùng");
@@ -91,22 +81,28 @@ const UserProfileButton = ({ displayName = "Staff" }) => {
   const submit = async () => {
     try {
       const vals = await form.validateFields();
+      // BẮT BUỘC có yob theo BE
+      if (!vals.yob) {
+        message.warning("Vui lòng chọn năm sinh (định dạng dd/MM/yyyy)");
+        return;
+      }
+
       const payload = {
         fullname: (vals.fullname || "").trim(),
+        gender: vals.gender || "", // BE nhận string, bạn đã giữ nguyên
+        yob: fmtYobToApi(vals.yob), // → "dd/MM/yyyy"
         phone: (vals.phone || "").trim(),
-        gender: vals.gender || "",
-        // 👇 gửi ISO cho BE
-        yob: vals.yob ? dayjs(vals.yob).format(YOB_FORMAT_API) : "",
-        avatar: (vals.avatar || "").trim(),
         address: (vals.address || "").trim(),
+        avatar: (vals.avatar || "").trim(),
       };
+
       setSaving(true);
       await userApi.updateMe(payload); // PUT /users/update
       message.success("Cập nhật thành công");
       setMe((prev) => ({ ...(prev || {}), ...payload }));
       setOpen(false);
     } catch (e) {
-      if (e?.errorFields) return;
+      if (e?.errorFields) return; // lỗi validate form của antd
       const m =
         e?.response?.data?.message ||
         e?.response?.data?.error ||
@@ -117,6 +113,11 @@ const UserProfileButton = ({ displayName = "Staff" }) => {
       setSaving(false);
     }
   };
+
+  // hạn chế chọn ngày < 18 tuổi theo FE cho trùng BE
+  const disabledFuture = (cur) => cur && cur.endOf("day").isAfter(dayjs());
+  const minAge18 = (cur) =>
+    cur && cur.endOf("day").isAfter(dayjs().subtract(18, "year").endOf("day"));
 
   return (
     <>
@@ -152,8 +153,8 @@ const UserProfileButton = ({ displayName = "Staff" }) => {
           initialValues={{
             fullname: me?.fullname,
             phone: me?.phone,
-            gender: normalizeGenderIn(me?.gender),
-            yob: parseYob(me?.yob),
+            gender: me?.gender,
+            yob: parseYobFromApi(me?.yob),
             avatar: me?.avatar,
             address: me?.address,
           }}
@@ -172,7 +173,8 @@ const UserProfileButton = ({ displayName = "Staff" }) => {
             rules={[
               { required: true, message: "Nhập số điện thoại" },
               {
-                pattern: /^[0-9+\-\s]{8,20}$/,
+                // khớp regex BE: ^(84|0[35789])[0-9]{8}\b
+                pattern: /^(84|0[35789])[0-9]{8}\b/,
                 message: "Số điện thoại không hợp lệ",
               },
             ]}
@@ -190,8 +192,9 @@ const UserProfileButton = ({ displayName = "Staff" }) => {
 
           <Form.Item
             name="yob"
-            label={`Năm sinh (${YOB_FORMAT_UI})`}
+            label="Năm sinh (dd/MM/yyyy)"
             rules={[
+              { required: true, message: "Vui lòng chọn năm sinh" },
               {
                 validator: (_, v) => {
                   if (!v) return Promise.resolve();
@@ -201,6 +204,12 @@ const UserProfileButton = ({ displayName = "Staff" }) => {
                     return Promise.reject(
                       new Error("Không được chọn ngày trong tương lai")
                     );
+                  if (
+                    v
+                      .endOf("day")
+                      .isAfter(dayjs().subtract(18, "year").endOf("day"))
+                  )
+                    return Promise.reject(new Error("Phải từ 18 tuổi trở lên"));
                   return Promise.resolve();
                 },
               },
@@ -208,9 +217,10 @@ const UserProfileButton = ({ displayName = "Staff" }) => {
           >
             <DatePicker
               style={{ width: "100%" }}
-              format={YOB_FORMAT_UI}
-              disabledDate={(cur) => cur && cur.endOf("day").isAfter(dayjs())}
-              allowClear
+              format={YOB_DISPLAY}
+              // chặn chọn ngày tương lai & chặn < 18 tuổi
+              disabledDate={(cur) => disabledFuture(cur) || minAge18(cur)}
+              allowClear={false} // vì BE bắt buộc NotNull
             />
           </Form.Item>
 

@@ -81,7 +81,7 @@ public class MailService {
         context.setVariable("productName", order.getProduct().getTitle());
         context.setVariable("sellerName", order.getSeller().getFullname());
         context.setVariable("productLink", "localhost:3939/product/" + order.getProduct().getId());
-        String html =  templateEngine.process("email/",context);
+        String html =  templateEngine.process("email",context);
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
         try {
