@@ -72,6 +72,7 @@ const Banner = () => {
   return (
     <div className="banner-container">
       <Swiper
+        className="banner-swiper"
         modules={[Navigation, Pagination, Autoplay]}
         spaceBetween={30}
         slidesPerView={1}
