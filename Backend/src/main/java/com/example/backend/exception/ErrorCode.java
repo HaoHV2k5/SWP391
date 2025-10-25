@@ -68,6 +68,8 @@ public enum ErrorCode {
     ORDER_REJECT_INVALID(1053, "Reject order thất bại", HttpStatus.BAD_REQUEST),
     ORDER_REQUEST_DUPLICATE(1054, "Bạn đã gửi request mua sản phẩm này rồi", HttpStatus.BAD_REQUEST),
     CONTRACT_SIGN(1055, "Hợp đồng đang được kí", HttpStatus.BAD_REQUEST),
+    CONTRACT_NOT_VALID(1056, "Hợp đồng không tồn tại", HttpStatus.BAD_REQUEST),
+    BUY_ORDER_FALID(1057, "Mua thất bại, số dư trong tài khoản không đủ", HttpStatus.BAD_REQUEST),
 
 
     ;
