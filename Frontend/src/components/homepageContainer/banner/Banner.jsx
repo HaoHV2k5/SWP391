@@ -25,9 +25,9 @@ const Banner = () => {
       case 'product':
         // Navigate to product detail page
         if (banner.productId) {
-          navigate(`/products/${banner.productId}`);
+          navigate(`/product/${banner.productId}`);
         } else {
-          navigate(`/products/${banner.linkTarget.split('/').pop()}`);
+          navigate(`/product/${banner.linkTarget.split('/').pop()}`);
         }
         break;
       case 'category':

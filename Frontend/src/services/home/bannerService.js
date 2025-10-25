@@ -15,9 +15,9 @@ class BannerService {
       { 
         id: 2, 
         image: 'https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw10933beb/reserves/DrgnFly/overview-03.png', 
-        alt: 'VinFast VF 8',
+        alt: 'VinFast DrgnFly',
         linkType: 'product',
-        productId: 2
+        productId: 85
       },
       { 
         id: 3, 
