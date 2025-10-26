@@ -46,9 +46,10 @@ const productService = {
   // 📋 PHỤ: Lấy danh sách tin đăng của chính user (seller/member) - TẤT CẢ trạng thái
   // 📍 Endpoints: /products/history/seller/{userId}, /products/seller?username=xxx
   // 👥 Users: Member, Seller (cần đăng nhập)
-  async getMyPosts(username) {
+  async getMyPosts(userIdOrUsername) {
     try {
       let userId = null;
+      let username = null;
 
       // Lấy userId từ localStorage
       const raw = localStorage.getItem("userData");
@@ -56,14 +57,18 @@ const productService = {
         try {
           const parsed = JSON.parse(raw);
           userId = parsed?.userId || parsed?.user?.id || parsed?.id || null;
-          username =
-            username ||
-            parsed?.username ||
-            parsed?.user?.username ||
-            parsed?.email ||
-            parsed?.user?.email ||
-            null;
+          username = parsed?.username || parsed?.user?.username || parsed?.email || parsed?.user?.email || null;
         } catch {}
+      }
+
+      // Nếu truyền vào userIdOrUsername, sử dụng nó
+      if (userIdOrUsername) {
+        // Kiểm tra xem có phải là số không (userId)
+        if (typeof userIdOrUsername === 'number' || /^\d+$/.test(userIdOrUsername)) {
+          userId = userIdOrUsername;
+        } else {
+          username = userIdOrUsername;
+        }
       }
 
       // Ưu tiên dùng endpoint lấy TẤT CẢ tin (kể cả PENDING) theo userId
@@ -88,6 +93,20 @@ const productService = {
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
       console.error("❌ getMyPosts error:", { status, backendMessage });
+      
+      // Nếu lỗi 401 (Unauthorized), thử fallback về endpoint công khai
+      if (status === 401) {
+        console.log("🔄 401 error, trying public endpoint as fallback");
+        try {
+          const fallbackResponse = await apiClient.get("/products");
+          const fallbackData = fallbackResponse?.data?.data ?? fallbackResponse?.data?.content ?? fallbackResponse?.data;
+          console.log("📦 Fallback data received:", fallbackData);
+          return { success: true, data: Array.isArray(fallbackData) ? fallbackData : [] };
+        } catch (fallbackError) {
+          console.error("❌ Fallback also failed:", fallbackError);
+        }
+      }
+      
       return {
         success: false,
         message: `Lỗi tải tin của tôi (${status || "network"}): ${
@@ -116,8 +135,8 @@ const productService = {
         }
       }
 
-      // Sử dụng getMyPosts với userId
-      return await this.getMyPosts(username);
+      // Sử dụng getMyPosts với userId thay vì username
+      return await this.getMyPosts(userId);
     } catch (error) {
       console.error("❌ getMyProducts error:", error);
       return {
