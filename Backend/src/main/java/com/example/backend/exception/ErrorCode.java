@@ -70,9 +70,15 @@ public enum ErrorCode {
     CONTRACT_SIGN(1055, "Hợp đồng đang được kí", HttpStatus.BAD_REQUEST),
     CONTRACT_NOT_VALID(1056, "Hợp đồng không tồn tại", HttpStatus.BAD_REQUEST),
     BUY_ORDER_FALID(1057, "Mua thất bại, số dư trong tài khoản không đủ", HttpStatus.BAD_REQUEST),
-    PRODUCT_ORDER_CONTRACT_NOT_CANCELLED(1058, "Sản phẩm đã có đơn cũ, hợp đồng phải ở trạng thái CANCELLED", HttpStatus.BAD_REQUEST),
-    ORDER_NOT_FOUND(1059, "Order không tồn tại", HttpStatus.BAD_REQUEST),
+    PRODUCT_ORDER_CONTRACT_NOT_CANCELLED(1058, "Sản phẩm đang được tạo hợp đồng, hợp đồng phải ở trạng thái CANCELLED", HttpStatus.BAD_REQUEST),
+    ORDER_NOT_FOUND(1059, "Order không tồn tại", HttpStatus.NOT_FOUND),
     INVALID_ORDER_ESCROW_STATUS(1060, "Trạng thái của order escrow khác trạng thái đợi người mua xác nhận", HttpStatus.BAD_REQUEST),
+    
+    // Complaint error codes
+    CONTRACT_NOT_FOUND(1061, "Hợp đồng không tồn tại", HttpStatus.NOT_FOUND),
+    CONTRACT_NOT_COMPLETED(1062, "Hợp đồng chưa hoàn thành, không thể tạo complaint", HttpStatus.BAD_REQUEST),
+    COMPLAINT_ALREADY_EXISTS(1063, "Đã có complaint cho hợp đồng này", HttpStatus.BAD_REQUEST),
+    COMPLAINT_NOT_FOUND(1064, "Complaint không tồn tại", HttpStatus.NOT_FOUND),
 
     ;
     private int code;
