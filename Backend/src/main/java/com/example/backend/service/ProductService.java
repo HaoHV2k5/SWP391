@@ -4,16 +4,13 @@ import com.example.backend.dto.request.CreateProductRequest;
 import com.example.backend.dto.request.UpdateProductRequest;
 import com.example.backend.dto.response.ProductResponse;
 import com.example.backend.entity.*;
+import com.example.backend.enums.ContractStatus;
 import com.example.backend.enums.ProductStatus;
-import com.example.backend.enums.ProductType;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
 import com.example.backend.mapper.ProductMapper;
 import com.example.backend.repository.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -33,9 +29,11 @@ public class ProductService {
     private final CloudinaryService cloudinaryService;
     private final UserPackageTransactionService userPackageTransactionService;
     private final PostingPackageRepository postingPackageRepository;
-    private final UserPostingPackageRepository userPostingPackageRepository;
     private final UserPackageTransactionRepository userPackageTransactionRepository;
     private final TagsRepository tagsRepository;
+    private final OrderRespository orderRespository;
+    private final ContractRepository contractRepository;
+
 
     @Transactional
     public ProductResponse createProduct(CreateProductRequest request, String username) {
@@ -66,10 +64,6 @@ public class ProductService {
         if(userPackage.getPostPossible() <= 0){
             throw  new AppException(ErrorCode.POSTING_OVER_LIMIT);
         }
-        PostingPackage postingPackage = postingPackageRepository
-                .findById(userPackage.getPostingPackage().getId())
-                .orElseThrow(() -> new AppException(ErrorCode.POSTING_PACKAGE_NOT_FOUND));
-
 
 
         LocalDateTime now =LocalDateTime.now();
@@ -162,14 +156,28 @@ public class ProductService {
 
 
     // seller post bai dang public
+    @Transactional
     public ProductResponse postProduct(Long producId){
         Product product = productRepository.findById(producId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-        String status = ProductStatus.ADMIN_APPROVED.name();
         if(!ProductStatus.ADMIN_APPROVED.equals(product.getStatus())){
             throw new AppException(ErrorCode.PRODUCT_NOT_ACCEPT_BY_ADMIN);
         }
 
-
+        // Kiểm tra nếu sản phẩm đã từng có Order
+        List<Order> orders = orderRespository.findAllByProductIdAndSellerAcceptedFalse(product.getId());
+        if(orders != null && !orders.isEmpty()) {
+            for(Order order : orders) {
+                List<Contract> contracts = contractRepository.findAllByOrder(order);
+                // Nếu có contract nào trạng thái khác CANCELLED thì không cho post
+                if (contracts != null && !contracts.isEmpty()) {
+                    for(Contract contract : contracts) {
+                        if (!ContractStatus.CANCELLED.equals(contract.getStatus())) {
+                            throw new AppException(ErrorCode.PRODUCT_ORDER_CONTRACT_NOT_CANCELLED);
+                        }
+                    }
+                }
+            }
+        }
         product.setStatus(ProductStatus.ACTIVE);
         product.setPosted(true);
         productRepository.save(product);

@@ -8,6 +8,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import com.example.backend.entity.Order;
 
 @Repository
 public interface ContractRepository extends JpaRepository<Contract, Long> {
@@ -19,4 +20,5 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
     @Query("select p from Contract  p where (p.seller.id = ?1 or p.buyer.id = ?1) and p.status = ?2 ")
     List<Contract> findAllConstractByStatus(long userId, ContractStatus status);
 
+    List<Contract> findAllByOrder(Order order);
 }

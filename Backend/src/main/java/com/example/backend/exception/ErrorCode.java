@@ -70,6 +70,7 @@ public enum ErrorCode {
     CONTRACT_SIGN(1055, "Hợp đồng đang được kí", HttpStatus.BAD_REQUEST),
     CONTRACT_NOT_VALID(1056, "Hợp đồng không tồn tại", HttpStatus.BAD_REQUEST),
     BUY_ORDER_FALID(1057, "Mua thất bại, số dư trong tài khoản không đủ", HttpStatus.BAD_REQUEST),
+    PRODUCT_ORDER_CONTRACT_NOT_CANCELLED(1058, "Sản phẩm đã có đơn cũ, hợp đồng phải ở trạng thái CANCELLED", HttpStatus.BAD_REQUEST),
 
 
     ;
