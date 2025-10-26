@@ -141,5 +141,16 @@ public class ContractController {
         }
     }
 
+    // API lấy toàn bộ hợp đồng cho admin và staff
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_STAFF')")
+    @GetMapping("/contracts/all")
+    public ApiResponse<List<ContractResponse>> getAllContracts() {
+        List<ContractResponse> contracts = constractService.getAllContracts();
+        return ApiResponse.<List<ContractResponse>>builder()
+                .data(contracts)
+                .message("Lấy toàn bộ hợp đồng thành công")
+                .build();
+    }
+
 
 }
