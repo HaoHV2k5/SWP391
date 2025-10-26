@@ -114,7 +114,7 @@ const ProductWithOrders = ({ product, onOrderUpdate }) => {
       <Card.Header className="bg-light">
         <div className="d-flex justify-content-between align-items-center">
           <h6 className="mb-0">{product.title}</h6>
-          <span className="badge bg-primary">
+          <span className="badge" style={{ backgroundColor: '#00A86B', color: 'white' }}>
             {formatPrice(product.price)}
           </span>
         </div>
@@ -122,7 +122,12 @@ const ProductWithOrders = ({ product, onOrderUpdate }) => {
       <Card.Body>
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h5>Yêu cầu mua hàng ({orders.length})</h5>
-          <Button variant="outline-primary" size="sm" onClick={loadOrders}>
+          <Button 
+            variant="outline-secondary" 
+            size="sm" 
+            onClick={loadOrders}
+            style={{ borderColor: '#00A86B', color: '#00A86B' }}
+          >
             <i className="bi bi-arrow-clockwise me-1"></i>
             Làm mới
           </Button>
@@ -158,18 +163,19 @@ const ProductWithOrders = ({ product, onOrderUpdate }) => {
                     <div className="col-md-4 text-end">
                       {order.status === 'PENDING' && (
                         <div>
-                          <Button 
-                            variant="success" 
-                            size="sm" 
-                            className="me-2"
-                            onClick={() => {
-                              // TODO: Implement accept order logic
-                              toast.info("Chức năng chấp nhận đơn hàng sẽ được phát triển trong phần Contract");
-                            }}
-                          >
-                            <i className="bi bi-check-circle me-1"></i>
-                            Chấp nhận
-                          </Button>
+                        <Button 
+                          variant="success" 
+                          size="sm" 
+                          className="me-2"
+                          style={{ backgroundColor: '#00A86B', borderColor: '#00A86B' }}
+                          onClick={() => {
+                            // TODO: Implement accept order logic
+                            toast.info("Chức năng chấp nhận đơn hàng sẽ được phát triển trong phần Contract");
+                          }}
+                        >
+                          <i className="bi bi-check-circle me-1"></i>
+                          Chấp nhận
+                        </Button>
                           <Button 
                             variant="danger" 
                             size="sm"
@@ -186,7 +192,10 @@ const ProductWithOrders = ({ product, onOrderUpdate }) => {
                       )}
                       
                       {order.status === 'ACCEPTED' && (
-                        <Badge bg="success" className="fs-6">
+                        <Badge 
+                          className="fs-6"
+                          style={{ backgroundColor: '#00A86B', color: 'white' }}
+                        >
                           <i className="bi bi-check-circle me-1"></i>
                           Đã chấp nhận
                         </Badge>
