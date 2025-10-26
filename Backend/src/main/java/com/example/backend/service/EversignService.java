@@ -50,6 +50,7 @@ public class EversignService {
     private final OrderRespository orderRespository;
     private final ProductRepository productRepository;
     private final ContractMapper contractMapper;
+    private final MailService mailService;
     private String outpath = "contract.pdf";
     @Value("${eversign.api.key}")
     private String apiKey;
@@ -64,8 +65,10 @@ public class EversignService {
 
     public Map<String, Object> createDocumentUsingTemplate(ContractCreateTemplateRequest req) {
         Order order = orderService.findById(req.getOrderId());
-        if(order.isSellerAccepted()){
-            throw new AppException(ErrorCode.CONTRACT_SIGN);
+        if(order.isSellerAccepted() ) {
+            ContractStatus status = order.getContracts().get(0).getStatus();
+            if(!status.name().equalsIgnoreCase(ContractStatus.CANCELLED.name()))
+                throw new AppException(ErrorCode.CONTRACT_SIGN);
         }
         try {
 
@@ -226,8 +229,7 @@ public class EversignService {
             }
             if("document_declined".equals(eventType)) {
                 contract.setStatus(ContractStatus.CANCELLED);
-                Product product = contract.getProduct();
-                product.setPosted(true);
+                mailService.sendContractCancelNotification(contract.getSeller().getEmail(),contract);
                 contractRepository.save(contract);
                 System.out.println(" Hợp đồng " + documentHash + " đã bị từ chối ký!");
             }
