@@ -21,11 +21,18 @@ import com.example.backend.repository.OrderEscrowRepository;
 import com.example.backend.mapper.ContractMapper;
 import com.example.backend.repository.ContractRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.example.backend.entity.User;
+import com.example.backend.entity.Product;
+import com.example.backend.service.MailService;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ConstractService {
@@ -36,6 +43,7 @@ public class ConstractService {
     private final WalletTransactionRepository walletTransactionRepository;
     private final OrderRespository orderRespository;
     private final OrderEscrowRepository orderEscrowRepository;
+    private final MailService mailService;
 
     public List<ContractResponse> getContractUserInvolved(Long userId) {
         List<Contract> list = contractRepository.findAllByUserInvolved(userId);
@@ -104,7 +112,7 @@ public class ConstractService {
                 .status(TransactionStatus.COMPLETED)
                 .description("Thanh toán đơn hàng escrow cho hợp đồng đã ký")
                 .paymentDate(LocalDateTime.now())
-                
+
                 .isWalletPayment(true)
                 .build();
         transactionRepository.save(transaction);
@@ -139,5 +147,39 @@ public class ConstractService {
         contract.setTransaction(transaction);
         contractRepository.save(contract);
         return true;
+    }
+
+    // Gửi email nhắc nhở các hợp đồng đã ký quá 3 ngày chưa thanh toán
+    public void notifySignedContractUnpaid() {
+        List<Contract> unpaidContracts = contractRepository.findAll();
+        LocalDateTime now = LocalDateTime.now();
+        for (Contract contract : unpaidContracts) {
+            if (contract.getStatus().name().equalsIgnoreCase(ContractStatus.SIGNED.name())
+                && !Boolean.TRUE.equals(contract.getPaymentCompleted())
+                && contract.getSignedAt() != null
+                && contract.getSignedAt().plusDays(3).isBefore(now)) {
+                // Gửi email cho buyer và seller
+                User buyer = contract.getBuyer();
+                User seller = contract.getSeller();
+                Product product = contract.getProduct();
+                String subject = "[Thông báo] Hợp đồng đã ký #" + contract.getId() + " chưa được thanh toán";
+                String content = String.format("Hợp đồng số %d cho sản phẩm '%s' đã ký hơn 3 ngày nhưng chưa được thanh toán.\nNgười bán có thể chủ động hủy hợp đồng để sản phẩm được mở lại!",
+                    contract.getId(), product.getTitle());
+                try {
+                    log.warn("đã gửi email");
+                    mailService.sendContractUnpaidNotification(buyer.getEmail(), subject, contract, product);
+                    mailService.sendContractUnpaidNotification(seller.getEmail(), subject, contract, product);
+                } catch (Exception e) {
+                    // Log lỗi gửi email, không interrupt job
+                }
+            }
+        }
+    }
+    @Transactional
+    @Scheduled(cron = "0 0 13 * * *")
+    public void scheduledNotifySignedContractUnpaid() {
+        log.warn("da schdule");
+
+        notifySignedContractUnpaid();
     }
 }
