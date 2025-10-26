@@ -171,6 +171,7 @@ public class ConstractService {
         // Update escrow status
         escrow.setStatus(EscrowStatus.HELD);
         escrow.setUserConfirmedTime(LocalDateTime.now());
+
         escrow.setExpectedReleaseTime(LocalDateTime.now().plusDays(3));
         orderEscrowRepository.save(escrow);
         // Update contract (deliveryCompleted)

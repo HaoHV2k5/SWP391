@@ -3,6 +3,7 @@ package com.example.backend.service;
 import com.example.backend.dto.request.BuyProductRequest;
 import com.example.backend.dto.request.OrderReviewRequest;
 import com.example.backend.dto.response.OrderResponse;
+import com.example.backend.dto.response.OrderEscrowReviewResponse;
 import com.example.backend.entity.Order;
 import com.example.backend.entity.OrderEscrow;
 import com.example.backend.entity.Product;
@@ -23,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -109,6 +111,46 @@ public class OrderService {
         escrow.setSellerOrderCode(request.getShippingCode());
         escrow.setStatus(EscrowStatus.ADMIN_REVIEW);
         escrow.setUpdatedAt(LocalDateTime.now());
+        orderEscrowRepository.save(escrow);
+    }
+
+    public List<OrderEscrowReviewResponse> getEscrowAdminReviewing() {
+        return orderEscrowRepository.findAll().stream()
+            .filter(e -> e.getStatus() == EscrowStatus.ADMIN_REVIEW)
+            .map(orderMapper::toEscrowReviewResponse)
+            .collect(Collectors.toList());
+    }
+    
+    @Transactional
+    public void adminApproveEscrow(Long escrowId) {
+        OrderEscrow escrow = orderEscrowRepository.findById(escrowId)
+            .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        if (escrow.getStatus() != EscrowStatus.ADMIN_REVIEW) {
+            throw new AppException(ErrorCode.INVALID_ORDER_ESCROW_STATUS);
+        }
+        escrow.setStatus(EscrowStatus.ADMIN_APPROVED);
+        escrow.setAdminReviewTime(LocalDateTime.now());
+        escrow.setAdminSentEmailTime(LocalDateTime.now());
+        escrow.setAdminInvolved(true);
+        escrow.setExpectedReleaseTime(LocalDateTime.now().plusDays(3));
+        // Gửi mail cho buyer
+        if (escrow.getOrder() != null && escrow.getOrder().getBuyer() != null) {
+            mailService.sendConfirmProduct(escrow);
+        }
+        orderEscrowRepository.save(escrow);
+    }
+
+    @Transactional
+    public void adminRejectEscrow(Long escrowId, String reason) {
+        OrderEscrow escrow = orderEscrowRepository.findById(escrowId)
+            .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        if (escrow.getStatus() != EscrowStatus.ADMIN_REVIEW) {
+            throw new AppException(ErrorCode.INVALID_ORDER_ESCROW_STATUS);
+        }
+        escrow.setStatus(EscrowStatus.ADMIN_REJECTED);
+        escrow.setAdminReviewTime(LocalDateTime.now());
+        escrow.setAdminRejectReason(reason);
+        escrow.setAdminInvolved(true);
         orderEscrowRepository.save(escrow);
     }
 }

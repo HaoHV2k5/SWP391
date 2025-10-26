@@ -11,10 +11,15 @@ import com.example.backend.dto.response.CreationUserResponse;
 import com.example.backend.dto.response.UserDetailResponse;
 import com.example.backend.dto.response.UserListResponse;
 import com.example.backend.service.UserService;
+import com.example.backend.entity.OrderEscrow;
+import com.example.backend.enums.EscrowStatus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import com.example.backend.service.OrderService;
+import org.springframework.web.bind.annotation.RequestParam;
+import com.example.backend.dto.response.OrderEscrowReviewResponse;
 
 import java.util.List;
 
@@ -25,6 +30,7 @@ import java.util.List;
 public class AdminController {
     private final UserService userService;
     private final RoleService roleService;
+    private final OrderService orderService;
 
     // Get all users
     @GetMapping("/users")
@@ -125,7 +131,26 @@ public class AdminController {
                 .build();
     }
 
+    @GetMapping("/order-escrow/seller-requests")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ApiResponse<List<OrderEscrowReviewResponse>> getSellerRequests() {
+        List<OrderEscrowReviewResponse> reqs = orderService.getEscrowAdminReviewing();
+        return ApiResponse.<List<OrderEscrowReviewResponse>>builder().data(reqs).message("Danh sách yêu cầu seller chờ duyệt").build();
+    }
 
+    @PostMapping("/order-escrow/{escrowId}/approve")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ApiResponse<Void> adminApproveSellerRequest(@PathVariable Long escrowId) {
+        orderService.adminApproveEscrow(escrowId);
+        return ApiResponse.<Void>builder().message("Đã xác nhận và thông báo buyer thành công").build();
+    }
+
+    @PostMapping("/order-escrow/{escrowId}/reject")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ApiResponse<Void> adminRejectSellerRequest(@PathVariable Long escrowId, @RequestParam String reason) {
+        orderService.adminRejectEscrow(escrowId, reason);
+        return ApiResponse.<Void>builder().message("Đã từ chối yêu cầu và lưu lý do").build();
+    }
 
 
 }
