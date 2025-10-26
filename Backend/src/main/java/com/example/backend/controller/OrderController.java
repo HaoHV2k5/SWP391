@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import com.example.backend.dto.request.OrderReviewRequest;
 
 @RestController
 @RequestMapping("/order")
@@ -46,5 +47,12 @@ public class OrderController {
 
         constractService.handleBuyerConfirmReceived(orderId);
         return ApiResponse.<Void>builder().message("Xác nhận đã nhận hàng thành công").build();
+    }
+
+//    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    @PostMapping("/request-complete")
+    public ApiResponse<Void> requestOrderAdminReview(@ModelAttribute OrderReviewRequest request) {
+        orderService.sellerRequestAdminReview(request);
+        return ApiResponse.<Void>builder().message("Đã gửi yêu cầu xác nhận tới admin").build();
     }
 }
