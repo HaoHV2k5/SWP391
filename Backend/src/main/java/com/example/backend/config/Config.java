@@ -9,7 +9,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
+@EnableScheduling
 public class Config {
     // Cấu hình VNPAY
     public static String vnp_TmnCode = "O7R3VFFO";
