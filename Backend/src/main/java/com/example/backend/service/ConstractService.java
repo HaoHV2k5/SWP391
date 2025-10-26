@@ -149,6 +149,11 @@ public class ConstractService {
         return true;
     }
 
+    public List<ContractResponse> getAllContracts() {
+        List<Contract> contracts = contractRepository.findAll();
+        return contractMapper.toContractResponseList(contracts);
+    }
+
     // Gửi email nhắc nhở các hợp đồng đã ký quá 3 ngày chưa thanh toán
     public void notifySignedContractUnpaid() {
         List<Contract> unpaidContracts = contractRepository.findAll();
