@@ -136,7 +136,7 @@ public class ConstractService {
         // Tạo OrderEscrow
         OrderEscrow orderEscrow = OrderEscrow.builder()
                 .order(order)
-                .status(EscrowStatus.HELD)
+                .status(EscrowStatus.AWAIT_CONFIRM)
                 .holdStartTime(LocalDateTime.now())
                 .build();
         order.setOrderEscrow(orderEscrow);
@@ -152,6 +152,37 @@ public class ConstractService {
     public List<ContractResponse> getAllContracts() {
         List<Contract> contracts = contractRepository.findAll();
         return contractMapper.toContractResponseList(contracts);
+    }
+
+    /**
+     * Buyer confirms receipt of order - release escrow and mark deliveryCompleted
+     */
+    @Transactional
+    public boolean handleBuyerConfirmReceived(Long orderId) {
+        var order = orderRespository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        User buyer = order.getBuyer();
+       if(buyer == null){
+           throw new AppException(ErrorCode.USER_NOT_FOUND);
+       }
+        var escrow = order.getOrderEscrow();
+        if (escrow == null || !escrow.getStatus().equals(EscrowStatus.AWAIT_CONFIRM)) {
+            throw new AppException(ErrorCode.INVALID_ORDER_ESCROW_STATUS);
+        }
+        // Update escrow status
+        escrow.setStatus(EscrowStatus.HELD);
+        escrow.setUserConfirmedTime(LocalDateTime.now());
+        escrow.setExpectedReleaseTime(LocalDateTime.now().plusDays(3));
+        orderEscrowRepository.save(escrow);
+        // Update contract (deliveryCompleted)
+        var contracts = order.getContracts();
+        for(var contract : contracts) {
+            if(contract.getStatus() == ContractStatus.COMPLETED) {
+                contract.setDeliveryCompleted(true);
+                contract.setCompletedAt(LocalDateTime.now());
+                contractRepository.save(contract);
+            }
+        }
+        return true;
     }
 
     // Gửi email nhắc nhở các hợp đồng đã ký quá 3 ngày chưa thanh toán

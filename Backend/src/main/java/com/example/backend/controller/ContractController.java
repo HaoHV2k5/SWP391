@@ -79,7 +79,7 @@ public class ContractController {
     //api xoa hop dong
 
     // api download hợp đồng dựa vào document_hash (chỉ co the tai hop dong complete)
-    @PreAuthorize("hasAnyAuthority('ROLE_SELLER','ROLE_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SELLER','ROLE_USER','ROLE_STAFF','ROLE_ADMIN')")
     @GetMapping("/download")
     public ResponseEntity<byte[]> download(@RequestParam String contractHash){
         try {
@@ -115,7 +115,7 @@ public class ContractController {
                 .message("đã lấy danh sách hợp đồng đang chờ kí thành công!")
                 .build();
     }
-    //api lau danh sach hop dong signed
+    //api lay danh sach hop dong signed
 
     @PreAuthorize("hasAnyAuthority('ROLE_SELLER','ROLE_USER')")
     @GetMapping("/contracts/signed")

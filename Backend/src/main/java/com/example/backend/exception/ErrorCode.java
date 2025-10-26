@@ -71,7 +71,8 @@ public enum ErrorCode {
     CONTRACT_NOT_VALID(1056, "Hợp đồng không tồn tại", HttpStatus.BAD_REQUEST),
     BUY_ORDER_FALID(1057, "Mua thất bại, số dư trong tài khoản không đủ", HttpStatus.BAD_REQUEST),
     PRODUCT_ORDER_CONTRACT_NOT_CANCELLED(1058, "Sản phẩm đã có đơn cũ, hợp đồng phải ở trạng thái CANCELLED", HttpStatus.BAD_REQUEST),
-
+    ORDER_NOT_FOUND(1059, "Order không tồn tại", HttpStatus.BAD_REQUEST),
+    INVALID_ORDER_ESCROW_STATUS(1060, "Trạng thái của order escrow khác trạng thái đợi người mua xác nhận", HttpStatus.BAD_REQUEST),
 
     ;
     private int code;
