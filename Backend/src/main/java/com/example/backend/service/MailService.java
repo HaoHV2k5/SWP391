@@ -2,6 +2,7 @@ package com.example.backend.service;
 
 import com.example.backend.entity.Order;
 import com.example.backend.entity.Contract;
+import com.example.backend.entity.OrderEscrow;
 import com.example.backend.entity.Product;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -89,6 +90,35 @@ public class MailService {
         try {
             messageHelper.setSubject("EVDrive - Đơn hàng của bạn đã bị từ chối");
             messageHelper.setTo((order.getBuyer().getEmail()));
+            messageHelper.setText(html,true);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
+        javaMailSender.send(mimeMessage);
+
+
+    }
+
+
+
+    public void sendConfirmProduct(OrderEscrow orderEscrow){
+        Context context = new Context();
+        context.setVariable("buyerName", orderEscrow.getOrder().getBuyer().getFullname());
+        context.setVariable("productName", orderEscrow.getOrder().getProduct().getTitle());
+        context.setVariable("orderCode", orderEscrow.getOrder().getId());
+
+        context.setVariable("orderAmount", orderEscrow.getOrder().getOfferedPrice());
+        context.setVariable("deliveredDate", orderEscrow.getCreatedAt());
+        context.setVariable("homeUrl", "http://localhost:5173");
+
+
+        ;
+        String html =  templateEngine.process("email/reminder-confirm-order.html",context);
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
+        try {
+            messageHelper.setSubject("EVDrive - Thông báo xác nhận đơn hàng!");
+            messageHelper.setTo((orderEscrow.getOrder().getBuyer().getEmail()));
             messageHelper.setText(html,true);
         } catch (MessagingException e) {
             throw new RuntimeException(e);

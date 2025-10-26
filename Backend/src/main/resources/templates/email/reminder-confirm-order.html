@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Nhắc nhở xác nhận đơn hàng</title>
+    <style>
+        body {
+            font-family: "Poppins", "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, #e0f7fa, #f0fdf4);
+            color: #1e293b;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 640px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #10b981, #3b82f6);
+            color: white;
+            text-align: center;
+            padding: 25px 15px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.7em;
+            letter-spacing: 0.5px;
+        }
+
+        .content {
+            padding: 30px 35px;
+            line-height: 1.7;
+        }
+
+        .content h2 {
+            color: #0284c7;
+            margin-top: 0;
+        }
+
+        .highlight {
+            background: #ecfdf5;
+            border-left: 4px solid #10b981;
+            padding: 14px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        .order-info {
+            margin-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 15px;
+            font-size: 15px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            margin-top: 25px;
+            background: linear-gradient(135deg, #10b981, #3b82f6);
+            color: white !important;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 13px;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+            background: #f9fafb;
+        }
+
+        .icon {
+            display: block;
+            margin: 0 auto 10px auto;
+            width: 60px;
+            height: 60px;
+        }
+
+        .pulse {
+            animation: pulseGlow 2s infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            from { filter: drop-shadow(0 0 5px #10b981); }
+            to { filter: drop-shadow(0 0 15px #3b82f6); }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <img src="https://cdn-icons-png.flaticon.com/512/2332/2332723.png"
+             alt="Electric Car Icon"
+             class="icon pulse">
+        <h1>Nhắc nhở xác nhận đơn hàng</h1>
+    </div>
+
+    <div class="content">
+        <p>Xin chào <strong th:text="${buyerName}">Nguyễn Văn A</strong>,</p>
+
+        <p>Đơn hàng <strong th:text="${orderCode}">#123456</strong> của bạn đã được giao thành công 🚚⚡.</p>
+
+        <div class="highlight">
+            <p><strong>Lưu ý:</strong> Bạn vẫn chưa xác nhận là đã nhận hàng hoặc gửi khiếu nại.</p>
+            <p>Trong vòng <strong>3 ngày tới</strong>, nếu bạn không phản hồi, hệ thống sẽ tự động
+                <strong>giải phóng số tiền thanh toán</strong> cho người bán.</p>
+        </div>
+
+        <div class="order-info">
+            <p><strong>Tên sản phẩm:</strong> <span th:text="${productName}">Xe điện City E-2025</span></p>
+            <p><strong>Giá trị đơn hàng:</strong> <span th:text="${orderAmount}">120.000.000đ</span></p>
+            <p><strong>Ngày giao hàng:</strong> <span th:text="${deliveredDate}">24/10/2025</span></p>
+        </div>
+
+        <div style="text-align:center;">
+            <a th:href="@{${homeUrl}}" class="btn">🔙 Về trang chủ</a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>⚙️ Đây là thông báo tự động từ hệ thống năng lượng xanh.</p>
+        <p>Cảm ơn bạn đã tin tưởng <strong>EV Market</strong> 💚</p>
+    </div>
+</div>
+</body>
+</html>
