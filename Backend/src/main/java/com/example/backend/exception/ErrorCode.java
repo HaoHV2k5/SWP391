@@ -79,6 +79,8 @@ public enum ErrorCode {
     CONTRACT_NOT_COMPLETED(1062, "Hợp đồng chưa hoàn thành, không thể tạo complaint", HttpStatus.BAD_REQUEST),
     COMPLAINT_ALREADY_EXISTS(1063, "Đã có complaint cho hợp đồng này", HttpStatus.BAD_REQUEST),
     COMPLAINT_NOT_FOUND(1064, "Complaint không tồn tại", HttpStatus.NOT_FOUND),
+    COMPLAINT_ALREADY_RESOLVED(1065, "Complaint đã được giải quyết", HttpStatus.BAD_REQUEST),
+    COMPLAINT_NOT_PENDING(1066, "Complaint không ở trạng thái pending", HttpStatus.BAD_REQUEST),
 
     ;
     private int code;

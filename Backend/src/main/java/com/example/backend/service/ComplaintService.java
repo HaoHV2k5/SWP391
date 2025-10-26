@@ -1,10 +1,12 @@
 package com.example.backend.service;
 
+import com.example.backend.dto.request.AdminResolveComplaintRequest;
 import com.example.backend.dto.request.ComplaintRequest;
 import com.example.backend.dto.response.ComplaintResponse;
 import com.example.backend.entity.Complaint;
 import com.example.backend.entity.Contract;
 import com.example.backend.entity.User;
+import com.example.backend.enums.ComplaintStatus;
 import com.example.backend.enums.ContractStatus;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
@@ -18,9 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -140,5 +142,55 @@ public class ComplaintService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         
         return complaintRepository.hasCompletedTransaction(buyer, seller);
+    }
+    
+    /**
+     * Admin giải quyết complaint
+     */
+    @Transactional
+    public ComplaintResponse adminResolveComplaint(Long complaintId, AdminResolveComplaintRequest request) {
+        // Lấy complaint
+        Complaint complaint = complaintRepository.findById(complaintId)
+                .orElseThrow(() -> new AppException(ErrorCode.COMPLAINT_NOT_FOUND));
+        
+        // Kiểm tra complaint chưa được giải quyết
+        if (complaint.getStatus() != ComplaintStatus.PENDING && complaint.getStatus() != ComplaintStatus.UNDER_REVIEW) {
+            throw new AppException(ErrorCode.COMPLAINT_ALREADY_RESOLVED);
+        }
+        
+        // Cập nhật status và staff notes
+        complaint.setStatus(request.getStatus());
+        complaint.setStaffNotes(request.getStaffNotes());
+        
+        // Nếu đã giải quyết thì set resolvedAt
+        if (request.getStatus() == ComplaintStatus.RESOLVED_BUYER_FAVOR || 
+            request.getStatus() == ComplaintStatus.RESOLVED_SELLER_FAVOR ||
+            request.getStatus() == ComplaintStatus.CLOSED) {
+            complaint.setResolvedAt(LocalDateTime.now());
+        }
+        
+        Complaint savedComplaint = complaintRepository.save(complaint);
+        
+        log.info("Complaint {} resolved by admin with status: {}", complaintId, request.getStatus());
+        return complaintMapper.toComplaintResponse(savedComplaint);
+    }
+    
+    /**
+     * Admin chuyển complaint sang trạng thái đang xem xét
+     */
+    @Transactional
+    public ComplaintResponse adminStartReview(Long complaintId) {
+        Complaint complaint = complaintRepository.findById(complaintId)
+                .orElseThrow(() -> new AppException(ErrorCode.COMPLAINT_NOT_FOUND));
+        
+        if (complaint.getStatus() != ComplaintStatus.PENDING) {
+            throw new AppException(ErrorCode.COMPLAINT_NOT_PENDING);
+        }
+        
+        complaint.setStatus(ComplaintStatus.UNDER_REVIEW);
+        Complaint savedComplaint = complaintRepository.save(complaint);
+        
+        log.info("Complaint {} moved to UNDER_REVIEW by admin", complaintId);
+        return complaintMapper.toComplaintResponse(savedComplaint);
     }
 }
