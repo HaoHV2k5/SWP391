@@ -102,11 +102,28 @@ const BuyButton = ({ product, user, onOrderSuccess }) => {
   return (
     <>
       <Button 
-        variant="success" 
         size="lg" 
         className="w-100 mb-3"
         onClick={handleBuyClick}
         disabled={loading}
+        style={{ 
+          backgroundColor: '#00A86B', 
+          borderColor: '#00A86B',
+          color: 'white',
+          transition: 'all 0.3s ease'
+        }}
+        onMouseEnter={(e) => {
+          if (!loading) {
+            e.target.style.backgroundColor = '#009057';
+            e.target.style.borderColor = '#009057';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!loading) {
+            e.target.style.backgroundColor = '#00A86B';
+            e.target.style.borderColor = '#00A86B';
+          }
+        }}
       >
         <i className="bi bi-cart-plus me-2"></i>
         Mua ngay
@@ -160,13 +177,57 @@ const BuyButton = ({ product, user, onOrderSuccess }) => {
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseModal}>
+          <button 
+            onClick={handleCloseModal}
+            style={{
+              backgroundColor: 'white',
+              border: '1px solid #212529',
+              color: '#212529',
+              padding: '0.5rem 1rem',
+              borderRadius: '0.25rem',
+              cursor: 'pointer',
+              fontSize: '1rem',
+              fontWeight: '400',
+              lineHeight: '1.5',
+              transition: 'all 0.3s ease',
+              height: '38px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#f8f9fa';
+              e.target.style.borderColor = '#495057';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'white';
+              e.target.style.borderColor = '#212529';
+            }}
+          >
             Hủy
-          </Button>
+          </button>
           <Button 
-            variant="success" 
             onClick={handleConfirmBuy}
             disabled={!confirmBuy || loading}
+            style={{ 
+              backgroundColor: '#00A86B', 
+              borderColor: '#00A86B',
+              color: 'white',
+              height: '38px',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (!loading && confirmBuy) {
+                e.target.style.backgroundColor = '#009057';
+                e.target.style.borderColor = '#009057';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) {
+                e.target.style.backgroundColor = '#00A86B';
+                e.target.style.borderColor = '#00A86B';
+              }
+            }}
           >
             {loading ? (
               <>
