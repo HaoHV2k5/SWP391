@@ -1,10 +1,11 @@
 import { Container, Spinner, Alert } from "react-bootstrap";
+import { useState, useEffect } from "react";
 import { useProductDetailLogic } from "../../hooks/useProductDetail";
-import { useSavedProducts } from "../../components/homepageContainer/contexts/SavedProductsContext";
+import wishlistService from "../../services/wishlistService";
 import BuyButton from "../../components/order/BuyButton";
 import "../../components/homepageContainer/styles/ProductDetail.css";
 
-const ProductDetailPage = () => {
+const ProductDetailPage = ({ user }) => {
   const {
     data,
     loading,
@@ -21,31 +22,39 @@ const ProductDetailPage = () => {
     setCurrentImageIndex
   } = useProductDetailLogic();
   
-  const { toggle, isSaved } = useSavedProducts();
-  const saved = data?.id ? isSaved(data.id) : false;
-  
-  // Lấy thông tin user từ localStorage
-  const getUserFromStorage = () => {
-    try {
-      const userData = localStorage.getItem("userData");
-      return userData ? JSON.parse(userData) : null;
-    } catch (error) {
-      console.error("Error parsing user data:", error);
-      return null;
-    }
-  };
-  
-  const user = getUserFromStorage();
+  const [state, setState] = useState({
+    savedProducts: [],
+    loading: false,
+    currentUserId: null,
+    initialized: false
+  });
+
+  // Subscribe to wishlistService state changes
+  useEffect(() => {
+    // Get initial state
+    const initialState = wishlistService.getCurrentState();
+    setState(initialState);
+
+    // Subscribe to state changes
+    const unsubscribe = wishlistService.subscribe((newState) => {
+      setState(newState);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const saved = data?.id ? wishlistService.isSaved(data.id) : false;
   
   const handleSaveClick = async () => {
     if (data) {
       try {
-        await toggle(data);
+        await wishlistService.toggle(data);
       } catch (error) {
         console.error("Error toggling wishlist:", error);
       }
     }
   };
+  
   if (loading) {
     return (
       <Container className="py-5 text-center">

@@ -8,7 +8,7 @@ import ProductCard from "../../components/homepageContainer/home/ProductCard";
 import LoadMoreButton from "../../components/homepageContainer/home/LoadMoreButton";
 import useProducts from "../../hooks/useProducts";
 import usePagination from "../../hooks/usePagination";
-import searchService from "../../services/searchService";
+import searchService from "../../services/home/searchService";
 
 const SearchResultsPage = () => {
   const location = useLocation();

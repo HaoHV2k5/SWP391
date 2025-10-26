@@ -24,11 +24,16 @@ public class OrderService {
     private final UserRepository userRepository;
     private final OrderRespository orderRespository;
     private final OrderMapper orderMapper;
+    private  final MailService mailService;
 
     public OrderResponse buyOrder(BuyProductRequest request){
         Product product = productRepository.findById(request.getProductId()).get();
         User user = userRepository.findById(request.getUserId()).get();
-        Order order = Order.builder()
+        Order order = orderRespository.findByProductAndBuyer(product,user);
+        if(order!=null){
+            throw new AppException(ErrorCode.ORDER_REQUEST_DUPLICATE);
+        }
+        order = Order.builder()
                 .createdAt(LocalDateTime.now())
                 .product(product)
                 .buyer(user)
@@ -47,7 +52,8 @@ public class OrderService {
     }
 
     public void rejectAll(Long orderId){
-        Order order = orderRespository.findById(orderId).get();
+        Order order = orderRespository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_REJECT_INVALID));
+
 
         List<Order> list = orderRespository.findAllByProductAndSellerAndIdNot(order.getProduct(), order.getSeller(),orderId);
         for(Order o : list){
@@ -61,8 +67,8 @@ public class OrderService {
 
     public void rejectOrder(Long orderId){
 
-        Order order = orderRespository.findById(orderId).get();
-        if(order.getStatus().name().equals("ACCEPTED")){
+        Order order = orderRespository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_REJECT_INVALID));
+        if(order.isSellerAccepted()){
             throw new AppException(ErrorCode.REJECT_ORDER_VALID);
         }
 //        mailService.sendRejectProduct(order);
@@ -71,7 +77,7 @@ public class OrderService {
     }
 
     public List<OrderResponse> getOrdersByProductId(Long productId) {
-        List<Order> orders = orderRespository.findAllByProductId(productId);
+        List<Order> orders = orderRespository.findAllByProductIdAndSellerAcceptedFalse(productId);
         return orders.stream().map(orderMapper::toOrderResponse).toList();
     }
 }

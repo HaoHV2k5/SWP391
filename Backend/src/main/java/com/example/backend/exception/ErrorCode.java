@@ -65,6 +65,11 @@ public enum ErrorCode {
     CONTRACT_BUID_FALID(1050, "Hợp đồng không thể tạo được", HttpStatus.BAD_REQUEST),
     REJECT_ORDER_VALID(1051, "Order này đang được đã được tạm thời kí hợp đồng, không đươợc reject order lúc này", HttpStatus.BAD_REQUEST),
     AVATAR_INVALID(1052, "Avatar đang rỗng", HttpStatus.BAD_REQUEST),
+    ORDER_REJECT_INVALID(1053, "Reject order thất bại", HttpStatus.BAD_REQUEST),
+    ORDER_REQUEST_DUPLICATE(1054, "Bạn đã gửi request mua sản phẩm này rồi", HttpStatus.BAD_REQUEST),
+    CONTRACT_SIGN(1055, "Hợp đồng đang được kí", HttpStatus.BAD_REQUEST),
+    CONTRACT_NOT_VALID(1056, "Hợp đồng không tồn tại", HttpStatus.BAD_REQUEST),
+    BUY_ORDER_FALID(1057, "Mua thất bại, số dư trong tài khoản không đủ", HttpStatus.BAD_REQUEST),
 
 
     ;
