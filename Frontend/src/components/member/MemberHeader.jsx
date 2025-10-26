@@ -13,6 +13,8 @@ const MemberHeader = ({ activeTab }) => {
         return "Đơn hàng của tôi";
       case "my-orders":
         return "Yêu cầu mua hàng";
+      case "ai-tools":
+        return "AI Trợ Lý Thông Minh";
       default:
         return "Trang chủ";
     }
