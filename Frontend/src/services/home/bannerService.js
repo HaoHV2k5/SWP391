@@ -29,9 +29,9 @@ class BannerService {
       { 
         id: 4, 
         image: 'https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwac8426a2/landingpage/lp-xmd/evo-grand/banner-1.webp', 
-        alt: 'Khuyến mãi đặc biệt',
-        linkType: 'promotion',
-        linkTarget: '/promotions/special-sale'
+        alt: 'Vinfast Evo Grand',
+        linkType: 'product',
+        productId: 93
       },
     ];
   }
