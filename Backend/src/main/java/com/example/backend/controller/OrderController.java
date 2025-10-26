@@ -15,7 +15,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderController {
     private final OrderService orderService;
-    @PreAuthorize("hasAuthority('ROLE_USER') or hasAuthority('ROLE_SELLER')")
+    private final com.example.backend.service.ConstractService constractService;
+    @PreAuthorize("hasAnyAuthority('ROLE_USER','ROLE_SELLER')")
     @PostMapping("/create")
     public ApiResponse<OrderResponse> buyProduct(@RequestBody BuyProductRequest request) {
         OrderResponse order =orderService.buyOrder(request);
@@ -36,5 +37,14 @@ public class OrderController {
     public ApiResponse<List<OrderResponse>> getOrdersByProduct(@PathVariable Long productId) {
         List<OrderResponse> orders = orderService.getOrdersByProductId(productId);
         return ApiResponse.<List<OrderResponse>>builder().data(orders).message("Lấy danh sách order cho sản phẩm thành công").build();
+    }
+
+//    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PostMapping("/confirm-received")
+    public ApiResponse<Void> confirmReceived(@RequestParam Long orderId) {
+        // lấy userId từ context (giả sử có method getCurrentUserId())
+
+        constractService.handleBuyerConfirmReceived(orderId);
+        return ApiResponse.<Void>builder().message("Xác nhận đã nhận hàng thành công").build();
     }
 }
