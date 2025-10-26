@@ -157,7 +157,9 @@ public class ConstractService {
             if (contract.getStatus().name().equalsIgnoreCase(ContractStatus.SIGNED.name())
                 && !Boolean.TRUE.equals(contract.getPaymentCompleted())
                 && contract.getSignedAt() != null
-                && contract.getSignedAt().plusDays(3).isBefore(now)) {
+                && contract.getSignedAt().plusDays(3).isBefore(now)
+                &&  !contract.isPostEmail()
+                ) {
                 // Gửi email cho buyer và seller
                 User buyer = contract.getBuyer();
                 User seller = contract.getSeller();
@@ -167,6 +169,8 @@ public class ConstractService {
                     contract.getId(), product.getTitle());
                 try {
                     log.warn("đã gửi email");
+                    contract.setPostEmail(true);
+                    contractRepository.save(contract);
                     mailService.sendContractUnpaidNotification(buyer.getEmail(), subject, contract, product);
                     mailService.sendContractUnpaidNotification(seller.getEmail(), subject, contract, product);
                 } catch (Exception e) {

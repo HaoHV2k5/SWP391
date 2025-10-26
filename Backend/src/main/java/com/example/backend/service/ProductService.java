@@ -168,6 +168,8 @@ public class ProductService {
         if(!ProductStatus.ADMIN_APPROVED.equals(product.getStatus())){
             throw new AppException(ErrorCode.PRODUCT_NOT_ACCEPT_BY_ADMIN);
         }
+        
+
         product.setStatus(ProductStatus.ACTIVE);
         product.setPosted(true);
         productRepository.save(product);

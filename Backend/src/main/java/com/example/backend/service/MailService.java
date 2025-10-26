@@ -125,4 +125,32 @@ public class MailService {
     }
 
 
+
+    public void sendContractCancelNotification(String to, Contract contract) {
+        Context context = new Context();
+        context.setVariable("sellerName", contract.getSeller().getFullname());
+        context.setVariable("buyerName", contract.getBuyer().getFullname());
+        context.setVariable("productName", contract.getProduct().getTitle());
+        context.setVariable("contractCode", contract.getContractCode());
+        context.setVariable("createdAt", contract.getCreatedAt());
+
+        // add nhiều info hơn nếu muốn
+
+        String html = templateEngine.process("email/Reject-Contract.html", context); // bạn cần tạo template này
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
+            messageHelper.setTo(to);
+            messageHelper.setSubject("[EV Exchange] Hợp đồng bị người mua từ chối - " + contract.getProduct().getTitle());
+
+            messageHelper.setText(html, true);
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            // log hoặc throw tùy nhu cầu
+        }
+    }
+
+
+
+
 }
