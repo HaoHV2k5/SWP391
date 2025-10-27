@@ -10,7 +10,6 @@ const UserMenuItems = ({ onItemClick }) => {
     { to: "/my-orders", label: "Yêu cầu mua hàng" },
     { to: "/saved-posts", label: "Tin đã lưu" },
     { to: "/orders", label: "Đơn hàng" },
-    { to: "/ai-tools", label: "AI Gợi Ý Giá" },
   ];
 
   return (
