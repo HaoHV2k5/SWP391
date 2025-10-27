@@ -29,7 +29,6 @@ import PostAd from "./pages/member/PostAd";
 import MyPosts from "./pages/member/MyPosts";
 import SavedPosts from "./pages/member/SavedPosts";
 import MyOrders from "./pages/member/MyOrders";
-import AITools from "./pages/member/AITools";
 import AccountPage from "./pages/AccountPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
 import KycPage from "./pages/kyc/KycPage";
@@ -228,7 +227,6 @@ function AppContent() {
         <Route path="/orders" element={<MemberOrders user={user} />} />
         <Route path="/my-orders" element={<MyOrders user={user} />} />
         <Route path="/post-ad" element={<PostAd user={user} />} />
-        <Route path="/ai-tools" element={<AITools user={user} />} />
 
         {/* PRODUCT ROUTES */}
         <Route path="/products/:type" element={<CategoryRouter />} />

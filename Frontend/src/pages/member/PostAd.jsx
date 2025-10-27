@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from "react-bootstrap";
+import { Container, Row, Col, Card, Form, Button, Alert, Spinner, InputGroup } from "react-bootstrap";
 import { toast } from "react-toastify";
 import MemberHeader from "../../components/member/MemberHeader";
 import productService from "../../services/productService";
+import aiPriceService from "../../services/aiPriceService";
 import "../../styles/member/index.css";
 
 const PostAd = ({ user }) => {
@@ -23,6 +24,7 @@ const PostAd = ({ user }) => {
   });
 
   const [fieldErrors, setFieldErrors] = useState({});
+  const [aiSuggesting, setAiSuggesting] = useState(false);
 
   const categories = [
     { value: "VEHICLE", label: "Xe điện (Vehicle)" },
@@ -137,6 +139,37 @@ const PostAd = ({ user }) => {
       ...prev,
       images: files
     }));
+  };
+
+  // Handle AI suggestion
+  const handleAISuggestPrice = async () => {
+    if (!formData.title.trim() || !formData.description.trim()) {
+      toast.warning('Vui lòng điền tên sản phẩm và mô tả trước khi dùng AI!');
+      return;
+    }
+
+    setAiSuggesting(true);
+    try {
+      const response = await aiPriceService.suggestPrice(
+        formData.title,
+        formData.description
+      );
+
+      if (response.success && response.price) {
+        setFormData(prev => ({
+          ...prev,
+          price: response.price
+        }));
+        toast.success('AI đã gợi ý giá cho bạn! Bạn có thể điều chỉnh nếu cần.');
+      } else {
+        toast.error(response.message || 'Không thể gợi ý giá. Vui lòng thử lại!');
+      }
+    } catch (error) {
+      console.error('AI suggest error:', error);
+      toast.error('Có lỗi xảy ra khi gợi ý giá!');
+    } finally {
+      setAiSuggesting(false);
+    }
   };
 
   // Validation function
@@ -329,16 +362,30 @@ const PostAd = ({ user }) => {
                         <Col md={6}>
                           <Form.Group className="mb-3">
                             <Form.Label className="fw-bold">Giá bán <span className="text-danger">*</span></Form.Label>
-                            <Form.Control
-                              type="number"
-                              name="price"
-                              value={formData.price}
-                              onChange={handleInputChange}
-                              placeholder="VD: 15000000"
-                              min="1000"
-                              required
-                              isInvalid={!!fieldErrors.price}
-                            />
+                            <InputGroup>
+                              <Form.Control
+                                type="number"
+                                name="price"
+                                value={formData.price}
+                                onChange={handleInputChange}
+                                placeholder="VD: 15000000"
+                                min="1000"
+                                required
+                                isInvalid={!!fieldErrors.price}
+                              />
+                              <Button
+                                variant="outline-success"
+                                onClick={handleAISuggestPrice}
+                                disabled={aiSuggesting || !formData.title.trim() || !formData.description.trim()}
+                                title="AI gợi ý giá dựa trên tên sản phẩm và mô tả"
+                              >
+                                {aiSuggesting ? (
+                                  <Spinner animation="border" size="sm" />
+                                ) : (
+                                  "AI gợi ý giá"
+                                )}
+                              </Button>
+                            </InputGroup>
                             <Form.Text className="text-muted">
                               Đơn vị: VNĐ (tối thiểu 1,000 VNĐ)
                             </Form.Text>
