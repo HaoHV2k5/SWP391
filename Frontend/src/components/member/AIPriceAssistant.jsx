@@ -98,108 +98,91 @@ const AIPriceAssistant = () => {
   };
 
   return (
-    <div className="ai-assistant-container">
-      {/* Main AI Card */}
-      <Card className="ai-main-card mb-4">
-        <Card.Header className="ai-card-header">
-          <div className="d-flex align-items-center">
-            <Sparkles className="me-2" size={24} />
-            <h4 className="mb-0">Gợi Ý Giá Sản Phẩm</h4>
-          </div>
-          <p className="text-muted mb-0">Nhập thông tin sản phẩm để AI phân tích và gợi ý giá</p>
+    <>
+      <Card className="shadow-sm border-0 mb-4">
+        <Card.Header className="bg-success text-white">
+          <h4 className="mb-0">Gợi Ý Giá Sản Phẩm</h4>
         </Card.Header>
-        
-        <Card.Body>
-          {/* Input Form */}
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">
-                Tên sản phẩm <span className="text-danger">*</span>
-              </Form.Label>
-              <Form.Control
-                type="text"
-                name="productName"
-                value={formData.productName}
-                onChange={handleChange}
-                placeholder="VD: Xe máy điện VinFast Klara S 2023"
-                disabled={isLoading}
-                className="ai-input"
-              />
-            </Form.Group>
+      <Card.Body className="p-4">
+        {/* Input Form */}
+        <Form>
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-bold">
+              Tên sản phẩm <span className="text-danger">*</span>
+            </Form.Label>
+            <Form.Control
+              type="text"
+              name="productName"
+              value={formData.productName}
+              onChange={handleChange}
+              placeholder="VD: Xe máy điện VinFast Klara S 2023"
+              disabled={isLoading}
+            />
+          </Form.Group>
 
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">
-                Mô tả sản phẩm <span className="text-danger">*</span>
-              </Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={5}
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                placeholder="Mô tả chi tiết về sản phẩm: tình trạng, đặc điểm, phụ kiện kèm theo..."
-                disabled={isLoading}
-                className="ai-input"
-              />
-              <Form.Text className="text-muted">
-                Mô tả càng chi tiết, AI gợi ý càng chính xác
-              </Form.Text>
-            </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-bold">
+              Mô tả sản phẩm <span className="text-danger">*</span>
+            </Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={5}
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Mô tả chi tiết về sản phẩm: tình trạng, đặc điểm, phụ kiện kèm theo..."
+              disabled={isLoading}
+            />
+            <Form.Text className="text-muted">
+              Mô tả càng chi tiết, AI gợi ý càng chính xác
+            </Form.Text>
+          </Form.Group>
 
-            {/* Action Buttons */}
-            <div className="d-flex gap-2">
-              <Button
-                variant="primary"
-                onClick={handleSuggestPrice}
-                disabled={isLoading || !formData.productName.trim() || !formData.description.trim()}
-                className="flex-grow-1"
-                size="lg"
-              >
-                {isLoading ? (
-                  <>
-                    <Spinner animation="border" size="sm" className="me-2" />
-                    Đang phân tích...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles size={18} className="me-2" />
-                    Gợi Ý Giá
-                  </>
-                )}
-              </Button>
-              <Button
-                variant="outline-secondary"
-                onClick={handleClear}
-                disabled={isLoading}
-                size="lg"
-              >
-                <Trash2 size={18} />
-              </Button>
-            </div>
-          </Form>
+          {/* Action Buttons */}
+          <div className="d-flex gap-2">
+            <Button
+              variant="success"
+              onClick={handleSuggestPrice}
+              disabled={isLoading || !formData.productName.trim() || !formData.description.trim()}
+              className="flex-grow-1"
+              size="lg"
+            >
+              {isLoading ? (
+                <>
+                  <Spinner animation="border" size="sm" className="me-2" />
+                  Đang phân tích...
+                </>
+              ) : (
+                "Gợi Ý Giá"
+              )}
+            </Button>
+            <Button
+              variant="outline-secondary"
+              onClick={handleClear}
+              disabled={isLoading}
+              size="lg"
+            >
+              <Trash2 size={18} />
+            </Button>
+          </div>
+        </Form>
 
           {/* Result Display */}
           {result && (
-            <Alert variant="info" className="mt-4 ai-result">
-              <div className="d-flex align-items-start mb-2">
-                <Sparkles className="me-2 mt-1" size={20} />
-                <div className="flex-grow-1">
-                  <h5 className="mb-2">💡 AI Gợi Ý</h5>
-                  <div className="ai-price-display">
-                    <div className="text-muted small mb-2">Giá đề xuất:</div>
-                    <div className="ai-price-value">
-                      {formatCurrency(result.suggestedPrice)} ₫
-                    </div>
-                  </div>
+            <Alert variant="success" className="mt-4">
+              <h5 className="mb-3">AI Gợi Ý Giá</h5>
+              <div className="text-center mb-3">
+                <div className="text-muted small mb-2">Giá đề xuất:</div>
+                <div className="h3 text-success fw-bold">
+                  {formatCurrency(result.suggestedPrice)} ₫
                 </div>
               </div>
               
               <hr />
               
-              <div className="d-flex gap-2 mt-3">
+              <div className="d-flex gap-2 justify-content-center">
                 <Button
-                  variant="outline-primary"
-                  size="sm"
+                  variant="outline-success"
                   onClick={handleCopyPrice}
                 >
                   <Copy size={16} className="me-2" />
@@ -207,7 +190,6 @@ const AIPriceAssistant = () => {
                 </Button>
                 <Button
                   variant="success"
-                  size="sm"
                   onClick={handleUsePrice}
                 >
                   Sử dụng giá này
@@ -220,35 +202,31 @@ const AIPriceAssistant = () => {
 
       {/* History Card */}
       {history.length > 0 && (
-        <Card>
-          <Card.Header>
-            <h5 className="mb-0">📊 Lịch Sử Gợi Ý</h5>
+        <Card className="shadow-sm border-0">
+          <Card.Header className="bg-light">
+            <h5 className="mb-0">Lịch Sử Gợi Ý</h5>
           </Card.Header>
-          <Card.Body>
-            <div className="ai-history-list">
-              {history.map((item) => (
-                <div key={item.id} className="ai-history-item">
-                  <div className="d-flex justify-content-between align-items-start mb-2">
-                    <div className="flex-grow-1">
-                      <div className="fw-bold text-truncate">{item.productName}</div>
-                      <div className="text-muted small text-truncate">{item.description}</div>
-                    </div>
-                    <div className="text-end">
-                      <div className="ai-price-text">
-                        {formatCurrency(item.suggestedPrice)} ₫
-                      </div>
-                    </div>
+          <Card.Body className="p-3">
+            {history.map((item) => (
+              <div key={item.id} className="border-bottom pb-2 mb-2">
+                <div className="d-flex justify-content-between align-items-start mb-2">
+                  <div className="flex-grow-1">
+                    <div className="fw-bold">{item.productName}</div>
+                    <div className="text-muted small">{item.description}</div>
                   </div>
-                  <div className="text-muted small">
-                    {new Date(item.timestamp).toLocaleString('vi-VN')}
+                  <div className="text-success fw-bold">
+                    {formatCurrency(item.suggestedPrice)} ₫
                   </div>
                 </div>
-              ))}
-            </div>
+                <div className="text-muted small">
+                  {new Date(item.timestamp).toLocaleString('vi-VN')}
+                </div>
+              </div>
+            ))}
           </Card.Body>
         </Card>
       )}
-    </div>
+    </>
   );
 };
 
