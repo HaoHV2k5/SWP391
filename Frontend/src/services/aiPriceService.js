@@ -67,4 +67,3 @@ const aiPriceService = {
 };
 
 export default aiPriceService;
-

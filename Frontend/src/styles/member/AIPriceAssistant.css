@@ -1,132 +1,15 @@
-/* AI Assistant Component Styles */
+/* AI Assistant Component Styles - Đơn giản và gọn gàng */
 .ai-assistant-container {
   max-width: 1000px;
   margin: 0 auto;
 }
 
-/* Main Card */
-.ai-main-card {
-  border: none;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-  overflow: hidden;
-}
+/* Loại bỏ các styles phức tạp */
+/* Sử dụng Bootstrap classes mặc định */
 
-.ai-card-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 1.5rem;
-  border-bottom: none;
-}
-
-.ai-card-header h4 {
-  color: white;
-  font-weight: 600;
-}
-
-.ai-card-header p {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 0.95rem;
-}
-
-/* Input Styles */
-.ai-input {
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 12px;
-  transition: all 0.3s ease;
-}
-
-.ai-input:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-/* Result Display */
-.ai-result {
-  border-left: 4px solid #667eea;
-  background: linear-gradient(135deg, #f5f7fa 0%, #f0f4ff 100%);
-  border-radius: 8px;
-  padding: 1.5rem;
-}
-
-.ai-price-display {
-  background: white;
-  padding: 1rem;
-  border-radius: 8px;
-  border: 2px solid #667eea;
-}
-
-.ai-price-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #667eea;
-  text-align: center;
-}
-
-.ai-price-text {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #667eea;
-}
-
-/* History List */
-.ai-history-list {
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.ai-history-item {
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-  margin-bottom: 0.75rem;
-  transition: all 0.2s ease;
-  border: 2px solid transparent;
-}
-
-.ai-history-item:hover {
-  background: #e9ecef;
-  border-color: #667eea;
-  transform: translateY(-2px);
-}
-
-.ai-history-item:last-child {
-  margin-bottom: 0;
-}
-
-/* Responsive */
+/* Responsive adjustments */
 @media (max-width: 768px) {
-  .ai-price-value {
-    font-size: 1.5rem;
-  }
-  
-  .ai-card-header {
-    padding: 1rem;
-  }
-  
-  .ai-result {
-    padding: 1rem;
+  .ai-assistant-container {
+    padding: 0 1rem;
   }
 }
-
-/* Animation */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.ai-result {
-  animation: fadeIn 0.3s ease;
-}
-
-.ai-history-item {
-  animation: fadeIn 0.2s ease;
-}
-
