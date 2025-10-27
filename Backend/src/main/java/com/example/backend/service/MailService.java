@@ -200,7 +200,29 @@ public class MailService {
         }
     }
 
-
+    /**
+     * Gửi mail nhắc buyer ký hợp đồng khi seller đã ký (sau 3 ngày buyer chưa ký)
+     */
+    public void sendContractNeedBuyerSignNotification(String to, String subject, Contract contract, Product product) {
+        Context context = new Context();
+        context.setVariable("contractId", contract.getId());
+        context.setVariable("productName", product.getTitle());
+        context.setVariable("sellerName", contract.getSeller().getFullname());
+        context.setVariable("createdAt", contract.getCreatedAt());
+        context.setVariable("expiredAt", contract.getUpdatedAt() != null ? contract.getUpdatedAt().plusDays(3) : null);
+        context.setVariable("buyerName", contract.getBuyer().getFullname());
+        String html = templateEngine.process("email/reminder-buyer-sign-contract.html", context);
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
+            messageHelper.setTo(to);
+            messageHelper.setSubject(subject);
+            messageHelper.setText(html, true);
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            // log hoặc throw tùy nhu cầu
+        }
+    }
 
 
 }
