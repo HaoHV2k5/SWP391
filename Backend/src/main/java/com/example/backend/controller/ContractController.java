@@ -150,6 +150,15 @@ public class ContractController {
                 .build();
     }
 
+    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    @PostMapping("/contracts/{contractId}/cancel-pending-by-seller")
+    public ApiResponse<String> cancelPendingContractBySeller(@PathVariable Long contractId, @RequestParam Long sellerId) {
+        constractService.cancelPendingContractBySeller(contractId, sellerId);
+        return ApiResponse.<String>builder()
+                .message("Seller đã huỷ hợp đồng (chỉ seller ký, buyer không ký quá 3 ngày) thành công!")
+                .build();
+    }
+
     // API lấy toàn bộ hợp đồng cho admin và staff
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_STAFF')")
     @GetMapping("/contracts/all")

@@ -216,6 +216,32 @@ public class ConstractService {
         }
     }
 
+    @Transactional
+    public void cancelPendingContractBySeller(Long contractId, Long sellerId) {
+        Contract contract = contractRepository.findById(contractId)
+            .orElseThrow(() -> new AppException(ErrorCode.CONTRACT_NOT_FOUND));
+        if (!java.util.Objects.equals(contract.getSeller().getId(), sellerId)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        if (!Boolean.TRUE.equals(contract.getSellerSigned())
+            || Boolean.TRUE.equals(contract.getBuyerSigned())
+            || contract.getStatus() != ContractStatus.PENDING
+            || contract.getUpdatedAt() == null
+            || contract.getUpdatedAt().plusDays(3).isAfter(java.time.LocalDateTime.now())
+        ) {
+            throw new AppException(ErrorCode.CONTRACT_NOT_VALID);
+        }
+        contract.setStatus(ContractStatus.CANCELLED);
+        contractRepository.save(contract);
+        // Gửi template email seller huỷ hợp đồng (dùng lại cancel contract logic)
+        try {
+            mailService.sendContractCancelDueToPaymentOverdue(contract.getBuyer().getEmail(), contract);
+            mailService.sendContractCancelNotification(contract.getSeller().getEmail(), contract);
+        } catch (Exception e) {
+            // ignore email failure
+        }
+    }
+
     // Gửi email nhắc nhở các hợp đồng đã ký quá 3 ngày chưa thanh toán
     public void notifySignedContractUnpaid() {
         List<Contract> unpaidContracts = contractRepository.findAll();
@@ -246,11 +272,43 @@ public class ConstractService {
             }
         }
     }
+    // Gửi email nhắc nhở các hợp đồng đã seller ký quá 3 ngày mà buyer chưa ký
+    public void notifySellerSignedButBuyerNoSign() {
+        List<Contract> contracts = contractRepository.findAll();
+        LocalDateTime now = LocalDateTime.now();
+        for (Contract contract : contracts) {
+            // Điều kiện: chỉ seller đã ký, buyer chưa ký, chưa bị huỷ, quá 3 ngày, chưa gửi email
+            if (Boolean.TRUE.equals(contract.getSellerSigned())
+                    && !Boolean.TRUE.equals(contract.getBuyerSigned())
+                    && contract.getStatus() == ContractStatus.PENDING
+                    && contract.getUpdatedAt() != null
+                    && contract.getUpdatedAt().plusDays(3).isBefore(now)
+                    && !contract.isBuyerSignRemindSent()
+            ) {
+                User buyer = contract.getBuyer();
+                Product product = contract.getProduct();
+                String subject = "[Thông báo] Hợp đồng #" + contract.getId() + " chưa được ký bởi bạn";
+                try {
+                    contract.setBuyerSignRemindSent(true);
+                    contractRepository.save(contract);
+                    mailService.sendContractNeedBuyerSignNotification(buyer.getEmail(), subject, contract, product);
+                } catch (Exception e) {
+                    // log lỗi gửi email
+                }
+            }
+        }
+    }
     @Transactional
     @Scheduled(cron = "0 0 13 * * *")
     public void scheduledNotifySignedContractUnpaid() {
         log.warn("da schdule");
 
         notifySignedContractUnpaid();
+    }
+    @Transactional
+    @Scheduled(cron = "0 10 13 * * *") // chạy sau notifySignedContractUnpaid 10 phút
+    public void scheduledNotifySellerSignedButBuyerNoSign(){
+        log.warn("Đang kiểm tra các hợp đồng seller đã ký mà buyer chưa ký");
+        notifySellerSignedButBuyerNoSign();
     }
 }
