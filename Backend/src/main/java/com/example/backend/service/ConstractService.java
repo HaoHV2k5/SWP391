@@ -24,13 +24,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import com.example.backend.repository.ComplaintRepository;
+import com.example.backend.entity.Complaint;
+import com.example.backend.enums.ComplaintStatus;
+import java.util.Optional;
+import com.example.backend.service.MailService;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.annotation.Transactional;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import com.example.backend.entity.User;
 import com.example.backend.entity.Product;
-import com.example.backend.service.MailService;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.transaction.annotation.Transactional;
+import com.example.backend.entity.Wallet;
 
 @Slf4j
 @Service
@@ -44,6 +50,7 @@ public class ConstractService {
     private final OrderRespository orderRespository;
     private final OrderEscrowRepository orderEscrowRepository;
     private final MailService mailService;
+    private final ComplaintRepository complaintRepository;
 
     public List<ContractResponse> getContractUserInvolved(Long userId) {
         List<Contract> list = contractRepository.findAllByUserInvolved(userId);
@@ -258,8 +265,6 @@ public class ConstractService {
                 User seller = contract.getSeller();
                 Product product = contract.getProduct();
                 String subject = "[Thông báo] Hợp đồng đã ký #" + contract.getId() + " chưa được thanh toán";
-                String content = String.format("Hợp đồng số %d cho sản phẩm '%s' đã ký hơn 3 ngày nhưng chưa được thanh toán.\nNgười bán có thể chủ động hủy hợp đồng để sản phẩm được mở lại!",
-                    contract.getId(), product.getTitle());
                 try {
                     log.warn("đã gửi email");
                     contract.setPostEmail(true);
@@ -310,5 +315,314 @@ public class ConstractService {
     public void scheduledNotifySellerSignedButBuyerNoSign(){
         log.warn("Đang kiểm tra các hợp đồng seller đã ký mà buyer chưa ký");
         notifySellerSignedButBuyerNoSign();
+    }
+
+    /**
+     * Tự động release tiền cho seller dựa trên các điều kiện:
+     * 1. Nếu buyer xác nhận -> sau 3 ngày release
+     * 2. Nếu buyer quên xác nhận -> dựa vào admin accept + 3 ngày  
+     * 3. Nếu có complaint -> chỉ release khi giải quyết xong
+     * 4. Complaint seller có lợi -> release cho seller, buyer có lợi -> release cho buyer
+     * 5. Sau release -> cập nhật complaint status = CLOSED
+     */
+    @Transactional
+    public void autoReleaseEscrowMoney() {
+        List<OrderEscrow> escrows = orderEscrowRepository.findAll();
+        LocalDateTime now = LocalDateTime.now();
+        
+        log.info("Starting auto release escrow money process. Found {} escrows to check", escrows.size());
+        
+        for (OrderEscrow escrow : escrows) {
+            try {
+                // Chỉ xử lý escrow đang HELD hoặc ADMIN_APPROVED
+                if (escrow.getStatus() != EscrowStatus.HELD && escrow.getStatus() != EscrowStatus.ADMIN_APPROVED) {
+                    continue;
+                }
+                
+                log.debug("Processing escrow ID: {}, Status: {}", escrow.getId(), escrow.getStatus());
+                
+                // Kiểm tra có complaint chưa giải quyết không
+                Contract contract = escrow.getOrder().getContracts().get(0); // Giả sử 1 order có 1 contract
+                Optional<Complaint> complaintOpt = complaintRepository.findByContract(contract);
+                
+                if (complaintOpt.isPresent()) {
+                    Complaint complaint = complaintOpt.get();
+                    log.debug("Found complaint for escrow {}: Status {}", escrow.getId(), complaint.getStatus());
+                    
+                    // Nếu có complaint chưa giải quyết -> skip
+                    if (complaint.getStatus() == ComplaintStatus.PENDING || 
+                        complaint.getStatus() == ComplaintStatus.UNDER_REVIEW) {
+                        log.debug("Skipping escrow {} due to unresolved complaint", escrow.getId());
+                        continue;
+                    }
+                    
+                    // Nếu complaint đã giải quyết -> release theo kết quả
+                    if (complaint.getStatus() == ComplaintStatus.RESOLVED_SELLER_FAVOR) {
+                        log.info("Releasing money to seller for escrow {} due to complaint resolution in seller's favor", escrow.getId());
+                        releaseMoneyToSeller(escrow, contract);
+                        complaint.setStatus(ComplaintStatus.CLOSED);
+                        complaint.setResolvedAt(now);
+                        complaintRepository.save(complaint);
+                    } else if (complaint.getStatus() == ComplaintStatus.RESOLVED_BUYER_FAVOR) {
+                        log.info("Refunding money to buyer for escrow {} due to complaint resolution in buyer's favor", escrow.getId());
+                        refundMoneyToBuyer(escrow, contract);
+                        complaint.setStatus(ComplaintStatus.CLOSED);
+                        complaint.setResolvedAt(now);
+                        complaintRepository.save(complaint);
+                    }
+                    continue;
+                }
+                
+                // Không có complaint -> kiểm tra điều kiện release thông thường
+                boolean shouldRelease = false;
+                String releaseReason = "";
+                
+                // Trường hợp 1: Buyer đã xác nhận -> sau 3 ngày release
+                if (escrow.getStatus() == EscrowStatus.HELD && 
+                    escrow.getUserConfirmedTime() != null &&
+                    escrow.getUserConfirmedTime().plusDays(3).isBefore(now)) {
+                    shouldRelease = true;
+                    releaseReason = "Buyer confirmed receipt 3 days ago";
+                }
+                
+                // Trường hợp 2: Buyer quên xác nhận -> admin đã accept + 3 ngày
+                if (escrow.getStatus() == EscrowStatus.ADMIN_APPROVED && 
+                    escrow.getAdminReviewTime() != null &&
+                    escrow.getAdminReviewTime().plusDays(3).isBefore(now)) {
+                    shouldRelease = true;
+                    releaseReason = "Admin approved seller delivery confirmation 3 days ago";
+                }
+                
+                if (shouldRelease) {
+                    log.info("Releasing money to seller for escrow {} - Reason: {}", escrow.getId(), releaseReason);
+                    releaseMoneyToSeller(escrow, contract);
+                } else {
+                    log.debug("Escrow {} not ready for release yet", escrow.getId());
+                }
+                
+            } catch (Exception e) {
+                log.error("Error processing escrow {}: {}", escrow.getId(), e.getMessage(), e);
+            }
+        }
+        
+        log.info("Completed auto release escrow money process");
+    }
+    
+    /**
+     * Release tiền cho seller
+     */
+    private void releaseMoneyToSeller(OrderEscrow escrow, Contract contract) {
+        User seller = contract.getSeller();
+        BigDecimal amount = contract.getAgreedPrice();
+        
+        log.info("Starting money release to seller {} for contract {} - Amount: {}", 
+                seller.getId(), contract.getId(), amount);
+        
+        // Cập nhật escrow status
+        escrow.setStatus(EscrowStatus.RELEASED);
+        escrow.setActualReleaseTime(LocalDateTime.now());
+        orderEscrowRepository.save(escrow);
+        
+        // Cập nhật wallet seller
+        Wallet sellerWallet = walletRepository.findByUserId(seller.getId())
+            .orElseThrow(() -> new AppException(ErrorCode.WALLET_NOT_EXIST));
+        
+        BigDecimal balanceBefore = sellerWallet.getBalance();
+        sellerWallet.setBalance(balanceBefore.add(amount));
+        walletRepository.save(sellerWallet);
+        
+        log.info("Updated seller wallet balance: {} -> {}", balanceBefore, sellerWallet.getBalance());
+        
+        // Tạo transaction cho seller
+        Transaction transaction = Transaction.builder()
+            .user(seller)
+            .wallet(sellerWallet)
+            .amount(amount)
+            .paymentMethod(PaymentMethod.WALLET)
+            .transactionCode(Config.getRandomNumber(8))
+            .status(TransactionStatus.COMPLETED)
+            .description("Nhận tiền từ escrow sau khi giao hàng thành công")
+            .paymentDate(LocalDateTime.now())
+            .isWalletPayment(true)
+            .build();
+        transactionRepository.save(transaction);
+        
+        // Tạo walletTransaction cho seller
+        WalletTransaction walletTransaction = WalletTransaction.builder()
+            .wallet(sellerWallet)
+            .typeWalletTraction(WalletTransactionType.RECEIVE_PAYMENT)
+            .amount(amount)
+            .balanceBefore(balanceBefore)
+            .transactionCode(Config.getRandomNumber(8))
+            .balanceAfter(sellerWallet.getBalance())
+            .description("Nhận tiền từ escrow")
+            .status("COMPLETED")
+            .referenceTransaction(transaction)
+            .completedAt(LocalDateTime.now())
+            .build();
+        walletTransactionRepository.save(walletTransaction);
+        
+        // Gửi email thông báo cho seller
+        try {
+            mailService.sendEscrowReleaseNotification(seller.getEmail(), contract, amount);
+            log.info("Successfully sent escrow release notification email to seller {}", seller.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send escrow release notification email to seller {}: {}", 
+                     seller.getEmail(), e.getMessage());
+        }
+        
+        log.info("Successfully released {} to seller {} for contract {}", amount, seller.getId(), contract.getId());
+    }
+    
+    /**
+     * Refund tiền cho buyer (khi complaint có lợi cho buyer)
+     */
+    private void refundMoneyToBuyer(OrderEscrow escrow, Contract contract) {
+        User buyer = contract.getBuyer();
+        BigDecimal amount = contract.getAgreedPrice();
+        
+        log.info("Starting money refund to buyer {} for contract {} - Amount: {}", 
+                buyer.getId(), contract.getId(), amount);
+        
+        // Cập nhật escrow status
+        escrow.setStatus(EscrowStatus.REFUNDED);
+        escrow.setActualReleaseTime(LocalDateTime.now());
+        orderEscrowRepository.save(escrow);
+        
+        // Cập nhật wallet buyer
+        Wallet buyerWallet = walletRepository.findByUserId(buyer.getId())
+            .orElseThrow(() -> new AppException(ErrorCode.WALLET_NOT_EXIST));
+        
+        BigDecimal balanceBefore = buyerWallet.getBalance();
+        buyerWallet.setBalance(balanceBefore.add(amount));
+        walletRepository.save(buyerWallet);
+        
+        log.info("Updated buyer wallet balance: {} -> {}", balanceBefore, buyerWallet.getBalance());
+        
+        // Tạo transaction cho buyer
+        Transaction transaction = Transaction.builder()
+            .user(buyer)
+            .wallet(buyerWallet)
+            .amount(amount)
+            .paymentMethod(PaymentMethod.WALLET)
+            .transactionCode(Config.getRandomNumber(8))
+            .status(TransactionStatus.COMPLETED)
+            .description("Hoàn tiền từ escrow do complaint được giải quyết có lợi")
+            .paymentDate(LocalDateTime.now())
+            .isWalletPayment(true)
+            .build();
+        transactionRepository.save(transaction);
+        
+        // Tạo walletTransaction cho buyer
+        WalletTransaction walletTransaction = WalletTransaction.builder()
+            .wallet(buyerWallet)
+            .typeWalletTraction(WalletTransactionType.REFUND)
+            .amount(amount)
+            .balanceBefore(balanceBefore)
+            .transactionCode(Config.getRandomNumber(8))
+            .balanceAfter(buyerWallet.getBalance())
+            .description("Hoàn tiền từ escrow")
+            .status("COMPLETED")
+            .referenceTransaction(transaction)
+            .completedAt(LocalDateTime.now())
+            .build();
+        walletTransactionRepository.save(walletTransaction);
+        
+        // Gửi email thông báo cho buyer
+        try {
+            mailService.sendEscrowRefundNotification(buyer.getEmail(), contract, amount);
+            log.info("Successfully sent escrow refund notification email to buyer {}", buyer.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send escrow refund notification email to buyer {}: {}", 
+                     buyer.getEmail(), e.getMessage());
+        }
+        
+        log.info("Successfully refunded {} to buyer {} for contract {}", amount, buyer.getId(), contract.getId());
+    }
+    
+    @Scheduled(cron = "0 0 2 * * *") // Chạy lúc 2h sáng hàng ngày
+    public void scheduledAutoReleaseEscrowMoney() {
+        log.info("Starting scheduled auto release escrow money");
+        autoReleaseEscrowMoney();
+        log.info("Completed scheduled auto release escrow money");
+    }
+    
+    /**
+     * API endpoint để admin có thể gọi thủ công để release escrow money
+     * @return số lượng escrow đã được xử lý
+     */
+    @Transactional
+    public int manualReleaseEscrowMoney() {
+        log.info("Manual escrow money release triggered by admin");
+        List<OrderEscrow> escrows = orderEscrowRepository.findAll();
+        int processedCount = 0;
+        LocalDateTime now = LocalDateTime.now();
+        
+        for (OrderEscrow escrow : escrows) {
+            try {
+                // Chỉ xử lý escrow đang HELD hoặc ADMIN_APPROVED
+                if (escrow.getStatus() != EscrowStatus.HELD && escrow.getStatus() != EscrowStatus.ADMIN_APPROVED) {
+                    continue;
+                }
+                
+                // Kiểm tra có complaint chưa giải quyết không
+                Contract contract = escrow.getOrder().getContracts().get(0);
+                Optional<Complaint> complaintOpt = complaintRepository.findByContract(contract);
+                
+                if (complaintOpt.isPresent()) {
+                    Complaint complaint = complaintOpt.get();
+                    
+                    // Nếu có complaint chưa giải quyết -> skip
+                    if (complaint.getStatus() == ComplaintStatus.PENDING || 
+                        complaint.getStatus() == ComplaintStatus.UNDER_REVIEW) {
+                        continue;
+                    }
+                    
+                    // Nếu complaint đã giải quyết -> release theo kết quả
+                    if (complaint.getStatus() == ComplaintStatus.RESOLVED_SELLER_FAVOR) {
+                        releaseMoneyToSeller(escrow, contract);
+                        complaint.setStatus(ComplaintStatus.CLOSED);
+                        complaint.setResolvedAt(now);
+                        complaintRepository.save(complaint);
+                        processedCount++;
+                    } else if (complaint.getStatus() == ComplaintStatus.RESOLVED_BUYER_FAVOR) {
+                        refundMoneyToBuyer(escrow, contract);
+                        complaint.setStatus(ComplaintStatus.CLOSED);
+                        complaint.setResolvedAt(now);
+                        complaintRepository.save(complaint);
+                        processedCount++;
+                    }
+                    continue;
+                }
+                
+                // Không có complaint -> kiểm tra điều kiện release thông thường
+                boolean shouldRelease = false;
+                
+                // Trường hợp 1: Buyer đã xác nhận -> sau 3 ngày release
+                if (escrow.getStatus() == EscrowStatus.HELD && 
+                    escrow.getUserConfirmedTime() != null &&
+                    escrow.getUserConfirmedTime().plusDays(3).isBefore(now)) {
+                    shouldRelease = true;
+                }
+                
+                // Trường hợp 2: Buyer quên xác nhận -> admin đã accept + 3 ngày
+                if (escrow.getStatus() == EscrowStatus.ADMIN_APPROVED && 
+                    escrow.getAdminReviewTime() != null &&
+                    escrow.getAdminReviewTime().plusDays(3).isBefore(now)) {
+                    shouldRelease = true;
+                }
+                
+                if (shouldRelease) {
+                    releaseMoneyToSeller(escrow, contract);
+                    processedCount++;
+                }
+                
+            } catch (Exception e) {
+                log.error("Error processing escrow {}: {}", escrow.getId(), e.getMessage(), e);
+            }
+        }
+        
+        log.info("Manual escrow money release completed. Processed {} escrows", processedCount);
+        return processedCount;
     }
 }
