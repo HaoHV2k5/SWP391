@@ -81,6 +81,13 @@ public enum ErrorCode {
     COMPLAINT_NOT_FOUND(1064, "Complaint không tồn tại", HttpStatus.NOT_FOUND),
     COMPLAINT_ALREADY_RESOLVED(1065, "Complaint đã được giải quyết", HttpStatus.BAD_REQUEST),
     COMPLAINT_NOT_PENDING(1066, "Complaint không ở trạng thái pending", HttpStatus.BAD_REQUEST),
+    
+    // Review error codes
+    REVIEW_ALREADY_EXISTS(1067, "Bạn đã đánh giá seller này rồi", HttpStatus.BAD_REQUEST),
+    REVIEW_NOT_FOUND(1068, "Review không tồn tại", HttpStatus.NOT_FOUND),
+    ACCESS_DENIED(1069, "Bạn không có quyền thực hiện hành động này", HttpStatus.FORBIDDEN),
+    UPLOAD_FAILED(1070, "Upload file thất bại", HttpStatus.BAD_REQUEST),
+    PURCHASE_NOT_COMPLETED(1071, "Bạn chỉ có thể review sau khi hoàn thành giao dịch với seller này", HttpStatus.BAD_REQUEST),
 
     ;
     private int code;
