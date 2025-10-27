@@ -186,6 +186,36 @@ public class ConstractService {
         return true;
     }
 
+    /**
+     * Seller cancel signed contract if not paid after 3 days
+     */
+    @Transactional
+    public void cancelContractBySeller(Long contractId, Long sellerId) {
+        Contract contract = contractRepository.findById(contractId)
+            .orElseThrow(() -> new AppException(ErrorCode.CONTRACT_NOT_FOUND));
+        if (!java.util.Objects.equals(contract.getSeller().getId(), sellerId)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        if (contract.getStatus() != ContractStatus.SIGNED) {
+            throw new AppException(ErrorCode.CONTRACT_NOT_VALID);
+        }
+        if (Boolean.TRUE.equals(contract.getPaymentCompleted())) {
+            throw new AppException(ErrorCode.CONTRACT_NOT_VALID);
+        }
+        if (contract.getSignedAt() == null || contract.getSignedAt().plusDays(3).isAfter(java.time.LocalDateTime.now())) {
+            throw new AppException(ErrorCode.CONTRACT_NOT_VALID);
+        }
+        contract.setStatus(ContractStatus.CANCELLED);
+        contractRepository.save(contract);
+        // Gửi template mới cho buyer (seller-cancel)
+        try {
+            mailService.sendContractCancelDueToPaymentOverdue(contract.getBuyer().getEmail(), contract);
+            mailService.sendContractCancelNotification(contract.getSeller().getEmail(), contract); // Có thể vẫn giữ thông báo này cho seller
+        } catch (Exception e) {
+            // do nothing if mail fail
+        }
+    }
+
     // Gửi email nhắc nhở các hợp đồng đã ký quá 3 ngày chưa thanh toán
     public void notifySignedContractUnpaid() {
         List<Contract> unpaidContracts = contractRepository.findAll();

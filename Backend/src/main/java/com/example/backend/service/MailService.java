@@ -180,6 +180,26 @@ public class MailService {
         }
     }
 
+    public void sendContractCancelDueToPaymentOverdue(String to, Contract contract) {
+        Context context = new Context();
+        context.setVariable("buyerName", contract.getBuyer().getFullname());
+        context.setVariable("sellerName", contract.getSeller().getFullname());
+        context.setVariable("productName", contract.getProduct().getTitle());
+        context.setVariable("contractCode", contract.getContractCode());
+        context.setVariable("signedAt", contract.getSignedAt());
+        String html = templateEngine.process("email/Seller-Cancel-Contract.html", context);
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
+            messageHelper.setTo(to);
+            messageHelper.setSubject("[EV Exchange] Hợp đồng bị hủy do quá hạn thanh toán - " + contract.getProduct().getTitle());
+            messageHelper.setText(html, true);
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            // log hoặc throw tùy nhu cầu
+        }
+    }
+
 
 
 
