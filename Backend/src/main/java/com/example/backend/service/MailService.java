@@ -4,13 +4,12 @@ import com.example.backend.entity.Order;
 import com.example.backend.entity.Contract;
 import com.example.backend.entity.OrderEscrow;
 import com.example.backend.entity.Product;
+import java.math.BigDecimal;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.security.crypto.codec.Utf8;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -224,5 +223,52 @@ public class MailService {
         }
     }
 
+    /**
+     * Gửi email thông báo seller đã nhận tiền từ escrow
+     */
+    public void sendEscrowReleaseNotification(String to, Contract contract, BigDecimal amount) {
+        Context context = new Context();
+        context.setVariable("sellerName", contract.getSeller().getFullname());
+        context.setVariable("productName", contract.getProduct().getTitle());
+        context.setVariable("contractId", contract.getId());
+        context.setVariable("amount", amount);
+        context.setVariable("releaseTime", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+        
+        String html = templateEngine.process("email/escrow-release.html", context);
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
+            messageHelper.setTo(to);
+            messageHelper.setSubject("[EV Exchange] Đã nhận tiền từ escrow - Hợp đồng #" + contract.getId());
+            messageHelper.setText(html, true);
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            // log hoặc throw tùy nhu cầu
+        }
+    }
+
+    /**
+     * Gửi email thông báo buyer đã được hoàn tiền từ escrow
+     */
+    public void sendEscrowRefundNotification(String to, Contract contract, BigDecimal amount) {
+        Context context = new Context();
+        context.setVariable("buyerName", contract.getBuyer().getFullname());
+        context.setVariable("productName", contract.getProduct().getTitle());
+        context.setVariable("contractId", contract.getId());
+        context.setVariable("amount", amount);
+        context.setVariable("refundTime", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+        
+        String html = templateEngine.process("email/escrow-refund.html", context);
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
+            messageHelper.setTo(to);
+            messageHelper.setSubject("[EV Exchange] Đã hoàn tiền từ escrow - Hợp đồng #" + contract.getId());
+            messageHelper.setText(html, true);
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            // log hoặc throw tùy nhu cầu
+        }
+    }
 
 }
