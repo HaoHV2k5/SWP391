@@ -1,22 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Badge, Spinner, Alert, Modal, Form } from 'react-bootstrap';
+import { Card, Button, Badge, Spinner, Alert, Modal } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import orderService from '../../services/orderService';
-import contractService from '../../services/contractService';
 
 const OrderList = ({ productId, onOrderUpdate }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showAcceptModal, setShowAcceptModal] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [accepting, setAccepting] = useState(false);
-  const [sellerInfo, setSellerInfo] = useState({
-    sellerName: '',
-    sellerEmail: '',
-    buyerName: '',
-    buyerEmail: ''
-  });
 
   useEffect(() => {
     if (productId) {
@@ -62,72 +52,6 @@ const OrderList = ({ productId, onOrderUpdate }) => {
     } catch (error) {
       toast.error("Từ chối đơn hàng thất bại. Vui lòng thử lại");
       console.error('Reject order error:', error);
-    }
-  };
-
-  const handleOpenAcceptModal = (order) => {
-    setSelectedOrder(order);
-    // Lấy thông tin seller từ localStorage
-    const userData = localStorage.getItem("userData");
-    let sellerName = '';
-    let sellerEmail = '';
-    
-    if (userData) {
-      try {
-        const user = JSON.parse(userData);
-        sellerName = user.fullName || user.fullname || user.user?.fullName || '';
-        sellerEmail = user.email || user.user?.email || '';
-      } catch (e) {
-        console.error('Error parsing user data:', e);
-      }
-    }
-    
-    // Lấy thông tin buyer từ order
-    const buyerName = order.buyerName || '';
-    const buyerEmail = order.buyerEmail || '';
-    
-    setSellerInfo({
-      sellerName,
-      sellerEmail,
-      buyerName,
-      buyerEmail
-    });
-    setShowAcceptModal(true);
-  };
-
-  const handleAcceptOrder = async () => {
-    if (!selectedOrder) return;
-    
-    setAccepting(true);
-    
-    try {
-      const request = {
-        orderId: selectedOrder.id,
-        sellerName: sellerInfo.sellerName,
-        sellerEmail: sellerInfo.sellerEmail,
-        buyerName: sellerInfo.buyerName,
-        buyerEmail: sellerInfo.buyerEmail
-      };
-      
-      const result = await contractService.createContractWithTemplate(request);
-      
-      if (result.success) {
-        toast.success(result.message || "Chấp nhận đơn hàng và tạo hợp đồng thành công! Email đã được gửi cho cả 2 bên để ký.");
-        setShowAcceptModal(false);
-        setSelectedOrder(null);
-        // Reload danh sách
-        loadOrders();
-        if (onOrderUpdate) {
-          onOrderUpdate();
-        }
-      } else {
-        toast.error(result.message || "Chấp nhận đơn hàng thất bại");
-      }
-    } catch (error) {
-      console.error('Accept order error:', error);
-      toast.error("Chấp nhận đơn hàng thất bại. Vui lòng thử lại");
-    } finally {
-      setAccepting(false);
     }
   };
 
@@ -236,7 +160,10 @@ const OrderList = ({ productId, onOrderUpdate }) => {
                           variant="success" 
                           size="sm" 
                           className="me-2"
-                          onClick={() => handleOpenAcceptModal(order)}
+                          onClick={() => {
+                            // TODO: Implement accept order logic
+                            toast.info("Chức năng chấp nhận đơn hàng sẽ được phát triển trong phần Contract");
+                          }}
                         >
                           <i className="bi bi-check-circle me-1"></i>
                           Chấp nhận
@@ -276,128 +203,6 @@ const OrderList = ({ productId, onOrderUpdate }) => {
           </div>
         ))}
       </div>
-      
-      {/* Accept Order Modal */}
-      <Modal show={showAcceptModal} onHide={() => setShowAcceptModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <i className="bi bi-check-circle-fill me-2" style={{ color: '#00A86B' }}></i>
-            Xác nhận chấp nhận đơn hàng
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Alert variant="info" className="mb-3">
-            <Alert.Heading>
-              <i className="bi bi-info-circle me-2"></i>
-              Thông tin quan trọng
-            </Alert.Heading>
-            Khi bạn chấp nhận đơn hàng này, hệ thống sẽ:
-            <ul className="mb-0 mt-2">
-              <li>Tạo hợp đồng với Eversign</li>
-              <li>Gửi email cho bạn (seller) để ký trước</li>
-              <li>Gửi email cho người mua để ký sau</li>
-              <li>Ẩn sản phẩm này khỏi marketplace</li>
-              <li>Từ chối tất cả order request khác cho sản phẩm này</li>
-            </ul>
-          </Alert>
-          
-          {selectedOrder && (
-            <div className="mb-3">
-              <h6>Thông tin đơn hàng:</h6>
-              <p className="mb-1">
-                <strong>Người mua:</strong> {selectedOrder.buyerName}
-              </p>
-              <p className="mb-1">
-                <strong>Email:</strong> {selectedOrder.buyerEmail || 'N/A'}
-              </p>
-              <p className="mb-1">
-                <strong>Giá:</strong> {formatPrice(selectedOrder.offeredPrice)}
-              </p>
-            </div>
-          )}
-          
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>
-                <strong>Thông tin của bạn (Seller)</strong>
-              </Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Họ và tên"
-                value={sellerInfo.sellerName}
-                onChange={(e) => setSellerInfo({...sellerInfo, sellerName: e.target.value})}
-                required
-              />
-            </Form.Group>
-            
-            <Form.Group className="mb-3">
-              <Form.Control
-                type="email"
-                placeholder="Email"
-                value={sellerInfo.sellerEmail}
-                onChange={(e) => setSellerInfo({...sellerInfo, sellerEmail: e.target.value})}
-                required
-              />
-            </Form.Group>
-            
-            <Form.Group className="mb-3">
-              <Form.Label>
-                <strong>Thông tin người mua (Buyer)</strong>
-              </Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Họ và tên"
-                value={sellerInfo.buyerName}
-                onChange={(e) => setSellerInfo({...sellerInfo, buyerName: e.target.value})}
-                required
-              />
-            </Form.Group>
-            
-            <Form.Group className="mb-3">
-              <Form.Control
-                type="email"
-                placeholder="Email"
-                value={sellerInfo.buyerEmail}
-                onChange={(e) => setSellerInfo({...sellerInfo, buyerEmail: e.target.value})}
-                required
-              />
-            </Form.Group>
-          </Form>
-          
-          <Alert variant="warning" className="mb-0">
-            <i className="bi bi-exclamation-triangle me-2"></i>
-            Vui lòng kiểm tra kỹ thông tin trước khi xác nhận. Hợp đồng sẽ được tạo ngay sau khi bạn bấm xác nhận.
-          </Alert>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button 
-            variant="secondary" 
-            onClick={() => setShowAcceptModal(false)}
-            disabled={accepting}
-            style={{ backgroundColor: 'white', color: 'black', borderColor: 'black' }}
-          >
-            Hủy
-          </Button>
-          <Button 
-            variant="success"
-            onClick={handleAcceptOrder}
-            disabled={accepting || !sellerInfo.sellerName || !sellerInfo.sellerEmail || !sellerInfo.buyerName || !sellerInfo.buyerEmail}
-            style={{ backgroundColor: '#00A86B', borderColor: '#00A86B' }}
-          >
-            {accepting ? (
-              <>
-                <Spinner animation="border" size="sm" className="me-2" />
-                Đang xử lý...
-              </>
-            ) : (
-              <>
-                <i className="bi bi-check-circle me-2"></i>
-                Xác nhận chấp nhận
-              </>
-            )}
-          </Button>
-        </Modal.Footer>
-      </Modal>
     </div>
   );
 };

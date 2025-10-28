@@ -3,71 +3,104 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Button, Badge, Alert, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
 import MemberHeader from "../../components/member/MemberHeader";
-import wishlistService from "../../services/wishlistService";
+import { useSavedProducts } from "../../components/homepageContainer/contexts/SavedProductsContext";
 import "../../styles/member/index.css";
 
 const SavedPosts = ({ user }) => {
   const navigate = useNavigate();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [state, setState] = useState({
-    savedProducts: [],
-    loading: false,
-    initialized: false
-  });
 
-  // Subscribe to wishlistService state changes
-  useEffect(() => {
-    const initialState = wishlistService.getCurrentState();
-    setState(initialState);
-
-    const unsubscribe = wishlistService.subscribe((newState) => {
-      setState(newState);
-    });
-
-    return unsubscribe;
-  }, []);
+  const { savedProducts, remove, loading: contextLoading } = useSavedProducts();
   
-  // Normalize wishlist data
-  const normalizedProducts = state.savedProducts.map(product => {
+  // Debug: Log cấu trúc dữ liệu wishlist
+  console.log("🔍 SavedPosts - savedProducts structure:", savedProducts);
+  console.log("🔍 SavedPosts - first product:", savedProducts[0]);
+  console.log("🔍 SavedPosts - seller info:", savedProducts[0]?.seller, savedProducts[0]?.sellerName, savedProducts[0]?.user);
+
+  // Chuẩn hóa dữ liệu wishlist giống như useProducts.js
+  const normalizedProducts = savedProducts.map(product => {
+    // Chuẩn hóa các trường dữ liệu với fallback values
     const id = product.id || product.productId || product._id;
-    const title = product.title || product.name || "";
-    const price = product.price || "Liên hệ";
-    const image = product.imageUrls?.[0] || product.image || "";
-    const seller = product.seller?.username || product.seller?.fullName || product.sellerName || "Không rõ người bán";
-    const savedDate = product.savedDate || product.savedAt || new Date().toISOString();
+    const brand = product.vehicle?.brand || product.battery?.brand || product.brand || product.vehicleBrand || product.manufacturer || "";
+    const year = String(product.vehicle?.yearManufactured || product.battery?.yearManufactured || product.year || product.modelYear || product.vehicleInfo?.year || "");
+    
+    // Chuẩn hóa loại sản phẩm
+    let type = product.type || product.category || product.vehicleType || "";
+    const productTypeUpper = (product.productType || "").toString().toUpperCase();
+    if (!type && productTypeUpper) {
+      if (productTypeUpper === 'VEHICLE') type = 'electric-scooter';
+      if (productTypeUpper === 'BATTERY') type = 'battery';
+    }
+    
+    const mileage = String(product.mileage || product.kilometers || '');
+    const priceNumber = product.price || product.listPrice || product.amount || 0;
+    
+    // Format giá tiền theo định dạng Việt Nam
+    const price = typeof priceNumber === "number" 
+      ? new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(priceNumber)
+      : String(priceNumber);
+    
+    const image = product.imageUrls?.[0] || product.image || product.thumbnailUrl || "";
     const sellerAddress = product.location || product.address || product.SellerInfo?.sellerAddress || "";
-    const brand = product.brand || "";
-    const productType = product.productType || "";
+    
+    // Chuẩn hóa thông tin seller - tìm tên thực từ nhiều nguồn
+    const seller = product.seller?.username || 
+                   product.seller?.fullName || 
+                   product.seller?.name ||
+                   product.sellerName || 
+                   product.SellerInfo?.sellerName ||
+                   product.user?.username ||
+                   product.user?.fullName ||
+                   product.user?.name ||
+                   product.seller ||
+                   "Không rõ người bán";
+    
+    // Chuẩn hóa ngày lưu
+    const savedDate = product.savedDate || product.savedAt || product.dateSaved || new Date().toISOString();
+    
+    const title = product.title || product.vehicleInfo?.title || product.name || "";
+    const description = product.description || product.vehicleInfo?.description || title;
     
     return {
       id,
       title,
+      description,
+      brand,
+      year,
       price,
       image,
+      productType: productTypeUpper,
+      SellerInfo: { sellerAddress },
       seller,
       savedDate,
-      SellerInfo: { sellerAddress },
-      brand,
-      productType,
+      isAvailable: product.isAvailable !== false, // Mặc định là true nếu không có thông tin
+      // Giữ nguyên các field gốc để tương thích
       ...product
     };
   });
 
-  // Filter available products
+  // Lọc chỉ hiển thị sản phẩm còn khả dụng
   const availableProducts = normalizedProducts.filter(product => {
-    return product.id && product.title && product.title.trim() !== "";
+    const hasValidPrice = product.price && product.price !== "NaN ₫" && product.price !== "0 ₫" && !product.price.includes("NaN");
+    const hasValidTitle = product.title && product.title.trim() !== "";
+    const isNotExpired = product.isAvailable !== false;
+    const hasValidDate = product.savedDate && product.savedDate !== "Invalid Date";
+    
+    return hasValidPrice && hasValidTitle && isNotExpired && hasValidDate;
   });
 
   useEffect(() => {
     if (!user) {
-      navigate("/login");
-      return;
+      setIsCheckingAuth(true);
+      const timer = setTimeout(() => {
+        if (!user) navigate("/login");
+      }, 1000);
+      return () => clearTimeout(timer);
     }
-    
     setIsCheckingAuth(false);
     const userRole = user.user?.role || user.role;
-    if (userRole && userRole !== "member") {
+    if (userRole !== "member") {
       navigate("/");
       return;
     }
@@ -84,11 +117,10 @@ const SavedPosts = ({ user }) => {
     return new Date(dateString).toLocaleDateString("vi-VN");
   };
 
-  const handleRemoveFromSaved = async (postId, e) => {
-    e.stopPropagation(); // Prevent card click
+  const handleRemoveFromSaved = async (postId) => {
     setLoading(true);
     try {
-      await wishlistService.remove(postId);
+      await remove(postId);
       toast.success("Đã bỏ lưu tin đăng!");
     } catch (error) {
       console.error("Error removing from saved:", error);
@@ -113,8 +145,8 @@ const SavedPosts = ({ user }) => {
       case "search-history":
         navigate("/member/search-history");
         break;
-      case "my-orders":
-        navigate("/my-orders");
+      case "orders":
+        navigate("/member/orders");
         break;
       case "profile":
         navigate("/member/profile");
@@ -159,7 +191,7 @@ const SavedPosts = ({ user }) => {
                   color: "black"
                 }}>
                   <Card.Body className="text-center p-3">
-                    <h4 className="fw-bold mb-1" style={{ color: "black" }}>{state.savedProducts.length}</h4>
+                    <h4 className="fw-bold mb-1" style={{ color: "black" }}>{savedProducts.length}</h4>
                     <small style={{ color: "black" }}>Tổng tin đã lưu</small>
                   </Card.Body>
                 </Card>
@@ -183,7 +215,7 @@ const SavedPosts = ({ user }) => {
                   color: "black"
                 }}>
                   <Card.Body className="text-center p-3">
-                    <h4 className="fw-bold mb-1" style={{ color: "black" }}>{state.savedProducts.length - availableProducts.length}</h4>
+                    <h4 className="fw-bold mb-1" style={{ color: "black" }}>{savedProducts.length - availableProducts.length}</h4>
                     <small style={{ color: "black" }}>Tin hết hạn</small>
                   </Card.Body>
                 </Card>
@@ -203,20 +235,23 @@ const SavedPosts = ({ user }) => {
             </div>
 
             {/* Saved Posts List */}
-            <div>
-              
-              {availableProducts.length === 0 ? (
-                <Alert variant="info" className="text-center py-5">
-                  <h5>Bạn chưa lưu tin đăng nào</h5>
-                  <p className="mb-3">Hãy lưu những tin đăng yêu thích để xem lại sau!</p>
-                  <Button variant="success" onClick={() => navigate("/")}>
-                    Khám phá tin đăng
-                  </Button>
-                </Alert>
-              ) : (
-                <Row className="g-4">
-                  {availableProducts.map((post) => (
-                    <Col lg={6} key={post.id}>
+            {contextLoading ? (
+              <div className="text-center py-5">
+                <Spinner animation="border" variant="success" className="mb-3" />
+                <p className="text-muted">Đang tải danh sách tin đã lưu...</p>
+              </div>
+            ) : availableProducts.length === 0 ? (
+              <Alert variant="info" className="text-center py-5">
+                <h5>Bạn chưa lưu tin đăng nào</h5>
+                <p className="mb-3">Hãy lưu những tin đăng yêu thích để xem lại sau!</p>
+                <Button variant="success" onClick={() => navigate("/")}>
+                  Khám phá tin đăng
+                </Button>
+              </Alert>
+            ) : (
+              <Row className="g-4">
+                {availableProducts.map((post) => (
+                  <Col lg={6} key={post.id}>
                     <Card 
                       className="h-100 shadow-sm border-0" 
                       style={{ cursor: "pointer" }}
@@ -246,7 +281,7 @@ const SavedPosts = ({ user }) => {
                                 <Button
                                   variant="link"
                                   className="text-danger p-0 border-0"
-                                  onClick={(e) => handleRemoveFromSaved(post.id, e)}
+                                  onClick={() => handleRemoveFromSaved(post.id)}
                                   disabled={loading}
                                   title="Bỏ lưu"
                                 >
@@ -260,7 +295,7 @@ const SavedPosts = ({ user }) => {
                                 {post.seller || "Không rõ người bán"}
                               </p>
                               <p className="text-muted small mb-2">
-                                {post.SellerInfo?.sellerAddress || post.brand || "Không có địa chỉ"} • {post.productType || post.brand || "Không phân loại"}
+                                {post.SellerInfo?.sellerAddress || "Không có địa chỉ"} • {post.productType || "Không phân loại"}
                               </p>
                               <p className="text-muted small">
                                 Lưu ngày: {formatDate(post.savedDate)}
@@ -272,10 +307,9 @@ const SavedPosts = ({ user }) => {
                       </Row>
                     </Card>
                   </Col>
-                  ))}
-                </Row>
-              )}
-            </div>
+                ))}
+              </Row>
+            )}
 
             {/* Tips */}
             <Alert variant="light" className="mt-4 border-success">

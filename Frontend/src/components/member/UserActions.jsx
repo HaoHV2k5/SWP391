@@ -48,6 +48,10 @@ const UserActions = () => {
           <User size={16} className="me-2" />
           Thông tin cá nhân
         </Dropdown.Item>
+        <Dropdown.Item as={Link} to="/orders">
+          <Settings size={16} className="me-2" />
+          Đơn hàng của tôi
+        </Dropdown.Item>
         <Dropdown.Divider />
         <Dropdown.Item as={Link} to="/admin">
           <Settings size={16} className="me-2" />

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import displayService from "../services/home/displayService";
+import displayService from "../services/displayService";
 
 // Hook tập trung để lấy danh sách sản phẩm từ backend và chuẩn hóa cấu trúc dữ liệu
 export default function useProducts() {

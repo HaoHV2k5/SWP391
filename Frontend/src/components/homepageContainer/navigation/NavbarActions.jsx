@@ -3,11 +3,12 @@ import { Button, Badge } from "react-bootstrap";
 import { MapPin, Bell, Heart } from "lucide-react";
 import StoreLocationModal from "./StoreLocationModal";
 import SavedPopup from "../home/SavedPopup";
+import { useSavedProducts } from "../contexts/SavedProductsContext";
 
 const NavbarActions = () => {
   const [showStoreModal, setShowStoreModal] = useState(false);
   const [showSavedPopup, setShowSavedPopup] = useState(false);
-  const [savedProductsCount, setSavedProductsCount] = useState(0);
+  const { savedProducts } = useSavedProducts();
 
   // Toggle popup khi click trái tim
   const handleToggleSaved = () => {
@@ -23,16 +24,6 @@ const NavbarActions = () => {
     };
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
-
-  // Listen for saved products count changes from SavedPopup
-  useEffect(() => {
-    const handleSavedProductsChange = (event) => {
-      setSavedProductsCount(event.detail.count);
-    };
-    
-    window.addEventListener('savedProductsChange', handleSavedProductsChange);
-    return () => window.removeEventListener('savedProductsChange', handleSavedProductsChange);
   }, []);
 
   return (
@@ -76,7 +67,7 @@ const NavbarActions = () => {
               className="position-absolute top-0 start-100 translate-middle rounded-pill"
               style={{ fontSize: "10px" }}
             >
-              {savedProductsCount}
+              {savedProducts.length}
             </Badge>
           </Button>
 

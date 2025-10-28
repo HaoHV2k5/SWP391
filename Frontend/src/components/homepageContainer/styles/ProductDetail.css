@@ -272,19 +272,13 @@
 
 .chat-button {
   background: #00A86B;
-  border: 1px solid #00A86B;
-  color: white;
+  border: none;
+  color: #212529;
   padding: 12px 24px;
   border-radius: 4px;
   font-size: 1rem;
   font-weight: 600;
   width: 100%;
-}
-
-.chat-button:hover {
-  background: #009057;
-  border-color: #009057;
-  color: white;
 }
 
 

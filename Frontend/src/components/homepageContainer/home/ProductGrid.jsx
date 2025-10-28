@@ -34,7 +34,7 @@ const ProductGrid = ({
             color: "#333",
           }}
         >
-          {showEmptyState ? "Không tìm thấy tin đăng" : "Tin đăng"}
+          {showEmptyState ? "Không tìm thấy tin đăng" : "Tin đăng xe điện"}
           <span
             style={{
               fontSize: "16px",

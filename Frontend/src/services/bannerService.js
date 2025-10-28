@@ -8,30 +8,30 @@ class BannerService {
       { 
         id: 1, 
         image: 'https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw90ac0a73/images/PDP-XMD/verox/img-top-verox-green.webp', 
-        alt: 'VinFast Vero X',
+        alt: 'VinFast VF e34',
         linkType: 'product',
-        productId: 91
+        productId: 1
       },
       { 
         id: 2, 
         image: 'https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw10933beb/reserves/DrgnFly/overview-03.png', 
-        alt: 'VinFast DrgnFly',
+        alt: 'VinFast VF 8',
         linkType: 'product',
-        productId: 85
+        productId: 2
       },
       { 
         id: 3, 
         image: 'https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwc56a5d3b/images/PDP-XMD/evoneo/img-top-evoneo-black.webp', 
-        alt: 'VinFast Evo Neo',
-        linkType: 'product',
-        productId: 90
+        alt: 'VinFast EVOneo',
+        linkType: 'category',
+        categoryId: 'electric-vehicles'
       },
       { 
         id: 4, 
         image: 'https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwac8426a2/landingpage/lp-xmd/evo-grand/banner-1.webp', 
-        alt: 'Vinfast Evo Grand',
-        linkType: 'product',
-        productId: 93
+        alt: 'Khuyến mãi đặc biệt',
+        linkType: 'promotion',
+        linkTarget: '/promotions/special-sale'
       },
     ];
   }
