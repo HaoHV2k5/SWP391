@@ -98,5 +98,5 @@ export const handleApiError = (err, fallback = "Đã có lỗi") => {
   } catch {
     console.error("[API ERROR]", { status, message: msg });
   }
-  return `${fallback} (${status ?? "?"}): ${msg}`;
+  return msg || fallback;
 };

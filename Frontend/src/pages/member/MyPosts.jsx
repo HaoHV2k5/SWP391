@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Container,
@@ -39,6 +39,7 @@ const MyPosts = ({ user }) => {
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [filterStatus, setFilterStatus] = useState("ALL");
   const [postingProducts, setPostingProducts] = useState(new Set());
+  const hasShownError = useRef(false); // Track xem đã hiển thị lỗi chưa
 
   const loadPosts = async () => {
     setLoadingPosts(true);
@@ -49,12 +50,21 @@ const MyPosts = ({ user }) => {
       if (result.success) {
         console.log("📸 MyPosts data:", result.data); // Debug để xem dữ liệu hình ảnh
         setPosts(result.data || []);
+        hasShownError.current = false; // Reset flag khi thành công
       } else {
-        toast.error(result.message);
+        // Chỉ hiển thị lỗi 1 lần
+        if (!hasShownError.current) {
+          toast.error(result.message);
+          hasShownError.current = true;
+        }
         setPosts([]);
       }
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi tải danh sách tin đăng");
+      // Chỉ hiển thị lỗi 1 lần
+      if (!hasShownError.current) {
+        toast.error("Có lỗi xảy ra khi tải danh sách tin đăng");
+        hasShownError.current = true;
+      }
       setPosts([]);
     } finally {
       setLoadingPosts(false);
@@ -269,8 +279,8 @@ const MyPosts = ({ user }) => {
       case "search-history":
         navigate("/member/search-history");
         break;
-      case "orders":
-        navigate("/member/orders");
+      case "my-orders":
+        navigate("/my-orders");
         break;
       case "profile":
         navigate("/member/profile");
