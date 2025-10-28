@@ -24,7 +24,6 @@ import AdminPage from "./pages/AdminPage";
 import StaffPage from "./pages/StaffPage";
 
 // Member pages
-import MemberOrders from "./pages/member/MemberOrders";
 import PostAd from "./pages/member/PostAd";
 import MyPosts from "./pages/member/MyPosts";
 import SavedPosts from "./pages/member/SavedPosts";
@@ -224,7 +223,6 @@ function AppContent() {
         <Route path="/kyc" element={<KycPage user={user} />} />
         <Route path="/my-posts" element={<MyPosts user={user} />} />
         <Route path="/saved-posts" element={<SavedPosts user={user} />} />
-        <Route path="/orders" element={<MemberOrders user={user} />} />
         <Route path="/my-orders" element={<MyOrders user={user} />} />
         <Route path="/post-ad" element={<PostAd user={user} />} />
 
