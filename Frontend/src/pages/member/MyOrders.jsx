@@ -4,7 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import MemberHeader from '../../components/member/MemberHeader';
 import ProductWithOrders from '../../components/order/ProductWithOrders';
+import ApprovedProductCard from '../../components/order/ApprovedProductCard';
 import productService from '../../services/productService';
+import orderService from '../../services/orderService';
 import '../../styles/member/index.css';
 
 const MyOrders = ({ user }) => {
@@ -13,6 +15,7 @@ const MyOrders = ({ user }) => {
   const [myProducts, setMyProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [productsWithOrders, setProductsWithOrders] = useState({});
 
   useEffect(() => {
     if (!user) {
@@ -52,23 +55,88 @@ const MyOrders = ({ user }) => {
 
     try {
       const result = await productService.getMyProducts(user.id);
-      
+
       if (result.success) {
-        setMyProducts(result.data || []);
+        const products = result.data || [];
+        setMyProducts(products);
+
+        // Load orders cho tất cả products
+        await loadOrdersForAllProducts(products);
       } else {
         setError(result.message || 'Không thể tải danh sách sản phẩm');
       }
     } catch (error) {
-      setError('Lỗi khi tải danh sách sản phẩm');
+      const status = error?.response?.status;
+      if (status === 401) {
+        setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        // Redirect to login after 2 seconds
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      } else {
+        setError('Lỗi khi tải danh sách sản phẩm. Vui lòng thử lại.');
+      }
       console.error('Load my products error:', error);
     } finally {
       setLoading(false);
     }
   };
 
+  const loadOrdersForAllProducts = async (products) => {
+    const ordersMap = {};
+
+    for (const product of products) {
+      try {
+        const result = await orderService.getOrdersByProduct(product.id);
+        if (result.success) {
+          ordersMap[product.id] = result.data || [];
+        }
+      } catch (error) {
+        console.error(`Error loading orders for product ${product.id}:`, error);
+        ordersMap[product.id] = [];
+      }
+    }
+
+    setProductsWithOrders(ordersMap);
+  };
+
   const handleOrderUpdate = () => {
     // Reload danh sách sản phẩm khi có cập nhật order
     loadMyProducts();
+  };
+
+  // Lấy danh sách sản phẩm có order đã được chấp nhận
+  const getApprovedProducts = () => {
+    const approvedProducts = [];
+
+    myProducts.forEach(product => {
+      const orders = productsWithOrders[product.id] || [];
+      const hasAcceptedOrder = orders.some(order => order.status === 'ACCEPTED');
+
+      if (hasAcceptedOrder) {
+        approvedProducts.push(product);
+      }
+    });
+
+    return approvedProducts;
+  };
+
+  // Lấy danh sách sản phẩm có yêu cầu mua hàng nhưng chưa được chấp nhận
+  const getPendingProducts = () => {
+    const pendingProducts = [];
+
+    myProducts.forEach(product => {
+      const orders = productsWithOrders[product.id] || [];
+      const hasAcceptedOrder = orders.some(order => order.status === 'ACCEPTED');
+      const hasAnyOrder = orders.length > 0;
+
+      // Chỉ hiển thị sản phẩm có orders nhưng chưa có order nào được chấp nhận
+      if (hasAnyOrder && !hasAcceptedOrder) {
+        pendingProducts.push(product);
+      }
+    });
+
+    return pendingProducts;
   };
 
   if (isCheckingAuth) {
@@ -90,9 +158,9 @@ const MyOrders = ({ user }) => {
     <Container fluid className="p-0 bg-light" style={{ minHeight: "100vh" }}>
       <div className="p-4">
         <MemberHeader activeTab="my-orders" />
-        
+
         <Card className="shadow-sm border-0">
-          <Card.Header className="bg-success text-white">
+          <Card.Header style={{ backgroundColor: '#00A86B', color: 'white' }}>
             <h4 className="mb-0">
               <i className="bi bi-cart-check me-2"></i>
               Quản lý đơn hàng
@@ -109,9 +177,9 @@ const MyOrders = ({ user }) => {
             {error && (
               <Alert variant="danger">
                 <Alert.Heading>Lỗi</Alert.Heading>
-                {error}
-                <button 
-                  className="btn btn-outline-danger btn-sm mt-2" 
+                {error} <br />
+                <button
+                  className="btn btn-outline-danger btn-sm mt-2"
                   onClick={loadMyProducts}
                 >
                   Thử lại
@@ -122,83 +190,84 @@ const MyOrders = ({ user }) => {
             {!loading && !error && (
               <Tabs defaultActiveKey="orders" className="mb-3">
                 <Tab eventKey="orders" title="Yêu cầu mua hàng">
-                  {myProducts.length === 0 ? (
-                    <div className="text-center p-4">
-                      <i className="bi bi-cart-x display-4 text-muted mb-3"></i>
-                      <h5 className="text-muted">Chưa có yêu cầu mua hàng nào</h5>
-                      <p className="text-muted">Khi có người mua gửi yêu cầu cho sản phẩm của bạn, chúng sẽ hiển thị ở đây.</p>
-                      <button 
-                        className="btn btn-success"
-                        onClick={() => navigate('/post-ad')}
-                      >
-                        <i className="bi bi-plus-circle me-2"></i>
-                        Đăng bán sản phẩm
-                      </button>
-                    </div>
-                  ) : (
-                    <div>
-                      <h5 className="mb-3">Sản phẩm có yêu cầu mua hàng</h5>
-                      <Row>
-                        {myProducts.map((product) => (
-                          <Col key={product.id} md={12} className="mb-4">
-                            <ProductWithOrders 
-                              product={product}
-                              onOrderUpdate={handleOrderUpdate}
-                            />
-                          </Col>
-                        ))}
-                      </Row>
-                      
-                      {myProducts.length > 0 && (
-                        <div className="text-center mt-4">
-                          <p className="text-muted">
-                            <i className="bi bi-info-circle me-2"></i>
-                            Chỉ hiển thị sản phẩm có yêu cầu mua hàng
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  {(() => {
+                    const pendingProductsList = getPendingProducts();
+
+                    return (
+                      <>
+                        {pendingProductsList.length === 0 ? (
+                          <div className="text-center p-4">
+                            <i className="bi bi-cart-x display-4 text-muted mb-3"></i>
+                            <h5 className="text-muted">Chưa có yêu cầu mua hàng nào</h5>
+                            <p className="text-muted">Khi có người mua gửi yêu cầu cho sản phẩm của bạn, chúng sẽ hiển thị ở đây.</p>
+                            <button
+                              className="btn"
+                              style={{ backgroundColor: '#00A86B', color: 'white', border: 'none' }}
+                              onClick={() => navigate('/post-ad')}
+                            >
+                              <i className="bi bi-plus-circle me-2"></i>
+                              Đăng bán sản phẩm
+                            </button>
+                          </div>
+                        ) : (
+                          <div>
+                            <h5 className="mb-3">Sản phẩm có yêu cầu mua hàng ({pendingProductsList.length})</h5>
+                            <Row>
+                              {pendingProductsList.map((product) => (
+                                <Col key={product.id} md={12} className="mb-4">
+                                  <ProductWithOrders
+                                    product={product}
+                                    onOrderUpdate={handleOrderUpdate}
+                                  />
+                                </Col>
+                              ))}
+                            </Row>
+
+                            <div className="text-center mt-4">
+                              <p className="text-muted">
+                                <i className="bi bi-info-circle me-2"></i>
+                                Chỉ hiển thị sản phẩm có yêu cầu mua hàng chưa được chấp nhận
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </Tab>
-                
-                <Tab eventKey="info" title="Thông tin">
-                  <div className="p-4">
-                    <h5>Thông tin về hệ thống đơn hàng</h5>
-                    <div className="row">
-                      <div className="col-md-6">
-                        <Card className="mb-3">
-                          <Card.Body>
-                            <h6 className="text-success">
-                              <i className="bi bi-check-circle me-2"></i>
-                              Quy trình mua hàng
-                            </h6>
-                            <ol className="mb-0">
-                              <li>Người mua gửi yêu cầu mua hàng</li>
-                              <li>Bạn xem xét và phản hồi</li>
-                              <li>Chấp nhận: Chuyển sang bước thanh toán</li>
-                              <li>Từ chối: Đơn hàng bị hủy</li>
-                            </ol>
-                          </Card.Body>
-                        </Card>
-                      </div>
-                      <div className="col-md-6">
-                        <Card className="mb-3">
-                          <Card.Body>
-                            <h6 className="text-info">
-                              <i className="bi bi-info-circle me-2"></i>
-                              Lưu ý quan trọng
-                            </h6>
-                            <ul className="mb-0">
-                              <li>Sản phẩm sẽ ẩn khi có yêu cầu mua</li>
-                              <li>Chỉ có thể có 1 đơn hàng active</li>
-                              <li>Bạn có quyền từ chối bất kỳ yêu cầu nào</li>
-                              <li>Khi chấp nhận sẽ chuyển sang hợp đồng</li>
-                            </ul>
-                          </Card.Body>
-                        </Card>
-                      </div>
-                    </div>
-                  </div>
+
+                <Tab eventKey="approved" title="Sản phẩm đã duyệt">
+                  {(() => {
+                    const approvedProductsList = getApprovedProducts();
+
+                    return (
+                      <>
+                        {approvedProductsList.length === 0 ? (
+                          <div className="text-center p-4">
+                            <i className="bi bi-check-circle display-4 text-muted mb-3"></i>
+                            <h5 className="text-muted">Chưa có sản phẩm nào được duyệt</h5>
+                            <p className="text-muted">Các sản phẩm có yêu cầu mua hàng đã được chấp nhận sẽ hiển thị ở đây.</p>
+                          </div>
+                        ) : (
+                          <div>
+                            <h5 className="mb-3">Sản phẩm đã được duyệt ({approvedProductsList.length})</h5>
+                            <div
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                                gap: "25px",
+                                padding: "20px 0",
+                              }}
+                            >
+                              {approvedProductsList.map((product) => (
+                                <ApprovedProductCard key={product.id} product={product} />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </Tab>
               </Tabs>
             )}

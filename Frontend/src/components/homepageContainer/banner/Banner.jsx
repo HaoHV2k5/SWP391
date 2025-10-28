@@ -2,7 +2,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import bannerService from '../../../services/bannerService';
+import bannerService from '../../../services/home/bannerService';
 
 // Import Swiper styles
 import 'swiper/css';
@@ -25,9 +25,9 @@ const Banner = () => {
       case 'product':
         // Navigate to product detail page
         if (banner.productId) {
-          navigate(`/products/${banner.productId}`);
+          navigate(`/product/${banner.productId}`);
         } else {
-          navigate(`/products/${banner.linkTarget.split('/').pop()}`);
+          navigate(`/product/${banner.linkTarget.split('/').pop()}`);
         }
         break;
       case 'category':
@@ -72,6 +72,7 @@ const Banner = () => {
   return (
     <div className="banner-container">
       <Swiper
+        className="banner-swiper"
         modules={[Navigation, Pagination, Autoplay]}
         spaceBetween={30}
         slidesPerView={1}

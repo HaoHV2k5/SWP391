@@ -1,8 +1,8 @@
 import { apiClient, authService } from "./authService";
-import searchService from "./searchService";
-import displayService from "./displayService";
-import filterService from "./filterService";
-import productDetailService from "./productDetailService";
+import searchService from "./home/searchService";
+import displayService from "./home/displayService";
+import filterService from "./home/filterService";
+import productDetailService from "./home/productDetailService";
 
 // ==================== PRODUCT SERVICE ====================
 // Dịch vụ sản phẩm: gom tất cả các lời gọi API liên quan đến sản phẩm
@@ -46,9 +46,10 @@ const productService = {
   // 📋 PHỤ: Lấy danh sách tin đăng của chính user (seller/member) - TẤT CẢ trạng thái
   // 📍 Endpoints: /products/history/seller/{userId}, /products/seller?username=xxx
   // 👥 Users: Member, Seller (cần đăng nhập)
-  async getMyPosts(username) {
+  async getMyPosts(userIdOrUsername) {
     try {
       let userId = null;
+      let username = null;
 
       // Lấy userId từ localStorage
       const raw = localStorage.getItem("userData");
@@ -56,14 +57,18 @@ const productService = {
         try {
           const parsed = JSON.parse(raw);
           userId = parsed?.userId || parsed?.user?.id || parsed?.id || null;
-          username =
-            username ||
-            parsed?.username ||
-            parsed?.user?.username ||
-            parsed?.email ||
-            parsed?.user?.email ||
-            null;
+          username = parsed?.username || parsed?.user?.username || parsed?.email || parsed?.user?.email || null;
         } catch {}
+      }
+
+      // Nếu truyền vào userIdOrUsername, sử dụng nó
+      if (userIdOrUsername) {
+        // Kiểm tra xem có phải là số không (userId)
+        if (typeof userIdOrUsername === 'number' || /^\d+$/.test(userIdOrUsername)) {
+          userId = userIdOrUsername;
+        } else {
+          username = userIdOrUsername;
+        }
       }
 
       // Ưu tiên dùng endpoint lấy TẤT CẢ tin (kể cả PENDING) theo userId
@@ -88,11 +93,23 @@ const productService = {
       const status = error?.response?.status;
       const backendMessage = error?.response?.data?.message || error?.message;
       console.error("❌ getMyPosts error:", { status, backendMessage });
+      
+      // Nếu lỗi 401 (Unauthorized), thử fallback về endpoint công khai
+      if (status === 401) {
+        console.log("🔄 401 error, trying public endpoint as fallback");
+        try {
+          const fallbackResponse = await apiClient.get("/products");
+          const fallbackData = fallbackResponse?.data?.data ?? fallbackResponse?.data?.content ?? fallbackResponse?.data;
+          console.log("📦 Fallback data received:", fallbackData);
+          return { success: true, data: Array.isArray(fallbackData) ? fallbackData : [] };
+        } catch (fallbackError) {
+          console.error("❌ Fallback also failed:", fallbackError);
+        }
+      }
+      
       return {
         success: false,
-        message: `Lỗi tải tin của tôi (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: backendMessage || "Không thể tải danh sách tin đăng của bạn. Vui lòng thử lại sau.",
       };
     }
   },
@@ -116,8 +133,8 @@ const productService = {
         }
       }
 
-      // Sử dụng getMyPosts với userId
-      return await this.getMyPosts(username);
+      // Sử dụng getMyPosts với userId thay vì username
+      return await this.getMyPosts(userId);
     } catch (error) {
       console.error("❌ getMyProducts error:", error);
       return {
@@ -311,9 +328,7 @@ const productService = {
       });
       return {
         success: false,
-        message: `Lỗi xóa sản phẩm (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: backendMessage || "Không thể xóa sản phẩm. Vui lòng thử lại sau.",
       };
     }
   },
@@ -357,9 +372,7 @@ const productService = {
       });
       return {
         success: false,
-        message: `Lỗi cập nhật sản phẩm (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: backendMessage || "Không thể cập nhật sản phẩm. Vui lòng thử lại sau.",
       };
     }
   },
@@ -381,9 +394,7 @@ const productService = {
       const backendMessage = error?.response?.data?.message || error?.message;
       return {
         success: false,
-        message: `Lỗi tải sản phẩm đã duyệt staff (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: backendMessage || "Không thể tải danh sách sản phẩm. Vui lòng thử lại sau.",
       };
     }
   },
@@ -407,9 +418,7 @@ const productService = {
       const backendMessage = error?.response?.data?.message || error?.message;
       return {
         success: false,
-        message: `Lỗi duyệt sản phẩm (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: backendMessage || "Không thể duyệt sản phẩm. Vui lòng thử lại sau.",
       };
     }
   },
@@ -433,9 +442,7 @@ const productService = {
       const backendMessage = error?.response?.data?.message || error?.message;
       return {
         success: false,
-        message: `Lỗi từ chối sản phẩm (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: backendMessage || "Không thể từ chối sản phẩm. Vui lòng thử lại sau.",
       };
     }
   },
