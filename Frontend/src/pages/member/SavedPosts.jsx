@@ -113,8 +113,8 @@ const SavedPosts = ({ user }) => {
       case "search-history":
         navigate("/member/search-history");
         break;
-      case "orders":
-        navigate("/member/orders");
+      case "my-orders":
+        navigate("/my-orders");
         break;
       case "profile":
         navigate("/member/profile");

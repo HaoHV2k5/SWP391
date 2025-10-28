@@ -109,9 +109,7 @@ const productService = {
       
       return {
         success: false,
-        message: `Lỗi tải tin của tôi (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: backendMessage || "Không thể tải danh sách tin đăng của bạn. Vui lòng thử lại sau.",
       };
     }
   },
@@ -330,9 +328,7 @@ const productService = {
       });
       return {
         success: false,
-        message: `Lỗi xóa sản phẩm (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: backendMessage || "Không thể xóa sản phẩm. Vui lòng thử lại sau.",
       };
     }
   },
@@ -376,9 +372,7 @@ const productService = {
       });
       return {
         success: false,
-        message: `Lỗi cập nhật sản phẩm (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: backendMessage || "Không thể cập nhật sản phẩm. Vui lòng thử lại sau.",
       };
     }
   },
@@ -400,9 +394,7 @@ const productService = {
       const backendMessage = error?.response?.data?.message || error?.message;
       return {
         success: false,
-        message: `Lỗi tải sản phẩm đã duyệt staff (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: backendMessage || "Không thể tải danh sách sản phẩm. Vui lòng thử lại sau.",
       };
     }
   },
@@ -426,9 +418,7 @@ const productService = {
       const backendMessage = error?.response?.data?.message || error?.message;
       return {
         success: false,
-        message: `Lỗi duyệt sản phẩm (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: backendMessage || "Không thể duyệt sản phẩm. Vui lòng thử lại sau.",
       };
     }
   },
@@ -452,9 +442,7 @@ const productService = {
       const backendMessage = error?.response?.data?.message || error?.message;
       return {
         success: false,
-        message: `Lỗi từ chối sản phẩm (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: backendMessage || "Không thể từ chối sản phẩm. Vui lòng thử lại sau.",
       };
     }
   },
