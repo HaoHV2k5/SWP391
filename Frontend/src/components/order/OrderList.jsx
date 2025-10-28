@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import orderService from '../../services/orderService';
 import contractService from '../../services/contractService';
 
-const ProductWithOrders = ({ product, onOrderUpdate }) => {
+const OrderList = ({ productId, onOrderUpdate }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -19,17 +19,17 @@ const ProductWithOrders = ({ product, onOrderUpdate }) => {
   });
 
   useEffect(() => {
-    if (product?.id) {
+    if (productId) {
       loadOrders();
     }
-  }, [product?.id]);
+  }, [productId]);
 
   const loadOrders = async () => {
     setLoading(true);
     setError('');
     
     try {
-      const result = await orderService.getOrdersByProduct(product.id);
+      const result = await orderService.getOrdersByProduct(productId);
       
       if (result.success) {
         setOrders(result.data || []);
@@ -159,16 +159,11 @@ const ProductWithOrders = ({ product, onOrderUpdate }) => {
     return date.toLocaleString('vi-VN');
   };
 
-  // Chỉ hiển thị component nếu có orders
-  if (orders.length === 0 && !loading) {
-    return null;
-  }
-
   if (loading) {
     return (
       <div className="text-center p-4">
         <Spinner animation="border" variant="primary" />
-        <div className="mt-2">Đang tải đơn hàng...</div>
+        <div className="mt-2">Đang tải danh sách đơn hàng...</div>
       </div>
     );
   }
@@ -185,109 +180,102 @@ const ProductWithOrders = ({ product, onOrderUpdate }) => {
     );
   }
 
+  if (orders.length === 0) {
+    return (
+      <Card>
+        <Card.Body className="text-center p-4">
+          <i className="bi bi-inbox display-4 text-muted mb-3"></i>
+          <h5 className="text-muted">Chưa có yêu cầu mua hàng nào</h5>
+          <p className="text-muted">Khi có người mua gửi yêu cầu, bạn sẽ thấy ở đây.</p>
+        </Card.Body>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="mb-4">
-      <Card.Header className="bg-light">
-        <div className="d-flex justify-content-between align-items-center">
-          <h6 className="mb-0">{product.title}</h6>
-          <span className="badge" style={{ backgroundColor: '#00A86B', color: 'white' }}>
-            {formatPrice(product.price)}
-          </span>
-        </div>
-      </Card.Header>
-      <Card.Body>
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h5>Yêu cầu mua hàng ({orders.length})</h5>
-          <Button 
-            variant="outline-secondary" 
-            size="sm" 
-            onClick={loadOrders}
-            style={{ borderColor: '#00A86B', color: '#00A86B' }}
-          >
-            <i className="bi bi-arrow-clockwise me-1"></i>
-            Làm mới
-          </Button>
-        </div>
-        
-        <div className="row">
-          {orders.map((order) => (
-            <div key={order.id} className="col-12 mb-3">
-              <Card>
-                <Card.Body>
-                  <div className="row">
-                    <div className="col-md-8">
-                      <div className="d-flex justify-content-between align-items-start mb-2">
-                        <h6 className="mb-0">{order.buyerName}</h6>
-                        {getStatusBadge(order.status)}
-                      </div>
-                      
-                      <div className="mb-2">
-                        <strong>Giá đề xuất:</strong> {formatPrice(order.offeredPrice)}
-                      </div>
-                      
-                      <div className="mb-2">
-                        <strong>Thời gian:</strong> {formatDate(order.createdAt)}
-                      </div>
-                      
-                      {order.message && (
-                        <div className="mb-2">
-                          <strong>Tin nhắn:</strong> {order.message}
-                        </div>
-                      )}
+    <div>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h5>Yêu cầu mua hàng ({orders.length})</h5>
+        <Button variant="outline-primary" size="sm" onClick={loadOrders}>
+          <i className="bi bi-arrow-clockwise me-1"></i>
+          Làm mới
+        </Button>
+      </div>
+      
+      <div className="row">
+        {orders.map((order) => (
+          <div key={order.id} className="col-12 mb-3">
+            <Card>
+              <Card.Body>
+                <div className="row">
+                  <div className="col-md-8">
+                    <div className="d-flex justify-content-between align-items-start mb-2">
+                      <h6 className="mb-0">{order.buyerName}</h6>
+                      {getStatusBadge(order.status)}
                     </div>
                     
-                    <div className="col-md-4 text-end">
-                      {order.status === 'PENDING' && (
-                        <div>
+                    <div className="mb-2">
+                      <strong>Giá đề xuất:</strong> {formatPrice(order.offeredPrice)}
+                    </div>
+                    
+                    <div className="mb-2">
+                      <strong>Thời gian:</strong> {formatDate(order.createdAt)}
+                    </div>
+                    
+                    {order.message && (
+                      <div className="mb-2">
+                        <strong>Tin nhắn:</strong> {order.message}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="col-md-4 text-end">
+                    {order.status === 'PENDING' && (
+                      <div>
                         <Button 
                           variant="success" 
                           size="sm" 
                           className="me-2"
-                          style={{ backgroundColor: '#00A86B', borderColor: '#00A86B' }}
                           onClick={() => handleOpenAcceptModal(order)}
                         >
                           <i className="bi bi-check-circle me-1"></i>
                           Chấp nhận
                         </Button>
-                          <Button 
-                            variant="danger" 
-                            size="sm"
-                            onClick={() => {
-                              if (window.confirm('Bạn có chắc chắn muốn từ chối đơn hàng này?')) {
-                                handleRejectOrder(order.id);
-                              }
-                            }}
-                          >
-                            <i className="bi bi-x-circle me-1"></i>
-                            Từ chối
-                          </Button>
-                        </div>
-                      )}
-                      
-                      {order.status === 'ACCEPTED' && (
-                        <Badge 
-                          className="fs-6"
-                          style={{ backgroundColor: '#00A86B', color: 'white' }}
+                        <Button 
+                          variant="danger" 
+                          size="sm"
+                          onClick={() => {
+                            if (window.confirm('Bạn có chắc chắn muốn từ chối đơn hàng này?')) {
+                              handleRejectOrder(order.id);
+                            }
+                          }}
                         >
-                          <i className="bi bi-check-circle me-1"></i>
-                          Đã chấp nhận
-                        </Badge>
-                      )}
-                      
-                      {order.status === 'REJECTED' && (
-                        <Badge bg="danger" className="fs-6">
                           <i className="bi bi-x-circle me-1"></i>
-                          Đã từ chối
-                        </Badge>
-                      )}
-                    </div>
+                          Từ chối
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {order.status === 'ACCEPTED' && (
+                      <Badge bg="success" className="fs-6">
+                        <i className="bi bi-check-circle me-1"></i>
+                        Đã chấp nhận
+                      </Badge>
+                    )}
+                    
+                    {order.status === 'REJECTED' && (
+                      <Badge bg="danger" className="fs-6">
+                        <i className="bi bi-x-circle me-1"></i>
+                        Đã từ chối
+                      </Badge>
+                    )}
                   </div>
-                </Card.Body>
-              </Card>
-            </div>
-          ))}
-        </div>
-      </Card.Body>
+                </div>
+              </Card.Body>
+            </Card>
+          </div>
+        ))}
+      </div>
       
       {/* Accept Order Modal */}
       <Modal show={showAcceptModal} onHide={() => setShowAcceptModal(false)} centered>
@@ -410,8 +398,8 @@ const ProductWithOrders = ({ product, onOrderUpdate }) => {
           </Button>
         </Modal.Footer>
       </Modal>
-    </Card>
+    </div>
   );
 };
 
-export default ProductWithOrders;
+export default OrderList;
