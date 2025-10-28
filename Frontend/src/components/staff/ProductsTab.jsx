@@ -14,6 +14,7 @@ import {
   Divider,
   Typography,
   Select,
+  Popover,
 } from "antd";
 import {
   ReloadOutlined,
@@ -21,6 +22,7 @@ import {
   EyeOutlined,
   EyeInvisibleOutlined,
   SearchOutlined,
+  GiftOutlined,
 } from "@ant-design/icons";
 import { usePendingProducts } from "../../hooks/useStaff";
 import { vnDate, statusTag, collectImages } from "../../utils/staffUtils";
@@ -34,6 +36,13 @@ const REJECT_REASONS = [
   { value: "Thiếu thông tin quan trọng" },
   { value: "Sai danh mục" },
   { value: "OTHER", label: "Khác..." },
+];
+
+const PACKAGE_FILTER_OPTIONS = [
+  { label: "Gói A", value: "Gói Nâng Cao" },
+  { label: "Gói B", value: "B" },
+  { label: "Gói C", value: "C" },
+  { label: "Nothing", value: null },
 ];
 
 // bỏ dấu & chuyển thường để search “mềm”
@@ -51,6 +60,59 @@ const KV = ({ label, value }) => (
   </div>
 );
 
+/** Lấy key nhóm seller (ưu tiên id, fallback username/name) */
+function getSellerKey(r) {
+  return (
+    r?.sellerId ??
+    r?.seller?.id ??
+    r?.user?.id ??
+    r?.seller?.username ??
+    r?.user?.username ??
+    r?.sellerName ??
+    "unknown"
+  );
+}
+
+/** Chuẩn hóa text hiển thị cho ô Seller */
+function getSellerDisplay(r) {
+  const id =
+    r?.sellerId ?? r?.seller?.id ?? r?.user?.id ?? r?.sellerName ?? "—";
+  const name =
+    r?.seller?.fullName ||
+    r?.user?.fullName ||
+    r?.seller?.username ||
+    r?.user?.username ||
+    r?.sellerName ||
+    "";
+  return { idText: String(id), nameText: String(name || "") };
+}
+
+/** Build mảng phẳng nhưng chèn rowSpan cho cột Seller */
+function buildGroupedRows(items = []) {
+  const groups = new Map(); // key -> array
+  for (const it of items) {
+    const key = getSellerKey(it);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(it);
+  }
+
+  const out = [];
+  for (const [key, arr] of groups.entries()) {
+    // Không sort để giữ nguyên thứ tự hiện tại (tránh thay đổi logic ngoài yêu cầu)
+    arr.forEach((it, idx) => {
+      const { idText, nameText } = getSellerDisplay(it);
+      out.push({
+        ...it,
+        _groupSellerKey: String(key),
+        _rowSpan: idx === 0 ? arr.length : 0,
+        _seller_idText: idText,
+        _seller_nameText: nameText,
+      });
+    });
+  }
+  return out;
+}
+
 const ProductsTab = () => {
   const { list, reload, approve, reject, loading, initial } =
     usePendingProducts();
@@ -62,6 +124,7 @@ const ProductsTab = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewItems, setPreviewItems] = useState([]);
   const [previewIndex, setPreviewIndex] = useState(0);
+  const [pkgUI, setPkgUI] = useState(null);
 
   // chi tiết
   const [detail, setDetail] = useState(null);
@@ -84,36 +147,39 @@ const ProductsTab = () => {
     setPreviewOpen(true);
   };
 
-  // danh sách sau khi lọc
-  const dataFiltered = useMemo(() => {
+  // danh sách sau khi lọc (giữ nguyên logic cũ)
+  var dataFiltered = useMemo(() => {
     const q = norm(query);
     if (!q) return list;
     return (list || []).filter((r) => {
-      const parts = [
-        r.id,
-        r.title,
-        r.name,
+      var parts = [
         r.productName,
-        r.description,
-        r.desc,
-        r.status,
-        r?.seller?.username,
         r?.seller?.fullName,
         r?.user?.username,
         r?.user?.fullName,
         r?.sellerName,
-        r?.vehicle?.brand,
-        r?.vehicle?.model,
-        r?.battery?.brand,
-        r?.battery?.model,
+        r?.price,
       ]
         .filter((x) => x !== undefined && x !== null)
-        .map((x) => norm(x));
+        .map((x) => {
+          return norm(x);
+        });
+
       return parts.some((p) => p.includes(q));
     });
   }, [list, query]);
 
-  const columns = useMemo(
+  // filter By Package
+  dataFiltered = dataFiltered.filter((x) => {
+    if (pkgUI == null) {
+      return true;
+    }
+
+    return x?.postingPackage?.postingPackage?.name == pkgUI;
+  });
+
+  // ====== TẠO CỘT & GIỮ NGUYÊN LOGIC CŨ CHO CÁC CỘT SAU ======
+  const columnsCore = useMemo(
     () => [
       {
         title: "ID",
@@ -214,6 +280,83 @@ const ProductsTab = () => {
     [loading]
   );
 
+  // ====== THÊM CỘT "SELLER" Ở ĐẦU VÀ DÙNG rowSpan ======
+  const sellerColumn = useMemo(
+    () => ({
+      title: "Seller",
+      dataIndex: "_groupSellerKey",
+      key: "seller",
+      width: 240,
+      render: (_val, record) => {
+        const idText = record?._seller_idText || "—";
+        const nameText = record?._seller_nameText || "";
+
+        // Dữ liệu gói từ response mới
+        const upp = record?.postingPackage; // user_posting_package
+        const pkg = upp?.postingPackage; // posting_package
+        const pkgName = pkg?.name || "—";
+        const dateFrom = upp?.startTime ? vnDate(upp.startTime) : "—";
+        const dateTo = upp?.endTime ? vnDate(upp.endTime) : "—";
+        const remaining = upp?.postPossible ?? null;
+        const isActive = upp?.active === true;
+
+        const tip = (
+          <div style={{ minWidth: 240 }}>
+            <div style={{ fontWeight: 600, marginBottom: 6 }}>{pkgName}</div>
+            <div style={{ fontSize: 12, color: "#555" }}>
+              Thời hạn: <b>{dateFrom}</b> → <b>{dateTo}</b>
+            </div>
+            <div style={{ fontSize: 12, color: "#555", marginTop: 4 }}>
+              Bài còn lại: <b>{remaining ?? "—"}</b>
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <Tag color={isActive ? "green" : "default"}>
+                {isActive ? "Đang hiệu lực" : "Hết hạn / Không hoạt động"}
+              </Tag>
+            </div>
+          </div>
+        );
+
+        return (
+          <div>
+            <div style={{ fontWeight: 500 }}>
+              <b>ID:</b> {idText}
+            </div>
+            {nameText ? <div style={{ color: "#666" }}>{nameText}</div> : null}
+
+            {/* Tên gói hiển thị trực tiếp */}
+            <div style={{ marginTop: 6 }}>
+              <Tooltip title={tip} placement="right">
+                <Tag
+                  icon={<GiftOutlined />}
+                  color="processing"
+                  style={{ cursor: "help" }}
+                >
+                  {pkgName}
+                </Tag>
+              </Tooltip>
+            </div>
+          </div>
+        );
+      },
+      onCell: (record) => ({
+        rowSpan: record?._rowSpan ?? 0,
+      }),
+    }),
+    []
+  );
+
+  const columns = useMemo(
+    () => [sellerColumn, ...columnsCore],
+    [sellerColumn, columnsCore]
+  );
+
+  // ====== DATA SAU KHI GROUP THEO SELLER ======
+  const dataForTable = useMemo(
+    () => buildGroupedRows(dataFiltered),
+    [dataFiltered]
+  );
+
   const approveConfirm = (id) => {
     Modal.confirm({
       title: "Xác nhận duyệt tin đăng?",
@@ -254,6 +397,17 @@ const ProductsTab = () => {
         <Button icon={<ReloadOutlined />} onClick={reload}>
           Tải lại
         </Button>
+
+        {/* UI lọc gói - KHÔNG áp dụng lọc dữ liệu */}
+        <Select
+          allowClear
+          value={pkgUI ?? undefined}
+          onChange={(v) => setPkgUI(v)}
+          placeholder="Lọc theo gói (không áp dụng)"
+          style={{ minWidth: 220 }}
+          options={PACKAGE_FILTER_OPTIONS}
+        />
+
         <Input
           allowClear
           prefix={<SearchOutlined />}
@@ -268,7 +422,7 @@ const ProductsTab = () => {
         rowKey={(r) => r.id}
         loading={initial}
         columns={columns}
-        dataSource={dataFiltered}
+        dataSource={dataForTable}
         pagination={{ pageSize: 10 }}
       />
 

@@ -9,18 +9,16 @@ const toYobDDMMYYYY = (val) => {
   if (!val) return ""; // caller phải đảm bảo NotNull theo BE
   // Nếu là đối tượng Date hoặc dayjs-like có format()
   if (typeof val === "object") {
-    try {
-      // dayjs / moment
-      if (typeof val.format === "function") return val.format("DD/MM/YYYY");
-      // Date
-      if (val instanceof Date) {
-        const d = val;
-        const dd = String(d.getDate()).padStart(2, "0");
-        const mm = String(d.getMonth() + 1).padStart(2, "0");
-        const yyyy = d.getFullYear();
-        return `${dd}/${mm}/${yyyy}`;
-      }
-    } catch (e) {}
+    // dayjs / moment
+    if (typeof val.format === "function") return val.format("DD/MM/YYYY");
+    // Date
+    if (val instanceof Date) {
+      const d = val;
+      const dd = String(d.getDate()).padStart(2, "0");
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const yyyy = d.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    }
   }
   // Chuỗi: thử các format phổ biến
   const s = String(val).trim();
