@@ -11,12 +11,14 @@ Backend/target/
 Backend/build/
 
 # IntelliJ IDEA
+.idea/
 Backend/.idea/
 Backend/*.iml
 Backend/out/
 
 # VS Code
 Backend/.vscode/
+.vscode/
 
 # Gradle
 Backend/.gradle/
