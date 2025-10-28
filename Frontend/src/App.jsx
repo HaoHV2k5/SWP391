@@ -31,6 +31,7 @@ import MyOrders from "./pages/member/MyOrders";
 import AccountPage from "./pages/AccountPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
 import KycPage from "./pages/kyc/KycPage";
+import PaymentDashboard from "./components/seller/PaymentDashboard";
 
 // Home pages
 import CategoryRouter from "./components/homepageContainer/navigation/CategoryRouter";
@@ -221,6 +222,7 @@ function AppContent() {
         {/* MEMBER ROUTES */}
         <Route path="/account" element={<AccountPage user={user} />} />
         <Route path="/kyc" element={<KycPage user={user} />} />
+        <Route path="/payment" element={<PaymentDashboard user={user} />} />
         <Route path="/my-posts" element={<MyPosts user={user} />} />
         <Route path="/saved-posts" element={<SavedPosts user={user} />} />
         <Route path="/my-orders" element={<MyOrders user={user} />} />
