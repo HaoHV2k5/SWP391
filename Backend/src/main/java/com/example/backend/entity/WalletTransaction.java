@@ -63,6 +63,16 @@ public class WalletTransaction {
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
+    // Thông tin ngân hàng cho rút tiền
+    @Column(name = "bank_info", columnDefinition = "NVARCHAR(255)")
+    private String bankInfo;
+    
+    @Column(name = "account_number", columnDefinition = "NVARCHAR(50)")
+    private String accountNumber;
+    
+    @Column(name = "account_holder_name", columnDefinition = "NVARCHAR(100)")
+    private String accountHolderName;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
