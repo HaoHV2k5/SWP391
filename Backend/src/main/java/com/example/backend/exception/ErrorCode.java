@@ -88,6 +88,13 @@ public enum ErrorCode {
     ACCESS_DENIED(1069, "Bạn không có quyền thực hiện hành động này", HttpStatus.FORBIDDEN),
     UPLOAD_FAILED(1070, "Upload file thất bại", HttpStatus.BAD_REQUEST),
     PURCHASE_NOT_COMPLETED(1071, "Bạn chỉ có thể review sau khi hoàn thành giao dịch với seller này", HttpStatus.BAD_REQUEST),
+    
+    // Withdrawal error codes
+    INSUFFICIENT_BALANCE(1072, "Số dư không đủ để thực hiện giao dịch", HttpStatus.BAD_REQUEST),
+    WALLET_INACTIVE(1073, "Ví đang bị khóa, không thể thực hiện giao dịch", HttpStatus.BAD_REQUEST),
+    TRANSACTION_NOT_FOUND(1074, "Giao dịch không tồn tại", HttpStatus.NOT_FOUND),
+    INVALID_TRANSACTION_TYPE(1075, "Loại giao dịch không hợp lệ", HttpStatus.BAD_REQUEST),
+    TRANSACTION_ALREADY_PROCESSED(1076, "Giao dịch đã được xử lý", HttpStatus.BAD_REQUEST),
 
     ;
     private int code;
