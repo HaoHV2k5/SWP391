@@ -23,4 +23,9 @@ public class VehicleRequest {
     @Min(value = 1900, message = "YEAR_MANUFACTURED_INVALID")
     @Max(value = 2030, message = "YEAR_MANUFACTURED_INVALID")
     private Integer yearManufactured;
+
+    private Long odometer; // số km đã đi
+    private String batteryType; // loại pin
+    private Double batteryCapacityKWh; // dung lượng pin (kWh)
+    private Integer rangePerChargeKm; // quãng đường 1 lần sạc (km)
 }

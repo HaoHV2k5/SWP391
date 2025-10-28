@@ -29,6 +29,18 @@ public class Battery {
     @Column(name = "battery_level")
     private Integer batteryLevel;
 
+    @Column(name = "battery_type")
+    private String batteryType; // loại pin
+
+    @Column(name = "voltage")
+    private Double voltage; // điện áp danh định (V)
+
+    @Column(name = "capacity_ah")
+    private Double capacityAh; // dung lượng (Ah)
+
+    @Column(name = "soh_percent")
+    private Integer sohPercent; // mức pin hiện tại (SoH %)
+
     @OneToOne(mappedBy = "battery")
     private Product product;
 }

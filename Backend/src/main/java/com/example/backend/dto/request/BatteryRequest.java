@@ -27,4 +27,9 @@ public class BatteryRequest {
     @Min(value = 0, message = "BATTERY_LEVEL_INVALID")
     @Max(value = 100, message = "BATTERY_LEVEL_INVALID")
     private Integer batteryLevel;
+
+    private String batteryType; // loại pin
+    private Double voltage; // điện áp danh định (V)
+    private Double capacityAh; // dung lượng (Ah)
+    private Integer sohPercent; // mức pin hiện tại (SoH %)
 }

@@ -28,7 +28,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     // nap vao vi
-    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SELLER','ROLE_USER')")
     @PostMapping("/recharge")
     public ApiResponse<Map<String, Object>> createPayment(HttpServletRequest req, @RequestParam Long userId) {
         Map<String, Object> map = paymentService.generateLinkPayment(req, userId);
