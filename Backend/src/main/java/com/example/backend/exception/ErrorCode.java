@@ -68,7 +68,33 @@ public enum ErrorCode {
     ORDER_REJECT_INVALID(1053, "Reject order thất bại", HttpStatus.BAD_REQUEST),
     ORDER_REQUEST_DUPLICATE(1054, "Bạn đã gửi request mua sản phẩm này rồi", HttpStatus.BAD_REQUEST),
     CONTRACT_SIGN(1055, "Hợp đồng đang được kí", HttpStatus.BAD_REQUEST),
-
+    CONTRACT_NOT_VALID(1056, "Hợp đồng không tồn tại", HttpStatus.BAD_REQUEST),
+    BUY_ORDER_FALID(1057, "Mua thất bại, số dư trong tài khoản không đủ", HttpStatus.BAD_REQUEST),
+    PRODUCT_ORDER_CONTRACT_NOT_CANCELLED(1058, "Sản phẩm đang được tạo hợp đồng, hợp đồng phải ở trạng thái CANCELLED", HttpStatus.BAD_REQUEST),
+    ORDER_NOT_FOUND(1059, "Order không tồn tại", HttpStatus.NOT_FOUND),
+    INVALID_ORDER_ESCROW_STATUS(1060, "Trạng thái của order escrow khác trạng thái đợi người mua xác nhận", HttpStatus.BAD_REQUEST),
+    
+    // Complaint error codes
+    CONTRACT_NOT_FOUND(1061, "Hợp đồng không tồn tại", HttpStatus.NOT_FOUND),
+    CONTRACT_NOT_COMPLETED(1062, "Hợp đồng chưa hoàn thành, không thể tạo complaint", HttpStatus.BAD_REQUEST),
+    COMPLAINT_ALREADY_EXISTS(1063, "Đã có complaint cho hợp đồng này", HttpStatus.BAD_REQUEST),
+    COMPLAINT_NOT_FOUND(1064, "Complaint không tồn tại", HttpStatus.NOT_FOUND),
+    COMPLAINT_ALREADY_RESOLVED(1065, "Complaint đã được giải quyết", HttpStatus.BAD_REQUEST),
+    COMPLAINT_NOT_PENDING(1066, "Complaint không ở trạng thái pending", HttpStatus.BAD_REQUEST),
+    
+    // Review error codes
+    REVIEW_ALREADY_EXISTS(1067, "Bạn đã đánh giá seller này rồi", HttpStatus.BAD_REQUEST),
+    REVIEW_NOT_FOUND(1068, "Review không tồn tại", HttpStatus.NOT_FOUND),
+    ACCESS_DENIED(1069, "Bạn không có quyền thực hiện hành động này", HttpStatus.FORBIDDEN),
+    UPLOAD_FAILED(1070, "Upload file thất bại", HttpStatus.BAD_REQUEST),
+    PURCHASE_NOT_COMPLETED(1071, "Bạn chỉ có thể review sau khi hoàn thành giao dịch với seller này", HttpStatus.BAD_REQUEST),
+    
+    // Withdrawal error codes
+    INSUFFICIENT_BALANCE(1072, "Số dư không đủ để thực hiện giao dịch", HttpStatus.BAD_REQUEST),
+    WALLET_INACTIVE(1073, "Ví đang bị khóa, không thể thực hiện giao dịch", HttpStatus.BAD_REQUEST),
+    TRANSACTION_NOT_FOUND(1074, "Giao dịch không tồn tại", HttpStatus.NOT_FOUND),
+    INVALID_TRANSACTION_TYPE(1075, "Loại giao dịch không hợp lệ", HttpStatus.BAD_REQUEST),
+    TRANSACTION_ALREADY_PROCESSED(1076, "Giao dịch đã được xử lý", HttpStatus.BAD_REQUEST),
 
     ;
     private int code;

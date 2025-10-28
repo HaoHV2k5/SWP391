@@ -22,7 +22,7 @@ public class Contract {
     @Column(nullable = false, unique = true)
     private String contractCode;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
@@ -78,8 +78,16 @@ public class Contract {
     @Column(name = "signed_at")
     private LocalDateTime signedAt; // khi tao hop dong
 
+    @Column(name = "email_notice")
+    @Builder.Default
+    private boolean postEmail = false; //
+
     @Column(name = "completed_at")
     private LocalDateTime completedAt; // sau khi release tien cho seller
+
+    @Column(name = "buyer_sign_remind_sent")
+    @Builder.Default
+    private boolean buyerSignRemindSent = false;
 
     @PrePersist
     protected void onCreate() {

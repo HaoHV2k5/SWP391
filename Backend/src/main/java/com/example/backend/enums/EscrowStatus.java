@@ -6,5 +6,6 @@ public enum EscrowStatus {
     ADMIN_REVIEW, // Seller đã gửi minh chứng lên admin
     RELEASED, // Đã chuyển tiền cho seller
     REFUNDED, // Đã hoàn cho user, dự phòng nếu cần
-    ADMIN_REJECTED // Admin đã kiểm tra nhưng từ chối minh chứng Seller
+    ADMIN_REJECTED, // Admin đã kiểm tra nhưng từ chối minh chứng Seller
+    ADMIN_APPROVED
 }

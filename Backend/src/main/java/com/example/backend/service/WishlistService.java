@@ -59,7 +59,7 @@ public class WishlistService {
         Set<Product> setProduct = wishlist.getProducts();
         setProduct.remove(product);
         wishlist.setProducts(setProduct);
-
+        wishlistRepository.save(wishlist);
 
     }
 

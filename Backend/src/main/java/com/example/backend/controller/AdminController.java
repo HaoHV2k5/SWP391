@@ -15,6 +15,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import com.example.backend.service.OrderService;
+import com.example.backend.service.ConstractService;
+import org.springframework.web.bind.annotation.RequestParam;
+import com.example.backend.dto.response.OrderEscrowReviewResponse;
 
 import java.util.List;
 
@@ -25,6 +29,8 @@ import java.util.List;
 public class AdminController {
     private final UserService userService;
     private final RoleService roleService;
+    private final OrderService orderService;
+    private final ConstractService constractService;
 
     // Get all users
     @GetMapping("/users")
@@ -125,7 +131,40 @@ public class AdminController {
                 .build();
     }
 
+    @GetMapping("/order-escrow/seller-requests")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ApiResponse<List<OrderEscrowReviewResponse>> getSellerRequests() {
+        List<OrderEscrowReviewResponse> reqs = orderService.getEscrowAdminReviewing();
+        return ApiResponse.<List<OrderEscrowReviewResponse>>builder().data(reqs).message("Danh sách yêu cầu seller chờ duyệt").build();
+    }
 
+    @PostMapping("/order-escrow/{escrowId}/approve")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ApiResponse<Void> adminApproveSellerRequest(@PathVariable Long escrowId) {
+        orderService.adminApproveEscrow(escrowId);
+        return ApiResponse.<Void>builder().message("Đã xác nhận và thông báo buyer thành công").build();
+    }
 
+    @PostMapping("/order-escrow/{escrowId}/reject")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ApiResponse<Void> adminRejectSellerRequest(@PathVariable Long escrowId, @RequestParam String reason) {
+        orderService.adminRejectEscrow(escrowId, reason);
+        return ApiResponse.<Void>builder().message("Đã từ chối yêu cầu và lưu lý do").build();
+    }
+
+    /**
+     * API để admin có thể gọi thủ công để release escrow money
+     * Chạy logic tự động release tiền cho các escrow đủ điều kiện
+     */
+    @PostMapping("/escrow/manual-release")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ApiResponse<Integer> manualReleaseEscrowMoney() {
+        log.info("Admin triggered manual escrow money release");
+        int processedCount = constractService.manualReleaseEscrowMoney();
+        return ApiResponse.<Integer>builder()
+                .data(processedCount)
+                .message("Đã xử lý " + processedCount + " escrow thành công")
+                .build();
+    }
 
 }

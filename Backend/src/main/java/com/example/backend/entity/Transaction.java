@@ -31,7 +31,6 @@ public class Transaction {
     @JoinColumn(name = "posting_package_id")
     private PostingPackage postingPackage;
 
-    
 
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;

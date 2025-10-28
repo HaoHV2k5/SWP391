@@ -1,7 +1,13 @@
 package com.example.backend.service;
 
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,13 +30,9 @@ import com.example.backend.repository.ProductRepository;
 import com.example.backend.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.http.HttpEntity;
 
 import com.example.backend.mapper.ContractMapper;
 import com.example.backend.dto.response.ContractResponse;
@@ -48,7 +50,8 @@ public class EversignService {
     private final OrderRespository orderRespository;
     private final ProductRepository productRepository;
     private final ContractMapper contractMapper;
-
+    private final MailService mailService;
+    private String outpath = "contract.pdf";
     @Value("${eversign.api.key}")
     private String apiKey;
 
@@ -62,8 +65,10 @@ public class EversignService {
 
     public Map<String, Object> createDocumentUsingTemplate(ContractCreateTemplateRequest req) {
         Order order = orderService.findById(req.getOrderId());
-        if(order.isSellerAccepted()){
-            throw new AppException(ErrorCode.CONTRACT_SIGN);
+        if(order.isSellerAccepted() ) {
+            ContractStatus status = order.getContracts().get(0).getStatus();
+            if(!status.name().equalsIgnoreCase(ContractStatus.CANCELLED.name()))
+                throw new AppException(ErrorCode.CONTRACT_SIGN);
         }
         try {
 
@@ -224,6 +229,7 @@ public class EversignService {
             }
             if("document_declined".equals(eventType)) {
                 contract.setStatus(ContractStatus.CANCELLED);
+                mailService.sendContractCancelNotification(contract.getSeller().getEmail(),contract);
                 contractRepository.save(contract);
                 System.out.println(" Hợp đồng " + documentHash + " đã bị từ chối ký!");
             }
@@ -234,6 +240,34 @@ public class EversignService {
             return false;
         }
     }
+
+
+    public byte[] downloadPdfConstract(String documentHash) {
+        try {
+            String apiUrl = String.format(
+                    "https://api.eversign.com/download_final_document?access_key=%s&business_id=%s&document_hash=%s",
+                    apiKey, businessId, documentHash
+            );
+
+
+            ResponseEntity<byte[]> response = restTemplate.exchange(
+                    apiUrl,
+                    HttpMethod.GET,
+                    null,
+                    byte[].class
+            );
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                return response.getBody();
+            } else {
+                throw new RuntimeException("Không tải được hợp đồng, mã lỗi: " + response.getStatusCode());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Lỗi khi tải hợp đồng: " + e.getMessage());
+        }
+    }
+
 
 
 
