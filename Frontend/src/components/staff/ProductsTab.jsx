@@ -1,7 +1,8 @@
 // src/components/staff/ProductsTab.jsx
 import React, { useMemo, useState } from "react";
 import {
-  Table,
+  List,
+  Card,
   Button,
   Modal,
   Space,
@@ -14,7 +15,12 @@ import {
   Divider,
   Typography,
   Select,
-  Popover,
+  Avatar,
+  Affix,
+  Skeleton,
+  Badge,
+  Popconfirm,
+  Descriptions,
 } from "antd";
 import {
   ReloadOutlined,
@@ -23,10 +29,15 @@ import {
   EyeInvisibleOutlined,
   SearchOutlined,
   GiftOutlined,
+  CheckCircleTwoTone,
+  CloseCircleTwoTone,
+  PictureOutlined,
 } from "@ant-design/icons";
 import { usePendingProducts } from "../../hooks/useStaff";
 import { vnDate, statusTag, collectImages } from "../../utils/staffUtils";
 import { productsApi } from "../../services/staffApi";
+
+const { Title, Text } = Typography;
 
 const REJECT_REASONS = [
   { value: "Thông tin không hợp lệ" },
@@ -87,31 +98,88 @@ function getSellerDisplay(r) {
   return { idText: String(id), nameText: String(name || "") };
 }
 
-/** Build mảng phẳng nhưng chèn rowSpan cho cột Seller */
-function buildGroupedRows(items = []) {
-  const groups = new Map(); // key -> array
+/** Gom nhóm theo seller để render feed đẹp hơn */
+function groupBySeller(items = []) {
+  const groups = new Map(); // key -> { header, rows: [] }
   for (const it of items) {
     const key = getSellerKey(it);
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(it);
-  }
-
-  const out = [];
-  for (const [key, arr] of groups.entries()) {
-    // Không sort để giữ nguyên thứ tự hiện tại (tránh thay đổi logic ngoài yêu cầu)
-    arr.forEach((it, idx) => {
+    if (!groups.has(key)) {
       const { idText, nameText } = getSellerDisplay(it);
-      out.push({
-        ...it,
-        _groupSellerKey: String(key),
-        _rowSpan: idx === 0 ? arr.length : 0,
-        _seller_idText: idText,
-        _seller_nameText: nameText,
+      // Dữ liệu gói từ response mới
+      const upp = it?.postingPackage; // user_posting_package
+      const pkg = upp?.postingPackage; // posting_package
+      const pkgName = pkg?.name || "—";
+      const dateFrom = upp?.startTime ? vnDate(upp.startTime) : "—";
+      const dateTo = upp?.endTime ? vnDate(upp.endTime) : "—";
+      const remaining = upp?.postPossible ?? null;
+      const isActive = upp?.active === true;
+
+      groups.set(key, {
+        header: {
+          sellerId: idText,
+          sellerName: nameText,
+          pkgName,
+          dateFrom,
+          dateTo,
+          remaining,
+          isActive,
+        },
+        rows: [],
       });
-    });
+    }
+    groups.get(key).rows.push(it);
   }
-  return out;
+  return Array.from(groups.values());
 }
+
+const cardStyle = {
+  borderRadius: 16,
+  overflow: "hidden",
+  boxShadow: "0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04)",
+};
+
+const headerWrapStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 12,
+};
+
+const toolbarCardStyle = {
+  position: "sticky",
+  top: 64,
+  zIndex: 9,
+  backdropFilter: "saturate(180%) blur(8px)",
+  background: "rgba(255,255,255,0.75)",
+  borderRadius: 12,
+  marginBottom: 12,
+};
+
+const priceChipStyle = {
+  fontSize: 18,
+  padding: "2px 8px",
+  borderRadius: 8,
+  background: "#fff1f0",
+  border: "1px solid #ffd6d6",
+};
+
+const coverPlaceholder = (
+  <div
+    style={{
+      width: "100%",
+      height: 260,
+      background: "linear-gradient(135deg,#fafafa,#f0f0f0)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#aaa",
+      borderTopLeftRadius: 16,
+      borderTopRightRadius: 16,
+    }}
+  >
+    <PictureOutlined style={{ fontSize: 36 }} />
+    <span style={{ marginLeft: 8 }}>(Không có ảnh)</span>
+  </div>
+);
 
 const ProductsTab = () => {
   const { list, reload, approve, reject, loading, initial } =
@@ -147,217 +215,37 @@ const ProductsTab = () => {
     setPreviewOpen(true);
   };
 
-  // danh sách sau khi lọc (giữ nguyên logic cũ)
-  var dataFiltered = useMemo(() => {
+  // danh sách sau khi lọc
+  const dataFiltered = useMemo(() => {
     const q = norm(query);
-    if (!q) return list;
-    return (list || []).filter((r) => {
-      var parts = [
-        r.productName,
-        r?.seller?.fullName,
-        r?.user?.username,
-        r?.user?.fullName,
-        r?.sellerName,
-        r?.price,
-      ]
-        .filter((x) => x !== undefined && x !== null)
-        .map((x) => {
-          return norm(x);
-        });
-
-      return parts.some((p) => p.includes(q));
-    });
-  }, [list, query]);
-
-  // filter By Package
-  dataFiltered = dataFiltered.filter((x) => {
-    if (pkgUI == null) {
-      return true;
+    let base = list || [];
+    if (q) {
+      base = base.filter((r) => {
+        const parts = [
+          r.productName,
+          r?.seller?.fullName,
+          r?.user?.username,
+          r?.user?.fullName,
+          r?.sellerName,
+          r?.price,
+        ]
+          .filter((x) => x !== undefined && x !== null)
+          .map((x) => norm(x));
+        return parts.some((p) => p.includes(q));
+      });
     }
+    // filter By Package (áp dụng thật)
+    return base.filter((x) => {
+      if (pkgUI == null) return true;
+      return x?.postingPackage?.postingPackage?.name == pkgUI;
+    });
+  }, [list, query, pkgUI]);
 
-    return x?.postingPackage?.postingPackage?.name == pkgUI;
-  });
+  // Gom nhóm theo seller để hiện feed “section”
+  const sections = useMemo(() => groupBySeller(dataFiltered), [dataFiltered]);
 
-  // ====== TẠO CỘT & GIỮ NGUYÊN LOGIC CŨ CHO CÁC CỘT SAU ======
-  const columnsCore = useMemo(
-    () => [
-      {
-        title: "ID",
-        dataIndex: "id",
-        key: "id",
-        width: 80,
-        render: (v) => `#${v}`,
-      },
-      {
-        title: "Tiêu đề",
-        dataIndex: "title",
-        key: "title",
-        render: (t, r) => (
-          <div>
-            <div style={{ fontWeight: 600 }}>
-              {t || r.name || r.productName || "(Không tiêu đề)"}
-            </div>
-            <div style={{ color: "#888", fontSize: 12 }}>
-              Giá:{" "}
-              {(Number(r.price || r.amount || r.cost) || 0).toLocaleString(
-                "vi-VN",
-                {
-                  style: "currency",
-                  currency: "VND",
-                  maximumFractionDigits: 0,
-                }
-              )}{" "}
-              • Người bán:{" "}
-              {r?.seller?.username || r?.user?.username || r?.sellerName || "—"}
-            </div>
-          </div>
-        ),
-      },
-      {
-        title: "Ảnh",
-        key: "images",
-        width: 120,
-        render: (_, r) => {
-          const imgs = collectImages(r);
-          const hasImgs = imgs.length > 0;
-          return (
-            <Tooltip title={hasImgs ? "Xem tất cả ảnh" : "Không có ảnh"}>
-              <Button
-                icon={hasImgs ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                onClick={() => hasImgs && openImages(r)}
-                disabled={!hasImgs}
-              />
-            </Tooltip>
-          );
-        },
-      },
-      {
-        title: "Gửi lúc",
-        key: "submitted_at",
-        render: (_, r) => vnDate(r.submitted_at || r.createdAt || r.created_at),
-      },
-      {
-        title: "Trạng thái",
-        dataIndex: "status",
-        key: "status",
-        render: (s) => {
-          const { color, text } = statusTag(s);
-          return <Tag color={color}>{text}</Tag>;
-        },
-      },
-      {
-        title: "Thao tác",
-        key: "actions",
-        width: 260,
-        render: (_, r) => (
-          <Space>
-            <Button onClick={() => openDetail(r)}>Chi tiết</Button>
-            <Button
-              type="primary"
-              loading={loading}
-              onClick={() => approveConfirm(r.id)}
-            >
-              Duyệt
-            </Button>
-            <Button
-              danger
-              loading={loading}
-              onClick={() =>
-                setRejectDlg({
-                  open: true,
-                  id: r.id,
-                  reasonKey: null,
-                  customText: "",
-                })
-              }
-            >
-              Từ chối
-            </Button>
-          </Space>
-        ),
-      },
-    ],
-    [loading]
-  );
-
-  // ====== THÊM CỘT "SELLER" Ở ĐẦU VÀ DÙNG rowSpan ======
-  const sellerColumn = useMemo(
-    () => ({
-      title: "Seller",
-      dataIndex: "_groupSellerKey",
-      key: "seller",
-      width: 240,
-      render: (_val, record) => {
-        const idText = record?._seller_idText || "—";
-        const nameText = record?._seller_nameText || "";
-
-        // Dữ liệu gói từ response mới
-        const upp = record?.postingPackage; // user_posting_package
-        const pkg = upp?.postingPackage; // posting_package
-        const pkgName = pkg?.name || "—";
-        const dateFrom = upp?.startTime ? vnDate(upp.startTime) : "—";
-        const dateTo = upp?.endTime ? vnDate(upp.endTime) : "—";
-        const remaining = upp?.postPossible ?? null;
-        const isActive = upp?.active === true;
-
-        const tip = (
-          <div style={{ minWidth: 240 }}>
-            <div style={{ fontWeight: 600, marginBottom: 6 }}>{pkgName}</div>
-            <div style={{ fontSize: 12, color: "#555" }}>
-              Thời hạn: <b>{dateFrom}</b> → <b>{dateTo}</b>
-            </div>
-            <div style={{ fontSize: 12, color: "#555", marginTop: 4 }}>
-              Bài còn lại: <b>{remaining ?? "—"}</b>
-            </div>
-            <div style={{ marginTop: 8 }}>
-              <Tag color={isActive ? "green" : "default"}>
-                {isActive ? "Đang hiệu lực" : "Hết hạn / Không hoạt động"}
-              </Tag>
-            </div>
-          </div>
-        );
-
-        return (
-          <div>
-            <div style={{ fontWeight: 500 }}>
-              <b>ID:</b> {idText}
-            </div>
-            {nameText ? <div style={{ color: "#666" }}>{nameText}</div> : null}
-
-            {/* Tên gói hiển thị trực tiếp */}
-            <div style={{ marginTop: 6 }}>
-              <Tooltip title={tip} placement="right">
-                <Tag
-                  icon={<GiftOutlined />}
-                  color="processing"
-                  style={{ cursor: "help" }}
-                >
-                  {pkgName}
-                </Tag>
-              </Tooltip>
-            </div>
-          </div>
-        );
-      },
-      onCell: (record) => ({
-        rowSpan: record?._rowSpan ?? 0,
-      }),
-    }),
-    []
-  );
-
-  const columns = useMemo(
-    () => [sellerColumn, ...columnsCore],
-    [sellerColumn, columnsCore]
-  );
-
-  // ====== DATA SAU KHI GROUP THEO SELLER ======
-  const dataForTable = useMemo(
-    () => buildGroupedRows(dataFiltered),
-    [dataFiltered]
-  );
-
-  const approveConfirm = (id) => {
+  const approveConfirm = async (id) => {
+    // dùng Popconfirm trong card; để fallback vẫn có Modal.confirm
     Modal.confirm({
       title: "Xác nhận duyệt tin đăng?",
       icon: <ExclamationCircleOutlined />,
@@ -375,8 +263,6 @@ const ProductsTab = () => {
       const res = await productsApi.getDetail(rec.id);
       if (res?.data) merged = { ...merged, ...res.data };
     } catch (err) {
-      // Log the error for debugging instead of leaving an empty catch block
-      // (keep behavior of continuing with the original record on failure)
       // eslint-disable-next-line no-console
       console.error("Failed to fetch product detail", err);
     }
@@ -384,49 +270,289 @@ const ProductsTab = () => {
     setDetail(merged);
   };
 
+  const renderPostCard = (r) => {
+    const imgs = collectImages(r);
+    const hasImgs = imgs.length > 0;
+    const price = (Number(r.price || r.amount || r.cost) || 0).toLocaleString(
+      "vi-VN",
+      {
+        style: "currency",
+        currency: "VND",
+        maximumFractionDigits: 0,
+      }
+    );
+    const status = statusTag(r.status);
+    const title = r.title || r.name || r.productName || "(Không tiêu đề)";
+    const timeStr = vnDate(r.submitted_at || r.createdAt || r.created_at);
+    const pkgName =
+      r?.postingPackage?.postingPackage?.name || r?.postingPackage?.name || "—";
+
+    const cover = hasImgs ? (
+      <div
+        style={{ position: "relative", background: "#fafafa" }}
+        onClick={() => openImages(r, 0)}
+      >
+        <Image
+          src={imgs[0]}
+          alt="cover"
+          preview={false}
+          style={{
+            width: "100%",
+            height: 260,
+            objectFit: "cover",
+            display: "block",
+          }}
+        />
+        {imgs.length > 1 && (
+          <div
+            style={{
+              position: "absolute",
+              right: 12,
+              bottom: 12,
+              background: "rgba(0,0,0,0.55)",
+              backdropFilter: "blur(2px)",
+              color: "#fff",
+              padding: "2px 8px",
+              borderRadius: 999,
+              fontSize: 12,
+            }}
+          >
+            +{imgs.length - 1} ảnh
+          </div>
+        )}
+      </div>
+    ) : (
+      coverPlaceholder
+    );
+
+    return (
+      <Badge.Ribbon text={pkgName} color="cyan">
+        <Card
+          key={r.id}
+          style={cardStyle}
+          cover={cover}
+          bodyStyle={{ padding: 16 }}
+          actions={[
+            <Tooltip title="Xem chi tiết" key="detail">
+              <Button size="small" onClick={() => openDetail(r)}>
+                Chi tiết
+              </Button>
+            </Tooltip>,
+
+            <Tooltip title="Duyệt bài" key="approve">
+              <Popconfirm
+                title="Duyệt tin này?"
+                onConfirm={() => approve(r.id)}
+              >
+                <Button
+                  type="primary"
+                  size="small"
+                  loading={loading}
+                  icon={<CheckCircleTwoTone twoToneColor="#52c41a" />}
+                >
+                  Duyệt
+                </Button>
+              </Popconfirm>
+            </Tooltip>,
+
+            <Tooltip title="Từ chối" key="reject">
+              <Popconfirm
+                title="Từ chối tin này?"
+                description="Bạn sẽ chọn lý do ở bước tiếp theo."
+                onConfirm={() =>
+                  setRejectDlg({
+                    open: true,
+                    id: r.id,
+                    reasonKey: null,
+                    customText: "",
+                  })
+                }
+              >
+                <Button
+                  danger
+                  size="small"
+                  loading={loading}
+                  icon={<CloseCircleTwoTone twoToneColor="#ff4d4f" />}
+                >
+                  Từ chối
+                </Button>
+              </Popconfirm>
+            </Tooltip>,
+
+            <Tooltip
+              title={hasImgs ? "Xem tất cả ảnh" : "Không có ảnh"}
+              key="images"
+            >
+              <Button
+                size="small"
+                icon={hasImgs ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                onClick={() => hasImgs && openImages(r)}
+                disabled={!hasImgs}
+              />
+            </Tooltip>,
+          ]}
+        >
+          <Space
+            align="start"
+            style={{ width: "100%", justifyContent: "space-between" }}
+          >
+            <div style={{ maxWidth: "72%" }}>
+              <Title
+                level={5}
+                style={{
+                  margin: 0,
+                  lineHeight: 1.3,
+                  wordBreak: "break-word",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}
+              >
+                {title}
+              </Title>
+              <div style={{ marginTop: 6 }}>
+                <Tag color={status.color} style={{ marginRight: 8 }}>
+                  {status.text}
+                </Tag>
+                <Tag>{timeStr}</Tag>
+              </div>
+            </div>
+
+            <div style={{ textAlign: "right" }}>
+              <Text strong style={priceChipStyle}>
+                {price?.replaceAll(".", ",")}
+              </Text>
+            </div>
+          </Space>
+        </Card>
+      </Badge.Ribbon>
+    );
+  };
+
   return (
     <div>
-      {/* Thanh công cụ: Tải lại + Ô tìm kiếm */}
-      <Space
-        style={{
-          marginBottom: 12,
-          width: "100%",
-          justifyContent: "space-between",
-        }}
-      >
-        <Button icon={<ReloadOutlined />} onClick={reload}>
-          Tải lại
-        </Button>
+      {/* (tùy chọn) nhỏ CSS hover cho cover */}
+      <style>{`.post-cover:hover { transform: scale(1.02); }`}</style>
 
-        {/* UI lọc gói - KHÔNG áp dụng lọc dữ liệu */}
-        <Select
-          allowClear
-          value={pkgUI ?? undefined}
-          onChange={(v) => setPkgUI(v)}
-          placeholder="Lọc theo gói (không áp dụng)"
-          style={{ minWidth: 220 }}
-          options={PACKAGE_FILTER_OPTIONS}
-        />
+      {/* Thanh công cụ: Sticky */}
+      <Affix offsetTop={64}>
+        <Card
+          bordered={false}
+          bodyStyle={{ padding: 12 }}
+          style={toolbarCardStyle}
+        >
+          <Space
+            style={{ width: "100%", justifyContent: "space-between" }}
+            wrap
+          >
+            <Button icon={<ReloadOutlined />} onClick={reload}>
+              Tải lại
+            </Button>
 
-        <Input
-          allowClear
-          prefix={<SearchOutlined />}
-          placeholder="Tìm Kiếm Theo Tiêu Đề..."
-          style={{ width: 360 }}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-      </Space>
+            <Select
+              allowClear
+              value={pkgUI ?? undefined}
+              onChange={(v) => setPkgUI(v)}
+              placeholder="Lọc theo gói"
+              style={{ minWidth: 220 }}
+              options={PACKAGE_FILTER_OPTIONS}
+            />
 
-      <Table
-        rowKey={(r) => r.id}
-        loading={initial}
-        columns={columns}
-        dataSource={dataForTable}
-        pagination={{ pageSize: 10 }}
-      />
+            <Input
+              allowClear
+              prefix={<SearchOutlined />}
+              placeholder="Tìm Kiếm Theo Tiêu Đề..."
+              style={{ width: 360 }}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </Space>
+        </Card>
+      </Affix>
 
-      {/* Gallery Preview (ẩn) */}
+      {/* FEED THEO SELLER */}
+      {initial ? (
+        <List grid={{ gutter: 16, xs: 1, md: 2, lg: 3 }}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <List.Item key={i}>
+              <Card style={cardStyle}>
+                <Skeleton active paragraph={{ rows: 3 }} />
+              </Card>
+            </List.Item>
+          ))}
+        </List>
+      ) : sections.length === 0 ? (
+        <div style={{ padding: 12 }}>Không có bài đăng nào.</div>
+      ) : (
+        sections.map((sec, idx) => {
+          const h = sec.header;
+          const avatarText =
+            (
+              h?.sellerName?.trim?.()[0] ||
+              h?.sellerId?.trim?.()[0] ||
+              "?"
+            ).toUpperCase?.() || "?";
+
+          const tip = (
+            <div style={{ minWidth: 240 }}>
+              <div style={{ fontWeight: 600, marginBottom: 6 }}>
+                {h.pkgName}
+              </div>
+              <div style={{ fontSize: 12, color: "#555" }}>
+                Thời hạn: <b>{h.dateFrom}</b> → <b>{h.dateTo}</b>
+              </div>
+              <div style={{ fontSize: 12, color: "#555", marginTop: 4 }}>
+                Bài còn lại: <b>{h.remaining ?? "—"}</b>
+              </div>
+              <div style={{ marginTop: 8 }}>
+                <Tag color={h.isActive ? "green" : "default"}>
+                  {h.isActive ? "Đang hiệu lực" : "Hết hạn / Không hoạt động"}
+                </Tag>
+              </div>
+            </div>
+          );
+
+          return (
+            <div key={idx} style={{ marginBottom: 24 }}>
+              {/* Seller Header */}
+              <div style={{ ...headerWrapStyle, marginBottom: 12 }}>
+                <Avatar size={44} style={{ background: "#1677ff" }}>
+                  {avatarText}
+                </Avatar>
+                <div>
+                  <div style={{ fontWeight: 600 }}>
+                    {h.sellerName || "—"}
+                    <Text type="secondary" style={{ marginLeft: 8 }}>
+                      (ID: {h.sellerId})
+                    </Text>
+                  </div>
+                  <Tooltip title={tip} placement="right">
+                    <Tag
+                      icon={<GiftOutlined />}
+                      color="processing"
+                      style={{ cursor: "help", marginTop: 6 }}
+                    >
+                      {h.pkgName}
+                    </Tag>
+                  </Tooltip>
+                </div>
+              </div>
+
+              {/* Seller's posts */}
+              <List
+                grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 3, xl: 4, xxl: 4 }}
+                dataSource={sec.rows}
+                renderItem={(item) => (
+                  <List.Item>{renderPostCard(item)}</List.Item>
+                )}
+              />
+            </div>
+          );
+        })
+      )}
+
+      {/* Gallery Preview (ẩn nhưng vẫn hoạt động) */}
       {previewOpen && (
         <div style={{ display: "none" }}>
           <Image.PreviewGroup
@@ -452,9 +578,17 @@ const ProductsTab = () => {
         footer={null}
         width={1000}
       >
+        {/* override CSS nhỏ để Descriptions không ép fixed width */}
+        <style>{`
+    .desc-auto .ant-descriptions-view { table-layout: auto !important; }
+    .nowrap { white-space: nowrap; }
+    .desc-box { background:#fafafa; border:1px solid #f0f0f0; border-radius:6px; padding:8px; }
+  `}</style>
+
         {detail && (
           <Row gutter={16}>
-            <Col span={10}>
+            {/* LEFT: Gallery (thu nhỏ để nhường chỗ cho form) */}
+            <Col span={8}>
               {detail.__images?.length ? (
                 <Image.PreviewGroup>
                   {detail.__images.slice(0, 12).map((u, i) => (
@@ -462,116 +596,190 @@ const ProductsTab = () => {
                       key={i}
                       src={u}
                       width="100%"
-                      style={{ marginBottom: 8, objectFit: "cover" }}
+                      style={{
+                        marginBottom: 8,
+                        objectFit: "cover",
+                        borderRadius: 8,
+                      }}
                     />
                   ))}
                 </Image.PreviewGroup>
               ) : (
-                <div>Không có ảnh</div>
+                <div
+                  style={{
+                    height: 360,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "1px dashed #e5e5e5",
+                    borderRadius: 12,
+                    color: "#999",
+                    background: "#fafafa",
+                  }}
+                >
+                  Không có ảnh
+                </div>
               )}
             </Col>
 
-            <Col span={14}>
-              <Typography.Title level={5} style={{ marginTop: 0 }}>
-                Thông tin tin đăng
-              </Typography.Title>
+            {/* RIGHT: Info rộng hơn */}
+            <Col span={16}>
+              {/* Header + price chip + status gọn */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 12,
+                }}
+              >
+                <Title level={5} style={{ margin: 0 }}>
+                  Thông tin tin đăng
+                </Title>
 
-              <KV label="Tiêu đề" value={detail.title || detail.name} />
-
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ fontSize: 12, color: "#888", marginBottom: 4 }}>
-                  Giá
-                </div>
-                <Input
-                  readOnly
-                  value={(
-                    Number(detail.price || detail.amount || detail.cost) || 0
-                  ).toLocaleString("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                    maximumFractionDigits: 0,
-                  })}
-                />
-              </div>
-
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ fontSize: 12, color: "#888", marginBottom: 4 }}>
-                  Mô tả
-                </div>
-                <Input.TextArea
-                  readOnly
-                  rows={3}
-                  value={detail.description || detail.desc}
-                />
-              </div>
-
-              <KV label="Loại sản phẩm" value={detail.productType} />
-
-              <div style={{ display: "flex", gap: 12, marginBottom: 10 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, color: "#888", marginBottom: 4 }}>
-                    Trạng thái
-                  </div>
-                  <Tag color={statusTag(detail.status).color}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Tag
+                    color={statusTag(detail.status).color}
+                    style={{ margin: 0 }}
+                  >
                     {statusTag(detail.status).text}
                   </Tag>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, color: "#888", marginBottom: 4 }}>
-                    Gửi lúc
+                  <div
+                    className="nowrap"
+                    style={{
+                      fontWeight: 700,
+                      fontSize: 18,
+                      padding: "2px 10px",
+                      borderRadius: 8,
+                      background: "#fff1f0",
+                      border: "1px solid #ffd6d6",
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {(
+                      Number(detail.price || detail.amount || detail.cost) || 0
+                    ).toLocaleString("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                      maximumFractionDigits: 0,
+                    })}
                   </div>
-                  <Input
-                    readOnly
-                    value={vnDate(
+                </div>
+              </div>
+
+              {/* Form miêu tả bằng Descriptions – auto layout, 2 cột trên desktop */}
+              <Descriptions
+                className="desc-auto"
+                bordered
+                size="middle"
+                column={{ xs: 1, sm: 1, md: 2, lg: 2 }}
+                labelStyle={{ width: 160 }}
+              >
+                <Descriptions.Item label="Tiêu đề" span={2}>
+                  <span className="nowrap">
+                    {detail.title || detail.name || "—"}
+                  </span>
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Gửi lúc">
+                  <span className="nowrap">
+                    {vnDate(
                       detail.submitted_at ||
                         detail.createdAt ||
                         detail.created_at
                     )}
-                  />
-                </div>
-              </div>
+                  </span>
+                </Descriptions.Item>
 
-              <KV
-                label="Người bán"
-                value={
-                  detail?.seller?.fullName ||
-                  detail?.user?.fullName ||
-                  detail?.seller?.username ||
-                  detail?.user?.username ||
-                  detail?.sellerName
-                }
-              />
+                <Descriptions.Item label="Người bán" span={2}>
+                  {detail?.seller?.fullName ||
+                    detail?.user?.fullName ||
+                    detail?.seller?.username ||
+                    detail?.user?.username ||
+                    detail?.sellerName ||
+                    "—"}
+                </Descriptions.Item>
 
+                <Descriptions.Item label="Loại sản phẩm" span={2}>
+                  {detail.productType || "—"}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Mô tả" span={2}>
+                  <div
+                    className="desc-box"
+                    style={{
+                      maxHeight: 160,
+                      overflow: "auto",
+                      whiteSpace: "pre-wrap",
+                    }}
+                  >
+                    {detail.description || detail.desc || "—"}
+                  </div>
+                </Descriptions.Item>
+              </Descriptions>
+
+              {/* Vehicle / Battery – giữ nguyên thông tin, trình bày gọn */}
               {(() => {
                 const v = detail.vehicle;
                 const b = detail.battery;
+
                 if (v && !b) {
                   return (
                     <>
                       <Divider />
-                      <Typography.Title level={5} style={{ marginTop: 0 }}>
+                      <Title level={5} style={{ marginTop: 0 }}>
                         Thông số xe (Vehicle)
-                      </Typography.Title>
-                      <KV label="Hãng" value={v.brand} />
-                      <KV label="Mẫu" value={v.model} />
-                      <KV label="Năm sản xuất" value={v.yearManufactured} />
+                      </Title>
+                      <Descriptions
+                        className="desc-auto"
+                        bordered
+                        size="middle"
+                        column={{ xs: 1, md: 2 }}
+                      >
+                        <Descriptions.Item label="Hãng">
+                          {v.brand || "—"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Mẫu">
+                          {v.model || "—"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Năm sản xuất">
+                          {v.yearManufactured || "—"}
+                        </Descriptions.Item>
+                      </Descriptions>
                     </>
                   );
                 }
+
                 if (b && !v) {
                   return (
                     <>
                       <Divider />
-                      <Typography.Title level={5} style={{ marginTop: 0 }}>
+                      <Title level={5} style={{ marginTop: 0 }}>
                         Thông số pin (Battery)
-                      </Typography.Title>
-                      <KV label="Hãng" value={b.brand} />
-                      <KV label="Model" value={b.model} />
-                      <KV label="Năm Sản Xuất" value={b.yearManufactured} />
-                      <KV label="Mức Pin" value={b.batteryLevel} />
+                      </Title>
+                      <Descriptions
+                        className="desc-auto"
+                        bordered
+                        size="middle"
+                        column={{ xs: 1, md: 2 }}
+                      >
+                        <Descriptions.Item label="Hãng">
+                          {b.brand || "—"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Model">
+                          {b.model || "—"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Năm Sản Xuất">
+                          {b.yearManufactured || "—"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Mức Pin">
+                          {b.batteryLevel || "—"}
+                        </Descriptions.Item>
+                      </Descriptions>
                     </>
                   );
                 }
+
                 return (
                   <>
                     <Divider />

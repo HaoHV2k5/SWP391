@@ -50,6 +50,7 @@ const StaffPage = ({ user, onLogout }) => {
   }, [statsHook]);
 
   const menuItems = [
+    getItem("Tổng quan", TAB_KEYS.DASHBOARD, <PieChartOutlined />),
     getItem("Quản Lý Tin đăng", TAB_KEYS.PRODUCTS, <AppstoreOutlined />),
     getItem("Quản Lý KYC", TAB_KEYS.KYC, <TeamOutlined />),
     getItem(
@@ -57,7 +58,6 @@ const StaffPage = ({ user, onLogout }) => {
       TAB_KEYS.COMPLAINTS,
       <ExclamationCircleOutlined />
     ),
-    getItem("Tổng quan", TAB_KEYS.DASHBOARD, <PieChartOutlined />),
   ];
 
   if (isCheckingAuth) {
