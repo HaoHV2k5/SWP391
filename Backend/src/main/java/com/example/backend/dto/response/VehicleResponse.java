@@ -14,4 +14,8 @@ public class VehicleResponse {
     private String brand;
     private String model;
     private Integer yearManufactured;
+    private Long odometer;
+    private String batteryType;
+    private Double batteryCapacityKWh;
+    private Integer rangePerChargeKm;
 }
