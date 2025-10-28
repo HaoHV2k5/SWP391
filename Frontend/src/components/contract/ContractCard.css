@@ -1,0 +1,276 @@
+.contract-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  margin-bottom: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.contract-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.contract-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.contract-info {
+  flex: 1;
+}
+
+.contract-code {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 4px 0;
+}
+
+.contract-date {
+  font-size: 14px;
+  color: #666;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-signed {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.status-completed {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-cancelled {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status-disputed {
+  background: #f5c6cb;
+  color: #721c24;
+}
+
+.status-default {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.contract-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contract-parties {
+  display: flex;
+  gap: 16px;
+}
+
+.party-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.party-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.party-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.contract-product {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid #f0f0f0;
+}
+
+.product-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.product-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.contract-price {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin: 8px 0;
+}
+
+.price-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.price-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #28a745;
+}
+
+.contract-sign-status {
+  display: flex;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.sign-badge {
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sign-badge.signed {
+  background: #d4edda;
+  color: #155724;
+}
+
+.sign-badge.unsigned {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.payment-status.paid,
+.delivery-status.completed {
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.payment-status.paid {
+  background: #d4edda;
+  color: #155724;
+}
+
+.delivery-status.completed {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.contract-card-footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.btn-view-detail,
+.btn-pay,
+.btn-cancel {
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-view-detail {
+  background: #f8f9fa;
+  color: #333;
+}
+
+.btn-view-detail:hover {
+  background: #e9ecef;
+}
+
+.btn-pay {
+  background: #28a745;
+  color: white;
+}
+
+.btn-pay:hover:not(:disabled) {
+  background: #218838;
+}
+
+.btn-cancel {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background: #c82333;
+}
+
+.btn-pay:disabled,
+.btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cancel-note {
+  font-size: 13px;
+  color: #666;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-left: 3px solid #ffc107;
+  border-radius: 4px;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+.btn-download {
+  padding: 8px 16px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 8px;
+}
+
+.btn-download:hover:not(:disabled) {
+  background: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+.btn-download:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
