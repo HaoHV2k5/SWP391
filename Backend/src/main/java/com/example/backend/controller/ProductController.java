@@ -7,6 +7,7 @@ import com.example.backend.dto.request.UpdateProductRequest;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.OrderResponse;
 import com.example.backend.dto.response.ProductResponse;
+import com.example.backend.dto.response.ProductResponseStaff;
 import com.example.backend.enums.ProductStatus;
 import com.example.backend.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -57,9 +58,9 @@ public class ProductController {
     // staff lay cac product pending
     @PreAuthorize("hasAuthority('ROLE_STAFF')")
     @GetMapping("/pending/seller/staff")
-    public ApiResponse<List<ProductResponse>> getProductsStaff() {
-        List<ProductResponse> list = productService.getPendingProducts();
-        return  ApiResponse.<List<ProductResponse>>builder()
+    public ApiResponse<List<ProductResponseStaff>> getProductsStaff() {
+        List<ProductResponseStaff> list = productService.getPendingProducts();
+        return  ApiResponse.<List<ProductResponseStaff>>builder()
                 .message("lấy danh sách product pending thành công")
                 .data(list).build();
 
