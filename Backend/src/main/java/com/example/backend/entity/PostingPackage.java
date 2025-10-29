@@ -37,6 +37,10 @@ public class PostingPackage {
     @Column(nullable = false)
     private Boolean isActive;
 
+    @Column(name = "require_approval", nullable = false)
+    @Builder.Default
+    private Boolean requireApproval = false;
+
     @OneToMany(mappedBy = "postingPackage", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<UserPostingPackage> userPostingPackages;
 

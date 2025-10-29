@@ -45,6 +45,9 @@ public class Product {
 
     private boolean isPosted = false;
     
+    @Column(name = "approved_label", columnDefinition = "NVARCHAR(255)")
+    private String approvedLabel;
+    
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "vehicle_id")
     private Vehicle vehicle;

@@ -3,6 +3,7 @@ package com.example.backend.mapper;
 import com.example.backend.dto.request.CreateProductRequest;
 import com.example.backend.dto.request.UpdateProductRequest;
 import com.example.backend.dto.response.ProductResponse;
+import com.example.backend.dto.response.ProductResponseStaff;
 import com.example.backend.entity.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -22,10 +23,14 @@ public interface ProductMapper {
     @Mapping(target = "reason", source = "reason")
     @Mapping(target = "vehicle", source = "vehicle")
     @Mapping(target = "battery", source = "battery")
+    @Mapping(target = "approvedLabel", source = "approvedLabel")
     ProductResponse toProductResponse(Product product);
 
     List<ProductResponse> toResponseList(List<Product> products);
 
     void updateProduct(@MappingTarget Product product, UpdateProductRequest request);
+
+    ProductResponseStaff toProductResponseStaff(Product product);
+    List<ProductResponseStaff> toResponseListStaff(List<Product> products);
 }
 

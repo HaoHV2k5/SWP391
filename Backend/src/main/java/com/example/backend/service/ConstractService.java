@@ -434,18 +434,18 @@ public class ConstractService {
         log.info("Updated seller wallet balance: {} -> {}", balanceBefore, sellerWallet.getBalance());
         
         // Tạo transaction cho seller
-        Transaction transaction = Transaction.builder()
-            .user(seller)
-            .wallet(sellerWallet)
-            .amount(amount)
-            .paymentMethod(PaymentMethod.WALLET)
-            .transactionCode(Config.getRandomNumber(8))
-            .status(TransactionStatus.COMPLETED)
-            .description("Nhận tiền từ escrow sau khi giao hàng thành công")
-            .paymentDate(LocalDateTime.now())
-            .isWalletPayment(true)
-            .build();
-        transactionRepository.save(transaction);
+        // Transaction transaction = Transaction.builder()
+        //     .user(seller)
+        //     .wallet(sellerWallet)
+        //     .amount(amount)
+        //     .paymentMethod(PaymentMethod.WALLET)
+        //     .transactionCode(Config.getRandomNumber(8))
+        //     .status(TransactionStatus.COMPLETED)
+        //     .description("Nhận tiền từ escrow sau khi giao hàng thành công")
+        //     .paymentDate(LocalDateTime.now())
+        //     .isWalletPayment(true)
+        //     .build();
+        // transactionRepository.save(transaction);
         
         // Tạo walletTransaction cho seller
         WalletTransaction walletTransaction = WalletTransaction.builder()
@@ -457,7 +457,7 @@ public class ConstractService {
             .balanceAfter(sellerWallet.getBalance())
             .description("Nhận tiền từ escrow")
             .status("COMPLETED")
-            .referenceTransaction(transaction)
+            // .referenceTransaction(transaction)
             .completedAt(LocalDateTime.now())
             .build();
         walletTransactionRepository.save(walletTransaction);
@@ -500,18 +500,18 @@ public class ConstractService {
         log.info("Updated buyer wallet balance: {} -> {}", balanceBefore, buyerWallet.getBalance());
         
         // Tạo transaction cho buyer
-        Transaction transaction = Transaction.builder()
-            .user(buyer)
-            .wallet(buyerWallet)
-            .amount(amount)
-            .paymentMethod(PaymentMethod.WALLET)
-            .transactionCode(Config.getRandomNumber(8))
-            .status(TransactionStatus.COMPLETED)
-            .description("Hoàn tiền từ escrow do complaint được giải quyết có lợi")
-            .paymentDate(LocalDateTime.now())
-            .isWalletPayment(true)
-            .build();
-        transactionRepository.save(transaction);
+        // Transaction transaction = Transaction.builder()
+        //     .user(buyer)
+        //     .wallet(buyerWallet)
+        //     .amount(amount)
+        //     .paymentMethod(PaymentMethod.WALLET)
+        //     .transactionCode(Config.getRandomNumber(8))
+        //     .status(TransactionStatus.COMPLETED)
+        //     .description("Hoàn tiền từ escrow do complaint được giải quyết có lợi")
+        //     .paymentDate(LocalDateTime.now())
+        //     .isWalletPayment(true)
+        //     .build();
+        // transactionRepository.save(transaction);
         
         // Tạo walletTransaction cho buyer
         WalletTransaction walletTransaction = WalletTransaction.builder()
@@ -523,7 +523,7 @@ public class ConstractService {
             .balanceAfter(buyerWallet.getBalance())
             .description("Hoàn tiền từ escrow")
             .status("COMPLETED")
-            .referenceTransaction(transaction)
+            // .referenceTransaction(transaction)
             .completedAt(LocalDateTime.now())
             .build();
         walletTransactionRepository.save(walletTransaction);

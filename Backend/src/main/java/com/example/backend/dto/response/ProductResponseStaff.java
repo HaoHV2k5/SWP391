@@ -15,7 +15,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductResponse {
+public class ProductResponseStaff {
     
     private Long id;
     private String title;
@@ -31,6 +31,6 @@ public class ProductResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String reason;
-    private  String approvedLabel;
+    private String packageName;
 }
 

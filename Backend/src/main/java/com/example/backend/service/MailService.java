@@ -41,7 +41,7 @@ public class MailService {
         context.setVariable("name", name);
         context.setVariable("otp",otp);
         context.setVariable("originalEmail", to); // Thêm email gốc để hiển thị
-        String html = templateEngine.process("email/otp-email.html",context);
+        String html = templateEngine.process("email/OTP-email",context);
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
         
@@ -234,7 +234,7 @@ public class MailService {
         context.setVariable("amount", amount);
         context.setVariable("releaseTime", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
         
-        String html = templateEngine.process("email/escrow-release.html", context);
+        String html = templateEngine.process("email/escrow-release.html", context);//
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         try {
             MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
@@ -258,7 +258,7 @@ public class MailService {
         context.setVariable("amount", amount);
         context.setVariable("refundTime", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
         
-        String html = templateEngine.process("email/escrow-refund.html", context);
+        String html = templateEngine.process("email/escrow-refund.html", context);//
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         try {
             MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
