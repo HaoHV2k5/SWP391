@@ -436,7 +436,7 @@ const ProductsTab = () => {
       <style>{`.post-cover:hover { transform: scale(1.02); }`}</style>
 
       {/* Thanh công cụ: Sticky */}
-      <Affix offsetTop={64}>
+      <Affix>
         <Card
           bordered={false}
           bodyStyle={{ padding: 12 }}
