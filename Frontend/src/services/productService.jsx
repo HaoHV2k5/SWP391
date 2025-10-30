@@ -212,6 +212,20 @@ const productService = {
         formData.append("vehicle.brand", form.brand);
         formData.append("vehicle.model", form.model.trim());
         formData.append("vehicle.yearManufactured", form.yearManufactured);
+        
+        // Vehicle additional fields
+        if (form.odometer && form.odometer !== "") {
+          formData.append("vehicle.odometer", form.odometer);
+        }
+        if (form.vehicleBatteryType && form.vehicleBatteryType !== "") {
+          formData.append("vehicle.batteryType", form.vehicleBatteryType);
+        }
+        if (form.batteryCapacityKWh && form.batteryCapacityKWh !== "") {
+          formData.append("vehicle.batteryCapacityKWh", form.batteryCapacityKWh);
+        }
+        if (form.rangePerChargeKm && form.rangePerChargeKm !== "") {
+          formData.append("vehicle.rangePerChargeKm", form.rangePerChargeKm);
+        }
       } else if (productType === "BATTERY") {
         formData.append("battery.brand", form.brand);
         formData.append("battery.model", form.model.trim());
@@ -223,6 +237,20 @@ const productService = {
           return { success: false, message: "Mức pin phải từ 0-100%" };
         }
         formData.append("battery.batteryLevel", batteryLevel);
+        
+        // Battery additional fields
+        if (form.batteryBatteryType && form.batteryBatteryType !== "") {
+          formData.append("battery.batteryType", form.batteryBatteryType);
+        }
+        if (form.voltage && form.voltage !== "") {
+          formData.append("battery.voltage", form.voltage);
+        }
+        if (form.capacityAh && form.capacityAh !== "") {
+          formData.append("battery.capacityAh", form.capacityAh);
+        }
+        if (form.sohPercent && form.sohPercent !== "") {
+          formData.append("battery.sohPercent", form.sohPercent);
+        }
       }
 
       // Enhanced image validation
