@@ -3,8 +3,10 @@
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 16px;
-  margin-bottom: 16px;
   transition: transform 0.2s, box-shadow 0.2s;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .contract-card:hover {
@@ -73,6 +75,68 @@
 .status-default {
   background: #e9ecef;
   color: #495057;
+}
+
+/* lifecycle */
+.lifecycle { 
+  position: relative; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 8px; 
+  margin: 10px 0 20px 0; 
+  padding-bottom: 0;
+}
+.lifecycle-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+.lc-dot { 
+  width: 22px; 
+  height: 22px; 
+  border-radius: 50%; 
+  background: #e5e7eb; 
+  color: #6b7280; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 12px; 
+  font-weight: 700;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+.lc-dot.active { 
+  background: #1d4ed8; 
+  color: #fff; 
+  box-shadow: 0 0 0 3px rgba(29,78,216,0.15); 
+}
+.lc-line { 
+  flex: 1; 
+  height: 3px; 
+  background: #e5e7eb; 
+  border-radius: 2px; 
+  position: relative;
+  z-index: 1;
+}
+.lc-line.active { 
+  background: #60a5fa; 
+}
+.lc-labels { 
+  display: flex; 
+  justify-content: space-between; 
+  font-size: 11px; 
+  color: #6b7280;
+  margin-top: 6px;
+  position: relative;
+  z-index: 0;
+}
+.lc-labels span {
+  flex: 1;
+  text-align: center;
+  padding: 0 4px;
 }
 
 .contract-card-body {
@@ -186,7 +250,7 @@
 .contract-card-footer {
   display: flex;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: auto;
   padding-top: 12px;
   border-top: 1px solid #e0e0e0;
 }
