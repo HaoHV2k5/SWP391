@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 public class GeminiAIController {
     private final GeminiAIService  geminiAIService;
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
-    @GetMapping("/suggest")
+    @PostMapping("/suggest")
     public ApiResponse<PriceSuggestionResponse> suggestPrice(
             @RequestBody PriceRequest request) {
         PriceSuggestionResponse response = geminiAIService.suggestPrice(request);
