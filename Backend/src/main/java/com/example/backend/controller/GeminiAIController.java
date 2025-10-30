@@ -1,13 +1,12 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.request.PriceRequest;
 import com.example.backend.dto.response.ApiResponse;
+import com.example.backend.dto.response.PriceSuggestionResponse;
 import com.example.backend.service.GeminiAIService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/pricing")
@@ -16,11 +15,10 @@ public class GeminiAIController {
     private final GeminiAIService  geminiAIService;
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
     @GetMapping("/suggest")
-    public ApiResponse<String> suggestPrice(
-            @RequestParam String name,
-            @RequestParam String desc) {
-        String response = geminiAIService.suggestPrice(name, desc);
+    public ApiResponse<PriceSuggestionResponse> suggestPrice(
+            @RequestBody PriceRequest request) {
+        PriceSuggestionResponse response = geminiAIService.suggestPrice(request);
 
-        return ApiResponse.<String>builder().data(response).build();
+        return ApiResponse.<PriceSuggestionResponse>builder().data(response).build();
     }
 }

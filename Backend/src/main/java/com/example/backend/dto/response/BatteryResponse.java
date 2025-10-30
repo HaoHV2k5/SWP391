@@ -15,4 +15,8 @@ public class BatteryResponse {
     private String model;
     private Integer yearManufactured;
     private Integer batteryLevel;
+    private String batteryType;
+    private Double voltage;
+    private Double capacityAh;
+    private Integer sohPercent;
 }

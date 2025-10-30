@@ -3,6 +3,7 @@ package com.example.backend.service;
 import com.example.backend.dto.request.CreateProductRequest;
 import com.example.backend.dto.request.UpdateProductRequest;
 import com.example.backend.dto.response.ProductResponse;
+import com.example.backend.dto.response.ProductResponseStaff;
 import com.example.backend.entity.*;
 import com.example.backend.enums.ContractStatus;
 import com.example.backend.enums.ProductStatus;
@@ -92,6 +93,14 @@ public class ProductService {
         }
         userPackage.setPostPossible(userPackage.getPostPossible() - 1);
         userPackageTransactionRepository.save(userPackage);
+        // --- New Logic ---
+        if (userPackage.getPostingPackage().getRequireApproval() != null && userPackage.getPostingPackage().getRequireApproval()) {
+            product.setStatus(ProductStatus.PENDING);
+            product.setPosted(false);
+        } else {
+            product.setStatus(ProductStatus.ACTIVE);
+            product.setPosted(true);
+        }
         // Lưu product
         Product savedProduct = productRepository.save(product);
         
@@ -106,9 +115,15 @@ public class ProductService {
         return productMapper.toResponseList(products);
     }
     // lay cac san pham pending staff
-    public List<ProductResponse> getPendingProducts() {
+    public List<ProductResponseStaff> getPendingProducts() {
         List<Product> products = productRepository.findPendingProducts();
-        return productMapper.toResponseList(products);
+        List<ProductResponseStaff> listResponseStaff = productMapper.toResponseListStaff(products);
+        for (int i = 0; i < listResponseStaff.size(); i++) {
+            Product pro = products.get(i);
+            String packageName = userPackageTransactionRepository.findPostingPackageByUserIdAndActiveTrue(pro.getSeller().getId()).getPostingPackage().getName();
+            listResponseStaff.get(i).setPackageName(packageName);
+        }
+        return listResponseStaff;
     }
     // tu choi post boi admin va staff
     public ProductResponse rejectProduct(Long id,  String reason) {
@@ -155,29 +170,24 @@ public class ProductService {
     }
 
 
-    // seller post bai dang public
+    // seller post bai dang public (chỉ bài admin approved của gói requireApproval mới cho đăng + nhãn)
     @Transactional
-    public ProductResponse postProduct(Long producId){
-        Product product = productRepository.findById(producId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-        if(!ProductStatus.ADMIN_APPROVED.equals(product.getStatus())){
-            throw new AppException(ErrorCode.PRODUCT_NOT_ACCEPT_BY_ADMIN);
-        }
-
-        // Kiểm tra nếu sản phẩm đã từng có Order
-        List<Order> orders = orderRespository.findAllByProductIdAndSellerAcceptedFalse(product.getId());
-        if(orders != null && !orders.isEmpty()) {
-            for(Order order : orders) {
-                List<Contract> contracts = contractRepository.findAllByOrder(order);
-                // Nếu có contract nào trạng thái khác CANCELLED thì không cho post
-                if (contracts != null && !contracts.isEmpty()) {
-                    for(Contract contract : contracts) {
-                        if (!ContractStatus.CANCELLED.equals(contract.getStatus())) {
-                            throw new AppException(ErrorCode.PRODUCT_ORDER_CONTRACT_NOT_CANCELLED);
-                        }
-                    }
-                }
+    public ProductResponse postProduct(Long productId){
+        Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        UserPostingPackage userPackage = userPackageTransactionService.getUserPostingPackageByUserId(product.getSeller().getId());
+        // Nếu là bài đăng thuộc gói requireApproval và đã được admin duyệt mới cho phép public + label
+        if(userPackage != null && userPackage.getPostingPackage().getRequireApproval() != null && userPackage.getPostingPackage().getRequireApproval()) {
+            if(!ProductStatus.ADMIN_APPROVED.equals(product.getStatus())){
+                throw new AppException(ErrorCode.PRODUCT_NOT_ACCEPT_BY_ADMIN);
             }
+            product.setStatus(ProductStatus.ACTIVE);
+            product.setPosted(true);
+            product.setReason(null);
+            product.setApprovedLabel("ĐÃ ĐƯỢC ADMIN KIỂM DUYỆT");
+            productRepository.save(product);
+            return productMapper.toProductResponse(product);
         }
+        // Nếu không phải gói cần duyệt hoặc lỡ gọi nhầm thì đã active rồi hoặc public luôn theo flow
         product.setStatus(ProductStatus.ACTIVE);
         product.setPosted(true);
         productRepository.save(product);

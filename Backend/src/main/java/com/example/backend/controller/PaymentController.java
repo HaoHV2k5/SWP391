@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -28,7 +29,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     // nap vao vi
-    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SELLER','ROLE_USER')")
     @PostMapping("/recharge")
     public ApiResponse<Map<String, Object>> createPayment(HttpServletRequest req, @RequestParam Long userId) {
         Map<String, Object> map = paymentService.generateLinkPayment(req, userId);
@@ -44,9 +45,17 @@ public class PaymentController {
     }
 
     @GetMapping("/payment-return")
-    public ResponseEntity<String> handleVnpayReturn(HttpServletRequest request) {
+    public ResponseEntity<Void> handleVnpayReturn(HttpServletRequest request) {
         String result = paymentService.vnpReturn(request);
-        return ResponseEntity.ok(result);
+
+        String redirectUrl = "http://localhost:5173/payment-fail";
+        if ("success".equals(result)) {
+            redirectUrl = "http://localhost:5173/payment-success";
+        }
+
+        return ResponseEntity.status(HttpStatus.FOUND) // 302 redirect
+                .location(URI.create(redirectUrl))
+                .build();
     }
 
 
