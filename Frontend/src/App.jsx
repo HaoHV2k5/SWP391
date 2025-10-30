@@ -33,6 +33,7 @@ import AccountPage from "./pages/AccountPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
 import KycPage from "./pages/kyc/KycPage";
 import PaymentDashboard from "./components/seller/PaymentDashboard";
+// PaymentReturn is optional; keep removed unless needed
 
 // Home pages
 import CategoryRouter from "./components/homepageContainer/navigation/CategoryRouter";
