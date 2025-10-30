@@ -31,5 +31,6 @@ public class ProductResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String reason;
+    private  String approvedLabel;
 }
 

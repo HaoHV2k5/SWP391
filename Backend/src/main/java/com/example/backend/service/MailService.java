@@ -4,13 +4,12 @@ import com.example.backend.entity.Order;
 import com.example.backend.entity.Contract;
 import com.example.backend.entity.OrderEscrow;
 import com.example.backend.entity.Product;
+import java.math.BigDecimal;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.security.crypto.codec.Utf8;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -42,7 +41,7 @@ public class MailService {
         context.setVariable("name", name);
         context.setVariable("otp",otp);
         context.setVariable("originalEmail", to); // Thêm email gốc để hiển thị
-        String html = templateEngine.process("email/otp-email.html",context);
+        String html = templateEngine.process("email/OTP-email",context);
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
         
@@ -180,7 +179,96 @@ public class MailService {
         }
     }
 
+    public void sendContractCancelDueToPaymentOverdue(String to, Contract contract) {
+        Context context = new Context();
+        context.setVariable("buyerName", contract.getBuyer().getFullname());
+        context.setVariable("sellerName", contract.getSeller().getFullname());
+        context.setVariable("productName", contract.getProduct().getTitle());
+        context.setVariable("contractCode", contract.getContractCode());
+        context.setVariable("signedAt", contract.getSignedAt());
+        String html = templateEngine.process("email/Seller-Cancel-Contract.html", context);
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
+            messageHelper.setTo(to);
+            messageHelper.setSubject("[EV Exchange] Hợp đồng bị hủy do quá hạn thanh toán - " + contract.getProduct().getTitle());
+            messageHelper.setText(html, true);
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            // log hoặc throw tùy nhu cầu
+        }
+    }
 
+    /**
+     * Gửi mail nhắc buyer ký hợp đồng khi seller đã ký (sau 3 ngày buyer chưa ký)
+     */
+    public void sendContractNeedBuyerSignNotification(String to, String subject, Contract contract, Product product) {
+        Context context = new Context();
+        context.setVariable("contractId", contract.getId());
+        context.setVariable("productName", product.getTitle());
+        context.setVariable("sellerName", contract.getSeller().getFullname());
+        context.setVariable("createdAt", contract.getCreatedAt());
+        context.setVariable("expiredAt", contract.getUpdatedAt() != null ? contract.getUpdatedAt().plusDays(3) : null);
+        context.setVariable("buyerName", contract.getBuyer().getFullname());
+        String html = templateEngine.process("email/reminder-buyer-sign-contract.html", context);
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
+            messageHelper.setTo(to);
+            messageHelper.setSubject(subject);
+            messageHelper.setText(html, true);
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            // log hoặc throw tùy nhu cầu
+        }
+    }
 
+    /**
+     * Gửi email thông báo seller đã nhận tiền từ escrow
+     */
+    public void sendEscrowReleaseNotification(String to, Contract contract, BigDecimal amount) {
+        Context context = new Context();
+        context.setVariable("sellerName", contract.getSeller().getFullname());
+        context.setVariable("productName", contract.getProduct().getTitle());
+        context.setVariable("contractId", contract.getId());
+        context.setVariable("amount", amount);
+        context.setVariable("releaseTime", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+        
+        String html = templateEngine.process("email/escrow-release.html", context);//
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
+            messageHelper.setTo(to);
+            messageHelper.setSubject("[EV Exchange] Đã nhận tiền từ escrow - Hợp đồng #" + contract.getId());
+            messageHelper.setText(html, true);
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            // log hoặc throw tùy nhu cầu
+        }
+    }
+
+    /**
+     * Gửi email thông báo buyer đã được hoàn tiền từ escrow
+     */
+    public void sendEscrowRefundNotification(String to, Contract contract, BigDecimal amount) {
+        Context context = new Context();
+        context.setVariable("buyerName", contract.getBuyer().getFullname());
+        context.setVariable("productName", contract.getProduct().getTitle());
+        context.setVariable("contractId", contract.getId());
+        context.setVariable("amount", amount);
+        context.setVariable("refundTime", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+        
+        String html = templateEngine.process("email/escrow-refund.html", context);//
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
+            messageHelper.setTo(to);
+            messageHelper.setSubject("[EV Exchange] Đã hoàn tiền từ escrow - Hợp đồng #" + contract.getId());
+            messageHelper.setText(html, true);
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            // log hoặc throw tùy nhu cầu
+        }
+    }
 
 }

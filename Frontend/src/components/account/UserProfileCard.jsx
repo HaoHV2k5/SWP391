@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Edit3 } from 'lucide-react';
 import { CameraOutlined } from '@ant-design/icons';
 import { message } from 'antd';
+import { memberService } from '../../services/memberService';
 
 const UserProfileCard = ({ user, onEdit, onAvatarChange }) => {
   const [avatar, setAvatar] = useState(null);
@@ -25,16 +26,12 @@ const UserProfileCard = ({ user, onEdit, onAvatarChange }) => {
   };
 
   const getCurrentAvatar = () => {
-    // Ưu tiên avatar từ server
+    // Ưu tiên avatar từ server (theo Backend)
     const serverAvatar = user?.avatar || user?.avatarUrl || user?.profilePicture;
     if (serverAvatar) return serverAvatar;
     
-    // Fallback: Lấy avatar từ localStorage
-    const userId = localStorage.getItem('userId') || user?.id || 'default';
-    const localAvatar = localStorage.getItem(`avatar_${userId}`);
-    
-    
-    return localAvatar;
+    // Không dùng localStorage nữa vì avatar đã được lưu trên server
+    return null;
   };
 
   const handleChangeAvatar = () => {
@@ -46,115 +43,83 @@ const UserProfileCard = ({ user, onEdit, onAvatarChange }) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Kiểm tra loại file
-    if (!file.type.startsWith('image/')) {
-      message.error('Chỉ được upload file ảnh!');
-      return;
-    }
-
-    // Kiểm tra kích thước file (max 5MB)
-    if (file.size / 1024 / 1024 > 5) {
-      message.error('Kích thước file không được vượt quá 5MB!');
-      return;
-    }
+    const hideLoading = message.loading('Đang upload avatar lên server...', 0);
 
     try {
-      message.loading('Đang lưu avatar...', 0);
+      // Upload lên Cloudinary và cập nhật qua Backend API
+      const result = await memberService.updateAvatar(file);
       
-      // Chuyển đổi file thành base64
-      const base64 = await fileToBase64(file);
-      
-      // Lưu vào localStorage
-      const userId = localStorage.getItem('userId') || user?.id || 'default';
-      localStorage.setItem(`avatar_${userId}`, base64);
-      
-      message.destroy();
-      message.success('Avatar đã được cập nhật thành công!');
-      
-      // Trigger re-render
-      if (onAvatarChange) {
-        onAvatarChange();
+      hideLoading();
+
+      if (result.success) {
+        message.success(result.message || 'Avatar đã được cập nhật thành công!');
+        
+        // Cập nhật avatar trong state để hiển thị ngay
+        if (result.imageUrl) {
+          setAvatar(result.imageUrl);
+        }
+        
+        // Trigger re-render - reload profile data từ server
+        if (onAvatarChange) {
+          onAvatarChange(); // AccountPage sẽ gọi loadProfile() để refresh user data
+        }
+        
+        // Force re-render bằng cách dispatch custom event với URL từ server
+        // Để các component khác (UserAvatar, etc.) cũng cập nhật
+        const userId = localStorage.getItem('userId') || user?.id || 'default';
+        window.dispatchEvent(new CustomEvent('avatarChanged', { 
+          detail: { userId, avatar: result.imageUrl } 
+        }));
+        
+        // Cập nhật user prop nếu có (để sync với parent component)
+        if (user && result.imageUrl) {
+          user.avatar = result.imageUrl;
+        }
+      } else {
+        message.error(result.message || 'Có lỗi xảy ra khi cập nhật avatar');
       }
       
-      // Force re-render bằng cách dispatch custom event
-      window.dispatchEvent(new CustomEvent('avatarChanged', { 
-        detail: { userId, avatar: base64 } 
-      }));
-      
     } catch (error) {
-      message.destroy();
+      hideLoading();
       console.error('Upload avatar error:', error);
-      message.error('Có lỗi xảy ra khi lưu avatar');
+      message.error(error.message || 'Có lỗi xảy ra khi upload avatar');
     }
     
     // Reset input
     event.target.value = '';
   };
 
-  // Helper function để chuyển file thành base64
-  const fileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = error => reject(error);
-    });
-  };
-
-  // Listen for avatar changes
+  // Listen for avatar changes từ server
   useEffect(() => {
     const handleAvatarChange = (event) => {
       const { userId, avatar } = event.detail;
       const currentUserId = localStorage.getItem('userId') || user?.id || 'default';
       
-      if (userId === currentUserId) {
+      if (userId === currentUserId && avatar) {
         setAvatar(avatar);
       }
     };
 
     window.addEventListener('avatarChanged', handleAvatarChange);
     
-    // Set initial avatar
-    setAvatar(getCurrentAvatar());
+    // Set initial avatar từ server
+    const serverAvatar = getCurrentAvatar();
+    if (serverAvatar) {
+      setAvatar(serverAvatar);
+    }
 
     return () => {
       window.removeEventListener('avatarChanged', handleAvatarChange);
     };
   }, [user]);
 
-  // Force re-render khi user thay đổi
+  // Force re-render khi user thay đổi (bao gồm avatar)
   useEffect(() => {
     const currentAvatar = getCurrentAvatar();
-    if (currentAvatar) {
+    if (currentAvatar !== avatar) {
       setAvatar(currentAvatar);
     }
-  }, [user?.id, user?.email]);
-
-  // Auto-sync avatar khi component mount
-  useEffect(() => {
-    const syncAvatar = () => {
-      const userId = localStorage.getItem('userId') || user?.id || 'default';
-      const existingAvatar = localStorage.getItem(`avatar_${userId}`);
-      
-      if (existingAvatar && !avatar) {
-        setAvatar(existingAvatar);
-      }
-    };
-
-    // Sync ngay lập tức
-    syncAvatar();
-
-    // Sync sau 100ms để đảm bảo localStorage đã sẵn sàng
-    const timeoutId = setTimeout(syncAvatar, 100);
-
-    // Periodic sync mỗi 2 giây
-    const intervalId = setInterval(syncAvatar, 2000);
-
-    return () => {
-      clearTimeout(timeoutId);
-      clearInterval(intervalId);
-    };
-  }, []);
+  }, [user?.id, user?.email, user?.avatar]);
 
   const currentAvatar = avatar || getCurrentAvatar();
 

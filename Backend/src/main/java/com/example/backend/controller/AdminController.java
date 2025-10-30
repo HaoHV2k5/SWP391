@@ -11,13 +11,12 @@ import com.example.backend.dto.response.CreationUserResponse;
 import com.example.backend.dto.response.UserDetailResponse;
 import com.example.backend.dto.response.UserListResponse;
 import com.example.backend.service.UserService;
-import com.example.backend.entity.OrderEscrow;
-import com.example.backend.enums.EscrowStatus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import com.example.backend.service.OrderService;
+import com.example.backend.service.ConstractService;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.example.backend.dto.response.OrderEscrowReviewResponse;
 
@@ -31,6 +30,7 @@ public class AdminController {
     private final UserService userService;
     private final RoleService roleService;
     private final OrderService orderService;
+    private final ConstractService constractService;
 
     // Get all users
     @GetMapping("/users")
@@ -152,5 +152,19 @@ public class AdminController {
         return ApiResponse.<Void>builder().message("Đã từ chối yêu cầu và lưu lý do").build();
     }
 
+    /**
+     * API để admin có thể gọi thủ công để release escrow money
+     * Chạy logic tự động release tiền cho các escrow đủ điều kiện
+     */
+    @PostMapping("/escrow/manual-release")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ApiResponse<Integer> manualReleaseEscrowMoney() {
+        log.info("Admin triggered manual escrow money release");
+        int processedCount = constractService.manualReleaseEscrowMoney();
+        return ApiResponse.<Integer>builder()
+                .data(processedCount)
+                .message("Đã xử lý " + processedCount + " escrow thành công")
+                .build();
+    }
 
 }

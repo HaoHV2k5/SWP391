@@ -26,6 +26,18 @@ public class Vehicle {
     @Column(name = "year_manufactured")
     private Integer yearManufactured;
 
+    @Column(name = "odometer")
+    private Long odometer; // số km đã đi
+
+    @Column(name = "battery_type")
+    private String batteryType; // loại pin
+
+    @Column(name = "battery_capacity_kwh")
+    private Double batteryCapacityKWh; // dung lượng pin (kWh)
+
+    @Column(name = "range_per_charge_km")
+    private Integer rangePerChargeKm; // quãng đường 1 lần sạc (km)
+
     @OneToOne(mappedBy = "vehicle")
     private Product product;
 }

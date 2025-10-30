@@ -55,11 +55,11 @@ const MyOrders = ({ user }) => {
 
     try {
       const result = await productService.getMyProducts(user.id);
-      
+
       if (result.success) {
         const products = result.data || [];
         setMyProducts(products);
-        
+
         // Load orders cho tất cả products
         await loadOrdersForAllProducts(products);
       } else {
@@ -84,7 +84,7 @@ const MyOrders = ({ user }) => {
 
   const loadOrdersForAllProducts = async (products) => {
     const ordersMap = {};
-    
+
     for (const product of products) {
       try {
         const result = await orderService.getOrdersByProduct(product.id);
@@ -96,7 +96,7 @@ const MyOrders = ({ user }) => {
         ordersMap[product.id] = [];
       }
     }
-    
+
     setProductsWithOrders(ordersMap);
   };
 
@@ -108,34 +108,34 @@ const MyOrders = ({ user }) => {
   // Lấy danh sách sản phẩm có order đã được chấp nhận
   const getApprovedProducts = () => {
     const approvedProducts = [];
-    
+
     myProducts.forEach(product => {
       const orders = productsWithOrders[product.id] || [];
       const hasAcceptedOrder = orders.some(order => order.status === 'ACCEPTED');
-      
+
       if (hasAcceptedOrder) {
         approvedProducts.push(product);
       }
     });
-    
+
     return approvedProducts;
   };
 
   // Lấy danh sách sản phẩm có yêu cầu mua hàng nhưng chưa được chấp nhận
   const getPendingProducts = () => {
     const pendingProducts = [];
-    
+
     myProducts.forEach(product => {
       const orders = productsWithOrders[product.id] || [];
       const hasAcceptedOrder = orders.some(order => order.status === 'ACCEPTED');
       const hasAnyOrder = orders.length > 0;
-      
+
       // Chỉ hiển thị sản phẩm có orders nhưng chưa có order nào được chấp nhận
       if (hasAnyOrder && !hasAcceptedOrder) {
         pendingProducts.push(product);
       }
     });
-    
+
     return pendingProducts;
   };
 
@@ -158,7 +158,7 @@ const MyOrders = ({ user }) => {
     <Container fluid className="p-0 bg-light" style={{ minHeight: "100vh" }}>
       <div className="p-4">
         <MemberHeader activeTab="my-orders" />
-        
+
         <Card className="shadow-sm border-0">
           <Card.Header style={{ backgroundColor: '#00A86B', color: 'white' }}>
             <h4 className="mb-0">
@@ -177,9 +177,9 @@ const MyOrders = ({ user }) => {
             {error && (
               <Alert variant="danger">
                 <Alert.Heading>Lỗi</Alert.Heading>
-                {error}
-                <button 
-                  className="btn btn-outline-danger btn-sm mt-2" 
+                {error} <br />
+                <button
+                  className="btn btn-outline-danger btn-sm mt-2"
                   onClick={loadMyProducts}
                 >
                   Thử lại
@@ -192,7 +192,7 @@ const MyOrders = ({ user }) => {
                 <Tab eventKey="orders" title="Yêu cầu mua hàng">
                   {(() => {
                     const pendingProductsList = getPendingProducts();
-                    
+
                     return (
                       <>
                         {pendingProductsList.length === 0 ? (
@@ -200,7 +200,7 @@ const MyOrders = ({ user }) => {
                             <i className="bi bi-cart-x display-4 text-muted mb-3"></i>
                             <h5 className="text-muted">Chưa có yêu cầu mua hàng nào</h5>
                             <p className="text-muted">Khi có người mua gửi yêu cầu cho sản phẩm của bạn, chúng sẽ hiển thị ở đây.</p>
-                            <button 
+                            <button
                               className="btn"
                               style={{ backgroundColor: '#00A86B', color: 'white', border: 'none' }}
                               onClick={() => navigate('/post-ad')}
@@ -215,14 +215,14 @@ const MyOrders = ({ user }) => {
                             <Row>
                               {pendingProductsList.map((product) => (
                                 <Col key={product.id} md={12} className="mb-4">
-                                  <ProductWithOrders 
+                                  <ProductWithOrders
                                     product={product}
                                     onOrderUpdate={handleOrderUpdate}
                                   />
                                 </Col>
                               ))}
                             </Row>
-                            
+
                             <div className="text-center mt-4">
                               <p className="text-muted">
                                 <i className="bi bi-info-circle me-2"></i>
@@ -235,11 +235,11 @@ const MyOrders = ({ user }) => {
                     );
                   })()}
                 </Tab>
-                
+
                 <Tab eventKey="approved" title="Sản phẩm đã duyệt">
                   {(() => {
                     const approvedProductsList = getApprovedProducts();
-                    
+
                     return (
                       <>
                         {approvedProductsList.length === 0 ? (

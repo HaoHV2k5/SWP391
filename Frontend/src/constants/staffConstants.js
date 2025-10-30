@@ -85,7 +85,7 @@ export const USER_ROLES = {
 export const TAB_KEYS = {
   PRODUCTS: "products",
   KYC: "kyc",
-  COMPLAINTS: "complaints", // ✅ bổ sung
+  COMPLAINTS: "complaints", // bổ sung
   DASHBOARD: "dashboard",
   ORDERS: "orders", // giữ nếu bạn còn dùng OrdersTab
 };

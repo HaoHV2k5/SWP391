@@ -24,14 +24,16 @@ import AdminPage from "./pages/AdminPage";
 import StaffPage from "./pages/StaffPage";
 
 // Member pages
-import MemberOrders from "./pages/member/MemberOrders";
 import PostAd from "./pages/member/PostAd";
 import MyPosts from "./pages/member/MyPosts";
 import SavedPosts from "./pages/member/SavedPosts";
 import MyOrders from "./pages/member/MyOrders";
+import MemberContracts from "./pages/member/MemberContracts";
 import AccountPage from "./pages/AccountPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
 import KycPage from "./pages/kyc/KycPage";
+import PaymentDashboard from "./components/seller/PaymentDashboard";
+// PaymentReturn is optional; keep removed unless needed
 
 // Home pages
 import CategoryRouter from "./components/homepageContainer/navigation/CategoryRouter";
@@ -222,10 +224,11 @@ function AppContent() {
         {/* MEMBER ROUTES */}
         <Route path="/account" element={<AccountPage user={user} />} />
         <Route path="/kyc" element={<KycPage user={user} />} />
+        <Route path="/payment" element={<PaymentDashboard user={user} />} />
         <Route path="/my-posts" element={<MyPosts user={user} />} />
         <Route path="/saved-posts" element={<SavedPosts user={user} />} />
-        <Route path="/orders" element={<MemberOrders user={user} />} />
         <Route path="/my-orders" element={<MyOrders user={user} />} />
+        <Route path="/contracts" element={<MemberContracts user={user} />} />
         <Route path="/post-ad" element={<PostAd user={user} />} />
 
         {/* PRODUCT ROUTES */}

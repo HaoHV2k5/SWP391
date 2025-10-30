@@ -115,6 +115,9 @@ api.interceptors.request.use((config) => {
   // Thêm Authorization header nếu có token
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+    console.log("🔑 Token added to request:", config.url);
+  } else {
+    console.warn("⚠️ No token found for request:", config.url);
   }
   
   return config;

@@ -85,6 +85,10 @@ public class Contract {
     @Column(name = "completed_at")
     private LocalDateTime completedAt; // sau khi release tien cho seller
 
+    @Column(name = "buyer_sign_remind_sent")
+    @Builder.Default
+    private boolean buyerSignRemindSent = false;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

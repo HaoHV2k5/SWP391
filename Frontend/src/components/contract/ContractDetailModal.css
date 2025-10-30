@@ -1,0 +1,483 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.contract-detail-modal {
+  background: white;
+  border-radius: 12px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* New Header Design */
+.modal-header-new {
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+  border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(180deg, #F8F9FA 0%, #F0F4F8 100%);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-icon {
+  font-size: 24px;
+  color: #4A90E2;
+}
+
+.header-left h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.contract-id-text {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-close-btn-new {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #9ca3af;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.modal-close-btn-new:hover {
+  color: #4b5563;
+}
+
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.status-pending {
+  background: #FFF3CD;
+  color: #856404;
+}
+
+.status-signed {
+  background: #D4EDDA;
+  color: #155724;
+}
+
+.status-completed {
+  background: #D4EDDA;
+  color: #155724;
+}
+
+.status-cancelled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-disputed {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+/* Modal Body */
+.modal-body-new {
+  padding: 24px 32px;
+  overflow-y: auto;
+  flex: 1;
+  background: white;
+}
+
+.detail-section {
+  margin-bottom: 24px;
+}
+
+.detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-header-new {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.section-icon-new {
+  font-size: 20px;
+  color: #4A90E2;
+}
+
+.section-header-new h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Parties Grid */
+.parties-grid-new {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.party-box-new {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #e8ecef;
+  border-radius: 12px;
+  background: #FBFCFD;
+}
+
+.avatar-circle-new {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.buyer-avatar {
+  background: #E3F2FD;
+  color: #1976D2;
+}
+
+.seller-avatar {
+  background: #FFE0E6;
+  color: #C2185B;
+}
+
+.party-info-new {
+  flex: 1;
+  min-width: 0;
+}
+
+.party-label-new {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.party-name-new {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.party-id-new {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* Product Box */
+.product-box-new {
+  padding: 16px;
+  border: 1px solid #e8ecef;
+  border-radius: 12px;
+  background: #FBFCFD;
+}
+
+.product-name-new {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+.product-id-new {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.product-desc-new {
+  font-size: 13px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Payment Box */
+.payment-box-new {
+  padding: 20px;
+  border: 1px solid #e8ecef;
+  border-radius: 12px;
+  background: #FBFCFD;
+}
+
+.payment-row-new {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.payment-label-new {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.payment-amount-new {
+  font-size: 22px;
+  font-weight: 800;
+  color: #28A745;
+}
+
+.payment-status-badge-new {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.payment-status-badge-new.paid {
+  background: #D4EDDA;
+  color: #155724;
+}
+
+.payment-status-badge-new.unpaid {
+  background: #F8D7DA;
+  color: #721C24;
+}
+
+/* Signature Grid */
+.signature-grid-new {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.signature-box-new {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid;
+}
+
+.signature-box-new.signed {
+  background: #D4EDDA;
+  border-color: #D4EDDA;
+}
+
+.signature-box-new.unsigned {
+  background: #FFF3CD;
+  border-color: #FFF3CD;
+}
+
+.signature-icon-new {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.signature-box-new.signed .signature-icon-new {
+  background: #28A745;
+  color: white;
+}
+
+.signature-box-new.unsigned .signature-icon-new {
+  background: #FFC107;
+  color: white;
+}
+
+.signature-info-new {
+  flex: 1;
+}
+
+.signature-role-new {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.signature-status-new {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.signature-box-new.signed .signature-status-new {
+  color: #155724;
+}
+
+.signature-box-new.unsigned .signature-status-new {
+  color: #856404;
+}
+
+/* Timeline */
+.timeline-list-new {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.timeline-item-new {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.timeline-dot-new {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.timeline-dot-new.blue {
+  background: #5DADE2;
+}
+
+.timeline-dot-new.green {
+  background: #52C973;
+}
+
+.timeline-content-new {
+  flex: 1;
+}
+
+.timeline-title-new {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.timeline-date-new {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* Footer */
+.modal-footer-new {
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  padding: 16px 32px;
+  border-top: 1px solid #e8ecef;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  background: #FBFCFD;
+}
+
+.btn-cancel-modal,
+.btn-download-modal,
+.btn-pay-modal {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-cancel-modal {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.btn-cancel-modal:hover {
+  background: #e5e7eb;
+}
+
+.btn-download-modal {
+  background: #28A745;
+  color: white;
+}
+
+.btn-download-modal:hover:not(:disabled) {
+  background: #218838;
+}
+
+.btn-pay-modal {
+  background: #4A90E2;
+  color: white;
+}
+
+.btn-pay-modal:hover:not(:disabled) {
+  background: #357ABD;
+}
+
+.btn-download-modal:disabled,
+.btn-pay-modal:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .parties-grid-new,
+  .signature-grid-new {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-header-new {
+    padding: 16px 20px;
+  }
+  
+  .modal-body-new {
+    padding: 16px 20px;
+  }
+  
+  .modal-footer-new {
+    padding: 12px 20px;
+  }
+}

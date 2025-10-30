@@ -4,5 +4,8 @@ public enum WalletTransactionType {
     DEPOSIT,
     PAYMENT_PACKAGE,
     PAYMENT_PRODUCT,
-    RECHARGE
+    RECHARGE,
+    RECEIVE_PAYMENT,
+    REFUND,
+    WITHDRAWAL
 }

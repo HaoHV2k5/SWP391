@@ -1,9 +1,7 @@
 // src/services/staffApi.js
 import api from "./apiClient";
 
-/* =========================================================
- * Helpers
- * =======================================================*/
+//Helpers
 
 /** Thử GET qua nhiều endpoint (404/405 thì thử tiếp, lỗi khác ném ra) */
 const tryGet = async (paths) => {
@@ -24,9 +22,7 @@ const tryGet = async (paths) => {
   throw lastErr;
 };
 
-/* =========================================================
- * KYC API
- * =======================================================*/
+//KYC API
 export const kycApi = {
   /** Danh sách hồ sơ KYC chờ duyệt */
   getPending: () => tryGet(["/kyc/staff", "/admin/kyc/pending"]),
@@ -55,9 +51,7 @@ export const kycApi = {
   getUserInfo: (id) => tryGet([`/kyc/${id}/infor/user`, `/kyc/${id}/user`]),
 };
 
-/* =========================================================
- * Products API
- * =======================================================*/
+//Products API
 export const productsApi = {
   getPending: () =>
     tryGet(["/products/pending/seller/staff", "/staff/products/pending"]),
@@ -66,9 +60,7 @@ export const productsApi = {
   reject: (id, reason) => api.post(`/products/${id}/reject`, { reason }),
 };
 
-/* =========================================================
- * Error helper
- * =======================================================*/
+//Error helper
 export const handleApiError = (err, fallback = "Đã có lỗi") => {
   const status = err?.response?.status;
   const data = err?.response?.data;
@@ -98,5 +90,5 @@ export const handleApiError = (err, fallback = "Đã có lỗi") => {
   } catch {
     console.error("[API ERROR]", { status, message: msg });
   }
-  return `${fallback} (${status ?? "?"}): ${msg}`;
+  return msg || fallback;
 };

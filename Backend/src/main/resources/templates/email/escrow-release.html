@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thông báo giải phóng tiền từ Escrow</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 30px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0a9aeb, #0066cc);
+            color: #fff;
+            padding: 20px 30px;
+            text-align: center;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .content {
+            padding: 25px 30px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .content h3 {
+            color: #0066cc;
+        }
+
+        .info-box {
+            background: #f0f7ff;
+            border-left: 5px solid #0a9aeb;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 6px;
+        }
+
+        .info-box p {
+            margin: 5px 0;
+        }
+
+        .footer {
+            background: #f4f6f8;
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+            padding: 15px;
+        }
+
+        .highlight {
+            color: #0a9aeb;
+            font-weight: 600;
+        }
+
+        .amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: #008000;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>🚗 EV Exchange - Thanh toán thành công</h2>
+    </div>
+
+    <div class="content">
+        <p>Xin chào <span class="highlight" th:text="${sellerName}">Nguyễn Văn A</span>,</p>
+        <p>Hệ thống xin thông báo rằng khoản tiền trong **Escrow** của hợp đồng
+            <strong>#<span th:text="${contractId}">12345</span></strong> đã được **giải phóng thành công** đến tài khoản của bạn.</p>
+
+        <div class="info-box">
+            <p><strong>Tên sản phẩm:</strong> <span th:text="${productName}">Xe điện EVgo S1</span></p>
+            <p><strong>Số tiền chuyển:</strong> <span class="amount" th:text="${amount} + ' VND'">15,000,000 VND</span></p>
+            <p><strong>Thời gian thực hiện:</strong> <span th:text="${releaseTime}">28/10/2025 14:00</span></p>
+        </div>
+
+        <p>Chúc mừng bạn đã hoàn tất giao dịch bán xe điện thành công trên nền tảng <strong>EV Exchange</strong>!
+            Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của chúng tôi.</p>
+
+        <p>Nếu có bất kỳ thắc mắc nào, vui lòng liên hệ với đội ngũ hỗ trợ qua email:
+            <a href="mailto:support@evexchange.vn">support@evexchange.vn</a>.</p>
+
+        <p>Trân trọng,<br><strong>Đội ngũ EV Exchange</strong></p>
+    </div>
+
+    <div class="footer">
+        © 2025 EV Exchange - Nền tảng giao dịch xe điện an toàn và minh bạch.
+    </div>
+</div>
+</body>
+</html>

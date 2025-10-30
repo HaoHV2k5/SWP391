@@ -81,6 +81,24 @@ public enum ErrorCode {
     COMPLAINT_NOT_FOUND(1064, "Complaint không tồn tại", HttpStatus.NOT_FOUND),
     COMPLAINT_ALREADY_RESOLVED(1065, "Complaint đã được giải quyết", HttpStatus.BAD_REQUEST),
     COMPLAINT_NOT_PENDING(1066, "Complaint không ở trạng thái pending", HttpStatus.BAD_REQUEST),
+    
+    // Review error codes
+    REVIEW_ALREADY_EXISTS(1067, "Bạn đã đánh giá seller này rồi", HttpStatus.BAD_REQUEST),
+    REVIEW_NOT_FOUND(1068, "Review không tồn tại", HttpStatus.NOT_FOUND),
+    ACCESS_DENIED(1069, "Bạn không có quyền thực hiện hành động này", HttpStatus.FORBIDDEN),
+    UPLOAD_FAILED(1070, "Upload file thất bại", HttpStatus.BAD_REQUEST),
+    PURCHASE_NOT_COMPLETED(1071, "Bạn chỉ có thể review sau khi hoàn thành giao dịch với seller này", HttpStatus.BAD_REQUEST),
+    
+    // Withdrawal error codes
+    INSUFFICIENT_BALANCE(1072, "Số dư không đủ để thực hiện giao dịch", HttpStatus.BAD_REQUEST),
+    WALLET_INACTIVE(1073, "Ví đang bị khóa, không thể thực hiện giao dịch", HttpStatus.BAD_REQUEST),
+    TRANSACTION_NOT_FOUND(1074, "Giao dịch không tồn tại", HttpStatus.NOT_FOUND),
+    INVALID_TRANSACTION_TYPE(1075, "Loại giao dịch không hợp lệ", HttpStatus.BAD_REQUEST),
+    TRANSACTION_ALREADY_PROCESSED(1076, "Giao dịch đã được xử lý", HttpStatus.BAD_REQUEST),
+    PACKAGE_CANNOT_BUY_LOWER(1076,  "Không thể mua gói thấp hơn hoặc bằng gói hiện tại khi gói hiện tại còn hiệu lực", HttpStatus.BAD_REQUEST),
+
+
+
 
     ;
     private int code;

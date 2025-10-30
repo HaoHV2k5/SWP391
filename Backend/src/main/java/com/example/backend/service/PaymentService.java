@@ -148,6 +148,18 @@ public class PaymentService {
         walletTransactionRepository.save(walletTx);
     }
     public boolean handleBuyTransaction(Long userId, Long packageId) {
+        // Kiểm tra xem user có gói còn hiệu lực không
+        UserPostingPackage currentActive = userPackageTransactionRepository.findPostingPackageByUserIdAndActiveTrue(userId);
+        if (currentActive != null && currentActive.getEndTime().isAfter(LocalDateTime.now())) {
+            PostingPackage currentPackage = currentActive.getPostingPackage();
+            PostingPackage newPackage = postingPackageRepository.findById(packageId)
+                    .orElseThrow(() -> new AppException(ErrorCode.POSTING_PACKAGE_NOT_FOUND));
+            // Nếu gói mới rẻ hơn hoặc bằng gói đang dùng thì không cho mua
+            if (newPackage.getPrice().compareTo(currentPackage.getPrice()) <= 0) {
+                // Có thể throw AppException (ErrorCode.PACKAGE_CANNOT_BUY_LOWER) hoặc return false tuỳ ý
+                throw new AppException(ErrorCode.PACKAGE_CANNOT_BUY_LOWER);
+            }
+        }
 
         boolean result = false;
 
@@ -292,9 +304,9 @@ public class PaymentService {
             // Nếu chữ ký hợp lệ, kiểm tra mã phản hồi
             String responseCode = request.getParameter("vnp_ResponseCode");
             if ("00".equals(responseCode)) {
-                result = "Giao dịch thành công";
+                result = "success";
             } else {
-                result = "Giao dịch không thành công (mã: " + responseCode + ")";
+                result = "false";
             }
         } else {
             result = "Chữ ký không hợp lệ";
