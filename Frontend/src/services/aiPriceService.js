@@ -6,64 +6,34 @@ import { apiClient } from './authService';
  */
 const aiPriceService = {
   /**
-   * Gọi AI để gợi ý giá cho sản phẩm
-   * @param {string} productName - Tên sản phẩm
-   * @param {string} description - Mô tả sản phẩm
-   * @returns {Promise<{success: boolean, price?: string, message?: string}>}
+   * Gọi AI theo đặc tả PriceRequest (BE yêu cầu body JSON)
+   * @param {Object} priceRequest - theo Backend PriceRequest
+   * @returns {Promise<{success: boolean, price?: number, details?: any, message?: string}>}
    */
-  async suggestPrice(productName, description) {
+  async suggestPriceBySpec(priceRequest) {
     try {
-      console.log('🤖 Calling AI price suggestion API...', { productName, description });
-      
-      const response = await apiClient.get('/pricing/suggest', {
-        params: { 
-          name: productName, 
-          desc: description 
-        }
-      });
-      
-      console.log('✅ AI response:', response.data);
-      
-      // Parse price từ response
-      let price = response.data?.data || response.data;
-      
-      // Loại bỏ các ký tự không phải số
-      if (price) {
-        price = price.toString().replace(/[^0-9]/g, '');
+      // Gọi POST theo contract mới của Backend
+      const response = await apiClient.post('/pricing/suggest', priceRequest);
+      const payload = response?.data?.data ?? response?.data;
+      const price = payload?.suggestedPrice ?? null;
+      return { success: true, price, details: payload };
+    } catch (firstError) {
+      // Fallback: thử GET với query params nếu môi trường BE chưa cập nhật
+      try {
+        const response = await apiClient.get('/pricing/suggest', { params: { ...priceRequest } });
+        const payload = response?.data?.data ?? response?.data;
+        const price = payload?.suggestedPrice ?? null;
+        return { success: true, price, details: payload };
+      } catch (error) {
+        let message = 'Không thể gợi ý giá. Vui lòng thử lại!';
+        if (error?.response?.status === 500) message = 'Lỗi backend: API Gemini AI không hoạt động. Vui lòng thử lại sau.';
+        else if (error?.response?.status === 403) message = 'Bạn không có quyền sử dụng tính năng này. Chỉ tài khoản SELLER mới có thể dùng AI.';
+        else if (error?.response?.status === 401) message = 'Bạn cần đăng nhập để sử dụng tính năng này.';
+        else message = error?.response?.data?.message || error?.message || message;
+        return { success: false, message };
       }
-      
-      return { 
-        success: true, 
-        price: price || ''
-      };
-    } catch (error) {
-      console.error('❌ AI suggest price error:', error);
-      console.error('❌ Error details:', {
-        status: error?.response?.status,
-        statusText: error?.response?.statusText,
-        data: error?.response?.data,
-        message: error?.message
-      });
-      
-      let message = 'Không thể gợi ý giá. Vui lòng thử lại!';
-      
-      // Check specific error types
-      if (error?.response?.status === 500) {
-        message = 'Lỗi backend: API Gemini AI không hoạt động. Vui lòng kiểm tra server logs hoặc thử lại sau.';
-      } else if (error?.response?.status === 403) {
-        message = 'Bạn không có quyền sử dụng tính năng này. Chỉ tài khoản SELLER mới có thể dùng AI.';
-      } else if (error?.response?.status === 401) {
-        message = 'Bạn cần đăng nhập để sử dụng tính năng này.';
-      } else {
-        message = error?.response?.data?.message || error?.message || message;
-      }
-      
-      return { 
-        success: false, 
-        message 
-      };
     }
-  }
+  },
 };
 
 export default aiPriceService;
