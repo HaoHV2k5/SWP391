@@ -13,14 +13,24 @@ const PostAd = ({ user }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
-    category: "",
+    category: "VEHICLE",
     price: "",
     description: "",
     images: [],
     brand: "",
     model: "",
     yearManufactured: new Date().getFullYear(),
-    batteryLevel: 80
+    batteryLevel: 80,
+    // Vehicle fields
+    odometer: "",
+    vehicleBatteryType: "",
+    batteryCapacityKWh: "",
+    rangePerChargeKm: "",
+    // Battery fields
+    batteryBatteryType: "",
+    voltage: "",
+    capacityAh: "",
+    sohPercent: ""
   });
 
   const [fieldErrors, setFieldErrors] = useState({});
@@ -37,6 +47,14 @@ const PostAd = ({ user }) => {
     { value: "Pega", label: "Pega" },
     { value: "Vinfast", label: "Vinfast" },
     { value: "Yadea", label: "Yadea" }
+  ];
+
+  const batteryTypes = [
+    { value: "Lithium-Ion", label: "Lithium-Ion" },
+    { value: "Lithium-Polymer", label: "Lithium-Polymer" },
+    { value: "Lead-Acid", label: "Lead-Acid" },
+    { value: "Nickel-Metal Hydride", label: "Nickel-Metal Hydride" },
+    { value: "Khác", label: "Khác" }
   ];
 
 
@@ -110,6 +128,48 @@ const PostAd = ({ user }) => {
           } else {
             delete errors.batteryLevel;
           }
+        }
+        break;
+      case 'odometer':
+        if (value && value !== "" && (!/^\d+$/.test(value) || parseInt(value) < 0)) {
+          errors.odometer = "Số km phải là số dương";
+        } else {
+          delete errors.odometer;
+        }
+        break;
+      case 'batteryCapacityKWh':
+        if (value && value !== "" && (isNaN(parseFloat(value)) || parseFloat(value) < 0)) {
+          errors.batteryCapacityKWh = "Dung lượng pin phải là số dương";
+        } else {
+          delete errors.batteryCapacityKWh;
+        }
+        break;
+      case 'rangePerChargeKm':
+        if (value && value !== "" && (!/^\d+$/.test(value) || parseInt(value) < 0)) {
+          errors.rangePerChargeKm = "Quãng đường phải là số dương";
+        } else {
+          delete errors.rangePerChargeKm;
+        }
+        break;
+      case 'voltage':
+        if (value && value !== "" && (isNaN(parseFloat(value)) || parseFloat(value) < 0)) {
+          errors.voltage = "Điện áp phải là số dương";
+        } else {
+          delete errors.voltage;
+        }
+        break;
+      case 'capacityAh':
+        if (value && value !== "" && (isNaN(parseFloat(value)) || parseFloat(value) < 0)) {
+          errors.capacityAh = "Dung lượng phải là số dương";
+        } else {
+          delete errors.capacityAh;
+        }
+        break;
+      case 'sohPercent':
+        if (value && value !== "" && (isNaN(parseInt(value)) || parseInt(value) < 0 || parseInt(value) > 100)) {
+          errors.sohPercent = "Độ bền pin phải từ 0-100%";
+        } else {
+          delete errors.sohPercent;
         }
         break;
     }
@@ -352,7 +412,6 @@ const PostAd = ({ user }) => {
                               onChange={handleInputChange}
                               required
                             >
-                              <option value="">Chọn danh mục</option>
                               {categories.map(cat => (
                                 <option key={cat.value} value={cat.value}>{cat.label}</option>
                               ))}
@@ -463,27 +522,210 @@ const PostAd = ({ user }) => {
                         </Col>
                       </Row>
 
-                      {/* Battery Level (only for BATTERY category) */}
+                      {/* Battery Level is displayed with SoH below in Battery section */}
+
+                      {/* Vehicle specific fields */}
+                      {formData.category === "VEHICLE" && (
+                        <>
+                          <Row>
+                            <Col md={4}>
+                              <Form.Group className="mb-3">
+                                <Form.Label className="fw-bold">Số km đã đi (km)</Form.Label>
+                                <Form.Control
+                                  type="number"
+                                  name="odometer"
+                                  value={formData.odometer}
+                                  onChange={handleInputChange}
+                                  placeholder="VD: 5000"
+                                  min="0"
+                                  isInvalid={!!fieldErrors.odometer}
+                                />
+                                <Form.Text className="text-muted">
+                                  Số km xe đã chạy
+                                </Form.Text>
+                                {fieldErrors.odometer && (
+                                  <Form.Control.Feedback type="invalid">
+                                    {fieldErrors.odometer}
+                                  </Form.Control.Feedback>
+                                )}
+                              </Form.Group>
+                            </Col>
+                            <Col md={4}>
+                              <Form.Group className="mb-3">
+                                <Form.Label className="fw-bold">Loại pin</Form.Label>
+                                <Form.Select
+                                  name="vehicleBatteryType"
+                                  value={formData.vehicleBatteryType}
+                                  onChange={handleInputChange}
+                                >
+                                  <option value="">Chọn loại pin</option>
+                                  {batteryTypes.map(type => (
+                                    <option key={type.value} value={type.value}>{type.label}</option>
+                                  ))}
+                                </Form.Select>
+                              </Form.Group>
+                            </Col>
+                            <Col md={4}>
+                              <Form.Group className="mb-3">
+                                <Form.Label className="fw-bold">Dung lượng pin (kWh)</Form.Label>
+                                <Form.Control
+                                  type="number"
+                                  name="batteryCapacityKWh"
+                                  value={formData.batteryCapacityKWh}
+                                  onChange={handleInputChange}
+                                  placeholder="VD: 2.5"
+                                  step="0.1"
+                                  min="0"
+                                  isInvalid={!!fieldErrors.batteryCapacityKWh}
+                                />
+                                <Form.Text className="text-muted">
+                                  Dung lượng pin tính bằng kWh
+                                </Form.Text>
+                                {fieldErrors.batteryCapacityKWh && (
+                                  <Form.Control.Feedback type="invalid">
+                                    {fieldErrors.batteryCapacityKWh}
+                                  </Form.Control.Feedback>
+                                )}
+                              </Form.Group>
+                            </Col>
+                          </Row>
+                          <Row>
+                            <Col md={6}>
+                              <Form.Group className="mb-3">
+                                <Form.Label className="fw-bold">Quãng đường 1 lần sạc (km)</Form.Label>
+                                <Form.Control
+                                  type="number"
+                                  name="rangePerChargeKm"
+                                  value={formData.rangePerChargeKm}
+                                  onChange={handleInputChange}
+                                  placeholder="VD: 60"
+                                  min="0"
+                                  isInvalid={!!fieldErrors.rangePerChargeKm}
+                                />
+                                <Form.Text className="text-muted">
+                                  Quãng đường tối đa sau 1 lần sạc đầy
+                                </Form.Text>
+                                {fieldErrors.rangePerChargeKm && (
+                                  <Form.Control.Feedback type="invalid">
+                                    {fieldErrors.rangePerChargeKm}
+                                  </Form.Control.Feedback>
+                                )}
+                              </Form.Group>
+                            </Col>
+                          </Row>
+                        </>
+                      )}
+
+                      {/* Battery specific fields */
+                      /* Battery Level and SoH in one row */}
                       {formData.category === "BATTERY" && (
-                        <Row>
-                          <Col md={6}>
-                            <Form.Group className="mb-3">
-                              <Form.Label className="fw-bold">Mức pin (%) <span className="text-danger">*</span></Form.Label>
-                              <Form.Control
-                                type="number"
-                                name="batteryLevel"
-                                value={formData.batteryLevel}
-                                onChange={handleInputChange}
-                                min="0"
-                                max="100"
-                                required
-                              />
-                              <Form.Text className="text-muted">
-                                Nhập mức pin từ 0-100%
-                              </Form.Text>
-                            </Form.Group>
-                          </Col>
-                        </Row>
+                        <>
+                          <Row>
+                            <Col md={6}>
+                              <Form.Group className="mb-3">
+                                <Form.Label className="fw-bold">Mức pin (%) <span className="text-danger">*</span></Form.Label>
+                                <Form.Control
+                                  type="number"
+                                  name="batteryLevel"
+                                  value={formData.batteryLevel}
+                                  onChange={handleInputChange}
+                                  min="0"
+                                  max="100"
+                                  required
+                                />
+                                <Form.Text className="text-muted">
+                                  Nhập mức pin từ 0-100%
+                                </Form.Text>
+                              </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                              <Form.Group className="mb-3">
+                                <Form.Label className="fw-bold">Độ bền pin - SoH (%)</Form.Label>
+                                <Form.Control
+                                  type="number"
+                                  name="sohPercent"
+                                  value={formData.sohPercent}
+                                  onChange={handleInputChange}
+                                  placeholder="VD: 85"
+                                  min="0"
+                                  max="100"
+                                  isInvalid={!!fieldErrors.sohPercent}
+                                />
+                                <Form.Text className="text-muted">
+                                  State of Health - Độ bền pin hiện tại (%)
+                                </Form.Text>
+                                {fieldErrors.sohPercent && (
+                                  <Form.Control.Feedback type="invalid">
+                                    {fieldErrors.sohPercent}
+                                  </Form.Control.Feedback>
+                                )}
+                              </Form.Group>
+                            </Col>
+                          </Row>
+                          <Row>
+                            <Col md={4}>
+                              <Form.Group className="mb-3">
+                                <Form.Label className="fw-bold">Loại pin</Form.Label>
+                                <Form.Select
+                                  name="batteryBatteryType"
+                                  value={formData.batteryBatteryType}
+                                  onChange={handleInputChange}
+                                >
+                                  <option value="">Chọn loại pin</option>
+                                  {batteryTypes.map(type => (
+                                    <option key={type.value} value={type.value}>{type.label}</option>
+                                  ))}
+                                </Form.Select>
+                              </Form.Group>
+                            </Col>
+                            <Col md={4}>
+                              <Form.Group className="mb-3">
+                                <Form.Label className="fw-bold">Điện áp (V)</Form.Label>
+                                <Form.Control
+                                  type="number"
+                                  name="voltage"
+                                  value={formData.voltage}
+                                  onChange={handleInputChange}
+                                  placeholder="VD: 48"
+                                  step="0.1"
+                                  min="0"
+                                  isInvalid={!!fieldErrors.voltage}
+                                />
+                                <Form.Text className="text-muted">
+                                  Điện áp danh định
+                                </Form.Text>
+                                {fieldErrors.voltage && (
+                                  <Form.Control.Feedback type="invalid">
+                                    {fieldErrors.voltage}
+                                  </Form.Control.Feedback>
+                                )}
+                              </Form.Group>
+                            </Col>
+                            <Col md={4}>
+                              <Form.Group className="mb-3">
+                                <Form.Label className="fw-bold">Dung lượng (Ah)</Form.Label>
+                                <Form.Control
+                                  type="number"
+                                  name="capacityAh"
+                                  value={formData.capacityAh}
+                                  onChange={handleInputChange}
+                                  placeholder="VD: 20"
+                                  step="0.1"
+                                  min="0"
+                                  isInvalid={!!fieldErrors.capacityAh}
+                                />
+                                <Form.Text className="text-muted">
+                                  Dung lượng tính bằng Ah
+                                </Form.Text>
+                                {fieldErrors.capacityAh && (
+                                  <Form.Control.Feedback type="invalid">
+                                    {fieldErrors.capacityAh}
+                                  </Form.Control.Feedback>
+                                )}
+                              </Form.Group>
+                            </Col>
+                          </Row>
+                        </>
                       )}
 
                       {/* Description */}
@@ -521,18 +763,42 @@ const PostAd = ({ user }) => {
                         </Form.Text>
                       </Form.Group>
 
-                      {formData.images.length > 0 && (
-                        <div className="mb-3">
-                          <small className="text-muted">Đã chọn {formData.images.length} ảnh</small>
-                          <div className="mt-2">
-                            {Array.from(formData.images).map((file, index) => (
-                              <div key={index} className="small text-truncate">
-                                📷 {file.name}
+                          {formData.images.length > 0 && (
+                            <div className="mb-3">
+                              <small className="text-muted">Đã chọn {formData.images.length} ảnh</small>
+                              <div className="mt-2">
+                                {Array.from(formData.images).map((file, index) => (
+                                  <div key={index} className="small text-truncate d-flex align-items-center">
+                                    <span
+                                      style={{
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        width: 22,
+                                        height: 16,
+                                        border: "1px solid #28a745",
+                                        color: "#28a745",
+                                        background: "#fff",
+                                        borderRadius: 4,
+                                        marginRight: 6,
+                                        padding: 2,
+                                        lineHeight: 1
+                                      }}
+                                      aria-label="camera"
+                                      title="Ảnh"
+                                    >
+                                      
+                                      <svg width="14" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M4 7h3l2-3h6l2 3h3a2 2 0 012 2v9a2 2 0 01-2 2H4a2 2 0 01-2-2V9a2 2 0 012-2z" stroke="#28a745" strokeWidth="2"/>
+                                        <circle cx="12" cy="14" r="4" stroke="#28a745" strokeWidth="2"/>
+                                      </svg>
+                                    </span>
+                                    {file.name}
+                                  </div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                            </div>
+                          )}
 
                       {/* Preview Card */}
                       <Card className="border-success">
@@ -567,6 +833,32 @@ const PostAd = ({ user }) => {
                                 {formData.yearManufactured && <div>• Năm SX: {formData.yearManufactured}</div>}
                                 {formData.category === "BATTERY" && formData.batteryLevel && (
                                   <div>• Mức pin: {formData.batteryLevel}%</div>
+                                )}
+                                {/* Vehicle specific fields */}
+                                {formData.category === "VEHICLE" && formData.odometer && (
+                                  <div>• Số km: {formData.odometer} km</div>
+                                )}
+                                {formData.category === "VEHICLE" && formData.vehicleBatteryType && (
+                                  <div>• Loại pin: {formData.vehicleBatteryType}</div>
+                                )}
+                                {formData.category === "VEHICLE" && formData.batteryCapacityKWh && (
+                                  <div>• Dung lượng: {formData.batteryCapacityKWh} kWh</div>
+                                )}
+                                {formData.category === "VEHICLE" && formData.rangePerChargeKm && (
+                                  <div>• Quãng đường/sạc: {formData.rangePerChargeKm} km</div>
+                                )}
+                                {/* Battery specific fields */}
+                                {formData.category === "BATTERY" && formData.batteryBatteryType && (
+                                  <div>• Loại pin: {formData.batteryBatteryType}</div>
+                                )}
+                                {formData.category === "BATTERY" && formData.voltage && (
+                                  <div>• Điện áp: {formData.voltage}V</div>
+                                )}
+                                {formData.category === "BATTERY" && formData.capacityAh && (
+                                  <div>• Dung lượng: {formData.capacityAh}Ah</div>
+                                )}
+                                {formData.category === "BATTERY" && formData.sohPercent && (
+                                  <div>• Độ bền (SoH): {formData.sohPercent}%</div>
                                 )}
                               </div>
                             </div>
