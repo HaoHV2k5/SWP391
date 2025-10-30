@@ -138,6 +138,13 @@ const ContractCard = ({ contract, onViewDetail, onPay, onCancel, currentUserId }
     }
   };
 
+  const lifecycleStep = (() => {
+    if (contract.status === 'COMPLETED') return 3;
+    if (contract.status === 'SIGNED') return 2;
+    if (contract.status === 'PENDING') return 1;
+    return 0; // CANCELLED or other
+  })();
+
   return (
     <div className="contract-card">
       <div className="contract-card-header">
@@ -148,6 +155,21 @@ const ContractCard = ({ contract, onViewDetail, onPay, onCancel, currentUserId }
           </span>
         </div>
         {getStatusBadge(contract.status)}
+      </div>
+
+      <div className="lifecycle">
+        <div className="lifecycle-progress">
+          <div className={`lc-dot ${lifecycleStep >= 1 ? 'active' : ''}`}>1</div>
+          <div className={`lc-line ${lifecycleStep >= 2 ? 'active' : ''}`}></div>
+          <div className={`lc-dot ${lifecycleStep >= 2 ? 'active' : ''}`}>2</div>
+          <div className={`lc-line ${lifecycleStep >= 3 ? 'active' : ''}`}></div>
+          <div className={`lc-dot ${lifecycleStep >= 3 ? 'active' : ''}`}>3</div>
+        </div>
+        <div className="lc-labels">
+          <span>Khởi tạo</span>
+          <span>Đã ký</span>
+          <span>Hoàn thành</span>
+        </div>
       </div>
 
       <div className="contract-card-body">
@@ -182,9 +204,7 @@ const ContractCard = ({ contract, onViewDetail, onPay, onCancel, currentUserId }
         </div>
 
         {contract.paymentCompleted && (
-          <div className="payment-status paid">
-            ✓ Đã thanh toán
-          </div>
+          <div className="payment-status paid">✓ Đã thanh toán</div>
         )}
 
         {contract.deliveryCompleted && (

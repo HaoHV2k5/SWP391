@@ -85,92 +85,180 @@ const ContractDetailModal = ({ contract, isOpen, onClose, currentUserId, onPay }
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content contract-detail-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>Chi tiết hợp đồng</h3>
-          <button className="modal-close-btn" onClick={onClose}>×</button>
-        </div>
-
-        <div className="modal-body">
-          {/* Simple text layout */}
-          <div className="contract-info">
-            <div className="info-row">
-              <span className="info-label">Mã hợp đồng:</span>
-              <span className="info-value">{contract.contractCode}</span>
+        {/* Header */}
+        <div className="modal-header-new">
+          <div className="header-left">
+            <i className="bi bi-file-earmark-text header-icon"></i>
+            <div>
+              <h3>Chi tiết hợp đồng</h3>
+              <div className="contract-id-text">ID: {contract.contractCode}</div>
             </div>
-            
-            <div className="info-row">
-              <span className="info-label">Trạng thái:</span>
-              <span className="info-value">{getStatusBadge(contract.status)}</span>
-            </div>
-            
-            <div className="info-row">
-              <span className="info-label">Người mua:</span>
-              <span className="info-value">{contract.buyerName} (ID: {contract.buyerId})</span>
-            </div>
-            
-            <div className="info-row">
-              <span className="info-label">Người bán:</span>
-              <span className="info-value">{contract.sellerName} (ID: {contract.sellerId})</span>
-            </div>
-            
-            <div className="info-row">
-              <span className="info-label">Thông tin sản phẩm:</span>
-              <span className="info-value">{contract.productName} (ID: {contract.productId})</span>
-            </div>
-            
-            <div className="info-row">
-              <span className="info-label">Thông tin thanh toán:</span>
-              <span className="info-value">{formatCurrency(contract.agreedPrice)} - {contract.paymentCompleted ? 'Đã thanh toán' : 'Chưa thanh toán'}</span>
-            </div>
-            
-            <div className="info-row">
-              <span className="info-label">Tình trạng ký:</span>
-              <span className="info-value">
-                Người bán: {contract.sellerSigned ? 'Đã ký' : 'Chưa ký'} | 
-                Người mua: {contract.buyerSigned ? 'Đã ký' : 'Chưa ký'}
-              </span>
-            </div>
-            
-            <div className="info-row">
-              <span className="info-label">Thời gian:</span>
-              <span className="info-value">
-                Tạo: {formatDate(contract.createdAt)}
-                {contract.signedAt && ` | Ký: ${formatDate(contract.signedAt)}`}
-                {contract.completedAt && ` | Hoàn thành: ${formatDate(contract.completedAt)}`}
-              </span>
-            </div>
+          </div>
+          <div className="header-right">
+            {getStatusBadge(contract.status)}
+            <button className="modal-close-btn-new" onClick={onClose}>×</button>
           </div>
         </div>
 
-        <div className="modal-footer">
-          <div className="footer-actions">
-            {contract.status === 'SIGNED' && contract.contractCode && (
-              <button
-                className="btn-download"
-                onClick={handleDownload}
-                disabled={downloading}
-              >
-                <i className={`bi ${downloading ? 'bi-hourglass-split' : 'bi-download'}`}></i>
-                {downloading ? 'Đang tải...' : 'Tải xuống PDF'}
-              </button>
-            )}
-            
-            {canPay && (
-              <button
-                className="btn-pay"
-                onClick={handlePay}
-                disabled={loading}
-              >
-                <i className={`bi ${loading ? 'bi-hourglass-split' : 'bi-credit-card'}`}></i>
-                {loading ? 'Đang xử lý...' : 'Thanh toán'}
-              </button>
-            )}
-          </div>
-          
-          <button className="btn-close" onClick={onClose}>
-            <i className="bi bi-x-lg"></i>
-            Đóng
+        <div className="modal-body-new">
+          {/* Thông tin các bên */}
+          <section className="detail-section">
+            <div className="section-header-new">
+              <i className="bi bi-people section-icon-new"></i>
+              <h4>Thông tin các bên</h4>
+            </div>
+            <div className="parties-grid-new">
+              <div className="party-box-new">
+                <div className="avatar-circle-new buyer-avatar">
+                  {contract.buyerName?.[0]?.toUpperCase() || 'B'}
+                </div>
+                <div className="party-info-new">
+                  <div className="party-label-new">Người mua</div>
+                  <div className="party-name-new">{contract.buyerName}</div>
+                  <div className="party-id-new">ID: {contract.buyerId}</div>
+                </div>
+              </div>
+              <div className="party-box-new">
+                <div className="avatar-circle-new seller-avatar">
+                  {contract.sellerName?.[0]?.toUpperCase() || 'S'}
+                </div>
+                <div className="party-info-new">
+                  <div className="party-label-new">Người bán</div>
+                  <div className="party-name-new">{contract.sellerName}</div>
+                  <div className="party-id-new">ID: {contract.sellerId}</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Sản phẩm */}
+          <section className="detail-section">
+            <div className="section-header-new">
+              <i className="bi bi-box section-icon-new"></i>
+              <h4>Sản phẩm</h4>
+            </div>
+            <div className="product-box-new">
+              <div className="product-name-new">{contract.productName}</div>
+              <div className="product-id-new">ID: {contract.productId}</div>
+              <div className="product-desc-new">Mô tả sản phẩm chi tiết sẽ hiển thị tại đây</div>
+            </div>
+          </section>
+
+          {/* Thanh toán */}
+          <section className="detail-section">
+            <div className="section-header-new">
+              <i className="bi bi-cash-coin section-icon-new"></i>
+              <h4>Thanh toán</h4>
+            </div>
+            <div className="payment-box-new">
+              <div className="payment-row-new">
+                <span className="payment-label-new">Tổng tiền</span>
+                <span className="payment-amount-new">{formatCurrency(contract.agreedPrice)}</span>
+              </div>
+              <div className={`payment-status-badge-new ${contract.paymentCompleted ? 'paid' : 'unpaid'}`}>
+                {contract.paymentCompleted ? 'Đã thanh toán' : 'Chưa thanh toán'}
+              </div>
+            </div>
+          </section>
+
+          {/* Tình trạng ký */}
+          <section className="detail-section">
+            <div className="section-header-new">
+              <i className="bi bi-check-circle section-icon-new"></i>
+              <h4>Tình trạng ký</h4>
+            </div>
+            <div className="signature-grid-new">
+              <div className={`signature-box-new ${contract.sellerSigned ? 'signed' : 'unsigned'}`}>
+                <div className="signature-icon-new">
+                  {contract.sellerSigned ? '✓' : '○'}
+                </div>
+                <div className="signature-info-new">
+                  <div className="signature-role-new">Người bán</div>
+                  <div className="signature-status-new">{contract.sellerSigned ? 'Đã ký' : 'Chưa ký'}</div>
+                </div>
+              </div>
+              <div className={`signature-box-new ${contract.buyerSigned ? 'signed' : 'unsigned'}`}>
+                <div className="signature-icon-new">
+                  {contract.buyerSigned ? '✓' : '○'}
+                </div>
+                <div className="signature-info-new">
+                  <div className="signature-role-new">Người mua</div>
+                  <div className="signature-status-new">{contract.buyerSigned ? 'Đã ký' : 'Chưa ký'}</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Mốc thời gian */}
+          <section className="detail-section">
+            <div className="section-header-new">
+              <i className="bi bi-clock-history section-icon-new"></i>
+              <h4>Mốc thời gian</h4>
+            </div>
+            <div className="timeline-list-new">
+              <div className="timeline-item-new">
+                <div className="timeline-dot-new blue"></div>
+                <div className="timeline-content-new">
+                  <div className="timeline-title-new">Hợp đồng được tạo</div>
+                  <div className="timeline-date-new">{formatDate(contract.createdAt)}</div>
+                </div>
+              </div>
+              {contract.sellerSigned && (
+                <div className="timeline-item-new">
+                  <div className="timeline-dot-new blue"></div>
+                  <div className="timeline-content-new">
+                    <div className="timeline-title-new">Người bán ký kết</div>
+                    <div className="timeline-date-new">{formatDate(contract.updatedAt || contract.createdAt)}</div>
+                  </div>
+                </div>
+              )}
+              {contract.buyerSigned && (
+                <div className="timeline-item-new">
+                  <div className="timeline-dot-new green"></div>
+                  <div className="timeline-content-new">
+                    <div className="timeline-title-new">Người mua ký kết</div>
+                    <div className="timeline-date-new">{formatDate(contract.signedAt || contract.updatedAt)}</div>
+                  </div>
+                </div>
+              )}
+              {contract.completedAt && (
+                <div className="timeline-item-new">
+                  <div className="timeline-dot-new green"></div>
+                  <div className="timeline-content-new">
+                    <div className="timeline-title-new">Hợp đồng hoàn thành</div>
+                    <div className="timeline-date-new">{formatDate(contract.completedAt)}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+
+        {/* Footer */}
+        <div className="modal-footer-new">
+          <button className="btn-cancel-modal" onClick={onClose}>
+            Hủy
           </button>
+          {contract.status === 'SIGNED' && contract.contractCode && (
+            <button
+              className="btn-download-modal"
+              onClick={handleDownload}
+              disabled={downloading}
+            >
+              <i className={`bi ${downloading ? 'bi-hourglass-split' : 'bi-download'}`}></i>
+              {downloading ? 'Đang tải...' : 'Tải xuống PDF'}
+            </button>
+          )}
+          {canPay && (
+            <button
+              className="btn-pay-modal"
+              onClick={handlePay}
+              disabled={loading}
+            >
+              <i className={`bi ${loading ? 'bi-hourglass-split' : 'bi-credit-card'}`}></i>
+              {loading ? 'Đang xử lý...' : 'Thanh toán'}
+            </button>
+          )}
         </div>
       </div>
     </div>

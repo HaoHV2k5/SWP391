@@ -13,46 +13,22 @@
   margin: 0;
 }
 
-.contract-list-categories {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-
-.category-btn {
-  padding: 10px 20px;
-  border: 1px solid #dee2e6;
-  background: white;
-  border-radius: 20px;
+.contract-list-subtitle {
+  margin: 6px 0 0 0;
+  color: #6b7280;
   font-size: 14px;
-  font-weight: 500;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
-.category-btn:hover {
-  border-color: #007bff;
-  color: #007bff;
-}
+.contract-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.contract-list-categories { display: flex; gap: 10px; flex-wrap: wrap; }
 
-.category-btn.active {
-  background: #007bff;
-  border-color: #007bff;
-  color: white;
-}
+.category-btn { padding: 8px 14px; border: 1px solid #e5e7eb; background: #fff; border-radius: 999px; font-size: 13px; font-weight: 600; color: #374151; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
 
-.category-count {
-  background: rgba(255, 255, 255, 0.3);
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-}
+.category-btn:hover { border-color: #60a5fa; color: #1d4ed8; background: #f8fafc; }
+
+.category-btn.active { background: #1d4ed8; border-color: #1d4ed8; color: #fff; }
+
+.category-count { background: rgba(255,255,255,0.8); padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; color: #111827; }
 
 .category-btn.active .category-count {
   background: rgba(255, 255, 255, 0.3);
@@ -74,6 +50,20 @@
 }
 
 .contract-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
 }
+
+@media (max-width: 768px) {
+  .contract-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.status-legend { display: flex; gap: 10px; flex-wrap: wrap; }
+.legend-item { font-size: 12px; padding: 4px 8px; border-radius: 999px; border: 1px solid #e5e7eb; color: #374151; display: flex; align-items: center; gap: 6px; background: #fff; }
+.legend-pending { background: #fff7ed; border-color: #fde68a; }
+.legend-signed { background: #ecfeff; border-color: #99f6e4; }
+.legend-completed { background: #ecfdf5; border-color: #86efac; }
+.legend-cancelled { background: #fff1f2; border-color: #fecdd3; }
