@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -154,10 +155,10 @@ public class UserController {
 
 
     @PutMapping("/update/image/profile")
-    public ApiResponse<Void> updateAvatar(Authentication authentication,@RequestParam String img){
+    public ApiResponse<Void> updateAvatar(Authentication authentication,@RequestParam("file") MultipartFile file){
         String userName = authentication.getName();
         User user = userService.getUserByUsername(userName);
-        userService.updateAvatar(user,img);
+        userService.updateAvatar(user,file);
         return ApiResponse.<Void>builder().message("Avatar đã update thành công").build();
     }
 

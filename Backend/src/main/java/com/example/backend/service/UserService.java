@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -283,11 +284,13 @@ private String emailLoginFacebook;
         return userPostingPackageMapper.toPostingPackageResponse(userPostingPackage);
     }
 
-    public void updateAvatar(User user,String avatar){
-        if(avatar.isEmpty()){
+    public void updateAvatar(User user, MultipartFile file){
+        if(file == null || file.isEmpty()){
             throw new AppException(ErrorCode.AVATAR_INVALID);
         }
-        user.setAvatar(avatar);
+        // Upload lên Cloudinary (giống registerUser)
+        String avatarUrl = cloudinaryService.upload(file);
+        user.setAvatar(avatarUrl);
         userRepository.save(user);
     }
 
