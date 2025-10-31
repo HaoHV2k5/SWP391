@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import ContractCard from './ContractCard';
 import ContractDetailModal from './ContractDetailModal';
-import './ContractList.css';
+import '../../styles/contract/ContractList.css';
 
 const ContractList = ({ contracts = [], onPay, onCancel, currentUserId }) => {
   const [selectedContract, setSelectedContract] = useState(null);

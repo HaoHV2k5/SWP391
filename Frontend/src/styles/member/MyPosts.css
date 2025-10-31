@@ -11,8 +11,9 @@
   background: white;
   border-radius: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  overflow: visible;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .post-list-item:hover {
@@ -23,6 +24,8 @@
   display: flex;
   gap: 16px;
   padding: 16px;
+  position: relative;
+  overflow: visible;
 }
 
 /* Image Section */
@@ -178,6 +181,8 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+  position: relative;
+  z-index: 1;
 }
 
 .post-title {
@@ -211,6 +216,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  z-index: 2;
 }
 
 .post-menu-button:hover {
@@ -228,13 +235,16 @@
   border-radius: 12px !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
   border: 1px solid #e5e7eb !important;
-  padding: 8px 0 !important;
+  padding: 6px 0 10px 0 !important;
   margin-top: 8px !important;
+  overflow: visible !important;
+  z-index: 1050 !important;
+  position: absolute !important;
 }
 
 .dropdown-item.post-menu-item {
   width: 100%;
-  padding: 12px 16px !important;
+  padding: 9px 16px !important;
   display: flex !important;
   align-items: center;
   gap: 12px;
@@ -246,6 +256,20 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
+  line-height: 1.4 !important;
+  min-height: auto !important;
+  margin: 0 !important;
+}
+
+/* Đảm bảo item đầu và cuối có padding phù hợp để không bị che bởi border-radius */
+.dropdown-item.post-menu-item:first-child {
+  padding-top: 10px !important;
+  margin-top: 0 !important;
+}
+
+.dropdown-item.post-menu-item:last-child {
+  padding-bottom: 12px !important;
+  margin-bottom: 0 !important;
 }
 
 .dropdown-item.post-menu-item:hover {
@@ -263,7 +287,7 @@
 
 .dropdown-divider.post-menu-divider {
   border-top: 1px solid #e5e7eb !important;
-  margin: 4px 0 !important;
+  margin: 6px 0 !important;
 }
 
 /* Category and Price Row */
