@@ -33,7 +33,7 @@ public class UserController {
 
     private  String LOGIN_URL = "http://localhost:5173/login.html";
     @PostMapping("/register")
-    public ApiResponse<Void> register(@RequestBody @Valid  RegisterRequest request){
+    public ApiResponse<Void> register(@ModelAttribute @Valid  RegisterRequest request){
 
         User user = userService.registerUser(request);
         userService.initWalletAndWishlist(user);
