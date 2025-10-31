@@ -37,6 +37,15 @@ const WalletManagement = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [rechargeModalVisible, setRechargeModalVisible] = useState(false);
   const [rechargeAmount, setRechargeAmount] = useState(100000);
+  const [orderInfo, setOrderInfo] = useState("recharge wallet");
+  const [bankCode, setBankCode] = useState("VNPAYQR");
+  const [language, setLanguage] = useState("vn");
+  const [fullName, setFullName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [email, setEmail] = useState("");
+  const [addr1, setAddr1] = useState("");
+  const [city, setCity] = useState("");
+  const [country, setCountry] = useState("VN");
 
   const rechargeAmounts = [
     { value: 50000, label: "50,000 VND" },
@@ -48,6 +57,12 @@ const WalletManagement = ({ user }) => {
 
   useEffect(() => {
     fetchWalletData();
+    // Nếu vừa thanh toán xong, refresh dữ liệu
+    if (sessionStorage.getItem("wallet.reload") === "1") {
+      sessionStorage.removeItem("wallet.reload");
+      fetchWalletData();
+      message.success("Ví đã được cập nhật sau thanh toán");
+    }
   }, []);
 
   const fetchWalletData = async () => {
@@ -71,26 +86,101 @@ const WalletManagement = ({ user }) => {
   };
 
   const handleRecharge = async () => {
-    if (!user?.id) {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      message.error("Bạn cần đăng nhập để nạp tiền.");
+      // Nếu đang ở trang staff có bảo vệ, chuyển hướng
+      try {
+        if (location.pathname.startsWith("/staff")) {
+          location.replace("/login");
+        }
+      } catch (e) {
+        console.warn("Redirect to login failed:", e);
+      }
+      return;
+    }
+
+    // Lấy userId từ props hoặc localStorage
+    let userId = user?.id;
+    if (!userId) {
+      try {
+        const raw = localStorage.getItem("userData");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          userId = parsed?.id || parsed?.user?.id || parsed?.userId;
+        }
+      } catch (e) {
+        console.warn("Parse userData failed:", e);
+      }
+    }
+    if (!userId) {
       message.error("Không tìm thấy thông tin người dùng!");
       return;
     }
 
     try {
-      const response = await paymentService.rechargeWallet(user.id);
+      const payload = {
+        userId,
+        amount: rechargeAmount,
+        vnp_OrderInfo: orderInfo || "recharge",
+        ordertype: "recharge",
+        bankcode: bankCode || undefined,
+        language: language || "vn",
+        txt_billing_fullname: fullName,
+        txt_billing_mobile: mobile,
+        txt_billing_email: email,
+        txt_inv_addr1: addr1,
+        txt_bill_city: city,
+        txt_bill_country: country || "VN",
+      };
 
-      if (response.data?.paymentUrl) {
+      const response = await paymentService.rechargeWallet(payload);
+
+      // Hỗ trợ nhiều format phản hồi từ BE
+      const paymentUrl =
+        response?.paymentUrl ||
+        response?.data?.paymentUrl ||
+        response?.data?.data; // theo ảnh: { code:1000, data:{ code:'00', message:'success', data:'<url>' } }
+
+      if (
+        response?.code === 1000 &&
+        response?.data?.code === "00" &&
+        paymentUrl
+      ) {
         // Mở cửa sổ thanh toán VNPay
         const paymentWindow = window.open(
-          response.data.paymentUrl,
+          paymentUrl,
           "vnpay_payment",
           "width=800,height=600,scrollbars=yes,resizable=yes"
         );
+
+        // Poll dữ liệu ví trong khi popup đang mở (2s/lần, tối đa ~2 phút)
+        let polls = 0;
+        let lastTxCount = Array.isArray(walletTransactions)
+          ? walletTransactions.length
+          : 0;
+        const pollInterval = setInterval(async () => {
+          polls += 1;
+          try {
+            const resTx = await paymentService.getWalletTransactions();
+            const list = resTx?.data || [];
+            if (Array.isArray(list) && list.length !== lastTxCount) {
+              setWalletTransactions(list);
+              lastTxCount = list.length;
+            }
+          } catch {
+            // ignore
+          }
+          if (polls >= 60) {
+            clearInterval(pollInterval);
+          }
+        }, 2000);
 
         // Kiểm tra cửa sổ thanh toán có bị đóng không
         const checkClosed = setInterval(() => {
           if (paymentWindow.closed) {
             clearInterval(checkClosed);
+            clearInterval(pollInterval);
             message.info(
               "Đã đóng cửa sổ thanh toán. Vui lòng kiểm tra lại ví của bạn."
             );
@@ -396,6 +486,108 @@ const WalletManagement = ({ user }) => {
           </Select>
 
           <Divider />
+
+          <Row gutter={12}>
+            <Col span={12}>
+              <Text>Mô tả đơn hàng</Text>
+              <Input
+                placeholder="vnp_OrderInfo"
+                value={orderInfo}
+                onChange={(e) => setOrderInfo(e.target.value)}
+                style={{ marginTop: 6, marginBottom: 12 }}
+              />
+            </Col>
+            <Col span={12}>
+              <Text>Phương thức</Text>
+              <Select
+                value={bankCode}
+                onChange={setBankCode}
+                style={{ width: "100%", marginTop: 6, marginBottom: 12 }}
+              >
+                <Option value="">Mặc định</Option>
+                <Option value="VNPAYQR">VNPAYQR</Option>
+                <Option value="VNBANK">VNBANK</Option>
+                <Option value="INTCARD">INTCARD</Option>
+              </Select>
+            </Col>
+          </Row>
+
+          <Row gutter={12}>
+            <Col span={12}>
+              <Text>Ngôn ngữ</Text>
+              <Select
+                value={language}
+                onChange={setLanguage}
+                style={{ width: "100%", marginTop: 6, marginBottom: 12 }}
+              >
+                <Option value="vn">Tiếng Việt</Option>
+                <Option value="en">English</Option>
+              </Select>
+            </Col>
+            <Col span={12}>
+              <Text>Họ tên</Text>
+              <Input
+                placeholder="Nguyen Van A"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                style={{ marginTop: 6, marginBottom: 12 }}
+              />
+            </Col>
+          </Row>
+
+          <Row gutter={12}>
+            <Col span={12}>
+              <Text>Điện thoại</Text>
+              <Input
+                placeholder="0912345678"
+                value={mobile}
+                onChange={(e) => setMobile(e.target.value)}
+                style={{ marginTop: 6, marginBottom: 12 }}
+              />
+            </Col>
+            <Col span={12}>
+              <Text>Email</Text>
+              <Input
+                placeholder="test@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={{ marginTop: 6, marginBottom: 12 }}
+              />
+            </Col>
+          </Row>
+
+          <Row gutter={12}>
+            <Col span={12}>
+              <Text>Địa chỉ</Text>
+              <Input
+                placeholder="Ha Noi"
+                value={addr1}
+                onChange={(e) => setAddr1(e.target.value)}
+                style={{ marginTop: 6, marginBottom: 12 }}
+              />
+            </Col>
+            <Col span={12}>
+              <Text>Thành phố</Text>
+              <Input
+                placeholder="Hanoi"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                style={{ marginTop: 6, marginBottom: 12 }}
+              />
+            </Col>
+          </Row>
+
+          <Row gutter={12}>
+            <Col span={12}>
+              <Text>Quốc gia</Text>
+              <Input
+                placeholder="VN"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                style={{ marginTop: 6, marginBottom: 12 }}
+              />
+            </Col>
+          </Row>
 
           <div
             style={{

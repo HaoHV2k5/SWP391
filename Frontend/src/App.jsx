@@ -33,7 +33,7 @@ import AccountPage from "./pages/AccountPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
 import KycPage from "./pages/kyc/KycPage";
 import PaymentDashboard from "./components/seller/PaymentDashboard";
-// PaymentReturn is optional; keep removed unless needed
+import PaymentReturnPage from "./pages/PaymentReturnPage";
 
 // Home pages
 import CategoryRouter from "./components/homepageContainer/navigation/CategoryRouter";
@@ -61,7 +61,7 @@ function AppContent() {
   // ===========================================
   // USER AUTHENTICATION & SESSION MANAGEMENT
   // ===========================================
-  
+
   /**
    * Khôi phục user session từ localStorage khi app load
    * Xử lý cả Google OAuth callback và session thường
@@ -117,7 +117,7 @@ function AppContent() {
   // ===========================================
   // APP SERVICES INITIALIZATION
   // ===========================================
-  
+
   /**
    * Khởi tạo các service cần thiết khi user thay đổi
    */
@@ -128,14 +128,13 @@ function AppContent() {
   // ===========================================
   // AUTHENTICATION HANDLERS
   // ===========================================
-  
-  
+
   // Xử lý khi user login thành công
   const handleLogin = (loginResponse) => {
     const normalized = normalizeLoginResponse(loginResponse);
     const userData = persistAuth(normalized);
     setUser(userData);
-    
+
     // Khởi tạo các service sau khi login (bao gồm redirect logic)
     AppService.handleAppLogin(userData, navigate);
   };
@@ -155,7 +154,7 @@ function AppContent() {
   // ===========================================
   // PAGE VISIBILITY LOGIC
   // ===========================================
-  
+
   // Xác định các loại trang để ẩn/hiện Navbar/Footer
   const path = location.pathname;
   const isAuthPage =
@@ -170,7 +169,7 @@ function AppContent() {
   // ===========================================
   // USER ROLE MANAGEMENT
   // ===========================================
-  
+
   const currentRole = user?.user?.role || user?.role;
   const isStaffUser = user && isStaff(currentRole);
 
@@ -225,6 +224,7 @@ function AppContent() {
         <Route path="/account" element={<AccountPage user={user} />} />
         <Route path="/kyc" element={<KycPage user={user} />} />
         <Route path="/payment" element={<PaymentDashboard user={user} />} />
+        <Route path="/payment/return" element={<PaymentReturnPage />} />
         <Route path="/my-posts" element={<MyPosts user={user} />} />
         <Route path="/saved-posts" element={<SavedPosts user={user} />} />
         <Route path="/my-orders" element={<MyOrders user={user} />} />
@@ -233,7 +233,10 @@ function AppContent() {
 
         {/* PRODUCT ROUTES */}
         <Route path="/products/:type" element={<CategoryRouter />} />
-        <Route path="/product/:id" element={<ProductDetailPage user={user} />} />
+        <Route
+          path="/product/:id"
+          element={<ProductDetailPage user={user} />}
+        />
         <Route path="/tag/:slug" element={<TagPage />} />
 
         {/* FALLBACK ROUTE */}

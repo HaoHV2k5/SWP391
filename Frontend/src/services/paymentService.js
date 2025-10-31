@@ -3,14 +3,73 @@ import apiClient from "./apiClient";
 
 export const paymentService = {
   // Nạp tiền vào ví
-  async rechargeWallet(userId) {
+  async rechargeWallet(formPayload) {
     try {
-      const response = await apiClient.post(
-        `/api/payment/recharge?userId=${userId}`
-      );
+      const formData = new FormData();
+
+      // Bắt buộc
+      if (formPayload?.userId != null)
+        formData.append("userId", formPayload.userId);
+      if (formPayload?.amount != null)
+        formData.append("amount", formPayload.amount);
+      if (formPayload?.vnp_OrderInfo)
+        formData.append("vnp_OrderInfo", formPayload.vnp_OrderInfo);
+      formData.append("ordertype", formPayload?.ordertype || "recharge");
+
+      // Tuỳ chọn/khuyến nghị theo ảnh Postman
+      if (formPayload?.bankcode)
+        formData.append("bankcode", formPayload.bankcode);
+      formData.append("language", formPayload?.language || "vn");
+      if (formPayload?.txt_billing_fullname)
+        formData.append(
+          "txt_billing_fullname",
+          formPayload.txt_billing_fullname
+        );
+      if (formPayload?.txt_billing_mobile)
+        formData.append("txt_billing_mobile", formPayload.txt_billing_mobile);
+      if (formPayload?.txt_billing_email)
+        formData.append("txt_billing_email", formPayload.txt_billing_email);
+      if (formPayload?.txt_inv_addr1)
+        formData.append("txt_inv_addr1", formPayload.txt_inv_addr1);
+      if (formPayload?.txt_bill_city)
+        formData.append("txt_bill_city", formPayload.txt_bill_city);
+      if (formPayload?.txt_bill_country)
+        formData.append("txt_bill_country", formPayload.txt_bill_country);
+
+      const response = await apiClient.post(`/api/payment/recharge`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       return response.data;
     } catch (error) {
       console.error("Error recharging wallet:", error);
+      throw error;
+    }
+  },
+
+  // Xử lý VNPay redirect (payment-return)
+  async paymentReturn(queryString) {
+    try {
+      const qs = typeof queryString === "string" ? queryString : "";
+      const url = `/api/payment/payment-return${
+        qs.startsWith("?") ? qs : `?${qs}`
+      }`;
+      const response = await apiClient.get(url);
+      return response.data;
+    } catch (error) {
+      console.error("Error handling payment return:", error);
+      throw error;
+    }
+  },
+
+  // Callback server-to-server (ít dùng trên FE, thêm để đủ bộ API)
+  async paymentCallback(queryString) {
+    try {
+      const qs = typeof queryString === "string" ? queryString : "";
+      const url = `/api/payment/callback${qs.startsWith("?") ? qs : `?${qs}`}`;
+      const response = await apiClient.get(url);
+      return response.data;
+    } catch (error) {
+      console.error("Error handling payment callback:", error);
       throw error;
     }
   },
