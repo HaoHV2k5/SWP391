@@ -12,7 +12,6 @@ import {
   Col,
   Tooltip,
   Input,
-  Divider,
   Typography,
   Select,
   Avatar,
@@ -21,6 +20,7 @@ import {
   Badge,
   Popconfirm,
   Descriptions,
+  Divider,
 } from "antd";
 import {
   ReloadOutlined,
@@ -50,10 +50,10 @@ const REJECT_REASONS = [
 ];
 
 const PACKAGE_FILTER_OPTIONS = [
-  { label: "Gói A", value: "Gói Nâng Cao" },
-  { label: "Gói B", value: "B" },
-  { label: "Gói C", value: "C" },
-  { label: "Nothing", value: null },
+  { label: "Gói Cơ Bản", value: "Gói Cơ Bản" },
+  { label: "Gói Nâng Cao ", value: "Gói Nâng Cao" },
+  { label: "Gói Premium", value: "Gói Premium" },
+  { label: "Tất cả", value: null },
 ];
 
 // bỏ dấu & chuyển thường để search “mềm”
@@ -64,10 +64,53 @@ const norm = (s) =>
     .replace(/\p{Diacritic}/gu, "")
     .toLowerCase();
 
-const KV = ({ label, value }) => (
-  <div style={{ marginBottom: 10 }}>
-    <div style={{ fontSize: 12, color: "#888", marginBottom: 4 }}>{label}</div>
-    <Input readOnly value={value ?? "—"} />
+const cardStyle = {
+  borderRadius: 16,
+  overflow: "hidden",
+  boxShadow: "0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04)",
+};
+
+const headerWrapStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 12,
+};
+
+const toolbarCardStyle = {
+  position: "sticky",
+  top: 64,
+  zIndex: 9,
+  backdropFilter: "saturate(180%) blur(8px)",
+  background: "rgba(255,255,255,0.75)",
+  borderRadius: 12,
+  marginBottom: 12,
+};
+
+const priceChipStyle = {
+  fontSize: 18,
+  padding: "2px 8px",
+  borderRadius: 8,
+  background: "#fff1f0",
+  border: "1px solid #ffd6d6",
+  lineHeight: 1.4,
+};
+
+const coverPlaceholder = (
+  <div
+    style={{
+      width: "100%",
+      height: 260,
+      background: "linear-gradient(135deg,#fafafa,#f0f0f0)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#aaa",
+      borderTopLeftRadius: 16,
+      borderTopRightRadius: 16,
+    }}
+  >
+    <PictureOutlined style={{ fontSize: 36 }} />
+    <span style={{ marginLeft: 8 }}>(Không có ảnh)</span>
   </div>
 );
 
@@ -105,7 +148,6 @@ function groupBySeller(items = []) {
     const key = getSellerKey(it);
     if (!groups.has(key)) {
       const { idText, nameText } = getSellerDisplay(it);
-      // Dữ liệu gói từ response mới
       const upp = it?.postingPackage; // user_posting_package
       const pkg = upp?.postingPackage; // posting_package
       const pkgName = pkg?.name || "—";
@@ -132,72 +174,16 @@ function groupBySeller(items = []) {
   return Array.from(groups.values());
 }
 
-const cardStyle = {
-  borderRadius: 16,
-  overflow: "hidden",
-  boxShadow: "0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04)",
-};
-
-const headerWrapStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: 12,
-};
-
-const toolbarCardStyle = {
-  position: "sticky",
-  top: 64,
-  zIndex: 9,
-  backdropFilter: "saturate(180%) blur(8px)",
-  background: "rgba(255,255,255,0.75)",
-  borderRadius: 12,
-  marginBottom: 12,
-};
-
-const priceChipStyle = {
-  fontSize: 18,
-  padding: "2px 8px",
-  borderRadius: 8,
-  background: "#fff1f0",
-  border: "1px solid #ffd6d6",
-};
-
-const coverPlaceholder = (
-  <div
-    style={{
-      width: "100%",
-      height: 260,
-      background: "linear-gradient(135deg,#fafafa,#f0f0f0)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "#aaa",
-      borderTopLeftRadius: 16,
-      borderTopRightRadius: 16,
-    }}
-  >
-    <PictureOutlined style={{ fontSize: 36 }} />
-    <span style={{ marginLeft: 8 }}>(Không có ảnh)</span>
-  </div>
-);
-
 const ProductsTab = () => {
   const { list, reload, approve, reject, loading, initial } =
     usePendingProducts();
 
-  // tìm kiếm
   const [query, setQuery] = useState("");
-
-  // preview gallery
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewItems, setPreviewItems] = useState([]);
   const [previewIndex, setPreviewIndex] = useState(0);
   const [pkgUI, setPkgUI] = useState(null);
-
-  // chi tiết
   const [detail, setDetail] = useState(null);
-
-  // chọn lý do từ chối
   const [rejectDlg, setRejectDlg] = useState({
     open: false,
     id: null,
@@ -237,7 +223,7 @@ const ProductsTab = () => {
     // filter By Package (áp dụng thật)
     return base.filter((x) => {
       if (pkgUI == null) return true;
-      return x?.postingPackage?.postingPackage?.name == pkgUI;
+      return x?.packageName == pkgUI;
     });
   }, [list, query, pkgUI]);
 
@@ -245,7 +231,6 @@ const ProductsTab = () => {
   const sections = useMemo(() => groupBySeller(dataFiltered), [dataFiltered]);
 
   const approveConfirm = async (id) => {
-    // dùng Popconfirm trong card; để fallback vẫn có Modal.confirm
     Modal.confirm({
       title: "Xác nhận duyệt tin đăng?",
       icon: <ExclamationCircleOutlined />,
@@ -273,14 +258,13 @@ const ProductsTab = () => {
   const renderPostCard = (r) => {
     const imgs = collectImages(r);
     const hasImgs = imgs.length > 0;
-    const price = (Number(r.price || r.amount || r.cost) || 0).toLocaleString(
-      "vi-VN",
-      {
-        style: "currency",
-        currency: "VND",
-        maximumFractionDigits: 0,
-      }
-    );
+
+    const priceStr = new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      maximumFractionDigits: 0,
+    }).format(Number(r.price || r.amount || r.cost) || 0);
+
     const status = statusTag(r.status);
     const title = r.title || r.name || r.productName || "(Không tiêu đề)";
     const timeStr = vnDate(r.submitted_at || r.createdAt || r.created_at);
@@ -289,37 +273,29 @@ const ProductsTab = () => {
 
     const cover = hasImgs ? (
       <div
-        style={{ position: "relative", background: "#fafafa" }}
+        style={{
+          position: "relative",
+          height: 260,
+          background: "#fafafa",
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "center", // vertical center
+          justifyContent: "center", // horizontal center
+        }}
         onClick={() => openImages(r, 0)}
       >
         <Image
           src={imgs[0]}
           alt="cover"
           preview={false}
-          style={{
-            width: "100%",
-            height: 260,
-            objectFit: "cover",
+          imgStyle={{
+            maxWidth: "100%",
+            maxHeight: "100%",
             display: "block",
+            objectFit: "contain",
+            objectPosition: "center center",
           }}
         />
-        {imgs.length > 1 && (
-          <div
-            style={{
-              position: "absolute",
-              right: 12,
-              bottom: 12,
-              background: "rgba(0,0,0,0.55)",
-              backdropFilter: "blur(2px)",
-              color: "#fff",
-              padding: "2px 8px",
-              borderRadius: 999,
-              fontSize: 12,
-            }}
-          >
-            +{imgs.length - 1} ảnh
-          </div>
-        )}
       </div>
     ) : (
       coverPlaceholder
@@ -329,9 +305,19 @@ const ProductsTab = () => {
       <Badge.Ribbon text={pkgName} color="cyan">
         <Card
           key={r.id}
-          style={cardStyle}
+          style={{
+            ...cardStyle,
+            height: "100%", // stretch card to cell
+            display: "flex",
+            flexDirection: "column",
+          }}
           cover={cover}
-          bodyStyle={{ padding: 16 }}
+          bodyStyle={{
+            padding: 16,
+            display: "flex",
+            flexDirection: "column",
+            flex: 1, // body fills remaining height
+          }}
           actions={[
             <Tooltip title="Xem chi tiết" key="detail">
               <Button size="small" onClick={() => openDetail(r)}>
@@ -392,25 +378,33 @@ const ProductsTab = () => {
             </Tooltip>,
           ]}
         >
-          <Space
-            align="start"
-            style={{ width: "100%", justifyContent: "space-between" }}
+          {/* Body content */}
+          <div
+            style={{
+              display: "flex",
+              gap: 12,
+              justifyContent: "space-between",
+            }}
           >
             <div style={{ maxWidth: "72%" }}>
-              <Title
-                level={5}
-                style={{
-                  margin: 0,
-                  lineHeight: 1.3,
-                  wordBreak: "break-word",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                }}
-              >
-                {title}
+              <Title level={5} style={{ margin: 0 }}>
+                <span
+                  style={{
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                    lineHeight: 1.3, // line height for each row
+                    height: "calc(1.3em * 2)", // exactly 2 lines tall
+                    minHeight: "calc(1.3em * 2)",
+                    overflowWrap: "anywhere", // break long words/URLs
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {title}
+                </span>
               </Title>
+
               <div style={{ marginTop: 6 }}>
                 <Tag color={status.color} style={{ marginRight: 8 }}>
                   {status.text}
@@ -420,11 +414,18 @@ const ProductsTab = () => {
             </div>
 
             <div style={{ textAlign: "right" }}>
-              <Text strong style={priceChipStyle}>
-                {price?.replaceAll(".", ",")}
+              <Text
+                strong
+                style={{
+                  ...priceChipStyle,
+                  whiteSpace: "nowrap",
+                  wordBreak: "keep-all",
+                }}
+              >
+                {priceStr}
               </Text>
             </div>
-          </Space>
+          </div>
         </Card>
       </Badge.Ribbon>
     );
@@ -475,10 +476,12 @@ const ProductsTab = () => {
       {initial ? (
         <List grid={{ gutter: 16, xs: 1, md: 2, lg: 3 }}>
           {Array.from({ length: 6 }).map((_, i) => (
-            <List.Item key={i}>
-              <Card style={cardStyle}>
-                <Skeleton active paragraph={{ rows: 3 }} />
-              </Card>
+            <List.Item key={i} style={{ display: "flex" }}>
+              <div style={{ width: "100%", display: "flex" }}>
+                <Card style={{ ...cardStyle, height: "100%", flex: 1 }}>
+                  <Skeleton active paragraph={{ rows: 3 }} />
+                </Card>
+              </div>
             </List.Item>
           ))}
         </List>
@@ -544,7 +547,11 @@ const ProductsTab = () => {
                 grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 3, xl: 4, xxl: 4 }}
                 dataSource={sec.rows}
                 renderItem={(item) => (
-                  <List.Item>{renderPostCard(item)}</List.Item>
+                  <List.Item style={{ display: "flex" }}>
+                    <div style={{ width: "100%", display: "flex" }}>
+                      {renderPostCard(item)}
+                    </div>
+                  </List.Item>
                 )}
               />
             </div>
@@ -552,7 +559,7 @@ const ProductsTab = () => {
         })
       )}
 
-      {/* Gallery Preview (ẩn nhưng vẫn hoạt động) */}
+      {/* Gallery Preview */}
       {previewOpen && (
         <div style={{ display: "none" }}>
           <Image.PreviewGroup
@@ -578,16 +585,15 @@ const ProductsTab = () => {
         footer={null}
         width={1000}
       >
-        {/* override CSS nhỏ để Descriptions không ép fixed width */}
         <style>{`
-    .desc-auto .ant-descriptions-view { table-layout: auto !important; }
-    .nowrap { white-space: nowrap; }
-    .desc-box { background:#fafafa; border:1px solid #f0f0f0; border-radius:6px; padding:8px; }
-  `}</style>
+          .desc-auto .ant-descriptions-view { table-layout: auto !important; }
+          .nowrap { white-space: nowrap; }
+          .desc-box { background:#fafafa; border:1px solid #f0f0f0; border-radius:6px; padding:8px; }
+        `}</style>
 
         {detail && (
           <Row gutter={16}>
-            {/* LEFT: Gallery (thu nhỏ để nhường chỗ cho form) */}
+            {/* LEFT: Gallery */}
             <Col span={8}>
               {detail.__images?.length ? (
                 <Image.PreviewGroup>
@@ -622,9 +628,8 @@ const ProductsTab = () => {
               )}
             </Col>
 
-            {/* RIGHT: Info rộng hơn */}
+            {/* RIGHT: Info */}
             <Col span={16}>
-              {/* Header + price chip + status gọn */}
               <div
                 style={{
                   display: "flex",
@@ -648,26 +653,20 @@ const ProductsTab = () => {
                     className="nowrap"
                     style={{
                       fontWeight: 700,
-                      fontSize: 18,
-                      padding: "2px 10px",
-                      borderRadius: 8,
-                      background: "#fff1f0",
-                      border: "1px solid #ffd6d6",
-                      lineHeight: 1.4,
+                      ...priceChipStyle,
                     }}
                   >
-                    {(
-                      Number(detail.price || detail.amount || detail.cost) || 0
-                    ).toLocaleString("vi-VN", {
+                    {new Intl.NumberFormat("vi-VN", {
                       style: "currency",
                       currency: "VND",
                       maximumFractionDigits: 0,
-                    })}
+                    }).format(
+                      Number(detail.price || detail.amount || detail.cost) || 0
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Form miêu tả bằng Descriptions – auto layout, 2 cột trên desktop */}
               <Descriptions
                 className="desc-auto"
                 bordered
@@ -718,7 +717,6 @@ const ProductsTab = () => {
                 </Descriptions.Item>
               </Descriptions>
 
-              {/* Vehicle / Battery – giữ nguyên thông tin, trình bày gọn */}
               {(() => {
                 const v = detail.vehicle;
                 const b = detail.battery;
