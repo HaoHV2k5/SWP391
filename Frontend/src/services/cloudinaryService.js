@@ -14,7 +14,7 @@
 const CLOUDINARY_CONFIG = {
   cloudName: 'dnjykfio6', // Chỉ cần cloudName cho unsigned upload
   // KHÔNG CẦN apiKey và apiSecret cho unsigned upload preset
-  uploadPreset: null, // Cập nhật thành tên preset bạn đã tạo (ví dụ: 'avatar_upload')
+  uploadPreset: 'avatar_upload', // TODO: Cập nhật thành tên preset bạn đã tạo trong Cloudinary Dashboard
 };
 
 /**
@@ -24,13 +24,7 @@ const CLOUDINARY_CONFIG = {
  */
 export const uploadToCloudinary = async (file) => {
   try {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('cloud_name', CLOUDINARY_CONFIG.cloudName);
-    
-    let uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/image/upload`;
-
-    // Unsigned upload REQUIRES upload preset - không cần API secret
+    // Validate preset trước khi upload
     if (!CLOUDINARY_CONFIG.uploadPreset) {
       throw new Error(
         '⚠️ Upload preset chưa được cấu hình!\n\n' +
@@ -41,11 +35,35 @@ export const uploadToCloudinary = async (file) => {
         '4. Cập nhật uploadPreset trong cloudinaryService.js'
       );
     }
+
+    // Trim preset name để loại bỏ space
+    const presetName = CLOUDINARY_CONFIG.uploadPreset.trim();
     
-    formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
+    if (!presetName) {
+      throw new Error('Upload preset name không được để trống!');
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('cloud_name', CLOUDINARY_CONFIG.cloudName);
+    
+    let uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/image/upload`;
+    
+    formData.append('upload_preset', presetName);
     
     // Thêm folder để organize files (optional, có thể config trong preset)
-    formData.append('folder', 'avatars');
+    // Tạm thời comment để test - nếu preset đã có folder config thì không cần
+    // formData.append('folder', 'avatars');
+
+    // Debug: Log thông tin gửi lên Cloudinary
+    const formDataKeys = Array.from(formData.keys());
+    console.log('Uploading to Cloudinary:', {
+      url: uploadUrl,
+      preset: presetName,
+      cloudName: CLOUDINARY_CONFIG.cloudName,
+      formDataKeys: formDataKeys,
+      hasFolder: formDataKeys.includes('folder')
+    });
 
     // Upload lên Cloudinary
     const response = await fetch(uploadUrl, {
@@ -57,16 +75,44 @@ export const uploadToCloudinary = async (file) => {
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.error?.message || `Upload thất bại: ${response.status}`;
       
+      // Log chi tiết lỗi từ Cloudinary để debug
+      console.error('Cloudinary API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorData: errorData,
+        uploadPreset: presetName,
+        cloudName: CLOUDINARY_CONFIG.cloudName,
+        fullError: JSON.stringify(errorData, null, 2)
+      });
+      
       // Nếu unsigned upload fail, có thể preset chưa được setup đúng
-      if (errorMessage.includes('preset') || errorMessage.includes('Unauthorized') || errorMessage.includes('401')) {
+      if (errorMessage.includes('preset') || errorMessage.includes('Unauthorized') || errorMessage.includes('401') || response.status === 400) {
+        // Hướng dẫn cụ thể hơn cho lỗi preset not found
+        let troubleshooting = '';
+        if (errorMessage.includes('preset') || errorMessage.includes('not found')) {
+          troubleshooting = '\n\n⚠️ LỖI: Upload preset not found\n' +
+            'Vui lòng làm theo các bước:\n' +
+            '1. Vào Cloudinary Dashboard > Settings > Upload > Upload presets\n' +
+            '2. Click vào preset "avatar_upload" để mở chi tiết\n' +
+            '3. Kiểm tra Signing mode = UNSIGNED\n' +
+            '4. Click "Save" lại (dù không thay đổi gì)\n' +
+            '5. Đợi 30-60 giây để Cloudinary sync\n' +
+            '6. Refresh trình duyệt và thử lại\n\n' +
+            'Nếu vẫn lỗi, thử:\n' +
+            '- Xóa preset cũ và tạo preset mới\n' +
+            '- Hoặc tạo preset với tên khác và cập nhật code';
+        }
+        
         throw new Error(
           'Cloudinary upload preset chưa được cấu hình hoặc preset không đúng.\n\n' +
           'Kiểm tra:\n' +
           '1. Preset đã được tạo trong Cloudinary Dashboard chưa?\n' +
           '2. Signing mode đã được set là "UNSIGNED" chưa?\n' +
-          '3. Tên preset trong code có khớp với tên trong Dashboard không?\n' +
-          '4. Preset có được enable không?\n\n' +
-          'Xem chi tiết trong comment của cloudinaryService.js'
+          '3. Tên preset trong code có khớp với tên trong Dashboard không? (hiện tại: "' + presetName + '")\n' +
+          '4. Preset có được enable không? (click vào preset và Save lại)\n' +
+          '5. Đã đợi 30-60 giây sau khi save preset chưa?\n\n' +
+          troubleshooting +
+          'Chi tiết lỗi: ' + JSON.stringify(errorData, null, 2)
         );
       }
       

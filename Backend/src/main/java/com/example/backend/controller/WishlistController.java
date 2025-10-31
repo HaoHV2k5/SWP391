@@ -20,9 +20,8 @@ public class WishlistController {
     private final WishlistService wishlistService;
     private final ProductService productService;
 
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER','ROLE_SELLER')")
     @PostMapping("/add")
-
     public ApiResponse<Boolean> addWishlist(@RequestBody AddProductIntoWishlistRequest request) {
         Product product = productService.getProduct(request.getProductId());
         boolean result = wishlistService.addProductIntoWishlist(product, request.getUserId());
@@ -31,7 +30,7 @@ public class WishlistController {
                 .data(result)
                 .build();
     }
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER','ROLE_SELLER')")
     @GetMapping
     public ApiResponse<List<ProductResponse>> getWishlist(@RequestParam Long userId){
         List<ProductResponse> list = wishlistService.getAllProductsInWishlist(userId);
@@ -40,7 +39,7 @@ public class WishlistController {
                 .message("Đã lấy toàn bộ sản phẩm trong wishlist thành công!")
                 .build();
     }
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER','ROLE_SELLER')")
     @DeleteMapping("/delete")
     public  ApiResponse<Void> deleteWishlist(@RequestParam Long productId, @RequestParam Long userId){
         Product product = productService.getProduct(productId);
