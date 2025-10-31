@@ -75,19 +75,15 @@ const productService = {
       let endpoint;
       if (userId) {
         endpoint = `/products/history/seller/${userId}`;
-        console.log("🔍 Using history endpoint with userId:", userId);
       } else if (username) {
         endpoint = `/products/seller?username=${encodeURIComponent(username)}`;
-        console.log("🔍 Using seller endpoint with username:", username);
       } else {
         endpoint = "/products";
-        console.log("🔍 Using public endpoint (no user info)");
       }
 
       const response = await apiClient.get(endpoint);
       const data =
         response?.data?.data ?? response?.data?.content ?? response?.data;
-      console.log("📦 Received from API:", data);
       return { success: true, data: Array.isArray(data) ? data : [] };
     } catch (error) {
       const status = error?.response?.status;
@@ -96,11 +92,9 @@ const productService = {
       
       // Nếu lỗi 401 (Unauthorized), thử fallback về endpoint công khai
       if (status === 401) {
-        console.log("🔄 401 error, trying public endpoint as fallback");
         try {
           const fallbackResponse = await apiClient.get("/products");
           const fallbackData = fallbackResponse?.data?.data ?? fallbackResponse?.data?.content ?? fallbackResponse?.data;
-          console.log("📦 Fallback data received:", fallbackData);
           return { success: true, data: Array.isArray(fallbackData) ? fallbackData : [] };
         } catch (fallbackError) {
           console.error("❌ Fallback also failed:", fallbackError);
@@ -209,47 +203,77 @@ const productService = {
 
       // Gửi vehicle/battery object theo yêu cầu của backend
       if (productType === "VEHICLE") {
-        formData.append("vehicle.brand", form.brand);
-        formData.append("vehicle.model", form.model.trim());
-        formData.append("vehicle.yearManufactured", form.yearManufactured);
+        // Bắt buộc fields - LUÔN gửi
+        formData.append("vehicle.brand", form.brand || "");
+        formData.append("vehicle.model", (form.model || "").trim());
+        formData.append("vehicle.yearManufactured", String(form.yearManufactured || ""));
         
         // Vehicle additional fields
-        if (form.odometer && form.odometer !== "") {
-          formData.append("vehicle.odometer", form.odometer);
+        if (form.hasOwnProperty("odometer") && form.odometer !== undefined && form.odometer !== null && form.odometer !== "") {
+          const odometerNum = parseInt(form.odometer);
+          if (!isNaN(odometerNum) && odometerNum >= 0) {
+            formData.append("vehicle.odometer", odometerNum.toString());
+          }
         }
-        if (form.vehicleBatteryType && form.vehicleBatteryType !== "") {
-          formData.append("vehicle.batteryType", form.vehicleBatteryType);
+        
+        if (form.hasOwnProperty("vehicleBatteryType") && form.vehicleBatteryType !== undefined && form.vehicleBatteryType !== null && form.vehicleBatteryType !== "") {
+          formData.append("vehicle.batteryType", String(form.vehicleBatteryType).trim());
         }
-        if (form.batteryCapacityKWh && form.batteryCapacityKWh !== "") {
-          formData.append("vehicle.batteryCapacityKWh", form.batteryCapacityKWh);
+        
+        if (form.hasOwnProperty("batteryCapacityKWh") && form.batteryCapacityKWh !== undefined && form.batteryCapacityKWh !== null && form.batteryCapacityKWh !== "") {
+          const capacityNum = parseFloat(form.batteryCapacityKWh);
+          if (!isNaN(capacityNum)) {
+            formData.append("vehicle.batteryCapacityKWh", capacityNum.toString());
+          }
         }
-        if (form.rangePerChargeKm && form.rangePerChargeKm !== "") {
-          formData.append("vehicle.rangePerChargeKm", form.rangePerChargeKm);
+        
+        if (form.hasOwnProperty("rangePerChargeKm") && form.rangePerChargeKm !== undefined && form.rangePerChargeKm !== null && form.rangePerChargeKm !== "") {
+          const rangeNum = parseInt(form.rangePerChargeKm);
+          if (!isNaN(rangeNum)) {
+            formData.append("vehicle.rangePerChargeKm", rangeNum.toString());
+          }
         }
       } else if (productType === "BATTERY") {
-        formData.append("battery.brand", form.brand);
-        formData.append("battery.model", form.model.trim());
-        formData.append("battery.yearManufactured", form.yearManufactured);
+        // Bắt buộc fields - LUÔN gửi
+        formData.append("battery.brand", form.brand || "");
+        formData.append("battery.model", (form.model || "").trim());
+        formData.append("battery.yearManufactured", String(form.yearManufactured || ""));
         
-        // Validate battery level
+        // Validate battery level - bắt buộc
         const batteryLevel = parseInt(form.batteryLevel);
         if (isNaN(batteryLevel) || batteryLevel < 0 || batteryLevel > 100) {
           return { success: false, message: "Mức pin phải từ 0-100%" };
         }
-        formData.append("battery.batteryLevel", batteryLevel);
+        formData.append("battery.batteryLevel", String(batteryLevel));
         
-        // Battery additional fields
-        if (form.batteryBatteryType && form.batteryBatteryType !== "") {
-          formData.append("battery.batteryType", form.batteryBatteryType);
+        // Battery additional fields - GỬI TẤT CẢ
+        // Battery type - string
+        if (form.batteryBatteryType !== undefined && form.batteryBatteryType !== null && form.batteryBatteryType !== "") {
+          formData.append("battery.batteryType", String(form.batteryBatteryType).trim());
         }
-        if (form.voltage && form.voltage !== "") {
-          formData.append("battery.voltage", form.voltage);
+        
+        // Voltage - convert sang string (Double)
+        if (form.voltage !== undefined && form.voltage !== null && form.voltage !== "") {
+          const voltageValue = String(form.voltage).trim();
+          if (voltageValue !== "") {
+            formData.append("battery.voltage", voltageValue);
+          }
         }
-        if (form.capacityAh && form.capacityAh !== "") {
-          formData.append("battery.capacityAh", form.capacityAh);
+        
+        // Capacity Ah - convert sang string (Double)
+        if (form.capacityAh !== undefined && form.capacityAh !== null && form.capacityAh !== "") {
+          const capacityValue = String(form.capacityAh).trim();
+          if (capacityValue !== "") {
+            formData.append("battery.capacityAh", capacityValue);
+          }
         }
-        if (form.sohPercent && form.sohPercent !== "") {
-          formData.append("battery.sohPercent", form.sohPercent);
+        
+        // SOH Percent - convert sang string (Integer)
+        if (form.sohPercent !== undefined && form.sohPercent !== null && form.sohPercent !== "") {
+          const sohValue = String(form.sohPercent).trim();
+          if (sohValue !== "") {
+            formData.append("battery.sohPercent", sohValue);
+          }
         }
       }
 
@@ -274,22 +298,11 @@ const productService = {
         ? `/products/create?username=${encodeURIComponent(username)}`
         : "/products/create";
       
-      console.log("🚀 Sending create product request:", {
-        title: form.title,
-        productType,
-        price,
-        brand: form.brand,
-        model: form.model,
-        yearManufactured: form.yearManufactured,
-        imageCount: form.images?.length || 0
-      });
-      
       const response = await apiClient.post(url, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       
       const data = response?.data?.data ?? response?.data;
-      console.log("✅ Create product success:", data);
       
       // Kiểm tra status để xác định tin có cần duyệt hay không
       const status = data?.status;

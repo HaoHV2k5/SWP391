@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './ContractCard.css';
+import '../../styles/contract/ContractCard.css';
 import contractService from '../../services/contractService';
 import { toast } from 'react-toastify';
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import contractService from '../../services/contractService';
 import { toast } from 'react-toastify';
-import './ContractDetailModal.css';
+import '../../styles/contract/ContractDetailModal.css';
 
 const ContractDetailModal = ({ contract, isOpen, onClose, currentUserId, onPay }) => {
   const [loading, setLoading] = useState(false);
