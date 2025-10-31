@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Tabs, Tab, Spinner, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Card, Spinner, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import MemberHeader from '../../components/member/MemberHeader';
 import ProductWithOrders from '../../components/order/ProductWithOrders';
-import ApprovedProductCard from '../../components/order/ApprovedProductCard';
 import productService from '../../services/productService';
 import orderService from '../../services/orderService';
 import '../../styles/member/index.css';
@@ -105,22 +104,6 @@ const MyOrders = ({ user }) => {
     loadMyProducts();
   };
 
-  // Lấy danh sách sản phẩm có order đã được chấp nhận
-  const getApprovedProducts = () => {
-    const approvedProducts = [];
-
-    myProducts.forEach(product => {
-      const orders = productsWithOrders[product.id] || [];
-      const hasAcceptedOrder = orders.some(order => order.status === 'ACCEPTED');
-
-      if (hasAcceptedOrder) {
-        approvedProducts.push(product);
-      }
-    });
-
-    return approvedProducts;
-  };
-
   // Lấy danh sách sản phẩm có yêu cầu mua hàng nhưng chưa được chấp nhận
   const getPendingProducts = () => {
     const pendingProducts = [];
@@ -187,90 +170,50 @@ const MyOrders = ({ user }) => {
               </Alert>
             )}
 
-            {!loading && !error && (
-              <Tabs defaultActiveKey="orders" className="mb-3">
-                <Tab eventKey="orders" title="Yêu cầu mua hàng">
-                  {(() => {
-                    const pendingProductsList = getPendingProducts();
+            {!loading && !error && (() => {
+              const pendingProductsList = getPendingProducts();
 
-                    return (
-                      <>
-                        {pendingProductsList.length === 0 ? (
-                          <div className="text-center p-4">
-                            <i className="bi bi-cart-x display-4 text-muted mb-3"></i>
-                            <h5 className="text-muted">Chưa có yêu cầu mua hàng nào</h5>
-                            <p className="text-muted">Khi có người mua gửi yêu cầu cho sản phẩm của bạn, chúng sẽ hiển thị ở đây.</p>
-                            <button
-                              className="btn"
-                              style={{ backgroundColor: '#00A86B', color: 'white', border: 'none' }}
-                              onClick={() => navigate('/post-ad')}
-                            >
-                              <i className="bi bi-plus-circle me-2"></i>
-                              Đăng bán sản phẩm
-                            </button>
-                          </div>
-                        ) : (
-                          <div>
-                            <h5 className="mb-3">Sản phẩm có yêu cầu mua hàng ({pendingProductsList.length})</h5>
-                            <Row>
-                              {pendingProductsList.map((product) => (
-                                <Col key={product.id} md={12} className="mb-4">
-                                  <ProductWithOrders
-                                    product={product}
-                                    onOrderUpdate={handleOrderUpdate}
-                                  />
-                                </Col>
-                              ))}
-                            </Row>
+              return (
+                <>
+                  {pendingProductsList.length === 0 ? (
+                    <div className="text-center p-4">
+                      <i className="bi bi-cart-x display-4 text-muted mb-3"></i>
+                      <h5 className="text-muted">Chưa có yêu cầu mua hàng nào</h5>
+                      <p className="text-muted">Khi có người mua gửi yêu cầu cho sản phẩm của bạn, chúng sẽ hiển thị ở đây.</p>
+                      <button
+                        className="btn"
+                        style={{ backgroundColor: '#00A86B', color: 'white', border: 'none' }}
+                        onClick={() => navigate('/post-ad')}
+                      >
+                        <i className="bi bi-plus-circle me-2"></i>
+                        Đăng bán sản phẩm
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <h5 className="mb-3">Sản phẩm có yêu cầu mua hàng ({pendingProductsList.length})</h5>
+                      <Row>
+                        {pendingProductsList.map((product) => (
+                          <Col key={product.id} md={6} className="mb-4">
+                            <ProductWithOrders
+                              product={product}
+                              onOrderUpdate={handleOrderUpdate}
+                            />
+                          </Col>
+                        ))}
+                      </Row>
 
-                            <div className="text-center mt-4">
-                              <p className="text-muted">
-                                <i className="bi bi-info-circle me-2"></i>
-                                Chỉ hiển thị sản phẩm có yêu cầu mua hàng chưa được chấp nhận
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </>
-                    );
-                  })()}
-                </Tab>
-
-                <Tab eventKey="approved" title="Sản phẩm đã duyệt">
-                  {(() => {
-                    const approvedProductsList = getApprovedProducts();
-
-                    return (
-                      <>
-                        {approvedProductsList.length === 0 ? (
-                          <div className="text-center p-4">
-                            <i className="bi bi-check-circle display-4 text-muted mb-3"></i>
-                            <h5 className="text-muted">Chưa có sản phẩm nào được duyệt</h5>
-                            <p className="text-muted">Các sản phẩm có yêu cầu mua hàng đã được chấp nhận sẽ hiển thị ở đây.</p>
-                          </div>
-                        ) : (
-                          <div>
-                            <h5 className="mb-3">Sản phẩm đã được duyệt ({approvedProductsList.length})</h5>
-                            <div
-                              style={{
-                                display: "grid",
-                                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-                                gap: "25px",
-                                padding: "20px 0",
-                              }}
-                            >
-                              {approvedProductsList.map((product) => (
-                                <ApprovedProductCard key={product.id} product={product} />
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </>
-                    );
-                  })()}
-                </Tab>
-              </Tabs>
-            )}
+                      <div className="text-center mt-4">
+                        <p className="text-muted">
+                          <i className="bi bi-info-circle me-2"></i>
+                          Chỉ hiển thị sản phẩm có yêu cầu mua hàng chưa được chấp nhận
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </Card.Body>
         </Card>
       </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './ContractCard.css';
+import '../../styles/contract/ContractCard.css';
 import contractService from '../../services/contractService';
 import { toast } from 'react-toastify';
 
@@ -33,11 +33,42 @@ const ContractCard = ({ contract, onViewDetail, onPay, onCancel, currentUserId }
                  isBuyer;
 
   // Can cancel logic based on backend conditions:
-  // Case 1: SIGNED && !paymentCompleted && isSeller
-  // Case 2: PENDING && sellerSigned && !buyerSigned && isSeller
-  const canCancel = 
-    (contract.status === 'SIGNED' && !contract.paymentCompleted && isSeller) ||
-    (contract.status === 'PENDING' && contract.sellerSigned && !contract.buyerSigned && isSeller);
+  // Case 1: SIGNED && !paymentCompleted && isSeller && 3 days passed
+  // Case 2: PENDING && sellerSigned && !buyerSigned && isSeller && 3 days passed
+  const canCancel = (() => {
+    if (!isSeller) return false;
+    
+    // Case 1: SIGNED && !paymentCompleted && 3+ days passed
+    if (contract.status === 'SIGNED' && !contract.paymentCompleted) {
+      // Backend có thể không trả về signedAt, dùng createdAt làm fallback
+      const dateToCheck = contract.signedAt || contract.createdAt;
+      if (dateToCheck) {
+        const checkDate = new Date(dateToCheck);
+        // Thêm 3 ngày vào ngày kiểm tra để khớp với logic backend: signedAt.plusDays(3).isAfter(now)
+        const threeDaysLater = new Date(checkDate.getTime() + 3 * 24 * 60 * 60 * 1000);
+        const now = new Date();
+        // Kiểm tra xem 3 ngày sau ngày ký có sau thời điểm hiện tại không
+        return now > threeDaysLater;
+      }
+      return false;
+    }
+    
+    // Case 2: PENDING && sellerSigned && !buyerSigned && 3+ days passed
+    if (contract.status === 'PENDING' && contract.sellerSigned && !contract.buyerSigned) {
+      // Backend không trả về updatedAt, dùng createdAt làm fallback
+      const dateToCheck = contract.updatedAt || contract.createdAt;
+      if (dateToCheck) {
+        const checkDate = new Date(dateToCheck);
+        // Thêm 3 ngày vào ngày kiểm tra để khớp với logic backend: updatedAt.plusDays(3).isAfter(now)
+        const threeDaysLater = new Date(checkDate.getTime() + 3 * 24 * 60 * 60 * 1000);
+        const now = new Date();
+        return now > threeDaysLater;
+      }
+      return false;
+    }
+    
+    return false;
+  })();
 
   // Get cancel reason if cannot cancel
   const getCannotCancelReason = () => {
@@ -64,21 +95,27 @@ const ContractCard = ({ contract, onViewDetail, onPay, onCancel, currentUserId }
     }
     if (contract.status === 'SIGNED' && !contract.paymentCompleted) {
       // Check if 3 days passed
-      const signedDate = new Date(contract.signedAt);
-      const now = new Date();
-      const daysDiff = Math.floor((now - signedDate) / (1000 * 60 * 60 * 24));
-      if (daysDiff < 3) {
-        return `Cần đợi thêm ${3 - daysDiff} ngày để hủy hợp đồng đã ký (để người mua có thời gian thanh toán)`;
+      const dateToCheck = contract.signedAt || contract.createdAt;
+      if (dateToCheck) {
+        const checkDate = new Date(dateToCheck);
+        const threeDaysLater = new Date(checkDate.getTime() + 3 * 24 * 60 * 60 * 1000);
+        const now = new Date();
+        if (now <= threeDaysLater) {
+          const daysDiff = Math.floor((threeDaysLater - now) / (1000 * 60 * 60 * 24));
+          return `Cần đợi thêm ${daysDiff + 1} ngày để hủy hợp đồng đã ký (để người mua có thời gian thanh toán)`;
+        }
       }
     }
     if (contract.status === 'PENDING' && contract.sellerSigned && !contract.buyerSigned) {
       // Check if 3 days passed
-      if (contract.updatedAt) {
-        const updatedDate = new Date(contract.updatedAt);
+      const dateToCheck = contract.updatedAt || contract.createdAt;
+      if (dateToCheck) {
+        const checkDate = new Date(dateToCheck);
+        const threeDaysLater = new Date(checkDate.getTime() + 3 * 24 * 60 * 60 * 1000);
         const now = new Date();
-        const daysDiff = Math.floor((now - updatedDate) / (1000 * 60 * 60 * 24));
-        if (daysDiff < 3) {
-          return `Cần đợi thêm ${3 - daysDiff} ngày (để người mua có thời gian ký)`;
+        if (now <= threeDaysLater) {
+          const daysDiff = Math.floor((threeDaysLater - now) / (1000 * 60 * 60 * 24));
+          return `Cần đợi thêm ${daysDiff + 1} ngày (để người mua có thời gian ký)`;
         }
       }
     }
@@ -115,7 +152,27 @@ const ContractCard = ({ contract, onViewDetail, onPay, onCancel, currentUserId }
   };
 
   const handleCancel = async () => {
+    // Nếu chưa thỏa điều kiện hủy, hiển thị nhắc nhở ngay
+    if (!canCancel && cancelReason) {
+      toast.warning(cancelReason);
+      return;
+    }
+
     if (onCancel && !loading) {
+      // Thông điệp nhắc nhở chính sách trước khi hủy
+      const cancelPolicyMessage = (() => {
+        if (contract.status === 'SIGNED' && !contract.paymentCompleted) {
+          return 'Hợp đồng đã ký và chưa được thanh toán. Bạn chỉ có thể hủy khi đã quá 3 ngày kể từ thời điểm ký.';
+        }
+        if (contract.status === 'PENDING' && contract.sellerSigned && !contract.buyerSigned) {
+          return 'Người bán đã ký, người mua chưa ký. Bạn chỉ có thể hủy khi đã quá 3 ngày kể từ khi bạn ký.';
+        }
+        return 'Bạn có chắc chắn muốn hủy hợp đồng này?';
+      })();
+
+      const confirmed = window.confirm(`${cancelPolicyMessage}\n\nBạn có chắc chắn muốn hủy hợp đồng?`);
+      if (!confirmed) return;
+
       setLoading(true);
       console.log("🔄 Card: Cancelling contract", {
         id: contract.id,
@@ -215,52 +272,54 @@ const ContractCard = ({ contract, onViewDetail, onPay, onCancel, currentUserId }
       </div>
 
       <div className="contract-card-footer">
-        <button 
-          className="btn-view-detail"
-          onClick={() => onViewDetail && onViewDetail(contract)}
-        >
-          Xem chi tiết
-        </button>
-
-        {canPay && (
+        <div className="contract-card-footer-top">
           <button 
-            className="btn-pay"
-            onClick={handlePay}
-            disabled={loading}
+            className="btn-view-detail"
+            onClick={() => onViewDetail && onViewDetail(contract)}
           >
-            {loading ? 'Đang xử lý...' : 'Thanh toán'}
+            Xem chi tiết
           </button>
-        )}
 
-        {/* Download button */}
-        {contract.status === 'SIGNED' && contract.contractCode && (
-          <button 
-            className="btn-download"
-            onClick={handleDownload}
-            disabled={loading}
-            title="Tải xuống bản PDF của hợp đồng đã ký"
-          >
-            {loading ? <i className="bi bi-hourglass-split"></i> : <i className="bi bi-download"></i>}
-            {loading ? ' Đang tải...' : ' Tải xuống'}
-          </button>
-        )}
+          {canPay && (
+            <button 
+              className="btn-pay"
+              onClick={handlePay}
+              disabled={loading}
+            >
+              {loading ? 'Đang xử lý...' : 'Thanh toán'}
+            </button>
+          )}
 
-        {canCancel && (
-          <button 
-            className="btn-cancel"
-            onClick={handleCancel}
-            disabled={loading}
-          >
-            {loading ? 'Đang xử lý...' : 'Hủy hợp đồng'}
-          </button>
-        )}
+          {/* Download button */}
+          {contract.status === 'SIGNED' && contract.contractCode && (
+            <button 
+              className="btn-download"
+              onClick={handleDownload}
+              disabled={loading}
+              title="Tải xuống bản PDF của hợp đồng đã ký"
+            >
+              {loading ? <i className="bi bi-hourglass-split"></i> : <i className="bi bi-download"></i>}
+              {loading ? ' Đang tải...' : ' Tải xuống'}
+            </button>
+          )}
+
+          {canCancel && (
+            <button 
+              className="btn-cancel"
+              onClick={handleCancel}
+              disabled={loading}
+            >
+              {loading ? 'Đang xử lý...' : 'Hủy hợp đồng'}
+            </button>
+          )}
+        </div>
         
         {!canCancel && cancelReason && isSeller && (
           <div className="cancel-note" style={{ 
             backgroundColor: cancelReason.includes("Cần đợi") ? '#fff3cd' : '#f8f9fa',
-            borderLeft: cancelReason.includes("Cần đợi") ? '3px solid #ffc107' : '3px solid #6c757d'
+            borderLeft: cancelReason.includes("Cần đợi") ? '4px solid #ffc107' : '4px solid #6c757d'
           }}>
-            <i className={`bi ${cancelReason.includes("Cần đợi") ? 'bi-clock-history' : 'bi-info-circle'} me-1`}></i>
+            <i className={`bi ${cancelReason.includes("Cần đợi") ? 'bi-clock-history' : 'bi-info-circle'}`}></i>
             <strong>{cancelReason}</strong>
           </div>
         )}

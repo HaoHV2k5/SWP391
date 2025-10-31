@@ -42,18 +42,25 @@ export const useProductDetailLogic = () => {
     }).format(Number(price || 0));
   };
 
-  // Format ngày tháng
+  // Format ngày tháng - Hiển thị ngày giờ thực tế từ database
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 1) return '1 ngày trước';
-    if (diffDays < 30) return `${diffDays} ngày trước`;
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)} tháng trước`;
-    return `${Math.floor(diffDays / 365)} năm trước`;
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '';
+      
+      // Format theo định dạng Việt Nam: DD/MM/YYYY HH:mm
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      
+      return `${day}/${month}/${year} ${hours}:${minutes}`;
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return '';
+    }
   };
 
   // Lấy thông tin chi tiết theo loại sản phẩm
@@ -61,29 +68,115 @@ export const useProductDetailLogic = () => {
     if (!data) return { type: '', brand: '', model: '', year: '', details: [] };
     
     if (data.productType === 'VEHICLE' && data.vehicle) {
+      // Helper function để format giá trị
+      const formatValue = (value, isNumber = false, suffix = '') => {
+        if (value === null || value === undefined || value === '') {
+          return 'Chưa cập nhật';
+        }
+        if (isNumber) {
+          // Với số, kể cả 0 cũng là giá trị hợp lệ
+          return `${value}${suffix}`;
+        }
+        return value;
+      };
+      
+      const details = [
+        { label: 'Hãng xe', value: formatValue(data.vehicle.brand) },
+        { label: 'Model', value: formatValue(data.vehicle.model) },
+        { label: 'Năm sản xuất', value: formatValue(data.vehicle.yearManufactured, true) },
+        // Số km đã đi
+        { 
+          label: 'Số km đã đi (km)', 
+          value: data.vehicle.odometer !== null && data.vehicle.odometer !== undefined 
+            ? `${parseInt(data.vehicle.odometer).toLocaleString('vi-VN')} km` 
+            : 'Chưa cập nhật' 
+        },
+        // Loại pin
+        { 
+          label: 'Loại pin', 
+          value: formatValue(data.vehicle.batteryType) 
+        },
+        // Dung lượng pin
+        { 
+          label: 'Dung lượng pin (kWh)', 
+          value: data.vehicle.batteryCapacityKWh !== null && data.vehicle.batteryCapacityKWh !== undefined 
+            ? `${data.vehicle.batteryCapacityKWh} kWh` 
+            : 'Chưa cập nhật' 
+        },
+        // Quãng đường 1 lần sạc
+        { 
+          label: 'Quãng đường 1 lần sạc (km)', 
+          value: data.vehicle.rangePerChargeKm !== null && data.vehicle.rangePerChargeKm !== undefined 
+            ? `${data.vehicle.rangePerChargeKm} km` 
+            : 'Chưa cập nhật' 
+        }
+      ];
+      
       return {
         type: 'Xe điện',
         brand: data.vehicle.brand,
         model: data.vehicle.model,
         year: data.vehicle.yearManufactured,
-        details: [
-          { label: 'Hãng xe', value: data.vehicle.brand },
-          { label: 'Model', value: data.vehicle.model },
-          { label: 'Năm sản xuất', value: data.vehicle.yearManufactured }
-        ]
+        details
       };
     } else if (data.productType === 'BATTERY' && data.battery) {
+      // Helper function để format giá trị
+      const formatValue = (value, isNumber = false) => {
+        if (value === null || value === undefined || value === '') {
+          return 'Chưa cập nhật';
+        }
+        if (isNumber) {
+          // Với số, kể cả 0 cũng là giá trị hợp lệ
+          return value;
+        }
+        return value;
+      };
+      
+      const details = [
+        { label: 'Hãng pin', value: formatValue(data.battery.brand) },
+        { label: 'Model', value: formatValue(data.battery.model) },
+        { label: 'Năm sản xuất', value: formatValue(data.battery.yearManufactured, true) },
+        // Mức pin là bắt buộc cho BATTERY - luôn hiển thị
+        { 
+          label: 'Mức pin (%)', 
+          value: data.battery.batteryLevel !== null && data.battery.batteryLevel !== undefined
+            ? `${data.battery.batteryLevel}%` 
+            : 'Chưa cập nhật' 
+        },
+        // Độ bền pin - SoH
+        { 
+          label: 'Độ bền pin - SoH (%)', 
+          value: data.battery.sohPercent !== null && data.battery.sohPercent !== undefined
+            ? `${data.battery.sohPercent}%` 
+            : 'Chưa cập nhật' 
+        },
+        // Loại pin
+        { 
+          label: 'Loại pin', 
+          value: formatValue(data.battery.batteryType) 
+        },
+        // Điện áp
+        { 
+          label: 'Điện áp (V)', 
+          value: data.battery.voltage !== null && data.battery.voltage !== undefined
+            ? `${data.battery.voltage} V` 
+            : 'Chưa cập nhật' 
+        },
+        // Dung lượng
+        { 
+          label: 'Dung lượng (Ah)', 
+          value: data.battery.capacityAh !== null && data.battery.capacityAh !== undefined
+            ? `${data.battery.capacityAh} Ah` 
+            : 'Chưa cập nhật' 
+        }
+      ];
+      
       return {
         type: 'Pin/Bộ sạc',
         brand: data.battery.brand,
         model: data.battery.model,
         year: data.battery.yearManufactured,
-        details: [
-          { label: 'Hãng pin', value: data.battery.brand },
-          { label: 'Model', value: data.battery.model },
-          { label: 'Năm sản xuất', value: data.battery.yearManufactured },
-          { label: 'Mức pin', value: data.battery.batteryLevel ? `${data.battery.batteryLevel}%` : 'Không xác định' }
-        ]
+        details
       };
     }
     return {

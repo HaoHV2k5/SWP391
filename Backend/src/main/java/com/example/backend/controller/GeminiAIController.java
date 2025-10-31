@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class GeminiAIController {
     private final GeminiAIService  geminiAIService;
-    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    @PreAuthorize("hasAuthority('ROLE_SELLER') or hasAuthority('ROLE_USER')")
     @PostMapping("/suggest")
     public ApiResponse<PriceSuggestionResponse> suggestPrice(
             @RequestBody PriceRequest request) {

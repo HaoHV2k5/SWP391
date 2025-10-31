@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -35,6 +36,7 @@ public class UserService {
     private final WalletRepository walletRepository;
     private final WishlistRepository wishlistRepository;
     private final UserPackageTransactionService userPackageTransactionService;
+    private  final CloudinaryService cloudinaryService;
 
 @Value("${email.login.facebook}")
 private String emailLoginFacebook;
@@ -96,6 +98,9 @@ private String emailLoginFacebook;
                 request.getConfirmPassword(),
                 () -> userMapper.toUser(request)
         );
+        String avatar = cloudinaryService.upload(request.getImage());
+        user.setAvatar(avatar);
+        userRepository.save(user);
         return user;
     }
 
@@ -115,6 +120,8 @@ private String emailLoginFacebook;
 
         User user = userSupplier.get();
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+
 //        user.setVerified(true); // Set user được verify khi admin tạo
         HashSet<Role> roles = new HashSet<>();
         roleRepository.findById(Roles.USER.name()).ifPresent(roles::add);
@@ -277,11 +284,13 @@ private String emailLoginFacebook;
         return userPostingPackageMapper.toPostingPackageResponse(userPostingPackage);
     }
 
-    public void updateAvatar(User user,String avatar){
-        if(avatar.isEmpty()){
+    public void updateAvatar(User user, MultipartFile file){
+        if(file == null || file.isEmpty()){
             throw new AppException(ErrorCode.AVATAR_INVALID);
         }
-        user.setAvatar(avatar);
+        // Upload lên Cloudinary (giống registerUser)
+        String avatarUrl = cloudinaryService.upload(file);
+        user.setAvatar(avatarUrl);
         userRepository.save(user);
     }
 

@@ -1,24 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Button,
-  Badge,
-  Dropdown,
-  Modal,
-  Spinner,
-  Alert,
-  Form,
-} from "react-bootstrap";
+import { Container, Button, Form, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import MemberHeader from "../../components/member/MemberHeader";
+import PostStatsCards from "../../components/member/PostStatsCards";
+import PostsList from "../../components/member/PostsList";
+import EditProductModal from "../../components/member/EditProductModal";
+import DeleteConfirmationModal from "../../components/member/DeleteConfirmationModal";
 import productService from "../../services/productService";
 import { memberService } from "../../services/memberService";
 import "../../styles/member/index.css";
+import "../../styles/member/MyPosts.css";
 
 const MyPosts = ({ user }) => {
   const navigate = useNavigate();
@@ -27,11 +20,42 @@ const MyPosts = ({ user }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  
+  const brands = [
+    { value: "Dibao", label: "Dibao" },
+    { value: "Osakar", label: "Osakar" },
+    { value: "Pega", label: "Pega" },
+    { value: "Vinfast", label: "Vinfast" },
+    { value: "Yadea", label: "Yadea" }
+  ];
+
+  const batteryTypes = [
+    { value: "Lithium-Ion", label: "Lithium-Ion" },
+    { value: "Lithium-Polymer", label: "Lithium-Polymer" },
+    { value: "Lead-Acid", label: "Lead-Acid" },
+    { value: "Nickel-Metal Hydride", label: "Nickel-Metal Hydride" },
+    { value: "Khác", label: "Khác" }
+  ];
+
   const [editFormData, setEditFormData] = useState({
     title: "",
     description: "",
     price: 0,
     productType: "VEHICLE",
+    // Vehicle fields
+    brand: "",
+    model: "",
+    yearManufactured: new Date().getFullYear(),
+    odometer: "",
+    vehicleBatteryType: "",
+    batteryCapacityKWh: "",
+    rangePerChargeKm: "",
+    // Battery fields
+    batteryLevel: 80,
+    batteryBatteryType: "",
+    voltage: "",
+    capacityAh: "",
+    sohPercent: "",
   });
 
   const [posts, setPosts] = useState([]);
@@ -40,6 +64,7 @@ const MyPosts = ({ user }) => {
   const [filterStatus, setFilterStatus] = useState("ALL");
   const [postingProducts, setPostingProducts] = useState(new Set());
   const hasShownError = useRef(false); // Track xem đã hiển thị lỗi chưa
+  const [currentImageIndexes, setCurrentImageIndexes] = useState({}); // Track current image index for each post
 
   const loadPosts = async () => {
     setLoadingPosts(true);
@@ -48,7 +73,6 @@ const MyPosts = ({ user }) => {
       const username = user?.username || user?.user?.username || user?.email || user?.user?.email;
       const result = await productService.getMyPosts(username);
       if (result.success) {
-        console.log("📸 MyPosts data:", result.data); // Debug để xem dữ liệu hình ảnh
         setPosts(result.data || []);
         hasShownError.current = false; // Reset flag khi thành công
       } else {
@@ -193,12 +217,71 @@ const MyPosts = ({ user }) => {
 
   const handleEditPost = (post) => {
     setSelectedPost(post);
+    const productType = post.productType || post.category || "VEHICLE";
+    
+    if (productType === "VEHICLE" && post.vehicle) {
+      setEditFormData({
+        title: post.title || post.productName || "",
+        description: post.description || "",
+        price: post.price || 0,
+        productType: productType,
+        // Vehicle fields
+        brand: post.vehicle.brand || "",
+        model: post.vehicle.model || "",
+        yearManufactured: post.vehicle.yearManufactured || new Date().getFullYear(),
+        odometer: post.vehicle.odometer || "",
+        vehicleBatteryType: post.vehicle.batteryType || "",
+        batteryCapacityKWh: post.vehicle.batteryCapacityKWh || "",
+        rangePerChargeKm: post.vehicle.rangePerChargeKm || "",
+        // Battery fields (empty for VEHICLE)
+        batteryLevel: 80,
+        batteryBatteryType: "",
+        voltage: "",
+        capacityAh: "",
+        sohPercent: "",
+      });
+    } else if (productType === "BATTERY" && post.battery) {
+      setEditFormData({
+        title: post.title || post.productName || "",
+        description: post.description || "",
+        price: post.price || 0,
+        productType: productType,
+        // Vehicle fields (empty for BATTERY)
+        brand: post.battery.brand || "",
+        model: post.battery.model || "",
+        yearManufactured: post.battery.yearManufactured || new Date().getFullYear(),
+        odometer: "",
+        vehicleBatteryType: "",
+        batteryCapacityKWh: "",
+        rangePerChargeKm: "",
+        // Battery fields
+        batteryLevel: post.battery.batteryLevel || 80,
+        batteryBatteryType: post.battery.batteryType || "",
+        voltage: post.battery.voltage || "",
+        capacityAh: post.battery.capacityAh || "",
+        sohPercent: post.battery.sohPercent || "",
+      });
+    } else {
+      // Fallback if no vehicle/battery data
     setEditFormData({
       title: post.title || post.productName || "",
       description: post.description || "",
-      price: post.price || post.vehicle?.price || post.battery?.price || 0,
-      productType: post.productType || post.category || "VEHICLE",
-    });
+        price: post.price || 0,
+        productType: productType,
+        brand: "",
+        model: "",
+        yearManufactured: new Date().getFullYear(),
+        odometer: "",
+        vehicleBatteryType: "",
+        batteryCapacityKWh: "",
+        rangePerChargeKm: "",
+        batteryLevel: 80,
+        batteryBatteryType: "",
+        voltage: "",
+        capacityAh: "",
+        sohPercent: "",
+      });
+    }
     setShowEditModal(true);
   };
 
@@ -212,7 +295,41 @@ const MyPosts = ({ user }) => {
   const confirmEdit = async () => {
     setLoading(true);
     try {
-      const result = await productService.updateProduct(selectedPost.id, editFormData);
+      // Prepare update data with vehicle/battery objects
+      const updateData = {
+        title: editFormData.title,
+        description: editFormData.description || "",
+        price: editFormData.price,
+        productType: editFormData.productType,
+      };
+
+      // Add vehicle or battery object based on productType
+      if (editFormData.productType === "VEHICLE") {
+        updateData.vehicle = {
+          brand: editFormData.brand || "",
+          model: editFormData.model || "",
+          yearManufactured: editFormData.yearManufactured,
+          odometer: editFormData.odometer ? parseInt(editFormData.odometer) : null,
+          batteryType: editFormData.vehicleBatteryType || null,
+          batteryCapacityKWh: editFormData.batteryCapacityKWh ? parseFloat(editFormData.batteryCapacityKWh) : null,
+          rangePerChargeKm: editFormData.rangePerChargeKm ? parseInt(editFormData.rangePerChargeKm) : null,
+        };
+        updateData.battery = null;
+      } else if (editFormData.productType === "BATTERY") {
+        updateData.battery = {
+          brand: editFormData.brand || "",
+          model: editFormData.model || "",
+          yearManufactured: editFormData.yearManufactured,
+          batteryLevel: editFormData.batteryLevel || 80,
+          batteryType: editFormData.batteryBatteryType || null,
+          voltage: editFormData.voltage ? parseFloat(editFormData.voltage) : null,
+          capacityAh: editFormData.capacityAh ? parseFloat(editFormData.capacityAh) : null,
+          sohPercent: editFormData.sohPercent ? parseInt(editFormData.sohPercent) : null,
+        };
+        updateData.vehicle = null;
+      }
+
+      const result = await productService.updateProduct(selectedPost.id, updateData);
       if (result.success) {
         await loadPosts();
         toast.success("Cập nhật tin đăng thành công!");
@@ -223,18 +340,6 @@ const MyPosts = ({ user }) => {
       }
     } catch (error) {
       toast.error("Có lỗi xảy ra khi cập nhật tin đăng!");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRepost = async (postId) => {
-    setLoading(true);
-    try {
-      await loadPosts();
-      toast.success("Đăng lại tin thành công! Tin đăng đang chờ duyệt.");
-    } catch (error) {
-      toast.error("Có lỗi xảy ra khi đăng lại tin!");
     } finally {
       setLoading(false);
     }
@@ -255,7 +360,6 @@ const MyPosts = ({ user }) => {
       }
     } catch (err) {
       toast.error("Lỗi khi POST sản phẩm");
-      console.error("Error posting product:", err);
     } finally {
       setPostingProducts(prev => {
         const newSet = new Set(prev);
@@ -265,29 +369,50 @@ const MyPosts = ({ user }) => {
     }
   };
 
-  const handleTabChange = (tabId) => {
-    switch (tabId) {
-      case "dashboard":
-        navigate("/account");
-        break;
-      case "my-posts":
-        navigate("/member/my-posts");
-        break;
-      case "saved-posts":
-        navigate("/member/saved-posts");
-        break;
-      case "search-history":
-        navigate("/member/search-history");
-        break;
-      case "my-orders":
-        navigate("/my-orders");
-        break;
-      case "profile":
-        navigate("/member/profile");
-        break;
-      default:
-        navigate("/account");
+  // Handle image navigation
+  const handlePrevImage = (postId, images) => {
+    setCurrentImageIndexes(prev => {
+      const currentIndex = prev[postId] || 0;
+      const newIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1;
+      return { ...prev, [postId]: newIndex };
+    });
+  };
+
+  const handleNextImage = (postId, images) => {
+    setCurrentImageIndexes(prev => {
+      const currentIndex = prev[postId] || 0;
+      const newIndex = currentIndex === images.length - 1 ? 0 : currentIndex + 1;
+      return { ...prev, [postId]: newIndex };
+    });
+  };
+
+  // Get images array for a post
+  const getPostImages = (post) => {
+    const images = [];
+    
+    // Add images from imageUrls array
+    if (post.imageUrls && Array.isArray(post.imageUrls) && post.imageUrls.length > 0) {
+      images.push(...post.imageUrls);
     }
+    // Add single image if exists
+    else if (post.image) {
+      images.push(post.image);
+    }
+    // Add vehicle image
+    else if (post.vehicle?.image) {
+      images.push(post.vehicle.image);
+    }
+    // Add battery image
+    else if (post.battery?.image) {
+      images.push(post.battery.image);
+    }
+    // Add from images array
+    else if (post.images && Array.isArray(post.images) && post.images.length > 0) {
+      images.push(...post.images);
+    }
+
+    // Return images or placeholder
+    return images.length > 0 ? images : ["data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=="];
   };
 
   if (isCheckingAuth) {
@@ -316,90 +441,7 @@ const MyPosts = ({ user }) => {
         <MemberHeader activeTab="my-posts" />
 
         {/* Stats Cards */}
-        <Row className="g-4 mb-4">
-          <Col lg={3} md={6}>
-            <Card
-              className="text-dark h-100"
-              style={{
-                backgroundColor: "white",
-                border: "2px solid #28a745",
-              }}
-            >
-              <Card.Body className="text-center p-3">
-                <h4 className="fw-bold mb-1 text-dark">
-                  {
-                    posts.filter(
-                      (p) => (p.status || "").toUpperCase() === "PENDING"
-                    ).length
-                  }
-                </h4>
-                <small className="text-dark">Tin chờ duyệt</small>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col lg={3} md={6}>
-            <Card
-              className="text-dark h-100"
-              style={{
-                backgroundColor: "white",
-                border: "2px solid #28a745",
-              }}
-            >
-              <Card.Body className="text-center p-3">
-                <h4 className="fw-bold mb-1 text-dark">
-                  {
-                    posts.filter(
-                      (p) => (p.status || "").toUpperCase() === "STAFF_APPROVED"
-                    ).length
-                  }
-                </h4>
-                <small className="text-dark">Đã duyệt Staff</small>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col lg={3} md={6}>
-            <Card
-              className="text-dark h-100"
-              style={{
-                backgroundColor: "white",
-                border: "2px solid #28a745",
-              }}
-            >
-              <Card.Body className="text-center p-3">
-                <h4 className="fw-bold mb-1 text-dark">
-                  {
-                    posts.filter(
-                      (p) =>
-                        (p.status || "").toUpperCase() === "ADMIN_APPROVED" ||
-                        (p.status || "").toUpperCase() === "ACTIVE"
-                    ).length
-                  }
-                </h4>
-                <small className="text-dark">Đã duyệt/Hiển thị</small>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col lg={3} md={6}>
-            <Card
-              className="text-dark h-100"
-              style={{
-                backgroundColor: "white",
-                border: "2px solid #28a745",
-              }}
-            >
-              <Card.Body className="text-center p-3">
-                <h4 className="fw-bold mb-1 text-dark">
-                  {
-                    posts.filter(
-                      (p) => (p.status || "").toUpperCase() === "REJECTED"
-                    ).length
-                  }
-                </h4>
-                <small className="text-dark">Bị từ chối</small>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+        <PostStatsCards posts={posts} />
 
         {/* Action Bar với Filter */}
         <div className="mb-4">
@@ -433,431 +475,47 @@ const MyPosts = ({ user }) => {
         </div>
 
         {/* Posts List */}
-        {loadingPosts ? (
-          <div className="text-center py-5">
-            <Spinner animation="border" variant="success" className="mb-3" />
-            <p className="text-muted">Đang tải danh sách tin đăng...</p>
-          </div>
-        ) : filteredPosts.length === 0 ? (
-          <Alert variant="info" className="text-center py-5">
-            {posts.length === 0 ? (
-              <>
-                <h5>Bạn chưa có tin đăng nào</h5>
-                <p className="mb-3">
-                  Hãy đăng tin đầu tiên để bắt đầu bán hàng!
-                </p>
-                <Button variant="success" onClick={() => navigate("/post-ad")}>
-                  Đăng tin ngay
-                </Button>
-              </>
-            ) : (
-              <p className="mb-0">
-                Không tìm thấy tin đăng phù hợp với bộ lọc.
-              </p>
-            )}
-          </Alert>
-        ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: "25px",
-              padding: "20px 0",
-            }}
-          >
-            {filteredPosts.map((post) => (
-              <Card
-                key={post.id}
-                style={{
-                  height: "100%",
-                  cursor: "pointer",
-                }}
-              >
-                <Card.Img
-                  variant="top"
-                  src={
-                    post.imageUrls?.[0] ||
-                    post.image ||
-                    post.vehicle?.image ||
-                    post.battery?.image ||
-                    post.images?.[0] ||
-                    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=="
-                  }
-                  style={{ height: "200px", objectFit: "cover" }}
-                  onError={(e) => {
-                    e.currentTarget.src =
-                      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==";
-                  }}
-                />
-
-                <Card.Body
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <div>
-                    {/* Status Badge and Menu */}
-                    <div className="d-flex justify-content-between align-items-start mb-2">
-                      <Badge
-                        bg={getStatusColor(post.status)}
-                        className="mb-2"
-                      >
-                        {getStatusText(post.status)}
-                      </Badge>
-                      <Dropdown align="end">
-                        <Dropdown.Toggle
-                          variant="link"
-                          className="text-muted p-0 border-0"
-                          style={{ fontSize: "20px" }}
-                        >
-                          ⋮
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu style={{ minWidth: "150px" }}>
-                          <Dropdown.Item
-                            onClick={() => handleEditPost(post)}
-                          >
-                            Chỉnh sửa
-                          </Dropdown.Item>
-                          {post.status === "ADMIN_APPROVED" && (
-                            <Dropdown.Item
-                              onClick={() => handlePostProduct(post.id)}
-                              disabled={postingProducts.has(post.id)}
-                              className="text-success"
-                            >
-                              {postingProducts.has(post.id) ? "Đang POST..." : "POST sản phẩm"}
-                            </Dropdown.Item>
-                          )}
-                          {(post.status === "expired" ||
-                            post.status === "sold") && (
-                            <Dropdown.Item
-                              onClick={() => handleRepost(post.id)}
-                            >
-                              Đăng lại
-                            </Dropdown.Item>
-                          )}
-                          <Dropdown.Divider />
-                          <Dropdown.Item
-                            className="text-danger"
-                            onClick={() => handleDeletePost(post)}
-                          >
-                            Xóa tin
-                          </Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown>
-                    </div>
-
-                    {/* Title */}
-                    <Card.Title
-                      style={{
-                        fontSize: "16px",
-                        marginBottom: "4px",
-                        fontWeight: "500",
-                        lineHeight: "1.4",
-                        color: "#333",
-                      }}
-                    >
-                      {post.title ||
-                        post.productName ||
-                        "Không có tiêu đề"}
-                    </Card.Title>
-
-                    {/* Description */}
-                    <div
-                      style={{
-                        fontSize: "14px",
-                        color: "#666",
-                        marginBottom: "8px",
-                        lineHeight: "1.3",
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                      }}
-                    >
-                      {post.description ||
-                        post.vehicleInfo?.description ||
-                        "Không có mô tả"}
-                    </div>
-
-                    {/* Vehicle Info */}
-                    <div
-                      style={{ fontSize: "14px", color: "#666", marginBottom: "10px" }}
-                    >
-                      <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                        <span>{post.year}</span>
-                        <span>{post.brand}</span>
-                        <span>{post.category || post.productType || ""}</span>
-                      </div>
-                    </div>
-
-                    {/* Price */}
-                    <div
-                      style={{
-                        fontSize: "18px",
-                        fontWeight: "bold",
-                        color: "#e74c3c",
-                        marginBottom: "10px",
-                      }}
-                    >
-                      {formatCurrency(
-                        post.price ||
-                          post.vehicle?.price ||
-                          post.battery?.price ||
-                          0
-                      )}
-                    </div>
-
-                    {/* Location */}
-                    <div style={{ fontSize: "12px", color: "#999", marginBottom: "10px" }}>
-                      <i className="bi bi-geo-alt"></i> {post.location || post.address || post.sellerAddress || "Chưa có địa chỉ"}
-                    </div>
-
-                    {/* Stats */}
-                    <div className="d-flex justify-content-between text-muted small mb-2">
-                      <span>{post.views || 0} lượt xem</span>
-                      <span>{post.likes || 0} lượt thích</span>
-                    </div>
-
-                    {/* POST Button for ADMIN_APPROVED products */}
-                    {post.status === "ADMIN_APPROVED" && (
-                      <div className="mt-2">
-                        <Button
-                          variant="success"
-                          size="sm"
-                          onClick={() => handlePostProduct(post.id)}
-                          disabled={postingProducts.has(post.id)}
-                          className="w-100"
-                        >
-                          {postingProducts.has(post.id) ? (
-                            <>
-                              <Spinner animation="border" size="sm" className="me-2" />
-                              Đang POST...
-                            </>
-                          ) : (
-                            <>
-                              <i className="bi bi-check-circle me-2"></i>
-                              POST sản phẩm
-                            </>
-                          )}
-                        </Button>
-                        <small className="text-muted d-block mt-1 text-center">
-                          Nhấn để hiển thị sản phẩm trên trang chủ
-                        </small>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Date Info */}
-                  <div className="mt-3 pt-2 border-top">
-                    <div className="d-flex justify-content-between text-muted small">
-                      <span>
-                        {formatDate(
-                          post.createdDate ||
-                            post.createdAt ||
-                            post.dateCreated
-                        ) && `Đăng: ${formatDate(
-                          post.createdDate ||
-                            post.createdAt ||
-                            post.dateCreated
-                        )}`}
-                      </span>
-                      <span>
-                        {formatDate(
-                          post.expiryDate ||
-                            post.expiredAt ||
-                            post.dateExpired
-                        ) && `Hết hạn: ${formatDate(
-                          post.expiryDate ||
-                            post.expiredAt ||
-                            post.dateExpired
-                        )}`}
-                      </span>
-                    </div>
-                  </div>
-                </Card.Body>
-              </Card>
-            ))}
-          </div>
-        )}
+        <PostsList
+          loadingPosts={loadingPosts}
+          posts={posts}
+          filteredPosts={filteredPosts}
+          currentImageIndexes={currentImageIndexes}
+          postingProducts={postingProducts}
+          getPostImages={getPostImages}
+          handlePrevImage={handlePrevImage}
+          handleNextImage={handleNextImage}
+          handleEditPost={handleEditPost}
+          handleDeletePost={handleDeletePost}
+          handlePostProduct={handlePostProduct}
+          getStatusText={getStatusText}
+          getStatusColor={getStatusColor}
+          formatDate={formatDate}
+          formatCurrency={formatCurrency}
+          navigate={navigate}
+        />
       </div>
 
       {/* Delete Confirmation Modal */}
-      <Modal
+      <DeleteConfirmationModal
         show={showDeleteModal}
         onHide={() => setShowDeleteModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Xác nhận xóa tin đăng</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p>Bạn có chắc chắn muốn xóa tin đăng này không?</p>
-          {selectedPost && (
-            <div className="bg-light p-3 rounded">
-              <strong>
-                {selectedPost.title ||
-                  selectedPost.productName ||
-                  "Không có tiêu đề"}
-              </strong>
-              <br />
-              <span className="text-success">
-                {formatCurrency(
-                  selectedPost.price ||
-                    selectedPost.vehicle?.price ||
-                    selectedPost.battery?.price ||
-                    0
-                )}
-              </span>
-            </div>
-          )}
-          <Alert variant="warning" className="mt-3 mb-0">
-            <small>Hành động này không thể hoàn tác!</small>
-          </Alert>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="light"
-            onClick={() => setShowDeleteModal(false)}
-            style={{
-              backgroundColor: "white",
-              border: "1px solid black",
-              color: "black",
-            }}
-          >
-            Hủy
-          </Button>
-          <Button variant="danger" onClick={confirmDelete} disabled={loading}>
-            {loading ? (
-              <>
-                <Spinner animation="border" size="sm" className="me-2" />
-                Đang xóa...
-              </>
-            ) : (
-              "Xóa tin đăng"
-            )}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        loading={loading}
+        selectedPost={selectedPost}
+        onConfirm={confirmDelete}
+        formatCurrency={formatCurrency}
+      />
 
       {/* Edit Product Modal */}
-      <Modal
+      <EditProductModal
         show={showEditModal}
         onHide={() => setShowEditModal(false)}
-        centered
-        size="lg"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Chỉnh sửa tin đăng</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {selectedPost && (
-            <Form>
-              <Form.Group className="mb-3">
-                <Form.Label>
-                  Tiêu đề <span className="text-danger">*</span>
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  value={editFormData.title}
-                  onChange={(e) =>
-                    handleEditFormChange("title", e.target.value)
-                  }
-                  placeholder="Nhập tiêu đề sản phẩm"
-                  maxLength={255}
-                />
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Mô tả</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={4}
-                  value={editFormData.description}
-                  onChange={(e) =>
-                    handleEditFormChange("description", e.target.value)
-                  }
-                  placeholder="Nhập mô tả chi tiết sản phẩm"
-                  maxLength={1000}
-                />
-              </Form.Group>
-
-              <Row>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>
-                      Giá (VNĐ) <span className="text-danger">*</span>
-                    </Form.Label>
-                    <Form.Control
-                      type="number"
-                      value={editFormData.price}
-                      onChange={(e) =>
-                        handleEditFormChange(
-                          "price",
-                          parseFloat(e.target.value) || 0
-                        )
-                      }
-                      placeholder="Nhập giá sản phẩm"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>
-                      Loại sản phẩm <span className="text-danger">*</span>
-                    </Form.Label>
-                    <Form.Select
-                      value={editFormData.productType}
-                      onChange={(e) =>
-                        handleEditFormChange("productType", e.target.value)
-                      }
-                    >
-                      <option value="VEHICLE">Xe điện</option>
-                      <option value="BATTERY">Pin/Ắc quy</option>
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-              </Row>
-
-              <Alert variant="info" className="mb-0">
-                <small>
-                  <strong>Lưu ý:</strong> Chỉ có thể chỉnh sửa thông tin cơ bản.
-                  Để thay đổi hình ảnh, vui lòng tạo tin đăng mới.
-                </small>
-              </Alert>
-            </Form>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="light"
-            onClick={() => setShowEditModal(false)}
-            disabled={loading}
-            style={{
-              backgroundColor: "white",
-              border: "1px solid black",
-              color: "black",
-            }}
-          >
-            Hủy
-          </Button>
-          <Button
-            variant="success"
-            onClick={confirmEdit}
-            disabled={loading || !editFormData.title || editFormData.price <= 0}
-          >
-            {loading ? (
-              <>
-                <Spinner animation="border" size="sm" className="me-2" />
-                Đang lưu...
-              </>
-            ) : (
-              "Lưu thay đổi"
-            )}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        loading={loading}
+        editFormData={editFormData}
+        onFormChange={handleEditFormChange}
+        onSubmit={confirmEdit}
+        brands={brands}
+        batteryTypes={batteryTypes}
+      />
     </Container>
   );
 };

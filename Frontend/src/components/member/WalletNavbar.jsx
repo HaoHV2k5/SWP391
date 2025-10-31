@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { WalletOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Modal, Input, message, Card, Statistic } from "antd";
+import { paymentService } from "../../services/paymentService";
 
 const WalletNavbar = ({ user }) => {
   const [walletBalance, setWalletBalance] = useState(0);
@@ -8,13 +9,38 @@ const WalletNavbar = ({ user }) => {
   const [rechargeAmount, setRechargeAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Load wallet balance from localStorage
+  // Load wallet balance từ BE bằng lịch sử giao dịch
   useEffect(() => {
-    const savedBalance = localStorage.getItem(
-      `wallet_balance_${user?.id || "default"}`
-    );
-    if (savedBalance) {
-      setWalletBalance(parseFloat(savedBalance));
+    const fetchBalance = async () => {
+      try {
+        const res = await paymentService.getWalletTransactions();
+        const list = res?.data || [];
+        const balance = list.reduce((sum, tx) => {
+          const type = (tx?.type || tx?.typeWalletTraction || "").toLowerCase();
+          const amount = Number(tx?.amount || 0);
+          if (
+            type.includes("recharge") ||
+            type.includes("refund") ||
+            type.includes("nạp")
+          ) {
+            return sum + amount;
+          }
+          return sum - amount; // các loại còn lại coi như chi
+        }, 0);
+        setWalletBalance(balance > 0 ? balance : 0);
+      } catch {
+        // fallback cũ từ localStorage nếu có
+        const savedBalance = localStorage.getItem(
+          `wallet_balance_${user?.id || "default"}`
+        );
+        if (savedBalance) setWalletBalance(parseFloat(savedBalance));
+      }
+    };
+
+    fetchBalance();
+    if (sessionStorage.getItem("wallet.reload") === "1") {
+      sessionStorage.removeItem("wallet.reload");
+      fetchBalance();
     }
   }, [user?.id]);
 
@@ -67,13 +93,13 @@ const WalletNavbar = ({ user }) => {
           transition: "all 0.3s ease",
         }}
         onClick={() => setIsRechargeModalOpen(true)}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = "#e8f5e8";
-          e.currentTarget.style.borderColor = "#00A86B";
+        onMouseEnter={(ev) => {
+          ev.currentTarget.style.backgroundColor = "#e8f5e8";
+          ev.currentTarget.style.borderColor = "#00A86B";
         }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "#f8f9fa";
-          e.currentTarget.style.borderColor = "#e0e0e0";
+        onMouseLeave={(ev) => {
+          ev.currentTarget.style.backgroundColor = "#f8f9fa";
+          ev.currentTarget.style.borderColor = "#e0e0e0";
         }}
       >
         <WalletOutlined style={{ color: "#00A86B", fontSize: "16px" }} />

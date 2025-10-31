@@ -6,6 +6,7 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
@@ -38,6 +39,8 @@ public class RegisterRequest {
     private String phone;
 
     private String address;
+
+    private MultipartFile image;
 
 
 

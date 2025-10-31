@@ -4,7 +4,6 @@ import { Container, Row, Col, Card, Form, Button, Alert, Spinner, InputGroup } f
 import { toast } from "react-toastify";
 import MemberHeader from "../../components/member/MemberHeader";
 import productService from "../../services/productService";
-import PriceSuggestChat from "../../components/ai/PriceSuggestChat";
 import "../../styles/member/index.css";
 
 const PostAd = ({ user }) => {
@@ -34,7 +33,6 @@ const PostAd = ({ user }) => {
   });
 
   const [fieldErrors, setFieldErrors] = useState({});
-  const [aiSuggesting, setAiSuggesting] = useState(false);
 
   const categories = [
     { value: "VEHICLE", label: "Xe điện (Vehicle)" },
@@ -201,11 +199,6 @@ const PostAd = ({ user }) => {
     }));
   };
 
-  // nhận giá từ widget và cập nhật vào form
-  const handleAiSuggestedPrice = (price) => {
-    setFormData(prev => ({ ...prev, price }));
-  };
-
   // Validation function
   const validateForm = () => {
     const errors = [];
@@ -317,7 +310,24 @@ const PostAd = ({ user }) => {
         throw new Error(result.message || 'Đăng tin thất bại');
       }
 
-      toast.success("Đăng tin thành công! Tin của bạn đang chờ duyệt.");
+      // Hiển thị thông báo phù hợp dựa vào status từ backend
+      if (result.needsApproval) {
+        // Gói có requireApproval = true → Tin đang PENDING, cần duyệt
+        toast.success("Đăng tin thành công! Tin của bạn đang chờ duyệt. Vui lòng đợi Staff và Admin duyệt.", {
+          autoClose: 5000
+        });
+      } else if (result.isActive) {
+        // Gói có requireApproval = false → Tin đã ACTIVE và isPosted = true ngay
+        toast.success("Đăng tin thành công! Tin của bạn đã được đăng lên hệ thống.", {
+          autoClose: 3000
+        });
+      } else {
+        // Trường hợp khác (an toàn)
+        toast.success("Đăng tin thành công!", {
+          autoClose: 3000
+        });
+      }
+      
       navigate("/my-posts");
     } catch (error) {
       handleError(error);
@@ -395,19 +405,16 @@ const PostAd = ({ user }) => {
                         <Col md={6}>
                           <Form.Group className="mb-3">
                             <Form.Label className="fw-bold">Giá bán <span className="text-danger">*</span></Form.Label>
-                            <InputGroup>
-                              <Form.Control
-                                type="number"
-                                name="price"
-                                value={formData.price}
-                                onChange={handleInputChange}
-                                placeholder="VD: 15000000"
-                                min="1000"
-                                required
-                                isInvalid={!!fieldErrors.price}
-                              />
-                              {/* Đã bỏ nút AI gợi ý cạnh giá theo yêu cầu */}
-                            </InputGroup>
+                            <Form.Control
+                              type="number"
+                              name="price"
+                              value={formData.price}
+                              onChange={handleInputChange}
+                              placeholder="VD: 15000000"
+                              min="1000"
+                              required
+                              isInvalid={!!fieldErrors.price}
+                            />
                             <Form.Text className="text-muted">
                               Đơn vị: VNĐ (tối thiểu 1,000 VNĐ)
                             </Form.Text>
@@ -896,17 +903,6 @@ const PostAd = ({ user }) => {
                 </Form>
               </Card.Body>
             </Card>
-            {/* Floating AI Chat Component */}
-            <PriceSuggestChat
-              initial={{
-                category: formData.category,
-                brand: formData.brand,
-                model: formData.model,
-                yearManufactured: formData.yearManufactured,
-                batteryLevel: formData.batteryLevel,
-              }}
-              onSuggested={handleAiSuggestedPrice}
-            />
           </div>
     </Container>
   );

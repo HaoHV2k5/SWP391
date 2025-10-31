@@ -179,73 +179,60 @@ const ProductDetailPage = ({ user }) => {
             {/* Thông tin sản phẩm - Cột phải */}
             <div className="col-md-7">
               <div className="product-info-card">
-              {/* Tiêu đề và nút Lưu */}
-              <div className="d-flex justify-content-between align-items-start mb-3">
-                <h2 className="product-title">
-                  {data.title}
-                </h2>
-                <button 
-                  className={`btn btn-sm ${saved ? 'btn-danger' : 'btn-outline-danger'}`}
-                  onClick={handleSaveClick}
-                  disabled={!data}
-                >
-                  <i className={`bi ${saved ? 'bi-heart-fill' : 'bi-heart'}`}></i>
-                </button>
-              </div>
-              
-              {/* Thông tin sản phẩm - Dynamic from backend */}
-              <div className="product-subtitle">
-                {data.productType === 'VEHICLE' ? 'Xe điện' : 
-                 data.productType === 'BATTERY' ? 'Pin/Bộ sạc' : 
-                 data.productType || 'Sản phẩm'}
-                {productInfo.brand && ` • ${productInfo.brand}`}
-                {productInfo.year && ` • ${productInfo.year}`}
-              </div>
+                {/* Tiêu đề và nút Lưu */}
+                <div className="d-flex justify-content-between align-items-start mb-4">
+                  <h1 className="product-title">
+                    {data.title}
+                  </h1>
+                  <button 
+                    className={`btn btn-heart ${saved ? 'btn-heart-active' : ''}`}
+                    onClick={handleSaveClick}
+                    disabled={!data}
+                    title={saved ? 'Đã lưu' : 'Lưu sản phẩm'}
+                  >
+                    <i className={`bi ${saved ? 'bi-heart-fill' : 'bi-heart'}`}></i>
+                  </button>
+                </div>
 
-              {/* Giá */}
-              <div className="product-price">
-                {formatPrice(data.price)}
-              </div>
-
-
-              {/* Thời gian cập nhật */}
-              <div className="update-info">
-                <i className="bi bi-clock"></i>
-                <span>Cập nhật {formatDate(data.createdAt)}</span>
-              </div>
-
-              {/* Thông tin người bán - Only backend data */}
-              <div className="seller-info-section">
-                <div className="seller-header">
-                  <div className="seller-avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
-                       style={{ width: '50px', height: '50px' }}>
-                    <i className="bi bi-person-fill fs-4"></i>
+                {/* Giá */}
+                <div className="product-price-section mb-4">
+                  <div className="product-price">
+                    {formatPrice(data.price)}
                   </div>
-                  <div className="seller-details">
-                    <h6 className="seller-name">{sellerInfo.name}</h6>
-                    <div className="seller-meta">
-                      <i className="bi bi-person"></i>
-                      <span>Người bán</span>
+                </div>
+
+                {/* Thời gian đăng */}
+                <div className="update-info mb-4">
+                  <i className="bi bi-clock-fill"></i>
+                  <span>Đăng ngày {formatDate(data.createdAt)}</span>
+                </div>
+
+                {/* Thông tin người bán */}
+                <div className="seller-info-section mb-4">
+                  <div className="seller-header">
+                    <div className="seller-avatar">
+                      <i className="bi bi-person-fill"></i>
+                    </div>
+                    <div className="seller-details">
+                      <h6 className="seller-name">{sellerInfo.name}</h6>
+                      <div className="seller-meta">
+                        <i className="bi bi-shop"></i>
+                        <span>Người bán</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Nút mua hàng và liên hệ */}
-              <div className="action-buttons">
-                <BuyButton 
-                  product={data} 
-                  user={user}
-                  onOrderSuccess={(orderData) => {
-                    console.log("Order created successfully:", orderData);
-                    // Có thể thêm logic khác ở đây nếu cần
-                  }}
-                />
-                <button className="chat-button w-100">
-                  <i className="bi bi-chat-dots me-2"></i>
-                  Liên hệ người bán
-                </button>
-              </div>
+                {/* Nút mua hàng */}
+                <div className="action-buttons">
+                  <BuyButton 
+                    product={data} 
+                    user={user}
+                    onOrderSuccess={(orderData) => {
+                      console.log("Order created successfully:", orderData);
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -257,7 +244,12 @@ const ProductDetailPage = ({ user }) => {
             <div className="col-md-9">
               {/* Mô tả chi tiết - Separate card */}
               <div className="description-card">
-                <h6 className="card-title">Mô tả chi tiết</h6>
+                <div className="card-header-custom">
+                  <h6 className="card-title mb-0">
+                    <i className="bi bi-file-text me-2"></i>
+                    Mô tả chi tiết
+                  </h6>
+                </div>
                 <div className="card-content">
                   {data.description ? (
                     <div className="product-description">
@@ -265,29 +257,39 @@ const ProductDetailPage = ({ user }) => {
                     </div>
                   ) : (
                     <div className="no-content">
+                      <i className="bi bi-file-text"></i>
                       <p>Chưa có mô tả chi tiết</p>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Thông tin chi tiết - Separate card */}
-              <div className="specs-card">
-                <h6 className="card-title">Thông tin chi tiết</h6>
+              {/* Thông tin chi tiết - Separate card với phân loại */}
+              <div className={`specs-card ${data.productType === 'VEHICLE' ? 'vehicle-card' : 'battery-card'}`}>
+                <div className="card-header-custom">
+                  <h6 className="card-title mb-0">
+                    <i className="bi bi-info-circle me-2"></i>
+                    Thông tin chi tiết
+                  </h6>
+                </div>
                 <div className="card-content">
                   {productInfo.details.length > 0 ? (
                     <div className="product-specs">
                       <div className="specs-list">
                         {productInfo.details.map((detail, index) => (
                           <div key={index} className="spec-item">
-                            <div className="spec-label">{detail.label}</div>
-                            <div className="spec-value">{detail.value || 'Không xác định'}</div>
+                            <div className="spec-label">
+                              <i className={`bi ${data.productType === 'VEHICLE' ? 'bi-check-circle-fill' : 'bi-check-circle-fill'} me-2`}></i>
+                              {detail.label}
+                            </div>
+                            <div className="spec-value">{detail.value || 'Chưa cập nhật'}</div>
                           </div>
                         ))}
                       </div>
                     </div>
                   ) : (
                     <div className="no-content">
+                      <i className="bi bi-inbox"></i>
                       <p>Chưa có thông tin chi tiết</p>
                     </div>
                   )}
