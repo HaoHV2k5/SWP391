@@ -77,7 +77,6 @@ const saveToDatabase = async (product) => {
 
     // Kiểm tra response theo format BE: {code: 1000, message: '...', data: true}
     if (response.data && response.data.code === 1000 && response.data.data === true) {
-      console.log("✅ Product saved to database wishlist");
       return true;
     } else {
       console.error("❌ Failed to save to database:", response.data?.message);
@@ -86,16 +85,51 @@ const saveToDatabase = async (product) => {
   } catch (error) {
     console.error("❌ Error saving to database:", error);
     
-    // Xử lý lỗi 400 - Wishlist không tồn tại (không nên xảy ra với account mới)
-    if (error.response?.status === 400) {
-      const errorMessage = error.response?.data?.message || '';
+    const status = error.response?.status;
+    const errorMessage = error.response?.data?.message || error.message;
+    
+    // Xử lý lỗi 403 - Forbidden (không có quyền)
+    if (status === 403) {
+      console.error("❌ 403 Forbidden - Permission denied");
       
+      // Debug: Decode JWT token để kiểm tra claim scope
+      try {
+        const token = localStorage.getItem("token");
+        const userData = localStorage.getItem("userData");
+        let jwtToken = token || (userData ? JSON.parse(userData)?.token : null);
+        
+        if (jwtToken) {
+          const parts = jwtToken.split('.');
+          if (parts.length === 3) {
+            const payload = JSON.parse(atob(parts[1]));
+            console.error("   🔍 JWT Token Debug:", {
+              username: payload.sub,
+              scope: payload.scope,
+              hasRoleUser: payload.scope?.includes('ROLE_USER'),
+              hasRoleSeller: payload.scope?.includes('ROLE_SELLER')
+            });
+          }
+        }
+      } catch (e) {
+        console.error("   Error decoding JWT:", e);
+      }
+      
+      return false;
+    }
+    
+    // Xử lý lỗi 400 - Wishlist không tồn tại
+    if (status === 400) {
       if (errorMessage.includes('WISHLIST_NOT_EXISTED') || 
-          errorMessage.includes('wishlist') ||
-          errorMessage.includes('Người dùng không có wishlist')) {
-        console.log("⚠️ Wishlist not existed - this should not happen with new accounts");
+          errorMessage.includes('wishlist')) {
+        console.error("❌ Wishlist not found");
         return false;
       }
+    }
+    
+    // Xử lý lỗi 401 - Unauthorized
+    if (status === 401) {
+      console.error("❌ 401 Unauthorized - Please login again");
+      return false;
     }
     
     return false;
@@ -117,7 +151,6 @@ const removeFromDatabase = async (productId) => {
 
     // Kiểm tra response theo format BE: {code: 1000, message: '...'}
     if (response.data && response.data.code === 1000) {
-      console.log("✅ Product removed from database wishlist");
       return true;
     } else {
       console.error("❌ Failed to remove from database:", response.data?.message);
@@ -153,9 +186,7 @@ const loadWishlistFromBackend = async () => {
     // Kiểm tra response theo format BE: {code: 1000, message: '...', data: [...]}
     if (response.data && response.data.code === 1000 && response.data.data) {
       savedProducts = response.data.data || [];
-      console.log("✅ Loaded wishlist from database:", savedProducts.length, "products");
     } else {
-      console.log("⚠️ API response not successful, setting empty wishlist");
       savedProducts = [];
     }
   } catch (error) {
@@ -165,27 +196,19 @@ const loadWishlistFromBackend = async () => {
     if (error.response?.status === 400) {
       const errorMessage = error.response?.data?.message || '';
       
-      if (errorMessage.includes('WISHLIST_NOT_EXISTED') || 
-          errorMessage.includes('wishlist') ||
-          errorMessage.includes('Người dùng không có wishlist')) {
-        console.log("⚠️ Wishlist not existed - this should not happen with new accounts");
-        savedProducts = [];
-      } else {
-        console.error("❌ Other 400 error:", errorMessage);
-        savedProducts = [];
-      }
+      savedProducts = [];
     } else if (error.response?.status === 403) {
-      console.error("❌ Forbidden - User does not have ROLE_USER permission");
+      console.error("❌ 403 Forbidden - Permission denied");
       savedProducts = [];
     } else if (error.response?.status === 500) {
-      console.error("❌ Backend server error:", error.response?.data?.message);
+      console.error("❌ Backend server error");
       savedProducts = [];
     } else if (error.response?.status === 401) {
-      console.log("⚠️ Unauthorized, redirecting to login");
+      console.error("❌ 401 Unauthorized, redirecting to login");
       setTimeout(() => window.location.href = '/login', 100);
       return;
     } else {
-      console.error("❌ Unknown error:", error.response?.status);
+      console.error("❌ Error loading wishlist:", error.response?.status);
       savedProducts = [];
     }
   } finally {
@@ -211,7 +234,6 @@ const add = async (product) => {
 
   // Kiểm tra đăng nhập
   if (!isUserLoggedIn()) {
-    console.warn("⚠️ User not logged in, redirecting to login");
     if (window.location.pathname !== '/login') {
       setTimeout(() => {
         window.location.href = '/login';
@@ -231,15 +253,12 @@ const add = async (product) => {
     // Lưu vào database trước
     const success = await saveToDatabase(product);
     if (success) {
-      console.log("✅ Product added to database wishlist");
       // Cập nhật state frontend
       savedProducts.push({ ...product, userId: freshUserId });
       notifyListeners();
       return true;
-    } else {
-      console.error("❌ Failed to save to database");
-      return false;
     }
+    return false;
   } catch (error) {
     console.error("❌ Error adding to wishlist:", error);
     return false;
@@ -256,7 +275,6 @@ const remove = async (productId) => {
   
   // Kiểm tra đăng nhập
   if (!isUserLoggedIn()) {
-    console.warn("⚠️ User not logged in");
     return;
   }
 
@@ -268,13 +286,7 @@ const remove = async (productId) => {
   }
 
   try {
-    // Xóa khỏi database
-    const success = await removeFromDatabase(productId);
-    if (success) {
-      console.log("✅ Product removed from database wishlist");
-    } else {
-      console.error("❌ Failed to remove from database");
-    }
+    await removeFromDatabase(productId);
   } catch (error) {
     console.error("❌ Error removing from database:", error);
   }
@@ -348,23 +360,19 @@ const resetWishlist = () => {
  * Force refresh wishlist (khi login hoặc đổi account)
  */
 const forceRefresh = async () => {
-  console.log("🔄 Force refreshing wishlist...");
   initialized = false;
   const freshUserId = await getCurrentUserId();
   
   // Kiểm tra đổi account
   if (currentUserId && currentUserId !== freshUserId) {
-    console.log("🔄 User changed from", currentUserId, "to", freshUserId, "- clearing old data");
     savedProducts = [];
   }
   
   currentUserId = freshUserId;
   
   if (freshUserId) {
-    // Load từ Backend
     loadWishlistFromBackend();
   } else {
-    // Set empty nếu không có userId
     savedProducts = [];
     loading = false;
     initialized = true;
@@ -380,8 +388,6 @@ const updateCurrentUserId = async () => {
   
   // Kiểm tra đổi account
   if (currentUserId && currentUserId !== freshUserId) {
-    console.log("🔄 Account switched from", currentUserId, "to", freshUserId);
-    console.log("🔄 Clearing old wishlist data and refreshing...");
     savedProducts = [];
     initialized = false;
   }
@@ -390,7 +396,6 @@ const updateCurrentUserId = async () => {
   
   // Force refresh nếu có user mới và chưa khởi tạo
   if (freshUserId && !initialized) {
-    console.log("🔄 New user detected, initializing wishlist...");
     forceRefresh();
   }
 };
@@ -409,10 +414,8 @@ const initializeWishlist = async () => {
   if (initialized) return;
   
   if (isUserLoggedIn()) {
-    console.log("🔄 Initializing wishlist for logged-in user...");
     await loadWishlistFromBackend();
   } else {
-    console.log("ℹ️ User not logged in, setting empty wishlist");
     savedProducts = [];
     loading = false;
     initialized = true;

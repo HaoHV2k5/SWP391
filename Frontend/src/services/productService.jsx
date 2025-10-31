@@ -291,7 +291,18 @@ const productService = {
       const data = response?.data?.data ?? response?.data;
       console.log("✅ Create product success:", data);
       
-      return { success: true, data };
+      // Kiểm tra status để xác định tin có cần duyệt hay không
+      const status = data?.status;
+      const needsApproval = status === "PENDING"; // Nếu status = PENDING thì cần duyệt
+      const isActive = status === "ACTIVE"; // Nếu status = ACTIVE thì đã đăng ngay
+      
+      return { 
+        success: true, 
+        data,
+        status,
+        needsApproval,
+        isActive
+      };
     } catch (error) {
       console.error("❌ Create product error:", error);
       
