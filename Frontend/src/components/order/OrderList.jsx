@@ -159,6 +159,18 @@ const OrderList = ({ productId, onOrderUpdate }) => {
     return date.toLocaleString('vi-VN');
   };
 
+  const formatTime = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  };
+
+  const formatDateOnly = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN');
+  };
+
   if (loading) {
     return (
       <div className="text-center p-4">
@@ -195,8 +207,8 @@ const OrderList = ({ productId, onOrderUpdate }) => {
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h5>Yêu cầu mua hàng ({orders.length})</h5>
-        <Button variant="outline-primary" size="sm" onClick={loadOrders}>
+        <h6 className="mb-0 text-uppercase" style={{letterSpacing: '.3px'}}>Yêu cầu mua hàng ({orders.length})</h6>
+        <Button variant="outline-success" size="sm" onClick={loadOrders} className="rounded-2">
           <i className="bi bi-arrow-clockwise me-1"></i>
           Làm mới
         </Button>
@@ -204,55 +216,74 @@ const OrderList = ({ productId, onOrderUpdate }) => {
       
       <div className="row">
         {orders.map((order) => (
-          <div key={order.id} className="col-12 mb-3">
-            <Card>
-              <Card.Body>
-                <div className="row">
-                  <div className="col-md-8">
-                    <div className="d-flex justify-content-between align-items-start mb-2">
-                      <h6 className="mb-0">{order.buyerName}</h6>
-                      {getStatusBadge(order.status)}
+          <div key={order.id} className="col-12 col-md-6 mb-3">
+            <Card className="border-0 shadow-sm rounded-3">
+              <Card.Body className="py-3">
+                <div className="row align-items-start">
+                  <div className="col-8">
+                    <div className="d-flex align-items-center gap-2 mb-2">
+                      <h6 className="mb-0 fw-semibold">{order.buyerName}</h6>
+                      <Badge
+                        className="rounded-2 px-2 py-1"
+                        style={{
+                          backgroundColor: '#FFF3CD',
+                          color: '#C67D10',
+                          fontWeight: 600,
+                          fontSize: '11px'
+                        }}
+                      >
+                        Chờ phản hồi
+                      </Badge>
                     </div>
                     
-                    <div className="mb-2">
-                      <strong>Giá đề xuất:</strong> {formatPrice(order.offeredPrice)}
+                    <div className="mb-1" style={{ fontSize: '14px' }}>
+                      <span className="text-muted">Giá đề xuất:</span> <strong>{formatPrice(order.offeredPrice)}</strong>
                     </div>
                     
-                    <div className="mb-2">
-                      <strong>Thời gian:</strong> {formatDate(order.createdAt)}
+                    <div className="mb-1" style={{ fontSize: '14px' }}>
+                      <span className="text-muted">Thời gian:</span> <strong>{formatTime(order.createdAt)} {formatDateOnly(order.createdAt)}</strong>
                     </div>
                     
-                    {order.message && (
-                      <div className="mb-2">
-                        <strong>Tin nhắn:</strong> {order.message}
-                      </div>
-                    )}
+                    <div className="mb-1" style={{ fontSize: '14px' }}>
+                      <span className="text-muted">Ngày:</span> <strong>{formatDateOnly(order.createdAt)}</strong>
+                    </div>
                   </div>
                   
-                  <div className="col-md-4 text-end">
+                  <div className="col-4 d-flex justify-content-end align-items-start">
                     {order.status === 'PENDING' && (
-                      <div>
-                        <Button 
-                          variant="success" 
-                          size="sm" 
-                          className="me-2"
+                      <div className="d-flex gap-2">
+                        <button
+                          className="btn btn-sm rounded-3 d-flex align-items-center justify-content-center"
+                          style={{
+                            width: '44px',
+                            height: '44px',
+                            backgroundColor: '#D4F4DD',
+                            border: 'none',
+                            color: '#00A86B'
+                          }}
                           onClick={() => handleOpenAcceptModal(order)}
+                          title="Chấp nhận"
                         >
-                          <i className="bi bi-check-circle me-1"></i>
-                          Chấp nhận
-                        </Button>
-                        <Button 
-                          variant="danger" 
-                          size="sm"
+                          <i className="bi bi-check-lg fs-5"></i>
+                        </button>
+                        <button
+                          className="btn btn-sm rounded-3 d-flex align-items-center justify-content-center"
+                          style={{
+                            width: '44px',
+                            height: '44px',
+                            backgroundColor: '#FFE5E5',
+                            border: 'none',
+                            color: '#DC3545'
+                          }}
                           onClick={() => {
                             if (window.confirm('Bạn có chắc chắn muốn từ chối đơn hàng này?')) {
                               handleRejectOrder(order.id);
                             }
                           }}
+                          title="Từ chối"
                         >
-                          <i className="bi bi-x-circle me-1"></i>
-                          Từ chối
-                        </Button>
+                          <i className="bi bi-x-circle fs-5"></i>
+                        </button>
                       </div>
                     )}
                     

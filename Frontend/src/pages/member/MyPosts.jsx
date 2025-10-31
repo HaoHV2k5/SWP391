@@ -19,6 +19,7 @@ import MemberHeader from "../../components/member/MemberHeader";
 import productService from "../../services/productService";
 import { memberService } from "../../services/memberService";
 import "../../styles/member/index.css";
+import "../../styles/member/MyPosts.css";
 
 const MyPosts = ({ user }) => {
   const navigate = useNavigate();
@@ -40,6 +41,7 @@ const MyPosts = ({ user }) => {
   const [filterStatus, setFilterStatus] = useState("ALL");
   const [postingProducts, setPostingProducts] = useState(new Set());
   const hasShownError = useRef(false); // Track xem đã hiển thị lỗi chưa
+  const [currentImageIndexes, setCurrentImageIndexes] = useState({}); // Track current image index for each post
 
   const loadPosts = async () => {
     setLoadingPosts(true);
@@ -290,6 +292,52 @@ const MyPosts = ({ user }) => {
     }
   };
 
+  // Handle image navigation
+  const handlePrevImage = (postId, images) => {
+    setCurrentImageIndexes(prev => {
+      const currentIndex = prev[postId] || 0;
+      const newIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1;
+      return { ...prev, [postId]: newIndex };
+    });
+  };
+
+  const handleNextImage = (postId, images) => {
+    setCurrentImageIndexes(prev => {
+      const currentIndex = prev[postId] || 0;
+      const newIndex = currentIndex === images.length - 1 ? 0 : currentIndex + 1;
+      return { ...prev, [postId]: newIndex };
+    });
+  };
+
+  // Get images array for a post
+  const getPostImages = (post) => {
+    const images = [];
+    
+    // Add images from imageUrls array
+    if (post.imageUrls && Array.isArray(post.imageUrls) && post.imageUrls.length > 0) {
+      images.push(...post.imageUrls);
+    }
+    // Add single image if exists
+    else if (post.image) {
+      images.push(post.image);
+    }
+    // Add vehicle image
+    else if (post.vehicle?.image) {
+      images.push(post.vehicle.image);
+    }
+    // Add battery image
+    else if (post.battery?.image) {
+      images.push(post.battery.image);
+    }
+    // Add from images array
+    else if (post.images && Array.isArray(post.images) && post.images.length > 0) {
+      images.push(...post.images);
+    }
+
+    // Return images or placeholder
+    return images.length > 0 ? images : ["data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=="];
+  };
+
   if (isCheckingAuth) {
     return (
       <Container
@@ -457,228 +505,183 @@ const MyPosts = ({ user }) => {
             )}
           </Alert>
         ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: "25px",
-              padding: "20px 0",
-            }}
-          >
-            {filteredPosts.map((post) => (
-              <Card
-                key={post.id}
-                style={{
-                  height: "100%",
-                  cursor: "pointer",
-                }}
-              >
-                <Card.Img
-                  variant="top"
-                  src={
-                    post.imageUrls?.[0] ||
-                    post.image ||
-                    post.vehicle?.image ||
-                    post.battery?.image ||
-                    post.images?.[0] ||
-                    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=="
-                  }
-                  style={{ height: "200px", objectFit: "cover" }}
-                  onError={(e) => {
-                    e.currentTarget.src =
-                      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==";
-                  }}
-                />
+          <div className="posts-list-container">
+            {filteredPosts.map((post) => {
+              const postImages = getPostImages(post);
+              const currentImageIndex = currentImageIndexes[post.id] || 0;
+              const hasMultipleImages = postImages.length > 1;
 
-                <Card.Body
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <div>
-                    {/* Status Badge and Menu */}
-                    <div className="d-flex justify-content-between align-items-start mb-2">
-                      <Badge
-                        bg={getStatusColor(post.status)}
-                        className="mb-2"
+              return (
+                <div key={post.id} className="post-list-item">
+                  <div className="post-list-inner">
+                    {/* Image Section */}
+                    <div className="post-list-image-container">
+                      <img
+                        className="post-list-image"
+                        src={postImages[currentImageIndex]}
+                        alt={post.title || post.productName || "Product"}
+                        onError={(e) => {
+                          e.currentTarget.src =
+                            "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==";
+                        }}
+                      />
+                      
+                      {/* Image Navigation Arrows - Only show if multiple images */}
+                      {hasMultipleImages && (
+                        <>
+                          <button
+                            className="post-image-nav prev"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePrevImage(post.id, postImages);
+                            }}
+                            aria-label="Previous image"
+                          >
+                            <i className="bi bi-chevron-left"></i>
+                          </button>
+                          <button
+                            className="post-image-nav next"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleNextImage(post.id, postImages);
+                            }}
+                            aria-label="Next image"
+                          >
+                            <i className="bi bi-chevron-right"></i>
+                          </button>
+                          
+                          {/* Image Counter */}
+                          <div className="post-image-counter">
+                            {currentImageIndex + 1} / {postImages.length}
+                          </div>
+                        </>
+                      )}
+                      
+                      {/* Status Badge on Image */}
+                      <span
+                        className={`post-status-badge-image ${getStatusColor(post.status)}`}
                       >
                         {getStatusText(post.status)}
-                      </Badge>
-                      <Dropdown align="end">
-                        <Dropdown.Toggle
-                          variant="link"
-                          className="text-muted p-0 border-0"
-                          style={{ fontSize: "20px" }}
-                        >
-                          ⋮
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu style={{ minWidth: "150px" }}>
-                          <Dropdown.Item
-                            onClick={() => handleEditPost(post)}
-                          >
-                            Chỉnh sửa
-                          </Dropdown.Item>
-                          {post.status === "ADMIN_APPROVED" && (
-                            <Dropdown.Item
-                              onClick={() => handlePostProduct(post.id)}
-                              disabled={postingProducts.has(post.id)}
-                              className="text-success"
-                            >
-                              {postingProducts.has(post.id) ? "Đang POST..." : "POST sản phẩm"}
-                            </Dropdown.Item>
-                          )}
-                          {(post.status === "expired" ||
-                            post.status === "sold") && (
-                            <Dropdown.Item
-                              onClick={() => handleRepost(post.id)}
-                            >
-                              Đăng lại
-                            </Dropdown.Item>
-                          )}
-                          <Dropdown.Divider />
-                          <Dropdown.Item
-                            className="text-danger"
-                            onClick={() => handleDeletePost(post)}
-                          >
-                            Xóa tin
-                          </Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown>
+                      </span>
                     </div>
 
-                    {/* Title */}
-                    <Card.Title
-                      style={{
-                        fontSize: "16px",
-                        marginBottom: "4px",
-                        fontWeight: "500",
-                        lineHeight: "1.4",
-                        color: "#333",
-                      }}
-                    >
-                      {post.title ||
-                        post.productName ||
-                        "Không có tiêu đề"}
-                    </Card.Title>
+                  {/* Content Section */}
+                  <div className="post-list-content">
+                    <div className="post-content-main">
+                      {/* Title and Menu */}
+                      <div className="post-header-row">
+                        <div>
+                          <h3 className="post-title">
+                            {post.title || post.productName || "Không có tiêu đề"}
+                          </h3>
+                          <p className="post-description">
+                            {post.description ||
+                              post.vehicleInfo?.description ||
+                              "Không có mô tả"}
+                          </p>
+                        </div>
+                        
+                        {/* Menu Dropdown */}
+                        <Dropdown align="end">
+                          <Dropdown.Toggle
+                            as="button"
+                            className="post-menu-button"
+                          >
+                            <i className="bi bi-three-dots-vertical" style={{ fontSize: "20px", color: "#6b7280" }}></i>
+                          </Dropdown.Toggle>
+                          <Dropdown.Menu className="post-menu-dropdown">
+                            <Dropdown.Item
+                              className="post-menu-item"
+                              onClick={() => handleEditPost(post)}
+                            >
+                              <i className="bi bi-pencil" style={{ color: "#2563eb" }}></i>
+                              <span>Chỉnh sửa</span>
+                            </Dropdown.Item>
+                            {post.status === "ADMIN_APPROVED" && (
+                              <Dropdown.Item
+                                className="post-menu-item"
+                                onClick={() => handlePostProduct(post.id)}
+                                disabled={postingProducts.has(post.id)}
+                              >
+                                <i className="bi bi-check-circle" style={{ color: "#10b981" }}></i>
+                                <span>
+                                  {postingProducts.has(post.id)
+                                    ? "Đang POST..."
+                                    : "POST sản phẩm"}
+                                </span>
+                              </Dropdown.Item>
+                            )}
+                            <Dropdown.Item
+                              className="post-menu-item"
+                              onClick={() => handleDeletePost(post)}
+                            >
+                              <i className="bi bi-trash" style={{ color: "#ef4444" }}></i>
+                              <span>Xóa</span>
+                            </Dropdown.Item>
+                            <div className="post-menu-divider" />
+                            <Dropdown.Item className="post-menu-item">
+                              <i className="bi bi-share" style={{ color: "#3b82f6" }}></i>
+                              <span>Chia sẻ tin</span>
+                            </Dropdown.Item>
+                            <Dropdown.Item className="post-menu-item">
+                              <i className="bi bi-flag" style={{ color: "#f59e0b" }}></i>
+                              <span>Báo cáo tin</span>
+                            </Dropdown.Item>
+                          </Dropdown.Menu>
+                        </Dropdown>
+                      </div>
 
-                    {/* Description */}
-                    <div
-                      style={{
-                        fontSize: "14px",
-                        color: "#666",
-                        marginBottom: "8px",
-                        lineHeight: "1.3",
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                      }}
-                    >
-                      {post.description ||
-                        post.vehicleInfo?.description ||
-                        "Không có mô tả"}
-                    </div>
+                      {/* Category and Price */}
+                      <div className="post-price-row">
+                        <span className="post-category-badge">
+                          {post.category || post.productType || "VEHICLE"}
+                        </span>
+                        <span className="post-price">
+                          ₫{new Intl.NumberFormat("vi-VN").format(
+                            post.price ||
+                              post.vehicle?.price ||
+                              post.battery?.price ||
+                              0
+                          )}
+                        </span>
+                      </div>
 
-                    {/* Vehicle Info */}
-                    <div
-                      style={{ fontSize: "14px", color: "#666", marginBottom: "10px" }}
-                    >
-                      <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                        <span>{post.year}</span>
-                        <span>{post.brand}</span>
-                        <span>{post.category || post.productType || ""}</span>
+                      {/* Location */}
+                      <div className="post-location">
+                        <i className="bi bi-geo-alt"></i>
+                        <span>
+                          {post.location ||
+                            post.address ||
+                            post.sellerAddress ||
+                            "Chưa có địa chỉ"}
+                        </span>
                       </div>
                     </div>
 
-                    {/* Price */}
-                    <div
-                      style={{
-                        fontSize: "18px",
-                        fontWeight: "bold",
-                        color: "#e74c3c",
-                        marginBottom: "10px",
-                      }}
-                    >
-                      {formatCurrency(
-                        post.price ||
-                          post.vehicle?.price ||
-                          post.battery?.price ||
-                          0
-                      )}
-                    </div>
-
-                    {/* Location */}
-                    <div style={{ fontSize: "12px", color: "#999", marginBottom: "10px" }}>
-                      <i className="bi bi-geo-alt"></i> {post.location || post.address || post.sellerAddress || "Chưa có địa chỉ"}
-                    </div>
-
-                    {/* Stats */}
-                    <div className="d-flex justify-content-between text-muted small mb-2">
-                      <span>{post.views || 0} lượt xem</span>
-                      <span>{post.likes || 0} lượt thích</span>
-                    </div>
-
-                    {/* POST Button for ADMIN_APPROVED products */}
-                    {post.status === "ADMIN_APPROVED" && (
-                      <div className="mt-2">
-                        <Button
-                          variant="success"
-                          size="sm"
-                          onClick={() => handlePostProduct(post.id)}
-                          disabled={postingProducts.has(post.id)}
-                          className="w-100"
-                        >
-                          {postingProducts.has(post.id) ? (
-                            <>
-                              <Spinner animation="border" size="sm" className="me-2" />
-                              Đang POST...
-                            </>
-                          ) : (
-                            <>
-                              <i className="bi bi-check-circle me-2"></i>
-                              POST sản phẩm
-                            </>
-                          )}
-                        </Button>
-                        <small className="text-muted d-block mt-1 text-center">
-                          Nhấn để hiển thị sản phẩm trên trang chủ
-                        </small>
+                    {/* Footer */}
+                    <div className="post-footer">
+                      <div className="post-footer-left">
+                        <div className="post-stat">
+                          <i className="bi bi-eye"></i>
+                          <span>{post.views || 0} lượt xem</span>
+                        </div>
+                        <div className="post-stat">
+                          <span>
+                            Đăng:{" "}
+                            {formatDate(
+                              post.createdDate ||
+                                post.createdAt ||
+                                post.dateCreated
+                            ) || "N/A"}
+                          </span>
+                        </div>
                       </div>
-                    )}
-                  </div>
-
-                  {/* Date Info */}
-                  <div className="mt-3 pt-2 border-top">
-                    <div className="d-flex justify-content-between text-muted small">
-                      <span>
-                        {formatDate(
-                          post.createdDate ||
-                            post.createdAt ||
-                            post.dateCreated
-                        ) && `Đăng: ${formatDate(
-                          post.createdDate ||
-                            post.createdAt ||
-                            post.dateCreated
-                        )}`}
-                      </span>
-                      <span>
-                        {formatDate(
-                          post.expiryDate ||
-                            post.expiredAt ||
-                            post.dateExpired
-                        ) && `Hết hạn: ${formatDate(
-                          post.expiryDate ||
-                            post.expiredAt ||
-                            post.dateExpired
-                        )}`}
-                      </span>
                     </div>
                   </div>
-                </Card.Body>
-              </Card>
-            ))}
+                </div>
+              </div>
+              );
+            })}
           </div>
         )}
       </div>

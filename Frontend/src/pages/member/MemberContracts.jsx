@@ -308,6 +308,7 @@ const MemberContracts = ({ user }) => {
         <ContractList
           contracts={contracts}
           onPay={handlePay}
+          onCancel={handleCancel}
           currentUserId={currentUserId}
         />
         )}
