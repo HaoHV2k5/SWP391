@@ -34,6 +34,10 @@ import OTPVerificationPage from "./pages/OTPVerificationPage";
 import KycPage from "./pages/kyc/KycPage";
 import PaymentDashboard from "./components/seller/PaymentDashboard";
 import PaymentReturnPage from "./pages/PaymentReturnPage";
+import ReviewsAboutMePage from "./pages/reviews/ReviewsAboutMePage";
+import MyReviewsPage from "./pages/reviews/MyReviewsPage";
+import ComplaintsAboutMePage from "./pages/complaints/ComplaintsAboutMePage";
+import MyComplaintsPage from "./pages/complaints/MyComplaintsPage";
 
 // Home pages
 import CategoryRouter from "./components/homepageContainer/navigation/CategoryRouter";
@@ -231,6 +235,10 @@ function AppContent() {
         <Route path="/my-orders" element={<MyOrders user={user} />} />
         <Route path="/contracts" element={<MemberContracts user={user} />} />
         <Route path="/post-ad" element={<PostAd user={user} />} />
+        <Route path="/reviews-about-me" element={<ReviewsAboutMePage user={user} />} />
+        <Route path="/my-reviews" element={<MyReviewsPage user={user} />} />
+        <Route path="/complaints-about-me" element={<ComplaintsAboutMePage user={user} />} />
+        <Route path="/my-complaints" element={<MyComplaintsPage user={user} />} />
 
         {/* PRODUCT ROUTES */}
         <Route path="/products/:type" element={<CategoryRouter />} />
@@ -249,8 +257,8 @@ function AppContent() {
 
       {/* TOAST NOTIFICATIONS */}
       <ToastContainer {...getToastDefaults()} theme="light" />
-      {/* GLOBAL AI WIDGET - Ẩn ở trang staff/admin */}
-      {!isStaffPage && !isAdminPage && <PriceSuggestChat />}
+      {/* AI WIDGET - Chỉ hiển thị ở trang đăng tin */}
+      {path === "/post-ad" && <PriceSuggestChat />}
     </div>
   );
 }

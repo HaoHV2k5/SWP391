@@ -1,8 +1,11 @@
 import { Container, Spinner, Alert } from "react-bootstrap";
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useProductDetailLogic } from "../../hooks/useProductDetail";
 import wishlistService from "../../services/wishlistService";
 import BuyButton from "../../components/order/BuyButton";
+import ReviewsSection from "../../components/review/ReviewsSection";
 import "../../components/homepageContainer/styles/ProductDetail.css";
 
 const ProductDetailPage = ({ user }) => {
@@ -48,13 +51,29 @@ const ProductDetailPage = ({ user }) => {
   const handleSaveClick = async () => {
     if (data) {
       try {
-        await wishlistService.toggle(data);
+        const wasSaved = wishlistService.isSaved(data.id);
+        
+        if (wasSaved) {
+          // Nếu đã lưu rồi thì bỏ lưu
+          await wishlistService.remove(data.id);
+          toast.success("Đã bỏ lưu tin đăng!");
+        } else {
+          // Nếu chưa lưu thì lưu và hiển thị thông báo
+          try {
+            await wishlistService.add(data);
+            toast.success("Tin đã được lưu vào danh sách theo dõi");
+          } catch (addError) {
+            console.error("Error adding to wishlist:", addError);
+            toast.error("Có lỗi xảy ra khi lưu tin đăng");
+          }
+        }
       } catch (error) {
         console.error("Error toggling wishlist:", error);
+        toast.error("Có lỗi xảy ra khi lưu tin đăng");
       }
     }
   };
-  
+
   if (loading) {
     return (
       <Container className="py-5 text-center">
@@ -297,28 +316,13 @@ const ProductDetailPage = ({ user }) => {
               </div>
             </div>
             
-            {/* Comments Section */}
+            {/* Reviews Section */}
             <div className="col-md-3">
-              <div className="comments-section">
-                <div className="comments-icon">
-                  <i className="bi bi-chat-dots"></i>
-                </div>
-                <div className="comments-content">
-                  <p className="no-comments-text">Chưa có bình luận nào. Hãy để lại bình luận cho người bán.</p>
-                  <div className="comment-form">
-                    <div className="input-group">
-                      <input 
-                        type="text" 
-                        className="form-control" 
-                        placeholder="Bình luận..." 
-                      />
-                      <button className="btn btn-outline-secondary" type="button">
-                        <i className="bi bi-arrow-right"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <ReviewsSection 
+                user={user}
+                sellerId={data?.sellerId}
+                formatDate={formatDate}
+              />
             </div>
           </div>
         </div>
