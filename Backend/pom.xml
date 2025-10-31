@@ -143,7 +143,9 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
 
+
     </dependencies>
+
 
     <dependencyManagement>
         <dependencies>
@@ -153,6 +155,11 @@
                 <version>${spring-ai.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-google-ai-spring-boot-starter</artifactId>
+                <version>1.0.0-M2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -229,6 +236,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+
     </repositories>
 
 </project>

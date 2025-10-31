@@ -1,5 +1,7 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.request.CreatePostingRequest;
+import com.example.backend.dto.request.UpdatePostingRequest;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.PostingPackageSimpleResponse;
 import com.example.backend.entity.PostingPackage;
@@ -42,7 +44,9 @@ public class PostingPackageController {
     // Tạo gói đăng tin mới
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ApiResponse<PostingPackageSimpleResponse> create(@Valid @RequestBody PostingPackage req) {
+    public ApiResponse<PostingPackageSimpleResponse> create(@Valid @RequestBody CreatePostingRequest req) {
+
+
         return ApiResponse.<PostingPackageSimpleResponse>builder()
                 .message("Tạo gói đăng tin thành công")
                 .data(postingPackageService.create(req))
@@ -52,7 +56,7 @@ public class PostingPackageController {
     // Sửa gói đăng tin
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{id}")
-    public ApiResponse<PostingPackageSimpleResponse> update(@PathVariable Long id, @Valid @RequestBody PostingPackage req) {
+    public ApiResponse<PostingPackageSimpleResponse> update(@PathVariable Long id, @Valid @RequestBody UpdatePostingRequest req) {
         return ApiResponse.<PostingPackageSimpleResponse>builder()
                 .message("Cập nhật gói đăng tin thành công")
                 .data(postingPackageService.update(id, req))
