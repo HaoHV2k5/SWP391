@@ -159,6 +159,18 @@ const ProductWithOrders = ({ product, onOrderUpdate }) => {
     return date.toLocaleString('vi-VN');
   };
 
+  const formatTime = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  };
+
+  const formatDateOnly = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN');
+  };
+
   // Chỉ hiển thị component nếu có orders
   if (orders.length === 0 && !loading) {
     return null;
@@ -186,100 +198,162 @@ const ProductWithOrders = ({ product, onOrderUpdate }) => {
   }
 
   return (
-    <Card className="mb-4">
-      <Card.Header className="bg-light">
-        <div className="d-flex justify-content-between align-items-center">
-          <h6 className="mb-0">{product.title}</h6>
-          <span className="badge" style={{ backgroundColor: '#00A86B', color: 'white' }}>
+    <Card 
+      className="mb-4 border-0 rounded-3"
+      style={{
+        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+        transition: 'all 0.3s ease',
+        overflow: 'hidden'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.12)';
+        e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+        e.currentTarget.style.borderColor = 'transparent';
+      }}
+    >
+      <Card.Header 
+        className="border-0 rounded-top"
+        style={{
+          background: 'linear-gradient(to right, rgb(248, 250, 252), white)',
+          borderBottom: '1px solid rgba(241, 245, 249, 0.5)',
+          padding: '1.5rem'
+        }}
+      >
+        <div className="d-flex justify-content-between align-items-start gap-3 mb-3">
+          <div className="flex-1">
+            <h5 className="mb-0 fw-bold text-dark" style={{ lineHeight: '1.4' }}>{product.title}</h5>
+          </div>
+          <span
+            className="rounded-2 px-3 py-2"
+            style={{
+              backgroundColor: '#D1FAE5',
+              color: '#065F46',
+              fontWeight: 700,
+              fontSize: '0.875rem',
+              display: 'inline-block'
+            }}
+          >
             {formatPrice(product.price)}
           </span>
         </div>
-      </Card.Header>
-      <Card.Body>
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h5>Yêu cầu mua hàng ({orders.length})</h5>
           <Button 
-            variant="outline-secondary" 
+          variant="outline-success"
             size="sm" 
             onClick={loadOrders}
-            style={{ borderColor: '#00A86B', color: '#00A86B' }}
-          >
-            <i className="bi bi-arrow-clockwise me-1"></i>
-            Làm mới
+          className="rounded-2"
+          style={{
+            color: '#059669',
+            borderColor: '#A7F3D0',
+            backgroundColor: 'transparent'
+          }}
+        >
+          <i className="bi bi-arrow-clockwise me-2"></i>Làm mới
           </Button>
+      </Card.Header>
+      <Card.Body style={{ padding: '1.5rem' }}>
+        <div className="mb-4">
+          <h6 className="mb-0 text-uppercase fw-bold" style={{ letterSpacing: '0.05em', fontSize: '0.75rem', color: '#0F172A' }}>
+            Yêu cầu mua hàng ({orders.length})
+          </h6>
         </div>
         
-        <div className="row">
+        <div className="row g-4">
           {orders.map((order) => (
             <div key={order.id} className="col-12 mb-3">
-              <Card>
-                <Card.Body>
-                  <div className="row">
-                    <div className="col-md-8">
-                      <div className="d-flex justify-content-between align-items-start mb-2">
-                        <h6 className="mb-0">{order.buyerName}</h6>
-                        {getStatusBadge(order.status)}
+              <Card 
+                className="border rounded-3"
+                style={{
+                  background: 'linear-gradient(to bottom right, white, rgb(248, 250, 252, 0.5))',
+                  borderColor: 'rgba(226, 232, 240, 0.5)',
+                  boxShadow: 'none'
+                }}
+              >
+                <Card.Body className="p-3">
+                  <div className="row align-items-start">
+                    <div className="col-12">
+                      {/* Header Row */}
+                      <div className="d-flex align-items-start justify-content-between gap-3 mb-3">
+                        <div className="flex-1">
+                          <p className="mb-0 fw-bold" style={{ fontSize: '0.875rem', color: '#0F172A' }}>{order.buyerName}</p>
+                          <span
+                            className="rounded-pill px-3 py-1 fw-bold mt-2"
+                            style={{
+                              backgroundColor: '#FEF3C7',
+                              color: '#92400E',
+                              fontSize: '0.75rem', // nhỏ nữa (caption)
+                              display: 'inline-block',
+                              border: 'none'
+                            }}
+                          >
+                            Chờ phản hồi
+                          </span>
                       </div>
-                      
-                      <div className="mb-2">
-                        <strong>Giá đề xuất:</strong> {formatPrice(order.offeredPrice)}
-                      </div>
-                      
-                      <div className="mb-2">
-                        <strong>Thời gian:</strong> {formatDate(order.createdAt)}
-                      </div>
-                      
-                      {order.message && (
-                        <div className="mb-2">
-                          <strong>Tin nhắn:</strong> {order.message}
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="col-md-4 text-end">
+                        <div className="d-flex gap-2">
                       {order.status === 'PENDING' && (
-                        <div>
-                        <Button 
-                          variant="success" 
-                          size="sm" 
-                          className="me-2"
-                          style={{ backgroundColor: '#00A86B', borderColor: '#00A86B' }}
+                            <>
+                              <button
+                                className="btn btn-sm d-flex align-items-center justify-content-center"
+                                style={{
+                                  width: '36px',
+                                  height: '36px',
+                                  backgroundColor: '#D1FAE5',
+                                  border: 'none',
+                                  color: '#059669',
+                                  borderRadius: '0.5rem',
+                                  transition: 'background-color 0.2s'
+                                }}
                           onClick={() => handleOpenAcceptModal(order)}
-                        >
-                          <i className="bi bi-check-circle me-1"></i>
-                          Chấp nhận
-                        </Button>
-                          <Button 
-                            variant="danger" 
-                            size="sm"
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#A7F3D0'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#D1FAE5'}
+                                title="Chấp nhận"
+                              >
+                                <i className="bi bi-check-lg"></i>
+                              </button>
+                              <button
+                                className="btn btn-sm d-flex align-items-center justify-content-center"
+                                style={{
+                                  width: '36px',
+                                  height: '36px',
+                                  backgroundColor: '#FEE2E2',
+                                  border: 'none',
+                                  color: '#DC2626',
+                                  borderRadius: '0.5rem',
+                                  transition: 'background-color 0.2s'
+                                }}
                             onClick={() => {
                               if (window.confirm('Bạn có chắc chắn muốn từ chối đơn hàng này?')) {
                                 handleRejectOrder(order.id);
                               }
                             }}
-                          >
-                            <i className="bi bi-x-circle me-1"></i>
-                            Từ chối
-                          </Button>
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FECACA'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FEE2E2'}
+                                title="Từ chối"
+                              >
+                                <i className="bi bi-x-circle"></i>
+                              </button>
+                            </>
+                          )}
                         </div>
-                      )}
+                      </div>
                       
-                      {order.status === 'ACCEPTED' && (
-                        <Badge 
-                          className="fs-6"
-                          style={{ backgroundColor: '#00A86B', color: 'white' }}
-                        >
-                          <i className="bi bi-check-circle me-1"></i>
-                          Đã chấp nhận
-                        </Badge>
-                      )}
-                      
-                      {order.status === 'REJECTED' && (
-                        <Badge bg="danger" className="fs-6">
-                          <i className="bi bi-x-circle me-1"></i>
-                          Đã từ chối
-                        </Badge>
-                      )}
+                      {/* Details */}
+                      <div className="d-flex flex-column gap-2" style={{ fontSize: '0.875rem' }}>
+                        <div className="d-flex justify-content-between align-items-center">
+                          <span style={{ color: '#64748B' }}>Giá đề xuất:</span>
+                          <span className="fw-semibold" style={{ color: '#0F172A' }}>{formatPrice(order.offeredPrice)}</span>
+                        </div>
+                        <div className="d-flex justify-content-between align-items-center">
+                          <span style={{ color: '#64748B' }}>Thời gian:</span>
+                          <span className="fw-semibold" style={{ color: '#0F172A' }}>{formatTime(order.createdAt)}</span>
+                        </div>
+                        <div className="d-flex justify-content-between align-items-center">
+                          <span style={{ color: '#64748B' }}>Ngày:</span>
+                          <span className="fw-semibold" style={{ color: '#0F172A' }}>{formatDateOnly(order.createdAt)}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </Card.Body>
