@@ -221,10 +221,25 @@ const ProductsTab = () => {
       });
     }
     // filter By Package (áp dụng thật)
-    return base.filter((x) => {
+    base = base.filter((x) => {
       if (pkgUI == null) return true;
       return x?.packageName == pkgUI;
     });
+
+    var baseA = base.filter((x) => {
+      return x?.packageName == "Gói Cơ Bản";
+    });
+
+    var baseB = base.filter((x) => {
+      return x?.packageName == "Gói Nâng Cao";
+    });
+
+    var baseC = base.filter((x) => {
+      return x?.packageName == "Gói Premium";
+    });
+
+    base = baseC.concat(baseB).concat(baseA);
+    return base;
   }, [list, query, pkgUI]);
 
   // Gom nhóm theo seller để hiện feed “section”
@@ -268,8 +283,7 @@ const ProductsTab = () => {
     const status = statusTag(r.status);
     const title = r.title || r.name || r.productName || "(Không tiêu đề)";
     const timeStr = vnDate(r.submitted_at || r.createdAt || r.created_at);
-    const pkgName =
-      r?.postingPackage?.postingPackage?.name || r?.postingPackage?.name || "—";
+    const pkgName = r?.packageName || "—";
 
     const cover = hasImgs ? (
       <div
