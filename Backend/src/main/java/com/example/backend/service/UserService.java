@@ -35,6 +35,7 @@ public class UserService {
     private final WalletRepository walletRepository;
     private final WishlistRepository wishlistRepository;
     private final UserPackageTransactionService userPackageTransactionService;
+    private  final CloudinaryService cloudinaryService;
 
 @Value("${email.login.facebook}")
 private String emailLoginFacebook;
@@ -96,6 +97,9 @@ private String emailLoginFacebook;
                 request.getConfirmPassword(),
                 () -> userMapper.toUser(request)
         );
+        String avatar = cloudinaryService.upload(request.getImage());
+        user.setAvatar(avatar);
+        userRepository.save(user);
         return user;
     }
 
@@ -115,6 +119,8 @@ private String emailLoginFacebook;
 
         User user = userSupplier.get();
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+
 //        user.setVerified(true); // Set user được verify khi admin tạo
         HashSet<Role> roles = new HashSet<>();
         roleRepository.findById(Roles.USER.name()).ifPresent(roles::add);
