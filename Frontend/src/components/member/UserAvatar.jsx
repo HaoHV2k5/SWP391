@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { memberService } from '../../services/memberService';
 
 const UserAvatar = ({ user, size = "32px" }) => {
   const [avatar, setAvatar] = useState(null);
@@ -17,21 +18,58 @@ const UserAvatar = ({ user, size = "32px" }) => {
     return null;
   };
 
-  // Listen for avatar changes
+  // Load avatar từ server khi component mount và listen for changes
   useEffect(() => {
-    const handleAvatarChange = (event) => {
-      const { userId, avatar } = event.detail;
-      const currentUserId = localStorage.getItem('userId') || user?.id || 'default';
+    // Load avatar từ server khi mount để đảm bảo luôn có data mới nhất (giống AccountPage)
+    const loadAvatarFromServer = async () => {
+      // Chỉ load nếu có user (đã đăng nhập)
+      const token = localStorage.getItem('token');
+      if (!token || !user) {
+        // Nếu chưa đăng nhập, dùng avatar từ user prop hoặc hiển thị initial
+        setAvatar(getCurrentAvatar());
+        return;
+      }
+
+      try {
+        const profileResult = await memberService.getMemberProfile();
+        if (profileResult.success && profileResult.data?.data?.avatar) {
+          setAvatar(profileResult.data.data.avatar);
+        } else {
+          // Nếu server không có avatar, dùng từ user prop
+          setAvatar(getCurrentAvatar());
+        }
+      } catch (error) {
+        console.error('Failed to load avatar from server:', error);
+        // Nếu lỗi, dùng avatar từ user prop
+        setAvatar(getCurrentAvatar());
+      }
+    };
+
+    // Load từ server khi mount
+    loadAvatarFromServer();
+
+    // Listen for avatar changes khi upload mới
+    const handleAvatarChange = async (event) => {
+      const { avatar: eventAvatar } = event.detail || {};
       
-      if (userId === currentUserId) {
-        setAvatar(avatar);
+      // Nếu có avatar trong event, cập nhật ngay
+      if (eventAvatar) {
+        setAvatar(eventAvatar);
+        return;
+      }
+      
+      // Nếu không có avatar trong event, reload từ server để đảm bảo có data mới nhất
+      try {
+        const profileResult = await memberService.getMemberProfile();
+        if (profileResult.success && profileResult.data?.data?.avatar) {
+          setAvatar(profileResult.data.data.avatar);
+        }
+      } catch (error) {
+        console.error('Failed to reload avatar from server:', error);
       }
     };
 
     window.addEventListener('avatarChanged', handleAvatarChange);
-    
-    // Set initial avatar
-    setAvatar(getCurrentAvatar());
 
     return () => {
       window.removeEventListener('avatarChanged', handleAvatarChange);

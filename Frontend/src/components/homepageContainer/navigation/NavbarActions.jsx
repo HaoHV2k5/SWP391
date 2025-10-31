@@ -67,17 +67,10 @@ const NavbarActions = () => {
         <div className="position-relative">
           <Button
             variant="link"
-            className="text-decoration-none text-dark position-relative btn-heart"
+            className="text-decoration-none text-dark btn-heart"
             onClick={handleToggleSaved}
           >
             <Heart size={20} />
-            <Badge
-              bg="danger"
-              className="position-absolute top-0 start-100 translate-middle rounded-pill"
-              style={{ fontSize: "10px" }}
-            >
-              {savedProductsCount}
-            </Badge>
           </Button>
 
           {showSavedPopup && (

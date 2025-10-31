@@ -71,7 +71,7 @@ export const useProductDetailLogic = () => {
       // Helper function để format giá trị
       const formatValue = (value, isNumber = false, suffix = '') => {
         if (value === null || value === undefined || value === '') {
-          return 'Chưa cập nhật';
+          return null; // Trả về null thay vì 'Chưa cập nhật'
         }
         if (isNumber) {
           // Với số, kể cả 0 cũng là giá trị hợp lệ
@@ -87,9 +87,9 @@ export const useProductDetailLogic = () => {
         // Số km đã đi
         { 
           label: 'Số km đã đi (km)', 
-          value: data.vehicle.odometer !== null && data.vehicle.odometer !== undefined 
+          value: data.vehicle.odometer !== null && data.vehicle.odometer !== undefined && data.vehicle.odometer !== '' 
             ? `${parseInt(data.vehicle.odometer).toLocaleString('vi-VN')} km` 
-            : 'Chưa cập nhật' 
+            : null 
         },
         // Loại pin
         { 
@@ -99,18 +99,18 @@ export const useProductDetailLogic = () => {
         // Dung lượng pin
         { 
           label: 'Dung lượng pin (kWh)', 
-          value: data.vehicle.batteryCapacityKWh !== null && data.vehicle.batteryCapacityKWh !== undefined 
+          value: data.vehicle.batteryCapacityKWh !== null && data.vehicle.batteryCapacityKWh !== undefined && data.vehicle.batteryCapacityKWh !== '' 
             ? `${data.vehicle.batteryCapacityKWh} kWh` 
-            : 'Chưa cập nhật' 
+            : null 
         },
         // Quãng đường 1 lần sạc
         { 
           label: 'Quãng đường 1 lần sạc (km)', 
-          value: data.vehicle.rangePerChargeKm !== null && data.vehicle.rangePerChargeKm !== undefined 
+          value: data.vehicle.rangePerChargeKm !== null && data.vehicle.rangePerChargeKm !== undefined && data.vehicle.rangePerChargeKm !== '' 
             ? `${data.vehicle.rangePerChargeKm} km` 
-            : 'Chưa cập nhật' 
+            : null 
         }
-      ];
+      ].filter(detail => detail.value !== null); // Lọc bỏ các field không có dữ liệu
       
       return {
         type: 'Xe điện',
@@ -123,7 +123,7 @@ export const useProductDetailLogic = () => {
       // Helper function để format giá trị
       const formatValue = (value, isNumber = false) => {
         if (value === null || value === undefined || value === '') {
-          return 'Chưa cập nhật';
+          return null; // Trả về null thay vì 'Chưa cập nhật'
         }
         if (isNumber) {
           // Với số, kể cả 0 cũng là giá trị hợp lệ
@@ -136,19 +136,19 @@ export const useProductDetailLogic = () => {
         { label: 'Hãng pin', value: formatValue(data.battery.brand) },
         { label: 'Model', value: formatValue(data.battery.model) },
         { label: 'Năm sản xuất', value: formatValue(data.battery.yearManufactured, true) },
-        // Mức pin là bắt buộc cho BATTERY - luôn hiển thị
+        // Mức pin
         { 
           label: 'Mức pin (%)', 
-          value: data.battery.batteryLevel !== null && data.battery.batteryLevel !== undefined
+          value: data.battery.batteryLevel !== null && data.battery.batteryLevel !== undefined && data.battery.batteryLevel !== ''
             ? `${data.battery.batteryLevel}%` 
-            : 'Chưa cập nhật' 
+            : null 
         },
         // Độ bền pin - SoH
         { 
           label: 'Độ bền pin - SoH (%)', 
-          value: data.battery.sohPercent !== null && data.battery.sohPercent !== undefined
+          value: data.battery.sohPercent !== null && data.battery.sohPercent !== undefined && data.battery.sohPercent !== ''
             ? `${data.battery.sohPercent}%` 
-            : 'Chưa cập nhật' 
+            : null 
         },
         // Loại pin
         { 
@@ -158,18 +158,18 @@ export const useProductDetailLogic = () => {
         // Điện áp
         { 
           label: 'Điện áp (V)', 
-          value: data.battery.voltage !== null && data.battery.voltage !== undefined
+          value: data.battery.voltage !== null && data.battery.voltage !== undefined && data.battery.voltage !== ''
             ? `${data.battery.voltage} V` 
-            : 'Chưa cập nhật' 
+            : null 
         },
         // Dung lượng
         { 
           label: 'Dung lượng (Ah)', 
-          value: data.battery.capacityAh !== null && data.battery.capacityAh !== undefined
+          value: data.battery.capacityAh !== null && data.battery.capacityAh !== undefined && data.battery.capacityAh !== ''
             ? `${data.battery.capacityAh} Ah` 
-            : 'Chưa cập nhật' 
+            : null 
         }
-      ];
+      ].filter(detail => detail.value !== null); // Lọc bỏ các field không có dữ liệu
       
       return {
         type: 'Pin/Bộ sạc',

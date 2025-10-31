@@ -119,7 +119,7 @@ if (!showUserDropdown) {
               marginTop: "8px",
             }}
           >
-            <UserMenuItems onItemClick={handleItemClick} />
+            <UserMenuItems user={user} onItemClick={handleItemClick} />
 
             <div
               style={{ height: "1px", background: "#e0e0e0", margin: "8px 0" }}

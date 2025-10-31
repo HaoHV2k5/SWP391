@@ -1,5 +1,7 @@
 import { Button, Card } from "react-bootstrap";
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import wishlistService from "../../../services/wishlistService";
 import { useNavigate } from "react-router-dom";
@@ -124,7 +126,27 @@ const ProductCard = ({ product }) => {
               size="sm"
               onClick={async (e) => {
                 e.stopPropagation();
-                await wishlistService.toggle(product);
+                try {
+                  const wasSaved = wishlistService.isSaved(product.id);
+                  
+                  if (wasSaved) {
+                    // Nếu đã lưu rồi thì bỏ lưu
+                    await wishlistService.remove(product.id);
+                    toast.success("Đã bỏ lưu tin đăng!");
+                  } else {
+                    // Nếu chưa lưu thì lưu và hiển thị thông báo
+                    try {
+                      await wishlistService.add(product);
+                      toast.success("Tin đã được lưu vào danh sách theo dõi");
+                    } catch (addError) {
+                      console.error("Error adding to wishlist:", addError);
+                      toast.error("Có lỗi xảy ra khi lưu tin đăng");
+                    }
+                  }
+                } catch (error) {
+                  console.error("Error toggling wishlist:", error);
+                  toast.error("Có lỗi xảy ra khi lưu tin đăng");
+                }
               }}
               style={{ padding: "4px 8px" }}
               title={saved ? "Bỏ lưu" : "Lưu tin"}

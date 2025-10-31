@@ -117,6 +117,63 @@ export const authService = {
       };
     }
   },
+
+  /**
+   * CHỨC NĂNG: Kiểm tra JWT token có còn hợp lệ không bằng cách gửi lên server verify
+   * 
+   * Khác với việc check expiry ở client (decode JWT), API này:
+   * - Server verify chữ ký và tính hợp lệ của token
+   * - Có thể phát hiện token đã bị revoke ở server
+   * - Đảm bảo token thực sự còn valid trước khi thực hiện hành động quan trọng
+   * 
+   * @param {string} token - JWT token cần verify
+   * @returns {Promise<{success: boolean, authenticated: boolean, data?: any, message?: string}>}
+   */
+  async introspectToken(token) {
+    try {
+      const response = await apiClient.post("/auth/introspect", { token });
+      return {
+        success: true,
+        authenticated: response?.data?.data?.authenticated ?? false,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        authenticated: false,
+        message: error.response?.data?.message || "Không thể verify token",
+      };
+    }
+  },
+
+  /**
+   * CHỨC NĂNG: Tự động lấy token từ localStorage và verify với server
+   * 
+   * Tiện lợi hơn introspectToken vì tự động tìm token từ:
+   * 1. localStorage.getItem("token")
+   * 2. localStorage.getItem("userData") -> parse JSON -> lấy token
+   * 
+   * @returns {Promise<{success: boolean, authenticated: boolean, message?: string}>}
+   */
+  async verifyCurrentToken() {
+    // Lấy token từ localStorage hoặc userData
+    let token = localStorage.getItem("token");
+    
+    if (!token) {
+      try {
+        const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+        token = userData?.token || userData?.data?.token || userData?.user?.token;
+      } catch (e) {
+        // Parse error
+      }
+    }
+
+    if (!token) {
+      return { success: false, authenticated: false, message: "Không tìm thấy token" };
+    }
+
+    return await this.introspectToken(token);
+  },
 };
 export const googleAuthService = {
   // Bước 1: Redirect qua Google login

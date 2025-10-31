@@ -44,7 +44,7 @@ const ProductsTab = () => {
   const handleViewProduct = async (productId) => {
     try {
       console.log("🔍 Fetching product detail for ID:", productId);
-      const result = await productService.getProductDetail(productId);
+      const result = await productService.getProductById(productId);
       console.log("📦 Product detail result:", result);
 
       if (result.success) {

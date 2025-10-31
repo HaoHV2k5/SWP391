@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import UserProfileCard from '../components/account/UserProfileCard';
 import EditProfileModal from '../components/account/EditProfileModal';
 import PersonalInfo from '../components/account/PersonalInfo';
+import ReviewsAboutMe from '../components/account/ReviewsAboutMe';
+import ComplaintsAboutMe from '../components/account/ComplaintsAboutMe';
 import { memberService } from '../services/memberService';
 
 const AccountPage = ({ user }) => {
@@ -106,6 +108,16 @@ const AccountPage = ({ user }) => {
     address: profileData?.address || user?.address,
   };
 
+  // Check if user is seller
+  const isSeller = () => {
+    const role = mergedUser?.role || mergedUser?.user?.role || user?.role || user?.user?.role;
+    const roles = mergedUser?.roles || user?.roles || [];
+    return role === 'ROLE_SELLER' || 
+           role === 'SELLER' || 
+           roles.some(r => (typeof r === 'string' ? r : r?.name) === 'ROLE_SELLER') ||
+           roles.includes('ROLE_SELLER');
+  };
+
   return (
     <div style={{ 
       minHeight: '100vh', 
@@ -123,6 +135,16 @@ const AccountPage = ({ user }) => {
           onAvatarChange={loadProfile}
         />
         <PersonalInfo user={mergedUser} />
+        
+        {/* Reviews About Me - Chỉ hiển thị cho Seller */}
+        {isSeller() && (
+          <ReviewsAboutMe user={mergedUser} />
+        )}
+        
+        {/* Complaints About Me - Chỉ hiển thị cho Seller */}
+        {isSeller() && (
+          <ComplaintsAboutMe user={mergedUser} />
+        )}
       </div>
       {showEdit && (
         <EditProfileModal
