@@ -126,6 +126,45 @@ export const memberService = {
       };
     }
   },
+
+  // Cập nhật avatar - upload lên Cloudinary trước, sau đó gọi API update
+  async updateAvatar(file) {
+    try {
+      // Import dynamic để tránh circular dependency
+      const { uploadToCloudinary, validateImageFile } = await import('./cloudinaryService');
+      
+      // Validate file
+      const validation = validateImageFile(file);
+      if (!validation.valid) {
+        return {
+          success: false,
+          message: validation.message,
+        };
+      }
+
+      // Upload lên Cloudinary
+      const imageUrl = await uploadToCloudinary(file);
+
+      // Gọi API update avatar (theo endpoint của Backend: PUT /update/image/profile)
+      // Backend endpoint nhận @RequestParam String img
+      const response = await apiClient.put(`/update/image/profile?img=${encodeURIComponent(imageUrl)}`);
+      
+      return {
+        success: true,
+        data: response.data,
+        imageUrl: imageUrl,
+        message: response.data?.message || "Avatar đã được cập nhật thành công",
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || 
+          error.message || 
+          "Không thể cập nhật avatar",
+      };
+    }
+  },
 };
 
 export default memberService;

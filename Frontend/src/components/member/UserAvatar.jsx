@@ -9,16 +9,12 @@ const UserAvatar = ({ user, size = "32px" }) => {
   };
 
   const getCurrentAvatar = () => {
-    // Ưu tiên avatar từ server
+    // Ưu tiên avatar từ server (theo Backend)
     const serverAvatar = user?.avatar || user?.avatarUrl || user?.profilePicture;
     if (serverAvatar) return serverAvatar;
     
-    // Fallback: Lấy avatar từ localStorage
-    const userId = localStorage.getItem('userId') || user?.id || 'default';
-    const localAvatar = localStorage.getItem(`avatar_${userId}`);
-    
-    
-    return localAvatar;
+    // Không dùng localStorage nữa vì avatar đã được lưu trên server
+    return null;
   };
 
   // Listen for avatar changes

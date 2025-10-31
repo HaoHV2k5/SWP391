@@ -47,11 +47,23 @@ const MemberContracts = ({ user }) => {
       console.log("📋 Raw API response:", result);
       
       if (result.success && result.data) {
-        console.log("📄 First contract structure:", result.data[0]);
-        console.log("🔑 All fields in first contract:", Object.keys(result.data[0]));
+        console.log("📄 Total contracts:", result.data.length);
+        
+        if (result.data.length > 0) {
+          const firstContract = result.data[0];
+          console.log("📄 First contract:", firstContract);
+          
+          if (firstContract && typeof firstContract === 'object') {
+            console.log("🔑 All fields in first contract:", Object.keys(firstContract));
+          } else {
+            console.log("📄 First contract is not a valid object:", typeof firstContract);
+          }
+        } else {
+          console.log("📄 No contracts found");
+        }
         
         setContracts(Array.isArray(result.data) ? result.data : []);
-        console.log("✅ Total contracts:", result.data?.length || 0);
+        console.log("✅ Total contracts loaded:", result.data?.length || 0);
       } else {
         console.error("❌ Error loading contracts:", result.message);
         toast.error(result.message || "Lấy danh sách hợp đồng thất bại");

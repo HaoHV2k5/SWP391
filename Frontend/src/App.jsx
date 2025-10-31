@@ -33,6 +33,7 @@ import AccountPage from "./pages/AccountPage";
 import OTPVerificationPage from "./pages/OTPVerificationPage";
 import KycPage from "./pages/kyc/KycPage";
 import PaymentDashboard from "./components/seller/PaymentDashboard";
+// PaymentReturn is optional; keep removed unless needed
 
 // Home pages
 import CategoryRouter from "./components/homepageContainer/navigation/CategoryRouter";
@@ -45,6 +46,7 @@ import { normalizeLoginResponse, persistAuth, isStaff } from "./utils/auth";
 import ProtectedStaffRoute from "./routes/ProtectedStaffRoute";
 import AppService from "./components/homepageContainer/navigation/AppService";
 import "./App.css";
+import PriceSuggestChat from "./components/ai/PriceSuggestChat";
 
 // ===========================================
 // MAIN APP COMPONENT
@@ -244,6 +246,8 @@ function AppContent() {
 
       {/* TOAST NOTIFICATIONS */}
       <ToastContainer {...getToastDefaults()} theme="light" />
+      {/* GLOBAL AI WIDGET - Ẩn ở trang staff/admin */}
+      {!isStaffPage && !isAdminPage && <PriceSuggestChat />}
     </div>
   );
 }
