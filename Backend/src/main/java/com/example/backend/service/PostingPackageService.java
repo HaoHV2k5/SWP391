@@ -1,7 +1,11 @@
 package com.example.backend.service;
 
+import com.example.backend.dto.request.CreatePostingRequest;
+import com.example.backend.dto.request.UpdatePostingRequest;
 import com.example.backend.dto.response.PostingPackageSimpleResponse;
 import com.example.backend.entity.PostingPackage;
+import com.example.backend.exception.AppException;
+import com.example.backend.exception.ErrorCode;
 import com.example.backend.mapper.PostingPackageMapper;
 import com.example.backend.repository.PostingPackageRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,25 +32,20 @@ public class PostingPackageService {
                 .orElse(null);
     }
 
-    public PostingPackageSimpleResponse create(PostingPackage req) {
-        PostingPackage saved = postingPackageRepository.save(req);
+    public PostingPackageSimpleResponse create(CreatePostingRequest req) {
+        PostingPackage postingPackage = postingPackageMapper.toPostingPackage(req);
+        PostingPackage saved = postingPackageRepository.save(postingPackage);
         return postingPackageMapper.toPostingPackageSimpleResponse(saved);
     }
 
-    public PostingPackageSimpleResponse update(Long id, PostingPackage req) {
-        return postingPackageRepository.findById(id)
-                .map(pkg -> {
-                    pkg.setName(req.getName());
-                    pkg.setDescription(req.getDescription());
-                    pkg.setPrice(req.getPrice());
-                    pkg.setDuration(req.getDuration());
-                    pkg.setPostLimit(req.getPostLimit());
-                    pkg.setIsActive(req.getIsActive());
-                    pkg.setRequireApproval(req.getRequireApproval());
-                    PostingPackage updated = postingPackageRepository.save(pkg);
-                    return postingPackageMapper.toPostingPackageSimpleResponse(updated);
-                })
-                .orElse(null);
+    public PostingPackageSimpleResponse update(Long id, UpdatePostingRequest req) {
+        PostingPackage postingPackage = postingPackageRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.POSTING_PACKAGE_NOT_FOUND));
+        postingPackageMapper.updatePosting(req, postingPackage);
+        postingPackage = postingPackageRepository.save(postingPackage);
+        return postingPackageMapper.toPostingPackageSimpleResponse(postingPackage);
+
+
+
     }
 
     public void delete(Long id) {
