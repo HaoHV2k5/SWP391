@@ -145,13 +145,18 @@ const KYCTab = () => {
 
   const dataFiltered = useMemo(() => {
     const q = norm(query);
-    if (!q) return list;
-    return (list || []).filter((r) => {
+    var dataList = (list || []).filter((r) => {
+      if (!q) return true;
+
       const parts = [r.id, r.userId, r.status, r.username, r.email]
         .filter((x) => x !== undefined && x !== null)
         .map((x) => norm(x));
       return parts.some((p) => p.includes(q));
     });
+
+    dataList.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+    return dataList;
   }, [list, query]);
 
   const columns = useMemo(
