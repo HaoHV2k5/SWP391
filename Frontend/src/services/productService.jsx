@@ -307,9 +307,15 @@ const productService = {
         errorMessage = "Không có quyền đăng bán. Vui lòng liên hệ admin.";
       } else if (status === 400) {
         if (backendMessage?.includes('KYC') || backendMessage?.includes('kyc')) {
-          errorMessage = "KYC chưa được duyệt. Vui lòng hoàn thành KYC trước.";
+          errorMessage = "KYC chưa được duyệt. Vui lòng hoàn thành KYC trước khi đăng tin.";
+        } else if (backendMessage?.includes('PACKAGE_NOT_BUY') || backendMessage?.includes('không có gói đăng')) {
+          errorMessage = "Bạn chưa mua gói đăng tin. Vui lòng mua gói để tiếp tục đăng tin.";
+        } else if (backendMessage?.includes('POSTING_OVER_LIMIT') || backendMessage?.includes('vượt quá số hạn đăng tin')) {
+          errorMessage = "Bạn đã hết số lượng đăng tin trong gói hiện tại. Vui lòng mua gói mới hoặc nâng cấp gói.";
+        } else if (backendMessage?.includes('PACKAGE_EXPIRED') || backendMessage?.includes('Gói đăng tin đã quá hạn')) {
+          errorMessage = "Gói đăng tin của bạn đã hết hạn. Vui lòng gia hạn hoặc mua gói mới.";
         } else if (backendMessage?.includes('gói') || backendMessage?.includes('hạn đăng tin') || backendMessage?.includes('quá hạn')) {
-          errorMessage = "Gói đăng tin đã hết hạn hoặc vượt giới hạn.";
+          errorMessage = backendMessage || "Gói đăng tin đã hết hạn hoặc vượt giới hạn.";
         } else if (backendMessage?.includes('TITLE_REQUIRED') || backendMessage?.includes('PRICE_REQUIRED')) {
           errorMessage = "Vui lòng điền đầy đủ thông tin bắt buộc.";
         } else {
