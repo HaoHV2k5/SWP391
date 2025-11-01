@@ -19,6 +19,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -114,17 +116,41 @@ public class ProductService {
         List<Product> products = productRepository.findBySellerIdAndIsPostedTrue(seller.getId());
         return productMapper.toResponseList(products);
     }
-    // lay cac san pham pending staff
-    public List<ProductResponseStaff> getPendingProducts() {
-        List<Product> products = productRepository.findPendingProducts();
-        List<ProductResponseStaff> listResponseStaff = productMapper.toResponseListStaff(products);
-        for (int i = 0; i < listResponseStaff.size(); i++) {
-            Product pro = products.get(i);
-            String packageName = userPackageTransactionRepository.findPostingPackageByUserIdAndActiveTrue(pro.getSeller().getId()).getPostingPackage().getName();
-            listResponseStaff.get(i).setPackageName(packageName);
-        }
-        return listResponseStaff;
+   // lay cac san pham pending staff
+public List<ProductResponseStaff> getPendingProducts() {
+    // Step 1: Get all users with require_approval = 1
+    List<UserPostingPackage> requireApprovalPackages = userPackageTransactionRepository.findByActiveTrueAndPostingPackageRequireApprovalTrue();
+    Set<Long> sellerIdsWithRequireApproval = requireApprovalPackages.stream()
+            .map(upp -> upp.getUser().getId())
+            .collect(java.util.stream.Collectors.toSet());
+    
+    // Step 2: Get all pending products
+    List<Product> allPendingProducts = productRepository.findPendingProducts();
+    
+    // Step 3: Filter products to only sellers with require_approval packages
+    List<Product> filteredProducts = allPendingProducts.stream()
+            .filter(p -> sellerIdsWithRequireApproval.contains(p.getSeller().getId()))
+            .toList();
+    
+    // Step 4: Map to response and add package names
+    List<ProductResponseStaff> listResponseStaff = productMapper.toResponseListStaff(filteredProducts);
+    
+    // Step 5: Add package names
+    Map<Long, String> packageNameMap = requireApprovalPackages.stream()
+            .collect(java.util.stream.Collectors.toMap(
+                    upp -> upp.getUser().getId(),
+                    upp -> upp.getPostingPackage() != null ? upp.getPostingPackage().getName() : "N/A",
+                    (existing, replacement) -> existing
+            ));
+    
+    for (int i = 0; i < listResponseStaff.size(); i++) {
+        Long sellerId = filteredProducts.get(i).getSeller().getId();
+        String packageName = packageNameMap.getOrDefault(sellerId, "N/A");
+        listResponseStaff.get(i).setPackageName(packageName);
     }
+    
+    return listResponseStaff;
+}
     // tu choi post boi admin va staff
     public ProductResponse rejectProduct(Long id,  String reason) {
         Product product = productRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));

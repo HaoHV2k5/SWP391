@@ -53,6 +53,7 @@ import ProtectedAdminRoute from "./routes/ProtectedAdminRoute";
 import AppService from "./components/homepageContainer/navigation/AppService";
 import "./App.css";
 import PriceSuggestChat from "./components/ai/PriceSuggestChat";
+import OrdersBought from "./pages/member/OrdersBought";
 
 // ===========================================
 // MAIN APP COMPONENT
@@ -179,7 +180,11 @@ function AppContent() {
 
   const currentRole = user?.user?.role || user?.role;
   const isStaffUser = user && isStaff(currentRole);
-  const isAdminUser = user && (currentRole === "ROLE_ADMIN" || currentRole === "ADMIN" || currentRole === "admin");
+  const isAdminUser =
+    user &&
+    (currentRole === "ROLE_ADMIN" ||
+      currentRole === "ADMIN" ||
+      currentRole === "admin");
 
   /**
    * Auto-redirect staff user đến trang staff sau khi đăng nhập
@@ -224,12 +229,54 @@ function AppContent() {
         <Route path="/verify-otp" element={<OTPVerificationPage />} />
 
         {/* ADMIN ROUTES - Protected */}
-        <Route path="/admin" element={<ProtectedAdminRoute user={user}><AdminPage user={user} /></ProtectedAdminRoute>} />
-        <Route path="/admin/users" element={<ProtectedAdminRoute user={user}><AdminPage user={user} /></ProtectedAdminRoute>} />
-        <Route path="/admin/products" element={<ProtectedAdminRoute user={user}><AdminPage user={user} /></ProtectedAdminRoute>} />
-        <Route path="/admin/kyc" element={<ProtectedAdminRoute user={user}><AdminPage user={user} /></ProtectedAdminRoute>} />
-        <Route path="/admin/complaints" element={<ProtectedAdminRoute user={user}><AdminPage user={user} /></ProtectedAdminRoute>} />
-        <Route path="/admin/roles" element={<ProtectedAdminRoute user={user}><AdminPage user={user} /></ProtectedAdminRoute>} />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedAdminRoute user={user}>
+              <AdminPage user={user} />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedAdminRoute user={user}>
+              <AdminPage user={user} />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/admin/products"
+          element={
+            <ProtectedAdminRoute user={user}>
+              <AdminPage user={user} />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/admin/kyc"
+          element={
+            <ProtectedAdminRoute user={user}>
+              <AdminPage user={user} />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/admin/complaints"
+          element={
+            <ProtectedAdminRoute user={user}>
+              <AdminPage user={user} />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/admin/roles"
+          element={
+            <ProtectedAdminRoute user={user}>
+              <AdminPage user={user} />
+            </ProtectedAdminRoute>
+          }
+        />
 
         {/* STAFF ROUTES - Protected */}
         <Route
@@ -251,11 +298,24 @@ function AppContent() {
         <Route path="/my-orders" element={<MyOrders user={user} />} />
         <Route path="/contracts" element={<MemberContracts user={user} />} />
         <Route path="/post-ad" element={<PostAd user={user} />} />
-        <Route path="/reviews-about-me" element={<ReviewsAboutMePage user={user} />} />
+        <Route path="/ordered" element={<OrdersBought user={user} />} />
+        <Route
+          path="/reviews-about-me"
+          element={<ReviewsAboutMePage user={user} />}
+        />
         <Route path="/my-reviews" element={<MyReviewsPage user={user} />} />
-        <Route path="/reviews/seller/:sellerId" element={<SellerReviewsPage user={user} />} />
-        <Route path="/complaints-about-me" element={<ComplaintsAboutMePage user={user} />} />
-        <Route path="/my-complaints" element={<MyComplaintsPage user={user} />} />
+        <Route
+          path="/reviews/seller/:sellerId"
+          element={<SellerReviewsPage user={user} />}
+        />
+        <Route
+          path="/complaints-about-me"
+          element={<ComplaintsAboutMePage user={user} />}
+        />
+        <Route
+          path="/my-complaints"
+          element={<MyComplaintsPage user={user} />}
+        />
 
         {/* PRODUCT ROUTES */}
         <Route path="/products/:type" element={<CategoryRouter />} />

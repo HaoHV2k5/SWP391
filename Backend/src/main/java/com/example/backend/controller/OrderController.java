@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import com.example.backend.dto.request.BuyProductRequest;
 import com.example.backend.dto.response.ApiResponse;
 import com.example.backend.dto.response.OrderResponse;
+import com.example.backend.dto.response.ProductResponseStaff;
 import com.example.backend.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -54,5 +55,15 @@ public class OrderController {
     public ApiResponse<Void> requestOrderAdminReview(@ModelAttribute OrderReviewRequest request) {
         orderService.sellerRequestAdminReview(request);
         return ApiResponse.<Void>builder().message("Đã gửi yêu cầu xác nhận tới admin").build();
+    }
+
+        @PreAuthorize("hasAnyAuthority('ROLE_USER','ROLE_SELLER')")
+    @GetMapping("/get-ordered/{buyerId}")
+    public ApiResponse<List<OrderResponse>> getOrderedByBuyerId(@PathVariable Long buyerId) {
+        List<OrderResponse> list = orderService.getOrdersByBuyerId(buyerId);
+        return ApiResponse.<List<OrderResponse>>builder()
+                .message("Lấy danh sách đơn hàng thành công")
+                .data(list)
+                .build();
     }
 }

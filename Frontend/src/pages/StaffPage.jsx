@@ -45,11 +45,12 @@ const StaffPage = ({ user, onLogout }) => {
   const { isCheckingAuth } = useStaffAuth(user); //KHÔNG truyền navigate ở đây
 
   useEffect(() => {
-    // ❗ dùng reload(), không phải loadStats()
+    // dùng reload(), không phải loadStats()
     statsHook.reload?.();
   }, [statsHook]);
 
   const menuItems = [
+    getItem("Tổng quan", TAB_KEYS.DASHBOARD, <PieChartOutlined />),
     getItem("Quản Lý Tin đăng", TAB_KEYS.PRODUCTS, <AppstoreOutlined />),
     getItem("Quản Lý KYC", TAB_KEYS.KYC, <TeamOutlined />),
     getItem(
@@ -57,8 +58,7 @@ const StaffPage = ({ user, onLogout }) => {
       TAB_KEYS.COMPLAINTS,
       <ExclamationCircleOutlined />
     ),
-    getItem("Tổng quan", TAB_KEYS.DASHBOARD, <PieChartOutlined />),
-  ];
+  ]; 
 
   if (isCheckingAuth) {
     return (
@@ -73,10 +73,9 @@ const StaffPage = ({ user, onLogout }) => {
   if (!user) return null;
 
   const titles = {
+    [TAB_KEYS.DASHBOARD]: "Tổng Quan",
     [TAB_KEYS.PRODUCTS]: "Duyệt Tin Đăng",
     [TAB_KEYS.KYC]: "Duyệt Hồ Sơ KYC",
-    [TAB_KEYS.COMPLAINTS]: "Quản lý Khiếu Nại",
-    [TAB_KEYS.DASHBOARD]: "Tổng Quan",
   };
 
   return (
