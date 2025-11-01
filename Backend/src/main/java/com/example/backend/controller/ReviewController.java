@@ -43,11 +43,9 @@ public class ReviewController {
                 .build();
     }
     
-    // Seller xem tất cả review của mình
-    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    // Xem tất cả review của seller (public - mọi người đều có thể xem)
     @GetMapping("/seller/{sellerId}")
-    @Operation(summary = "Get reviews for seller", description = "Get all reviews for a specific seller")
-    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Get reviews for seller", description = "Get all reviews for a specific seller (public access)")
     public ApiResponse<Page<ReviewResponse>> getReviewsForSeller(
             @PathVariable Long sellerId,
             @RequestParam(defaultValue = "0") int page,
@@ -63,11 +61,9 @@ public class ReviewController {
                 .build();
     }
     
-    // Seller xem review theo rating cụ thể
-    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    // Xem review theo rating cụ thể (public - mọi người đều có thể xem)
     @GetMapping("/seller/{sellerId}/rating/{rating}")
-    @Operation(summary = "Get reviews by rating", description = "Get reviews for a seller filtered by specific rating")
-    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Get reviews by rating", description = "Get reviews for a seller filtered by specific rating (public access)")
     public ApiResponse<Page<ReviewResponse>> getReviewsForSellerByRating(
             @PathVariable Long sellerId,
             @PathVariable Integer rating,
@@ -84,11 +80,9 @@ public class ReviewController {
                 .build();
     }
     
-    // Seller xem thống kê review
-    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    // Xem thống kê review (public - mọi người đều có thể xem)
     @GetMapping("/seller/{sellerId}/stats")
-    @Operation(summary = "Get review statistics", description = "Get review statistics for a seller")
-    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Get review statistics", description = "Get review statistics for a seller (public access)")
     public ApiResponse<ReviewService.ReviewStatsResponse> getReviewStats(
             @PathVariable Long sellerId) {
         

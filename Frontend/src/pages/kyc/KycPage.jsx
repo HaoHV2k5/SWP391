@@ -31,9 +31,12 @@ const KycPage = ({ user }) => {
       if (result.success) {
         setCurrentKyc(result.data);
       } else {
-        // Nếu chưa có KYC, không hiển thị lỗi
-        if (result.message.includes('KYC_NOT_EXISTED')) {
+        // Nếu chưa có KYC (không phải lỗi thực sự), không hiển thị lỗi
+        if (result.notExists || 
+            result.message.includes('chưa có KYC') || 
+            result.message.includes('KYC_NOT_EXISTED')) {
           setCurrentKyc(null);
+          setError(''); // Không hiển thị lỗi khi chưa có KYC
         } else {
           setError(result.message);
         }

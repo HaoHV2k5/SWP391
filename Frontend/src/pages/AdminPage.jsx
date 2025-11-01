@@ -8,6 +8,8 @@ import DashboardTab from "../components/admin/DashboardTab";
 import UsersTab from "../components/admin/UsersTab";
 import ProductsTab from "../components/admin/ProductsTab";
 import KYCTab from "../components/admin/KYCTab";
+import AdminComplaintTab from "../components/admin/AdminComplaintTab";
+import RolesManagementTab from "../components/admin/RolesManagementTab";
 
 const AdminPage = ({ user }) => {
   const navigate = useNavigate();
@@ -19,6 +21,8 @@ const AdminPage = ({ user }) => {
     if (path === "/admin/users") return "users";
     if (path === "/admin/products") return "products";
     if (path === "/admin/kyc") return "kyc";
+    if (path === "/admin/complaints") return "complaints";
+    if (path === "/admin/roles") return "roles";
     if (path === "/admin") return "dashboard";
     return "dashboard";
   }, [location.pathname]);
@@ -91,7 +95,7 @@ const AdminPage = ({ user }) => {
     setActiveTab(newActiveTab);
   }, [location.pathname, getActiveTabFromPath]);
 
-  // Authentication check - tách biệt khỏi tab logic
+  // Authentication check - simplified vì đã có ProtectedAdminRoute ở App.jsx
   useEffect(() => {
     console.log("=== AdminPage useEffect ===");
     console.log("AdminPage - User object:", user);
@@ -110,33 +114,10 @@ const AdminPage = ({ user }) => {
       return () => clearTimeout(timer);
     }
 
-    // User đã có, kiểm tra auth
+    // User đã có, set checking auth = false
     setIsCheckingAuth(false);
-
-    // Kiểm tra role trong các cấu trúc khác nhau
-    let userRole = null;
-    if (user.user && user.user.role) {
-      userRole = user.user.role;
-      console.log("✅ Found role in user.user.role:", userRole);
-    } else if (user.role) {
-      userRole = user.role;
-      console.log("✅ Found role in user.role:", userRole);
-    } else if (user.roles && user.roles.length > 0) {
-      userRole = user.roles[0].name || user.roles[0];
-      console.log("✅ Found role in user.roles:", userRole);
-    }
-
-    console.log("🔍 Detected user role:", userRole);
-
-    if (userRole !== "ROLE_ADMIN") {
-      console.log("❌ User role is not admin:", userRole);
-      navigate("/");
-      toast.error("Bạn không có quyền truy cập trang admin!");
-      return;
-    }
-
     console.log("✅ Admin access granted");
-  }, [user, navigate]); // Loại bỏ activeTab và loadUsers khỏi dependencies
+  }, [user, navigate]);
 
   // Load users when tab changes to users - chỉ chạy khi cần thiết
   useEffect(() => {
@@ -196,8 +177,8 @@ const AdminPage = ({ user }) => {
     localStorage.removeItem("userData");
     toast.success("Đăng xuất thành công!");
     setTimeout(() => {
-      navigate("/login");
-    }, 1000);
+      navigate("/"); // Redirect về homepage thay vì login
+    }, 500);
   };
 
   if (isCheckingAuth) {
@@ -338,6 +319,8 @@ const AdminPage = ({ user }) => {
                   {activeTab === "users" && "Người dùng"}
                   {activeTab === "products" && "Sản phẩm"}
                   {activeTab === "kyc" && "KYC Approval"}
+                  {activeTab === "complaints" && "Khiếu nại"}
+                  {activeTab === "roles" && "Phân quyền"}
                 </span>
               </div>
             </div>
@@ -451,6 +434,8 @@ const AdminPage = ({ user }) => {
               {activeTab === "users" && "👥 Quản lý người dùng"}
               {activeTab === "products" && "📦 Quản lý sản phẩm"}
               {activeTab === "kyc" && "🛡️ Duyệt KYC"}
+              {activeTab === "complaints" && "⚠️ Quản lý khiếu nại"}
+              {activeTab === "roles" && "🔐 Quản lý phân quyền"}
             </h1>
 
             <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
@@ -521,8 +506,22 @@ const AdminPage = ({ user }) => {
               </div>
             )}
 
+            {/* Complaints Tab */}
+            {activeTab === "complaints" && (
+              <div key="complaints-content">
+                <AdminComplaintTab />
+              </div>
+            )}
+
+            {/* Roles Tab */}
+            {activeTab === "roles" && (
+              <div key="roles-content">
+                <RolesManagementTab />
+              </div>
+            )}
+
             {/* Fallback - nếu không có tab nào match */}
-            {!["dashboard", "users", "products", "kyc"].includes(activeTab) && (
+            {!["dashboard", "users", "products", "kyc", "complaints", "roles"].includes(activeTab) && (
               <div style={{ textAlign: "center", padding: "2rem" }}>
                 <p style={{ color: "rgba(255, 255, 255, 0.7)" }}>
                   Tab không xác định: {activeTab}
