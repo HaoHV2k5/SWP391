@@ -47,6 +47,7 @@ import ProtectedStaffRoute from "./routes/ProtectedStaffRoute";
 import AppService from "./components/homepageContainer/navigation/AppService";
 import "./App.css";
 import PriceSuggestChat from "./components/ai/PriceSuggestChat";
+import OrdersBought from "./pages/member/OrdersBought";
 
 // ===========================================
 // MAIN APP COMPONENT
@@ -231,6 +232,7 @@ function AppContent() {
         <Route path="/my-orders" element={<MyOrders user={user} />} />
         <Route path="/contracts" element={<MemberContracts user={user} />} />
         <Route path="/post-ad" element={<PostAd user={user} />} />
+        <Route path="/ordered" element={<OrdersBought user={user} />} />
 
         {/* PRODUCT ROUTES */}
         <Route path="/products/:type" element={<CategoryRouter />} />

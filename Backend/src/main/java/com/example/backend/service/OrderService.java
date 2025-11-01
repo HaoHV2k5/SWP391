@@ -9,6 +9,7 @@ import com.example.backend.entity.OrderEscrow;
 import com.example.backend.entity.Product;
 import com.example.backend.entity.User;
 import com.example.backend.enums.EscrowStatus;
+import com.example.backend.enums.OrderStatus;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
 import com.example.backend.mapper.OrderMapper;
@@ -152,5 +153,10 @@ public class OrderService {
         escrow.setAdminRejectReason(reason);
         escrow.setAdminInvolved(true);
         orderEscrowRepository.save(escrow);
+    }
+
+    public List<OrderResponse> getOrdersByBuyerId(Long buyerId) {
+        return orderRespository.findAllByBuyerIdAndStatusOrderByCreatedAtDesc(buyerId, OrderStatus.ACCEPTED).
+                stream().map(orderMapper::toOrderResponse).toList();
     }
 }

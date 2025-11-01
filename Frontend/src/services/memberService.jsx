@@ -69,16 +69,19 @@ export const memberService = {
       return {
         success: false,
         message:
-          error.response?.data?.message || "Không thể cập nhật thông tin profile",
+          error.response?.data?.message ||
+          "Không thể cập nhật thông tin profile",
       };
     }
   },
 
-
   // Đổi mật khẩu
   async changePassword(passwordData) {
     try {
-      const response = await apiClient.post("/users/me/change-password", passwordData);
+      const response = await apiClient.post(
+        "/users/me/change-password",
+        passwordData
+      );
       return {
         success: true,
         data: response.data,
@@ -86,8 +89,7 @@ export const memberService = {
     } catch (error) {
       return {
         success: false,
-        message:
-          error.response?.data?.message || "Không thể đổi mật khẩu",
+        message: error.response?.data?.message || "Không thể đổi mật khẩu",
       };
     }
   },
@@ -95,17 +97,19 @@ export const memberService = {
   // POST sản phẩm đã được admin duyệt
   async postProduct(productId) {
     try {
-      const response = await apiClient.post(`/products/post/seller?productId=${productId}`);
+      const response = await apiClient.post(
+        `/products/post/seller?productId=${productId}`
+      );
       return {
         success: true,
         data: response.data,
-        message: "Đã POST sản phẩm thành công! Sản phẩm sẽ hiển thị trên trang chủ.",
+        message:
+          "Đã POST sản phẩm thành công! Sản phẩm sẽ hiển thị trên trang chủ.",
       };
     } catch (error) {
       return {
         success: false,
-        message:
-          error.response?.data?.message || "Không thể POST sản phẩm",
+        message: error.response?.data?.message || "Không thể POST sản phẩm",
       };
     }
   },
@@ -122,15 +126,32 @@ export const memberService = {
       return {
         success: false,
         message:
-          error.response?.data?.message || "Không thể lấy danh sách sản phẩm đã duyệt",
+          error.response?.data?.message ||
+          "Không thể lấy danh sách sản phẩm đã duyệt",
       };
     }
   },
 
   // Cập nhật avatar - gọi avatarService để xử lý
   async updateAvatar(file) {
-    const { uploadAvatar } = await import('./avatarService');
+    const { uploadAvatar } = await import("./avatarService");
     return await uploadAvatar(file);
+  },
+  async getBoughtOrders(buyerId) {
+    try {
+      const response = await apiClient.get(`/order/get-ordered/26`);
+      return {
+        success: true,
+        message: response.data?.message || "OK",
+        data: response.data?.data || [], // map đúng theo response
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Không thể lấy danh sách đơn đã mua",
+      };
+    }
   },
 };
 

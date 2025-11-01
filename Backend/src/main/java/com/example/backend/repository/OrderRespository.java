@@ -3,6 +3,7 @@ package com.example.backend.repository;
 import com.example.backend.entity.Order;
 import com.example.backend.entity.Product;
 import com.example.backend.entity.User;
+import com.example.backend.enums.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,5 +29,7 @@ public interface OrderRespository extends JpaRepository<Order, Long> {
                "AND c.paymentCompleted = true " +
                "AND c.deliveryCompleted = true")
         boolean hasCompletedPurchase(@Param("buyerId") Long buyerId, @Param("sellerId") Long sellerId);
+
+    List<Order> findAllByBuyerIdAndStatusOrderByCreatedAtDesc(Long buyerId, OrderStatus status);
 
 }
