@@ -27,9 +27,9 @@ public class ComplaintController {
     /**
      * Tạo complaint mới - chỉ buyer có thể tạo
      */
-    @PostMapping
-    @PreAuthorize("hasAuthority('ROLE_BUYER')")
-    public ApiResponse<ComplaintResponse> createComplaint(@RequestBody ComplaintRequest request, Authentication authentication) {
+    @PostMapping(consumes = "multipart/form-data")
+    @PreAuthorize("hasAnyAuthority('ROLE_BUYER', 'ROLE_USER')")
+    public ApiResponse<ComplaintResponse> createComplaint(@ModelAttribute ComplaintRequest request, Authentication authentication) {
         String username = authentication.getName();
         User user = userService.getUserByUsername(username);
         
@@ -45,7 +45,7 @@ public class ComplaintController {
      * Lấy tất cả complaint của buyer hiện tại
      */
     @GetMapping("/my-complaints")
-    @PreAuthorize("hasAuthority('ROLE_BUYER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_BUYER', 'ROLE_USER')")
     public ApiResponse<List<ComplaintResponse>> getMyComplaints(Authentication authentication) {
         String username = authentication.getName();
         User user = userService.getUserByUsername(username);
@@ -79,7 +79,7 @@ public class ComplaintController {
      * Lấy chi tiết một complaint
      */
     @GetMapping("/{complaintId}")
-    @PreAuthorize("hasAnyAuthority('ROLE_BUYER', 'ROLE_SELLER', 'ROLE_STAFF' ,'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_BUYER', 'ROLE_USER', 'ROLE_SELLER', 'ROLE_STAFF' ,'ROLE_ADMIN')")
     public ApiResponse<ComplaintResponse> getComplaintById(@PathVariable Long complaintId) {
         ComplaintResponse complaint = complaintService.getComplaintById(complaintId);
         
@@ -90,10 +90,10 @@ public class ComplaintController {
     }
     
     /**
-     * Lấy tất cả complaint (chỉ admin)
+     * Lấy tất cả complaint (admin và staff)
      */
     @GetMapping("/admin/all")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_STAFF')")
     public ApiResponse<List<ComplaintResponse>> getAllComplaints() {
         List<ComplaintResponse> complaints = complaintService.getAllComplaints();
         
@@ -107,7 +107,7 @@ public class ComplaintController {
      * Kiểm tra buyer và seller đã có giao dịch hoàn thành chưa
      */
     @GetMapping("/check-transaction/{sellerId}")
-    @PreAuthorize("hasAuthority('ROLE_BUYER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_BUYER', 'ROLE_USER')")
     public ApiResponse<Boolean> checkCompletedTransaction(@PathVariable Long sellerId, Authentication authentication) {
         String username = authentication.getName();
         User user = userService.getUserByUsername(username);

@@ -75,11 +75,23 @@ const reviewService = {
       const status = error?.response?.status;
       const backendMessage =
         error?.response?.data?.message || error?.message;
+      // Thông báo lỗi thân thiện không có mã lỗi
+      let userFriendlyMessage = 'Không thể gửi đánh giá';
+      if (status === 401) {
+        userFriendlyMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại';
+      } else if (status === 403) {
+        userFriendlyMessage = 'Bạn không có quyền tạo đánh giá';
+      } else if (status === 400) {
+        userFriendlyMessage = backendMessage || 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại';
+      } else if (status >= 500) {
+        userFriendlyMessage = 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau';
+      } else if (!status) {
+        userFriendlyMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet';
+      }
+      
       return {
         success: false,
-        message: `Lỗi tạo review (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: userFriendlyMessage
       };
     }
   },
@@ -106,11 +118,23 @@ const reviewService = {
       const status = error?.response?.status;
       const backendMessage =
         error?.response?.data?.message || error?.message;
+      // Thông báo lỗi thân thiện không có mã lỗi
+      let userFriendlyMessage = 'Không thể tải đánh giá';
+      if (status === 401) {
+        userFriendlyMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại';
+      } else if (status === 403) {
+        userFriendlyMessage = 'Bạn không có quyền xem đánh giá này';
+      } else if (status === 404) {
+        userFriendlyMessage = 'Không tìm thấy đánh giá';
+      } else if (status >= 500) {
+        userFriendlyMessage = 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau';
+      } else if (!status) {
+        userFriendlyMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet';
+      }
+      
       return {
         success: false,
-        message: `Lỗi tải reviews (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: userFriendlyMessage
       };
     }
   },
@@ -137,11 +161,23 @@ const reviewService = {
       const status = error?.response?.status;
       const backendMessage =
         error?.response?.data?.message || error?.message;
+      // Thông báo lỗi thân thiện không có mã lỗi
+      let userFriendlyMessage = 'Không thể tải đánh giá';
+      if (status === 401) {
+        userFriendlyMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại';
+      } else if (status === 403) {
+        userFriendlyMessage = 'Bạn không có quyền xem đánh giá này';
+      } else if (status === 404) {
+        userFriendlyMessage = 'Không tìm thấy đánh giá';
+      } else if (status >= 500) {
+        userFriendlyMessage = 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau';
+      } else if (!status) {
+        userFriendlyMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet';
+      }
+      
       return {
         success: false,
-        message: `Lỗi tải reviews (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: userFriendlyMessage
       };
     }
   },
@@ -194,11 +230,23 @@ const reviewService = {
       const status = error?.response?.status;
       const backendMessage =
         error?.response?.data?.message || error?.message;
+      // Thông báo lỗi thân thiện không có mã lỗi
+      let userFriendlyMessage = 'Không thể xóa đánh giá';
+      if (status === 401) {
+        userFriendlyMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại';
+      } else if (status === 403) {
+        userFriendlyMessage = 'Bạn không có quyền xóa đánh giá này';
+      } else if (status === 404) {
+        userFriendlyMessage = 'Không tìm thấy đánh giá cần xóa';
+      } else if (status >= 500) {
+        userFriendlyMessage = 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau';
+      } else if (!status) {
+        userFriendlyMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet';
+      }
+      
       return {
         success: false,
-        message: `Lỗi xóa review (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: userFriendlyMessage
       };
     }
   },
@@ -221,11 +269,23 @@ const reviewService = {
       const status = error?.response?.status;
       const backendMessage =
         error?.response?.data?.message || error?.message;
+      // Thông báo lỗi thân thiện không có mã lỗi
+      let userFriendlyMessage = 'Không thể tải thống kê đánh giá';
+      if (status === 401) {
+        userFriendlyMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại';
+      } else if (status === 403) {
+        userFriendlyMessage = 'Bạn không có quyền xem thống kê này';
+      } else if (status === 404) {
+        userFriendlyMessage = 'Không tìm thấy thống kê';
+      } else if (status >= 500) {
+        userFriendlyMessage = 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau';
+      } else if (!status) {
+        userFriendlyMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet';
+      }
+      
       return {
         success: false,
-        message: `Lỗi tải thống kê review (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: userFriendlyMessage
       };
     }
   },
@@ -253,11 +313,23 @@ const reviewService = {
       const status = error?.response?.status;
       const backendMessage =
         error?.response?.data?.message || error?.message;
+      // Thông báo lỗi thân thiện không có mã lỗi
+      let userFriendlyMessage = 'Không thể tải đánh giá';
+      if (status === 401) {
+        userFriendlyMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại';
+      } else if (status === 403) {
+        userFriendlyMessage = 'Bạn không có quyền xem đánh giá này';
+      } else if (status === 404) {
+        userFriendlyMessage = 'Không tìm thấy đánh giá';
+      } else if (status >= 500) {
+        userFriendlyMessage = 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau';
+      } else if (!status) {
+        userFriendlyMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet';
+      }
+      
       return {
         success: false,
-        message: `Lỗi tải reviews (${status || "network"}): ${
-          backendMessage || "Không rõ"
-        }`,
+        message: userFriendlyMessage
       };
     }
   },

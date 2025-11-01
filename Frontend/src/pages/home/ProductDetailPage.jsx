@@ -5,7 +5,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { useProductDetailLogic } from "../../hooks/useProductDetail";
 import wishlistService from "../../services/wishlistService";
 import BuyButton from "../../components/order/BuyButton";
-import ReviewsSection from "../../components/review/ReviewsSection";
+import ReviewSummary from "../../components/review/ReviewSummary";
+import ReviewForm from "../../components/review/ReviewForm";
 import "../../components/homepageContainer/styles/ProductDetail.css";
 
 const ProductDetailPage = ({ user }) => {
@@ -318,10 +319,19 @@ const ProductDetailPage = ({ user }) => {
             
             {/* Reviews Section */}
             <div className="col-md-3">
-              <ReviewsSection 
+              <div className="mb-3">
+                <ReviewSummary 
+                  sellerId={data?.sellerId}
+                  productId={data?.id}
+                />
+              </div>
+              <ReviewForm 
                 user={user}
                 sellerId={data?.sellerId}
-                formatDate={formatDate}
+                onSuccess={() => {
+                  // Có thể reload page hoặc show message
+                  window.location.reload();
+                }}
               />
             </div>
           </div>

@@ -36,6 +36,7 @@ import PaymentDashboard from "./components/seller/PaymentDashboard";
 import PaymentReturnPage from "./pages/PaymentReturnPage";
 import ReviewsAboutMePage from "./pages/reviews/ReviewsAboutMePage";
 import MyReviewsPage from "./pages/reviews/MyReviewsPage";
+import SellerReviewsPage from "./pages/reviews/SellerReviewsPage";
 import ComplaintsAboutMePage from "./pages/complaints/ComplaintsAboutMePage";
 import MyComplaintsPage from "./pages/complaints/MyComplaintsPage";
 
@@ -48,6 +49,7 @@ import SearchResultsPage from "./pages/home/SearchResultsPage";
 // Utils and services
 import { normalizeLoginResponse, persistAuth, isStaff } from "./utils/auth";
 import ProtectedStaffRoute from "./routes/ProtectedStaffRoute";
+import ProtectedAdminRoute from "./routes/ProtectedAdminRoute";
 import AppService from "./components/homepageContainer/navigation/AppService";
 import "./App.css";
 import PriceSuggestChat from "./components/ai/PriceSuggestChat";
@@ -177,6 +179,7 @@ function AppContent() {
 
   const currentRole = user?.user?.role || user?.role;
   const isStaffUser = user && isStaff(currentRole);
+  const isAdminUser = user && (currentRole === "ROLE_ADMIN" || currentRole === "ADMIN" || currentRole === "admin");
 
   /**
    * Auto-redirect staff user đến trang staff sau khi đăng nhập
@@ -189,6 +192,17 @@ function AppContent() {
       return () => clearTimeout(t);
     }
   }, [isStaffUser, isAuthPage, isStaffPage, isAdminPage, navigate]);
+
+  /**
+   * Tự động logout admin khi rời khỏi trang admin
+   * Admin không nên có tài khoản trên homepage như user thường
+   */
+  useEffect(() => {
+    if (isAdminUser && !isAdminPage && !isAuthPage) {
+      console.log("🚫 Admin đang ở ngoài trang admin, logout...");
+      handleLogout();
+    }
+  }, [isAdminUser, isAdminPage, isAuthPage]);
 
   // ===========================================
   // RENDER
@@ -209,11 +223,13 @@ function AppContent() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-otp" element={<OTPVerificationPage />} />
 
-        {/* ADMIN ROUTES */}
-        <Route path="/admin" element={<AdminPage user={user} />} />
-        <Route path="/admin/users" element={<AdminPage user={user} />} />
-        <Route path="/admin/products" element={<AdminPage user={user} />} />
-        <Route path="/admin/kyc" element={<AdminPage user={user} />} />
+        {/* ADMIN ROUTES - Protected */}
+        <Route path="/admin" element={<ProtectedAdminRoute user={user}><AdminPage user={user} /></ProtectedAdminRoute>} />
+        <Route path="/admin/users" element={<ProtectedAdminRoute user={user}><AdminPage user={user} /></ProtectedAdminRoute>} />
+        <Route path="/admin/products" element={<ProtectedAdminRoute user={user}><AdminPage user={user} /></ProtectedAdminRoute>} />
+        <Route path="/admin/kyc" element={<ProtectedAdminRoute user={user}><AdminPage user={user} /></ProtectedAdminRoute>} />
+        <Route path="/admin/complaints" element={<ProtectedAdminRoute user={user}><AdminPage user={user} /></ProtectedAdminRoute>} />
+        <Route path="/admin/roles" element={<ProtectedAdminRoute user={user}><AdminPage user={user} /></ProtectedAdminRoute>} />
 
         {/* STAFF ROUTES - Protected */}
         <Route
@@ -237,6 +253,7 @@ function AppContent() {
         <Route path="/post-ad" element={<PostAd user={user} />} />
         <Route path="/reviews-about-me" element={<ReviewsAboutMePage user={user} />} />
         <Route path="/my-reviews" element={<MyReviewsPage user={user} />} />
+        <Route path="/reviews/seller/:sellerId" element={<SellerReviewsPage user={user} />} />
         <Route path="/complaints-about-me" element={<ComplaintsAboutMePage user={user} />} />
         <Route path="/my-complaints" element={<MyComplaintsPage user={user} />} />
 

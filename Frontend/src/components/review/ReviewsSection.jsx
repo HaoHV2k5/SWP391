@@ -72,7 +72,11 @@ const ReviewsSection = ({ user, sellerId, formatDate }) => {
           loading: false
         }));
       } else {
-        toast.error(result.message || "Lỗi tải reviews");
+        // Không hiển thị toast khi lỗi 403 - có thể do không có quyền (chưa đăng nhập hoặc không phải seller)
+        // Chỉ log để debug, không làm phiền user
+        if (result.message && !result.message.includes('403') && !result.message.includes('không có quyền')) {
+          toast.error(result.message || "Lỗi tải reviews");
+        }
         setReviews(prev => ({ ...prev, loading: false }));
       }
     } catch (error) {
@@ -92,6 +96,8 @@ const ReviewsSection = ({ user, sellerId, formatDate }) => {
           data: result.data
         });
       } else {
+        // Không hiển thị lỗi khi không thể load stats - có thể do không có quyền
+        // Đây không phải lỗi nghiêm trọng, chỉ là không hiển thị stats
         setStats(prev => ({ ...prev, loading: false }));
       }
     } catch (error) {
