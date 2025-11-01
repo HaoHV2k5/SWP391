@@ -36,6 +36,7 @@ import {
 import { usePendingProducts } from "../../hooks/useStaff";
 import { vnDate, statusTag, collectImages } from "../../utils/staffUtils";
 import { productsApi } from "../../services/staffApi";
+import ImageMatchCheck from "./ImageMatchCheck";
 
 const { Title, Text } = Typography;
 
@@ -183,6 +184,7 @@ const ProductsTab = () => {
   const [previewIndex, setPreviewIndex] = useState(0);
   const [pkgUI, setPkgUI] = useState(null);
   const [detail, setDetail] = useState(null);
+  const [showAIScan, setShowAIScan] = useState(false);
   const [rejectDlg, setRejectDlg] = useState({
     open: false,
     id: null,
@@ -594,7 +596,16 @@ const ProductsTab = () => {
         title={`Chi tiết tin #${detail?.id ?? "—"}`}
         open={!!detail}
         onCancel={() => setDetail(null)}
-        footer={null}
+        footer={
+          <Space>
+            <Button onClick={() => setShowAIScan(true)}>
+              AI Scan
+            </Button>
+            <Button type="primary" onClick={() => setDetail(null)}>
+              Đóng
+            </Button>
+          </Space>
+        }
         width={1000}
       >
         <style>{`
@@ -800,6 +811,17 @@ const ProductsTab = () => {
             </Col>
           </Row>
         )}
+      </Modal>
+
+      {/* AI Scan Modal */}
+      <Modal
+        title="AI Image Match Check"
+        open={showAIScan}
+        onCancel={() => setShowAIScan(false)}
+        footer={null}
+        width={800}
+      >
+        <ImageMatchCheck />
       </Modal>
 
       {/* Modal chọn lý do từ chối */}

@@ -33,6 +33,11 @@ const REJECT_REASONS = [
   { value: "OTHER", label: "Khác..." },
 ];
 
+/* ====== AI Scan Configuration ====== */
+const OPENAI_KEY = import.meta.env.VITE_OPENAI_API_KEY || "";
+const MODEL = "gpt-4o-mini";
+const DEFAULT_CCCD_PROMPT = "đây có phải là hình căn cước công danh kh";
+
 /* ====== Helper lấy ảnh front/back từ nhiều key ====== */
 function extractKycImages(rec = {}) {
   const tryKeys = (o, keys) => {
@@ -119,6 +124,8 @@ const KYCTab = () => {
 
   // chi tiết
   const [detail, setDetail] = useState(null);
+  const [aiScanResult, setAiScanResult] = useState(null); // { match: true/false, reason: string }
+  const [aiScanLoading, setAiScanLoading] = useState(false);
 
   // chọn lý do từ chối (giống ProductsTab)
   const [rejectDlg, setRejectDlg] = useState({
@@ -243,6 +250,7 @@ const KYCTab = () => {
       cancelText: "Hủy",
       onOk: async () => {
         await approve(id); // hook đã xử lý ẩn record ngay sau khi duyệt
+        setDetail(null); // Đóng modal chi tiết sau khi duyệt
       },
     });
   };
@@ -251,6 +259,131 @@ const KYCTab = () => {
     const userResp = await loadUserInfo(rec.id);
     const user = userResp?.data ?? userResp?.user ?? userResp ?? null;
     setDetail({ ...rec, __user: user });
+    setAiScanResult(null); // Reset AI scan result when opening new detail
+  };
+
+  // Convert image URL to base64
+  const urlToBase64 = async (imageUrl) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      throw new Error(`Failed to load image: ${error.message}`);
+    }
+  };
+
+  // AI Scan function - returns combined result for all images
+  const handleAIScan = async () => {
+    if (!detail) return;
+    const imgs = extractKycImages(detail);
+    if (!imgs || imgs.length === 0) {
+      setAiScanResult({ match: false, reason: "Không có ảnh để kiểm tra" });
+      return;
+    }
+    if (!OPENAI_KEY) {
+      setAiScanResult({ match: false, reason: "Lỗi: Chưa cấu hìnhKey" });
+      return;
+    }
+
+    setAiScanLoading(true);
+    try {
+      const imagesToCheck = imgs.slice(0, 2); // Check first 2 images
+      const checkPromises = imagesToCheck.map(async (url) => {
+        let dataUrl;
+        try {
+          dataUrl = await urlToBase64(url);
+        } catch (imgError) {
+          // If image fails to load, skip AI API call and return FALSE
+          return {
+            match: false,
+            reason: "Hình ảnh không tải được hoặc bị lỗi",
+          };
+        }
+
+        const systemMessage =
+          "You are a strict image-to-text verifier. " +
+          "Given a user description and an image, return ONLY 'TRUE' if the image content clearly matches the description, " +
+          "or 'FALSE' if it does not. Provide a one-sentence reason starting with 'Reason:' on the next line. " +
+          "Respond in Vietnamese. Avoid hedging; pick the most reasonable answer.";
+
+        const payload = {
+          model: MODEL,
+          messages: [
+            {
+              role: "system",
+              content: systemMessage,
+            },
+            {
+              role: "user",
+              content: [
+                { type: "text", text: `Description: ${DEFAULT_CCCD_PROMPT}` },
+                {
+                  type: "image_url",
+                  image_url: { url: dataUrl, detail: "low" },
+                },
+              ],
+            },
+          ],
+          temperature: 0,
+        };
+
+        const res = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${OPENAI_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const t = await res.text();
+          throw new Error(`HTTP ${res.status} - ${t}`);
+        }
+
+        const data = await res.json();
+        const text = data?.choices?.[0]?.message?.content ?? "";
+        const firstLine = text.split("\n")[0].trim().toUpperCase();
+        const isTrue = firstLine.includes("TRUE");
+        const reasonLine =
+          text.split("\n").find((l) => l.toLowerCase().startsWith("reason:")) ||
+          "";
+
+        return { match: isTrue, reason: reasonLine };
+      });
+
+      const allResults = await Promise.all(checkPromises);
+
+      // Combined result: FALSE if ANY image is FALSE, otherwise TRUE
+      const finalMatch = allResults.every((r) => r.match === true);
+
+      // Combine reasons in Vietnamese
+      const combinedReasons = allResults
+        .map((r, idx) => {
+          const reason = r.reason.replace(/reason:\s*/i, "").trim();
+          return reason ? `Ảnh ${idx + 1}: ${reason}` : null;
+        })
+        .filter(Boolean)
+        .join(". ");
+
+      const finalReason = finalMatch
+        ? "Tất cả ảnh đều khớp với mô tả căn cước công dân Việt Nam. " +
+          combinedReasons
+        : "Một hoặc nhiều ảnh không khớp với mô tả căn cước công dân Việt Nam. " +
+          combinedReasons;
+
+      setAiScanResult({ match: finalMatch, reason: finalReason });
+    } catch (error) {
+      setAiScanResult({ match: false, reason: `Lỗi: ${error.message}` });
+    } finally {
+      setAiScanLoading(false);
+    }
   };
 
   const imgs = extractKycImages(detail || {});
@@ -309,7 +442,20 @@ const KYCTab = () => {
         title={`Chi tiết KYC #${detail?.id ?? "—"}`}
         open={!!detail}
         onCancel={() => setDetail(null)}
-        footer={null}
+        footer={
+          <Space>
+            <Button
+              onClick={handleAIScan}
+              loading={aiScanLoading}
+              disabled={aiScanLoading}
+            >
+              AI Scan
+            </Button>
+            <Button type="primary" onClick={() => setDetail(null)}>
+              Đóng
+            </Button>
+          </Space>
+        }
         width={1000}
       >
         {detail && (
@@ -376,6 +522,89 @@ const KYCTab = () => {
                   />
                 </div>
               </div>
+
+              {/* AI Scan Result */}
+              {aiScanResult && (
+                <div
+                  style={{
+                    marginTop: 24,
+                    padding: 16,
+                    background: "#fafafa",
+                    borderRadius: 8,
+                    border: "1px solid #e5e7eb",
+                  }}
+                >
+                  <div
+                    style={{ fontWeight: 600, fontSize: 16, marginBottom: 12 }}
+                  >
+                    Kết quả AI Scan
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: 12,
+                      borderRadius: 8,
+                      background: aiScanResult.match ? "#d1fae5" : "#fee2e2",
+                      marginBottom: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: "50%",
+                        background: aiScanResult.match ? "#22c55e" : "#ef4444",
+                        color: "white",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontWeight: 700,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {aiScanResult.match ? "✔" : "✖"}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                        {aiScanResult.match
+                          ? "TRUE (Khớp)"
+                          : "FALSE (Không khớp)"}
+                      </div>
+                      {aiScanResult.reason && (
+                        <div style={{ fontSize: 14, opacity: 0.85 }}>
+                          {aiScanResult.reason}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {/* Action buttons */}
+                  <Space style={{ width: "100%", justifyContent: "flex-end" }}>
+                    <Button
+                      type="primary"
+                      loading={loading}
+                      onClick={() => approveConfirm(detail.id)}
+                    >
+                      Duyệt
+                    </Button>
+                    <Button
+                      danger
+                      loading={loading}
+                      onClick={() =>
+                        setRejectDlg({
+                          open: true,
+                          id: detail.id,
+                          reasonKey: null,
+                          customText: "",
+                        })
+                      }
+                    >
+                      Từ chối
+                    </Button>
+                  </Space>
+                </div>
+              )}
             </Col>
           </Row>
         )}
@@ -413,6 +642,7 @@ const KYCTab = () => {
             reasonKey: null,
             customText: "",
           });
+          setDetail(null); // Đóng modal chi tiết sau khi từ chối
         }}
       >
         <div style={{ marginBottom: 8 }}>Vui lòng chọn một lý do:</div>
