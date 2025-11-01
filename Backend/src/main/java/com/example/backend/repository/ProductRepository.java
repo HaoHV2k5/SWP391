@@ -29,6 +29,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findBySellerIdAndIsPostedTrue(Long sellerId);
     List<Product> findBySellerIdAndStatus(Long sellerId, ProductStatus status);
     // Tìm sản phẩm đang pending
+    @EntityGraph(attributePaths = {"seller"})
     @Query("SELECT p FROM Product p WHERE p.status = 'PENDING' ORDER BY p.createdAt DESC")
     List<Product> findPendingProducts();
     // tim san pham dan staff_approve

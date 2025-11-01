@@ -30,6 +30,12 @@ public interface ProductMapper {
 
     void updateProduct(@MappingTarget Product product, UpdateProductRequest request);
 
+    @Mapping(target = "sellerId", source = "seller.id")
+    @Mapping(target = "sellerName", source = "seller.fullname")
+    @Mapping(target = "reason", source = "reason")
+    @Mapping(target = "vehicle", source = "vehicle")
+    @Mapping(target = "battery", source = "battery")
+    @Mapping(target = "packageName", ignore = true)
     ProductResponseStaff toProductResponseStaff(Product product);
     List<ProductResponseStaff> toResponseListStaff(List<Product> products);
 }
