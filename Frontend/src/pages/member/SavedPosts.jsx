@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Button, Badge, Alert, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
+import "bootstrap-icons/font/bootstrap-icons.css";
 import MemberHeader from "../../components/member/MemberHeader";
 import wishlistService from "../../services/wishlistService";
 import "../../styles/member/index.css";
@@ -214,66 +215,99 @@ const SavedPosts = ({ user }) => {
                   </Button>
                 </Alert>
               ) : (
-                <Row className="g-4">
+                <div className="saved-posts-list">
                   {availableProducts.map((post) => (
-                    <Col lg={6} key={post.id}>
-                    <Card 
-                      className="h-100 shadow-sm border-0" 
-                      style={{ cursor: "pointer" }}
+                    <div
+                      key={post.id}
+                      className="saved-post-item"
                       onClick={() => handleProductClick(post)}
                     >
-                      <Row className="g-0 h-100">
-                        <Col md={4}>
-                          <div 
-                            className="h-100 bg-light d-flex align-items-center justify-content-center position-relative"
-                            style={{ 
-                              backgroundImage: `url(${post.image || "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=="})`,
-                              backgroundSize: "cover",
-                              backgroundPosition: "center",
-                              minHeight: "200px"
-                            }}
-                          >
-                            {!post.image && <span className="text-muted">📷</span>}
-                          </div>
-                        </Col>
-                        <Col md={8}>
-                          <Card.Body className="p-3 d-flex flex-column h-100">
-                            <div className="flex-grow-1">
-                              <div className="d-flex justify-content-between align-items-start mb-2">
-                                <Badge bg="success" className="mb-2">
-                                  Còn hàng
-                                </Badge>
-                                <Button
-                                  variant="link"
-                                  className="text-danger p-0 border-0"
-                                  onClick={(e) => handleRemoveFromSaved(post.id, e)}
-                                  disabled={loading}
-                                  title="Bỏ lưu"
-                                >
-                                  ×
-                                </Button>
-                              </div>
-                              
-                              <h6 className="card-title text-truncate mb-2">{post.title || "Không có tiêu đề"}</h6>
-                              <p className="text-success fw-bold mb-2">{post.price || "Liên hệ"}</p>
-                              <p className="text-muted small mb-2">
-                                {post.seller || "Không rõ người bán"}
-                              </p>
-                              <p className="text-muted small mb-2">
-                                {post.SellerInfo?.sellerAddress || post.brand || "Không có địa chỉ"} • {post.productType || post.brand || "Không phân loại"}
-                              </p>
-                              <p className="text-muted small">
-                                Lưu ngày: {formatDate(post.savedDate)}
-                              </p>
+                      <div className="d-flex align-items-center gap-3 p-3 bg-white border rounded mb-3 shadow-sm"
+                        style={{ cursor: "pointer" }}>
+                        {/* Image */}
+                        <div 
+                          className="saved-post-image flex-shrink-0"
+                          style={{
+                            width: "150px",
+                            height: "150px",
+                            backgroundImage: `url(${post.image || "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=="})`,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                            borderRadius: "8px",
+                            backgroundColor: "#f8f9fa"
+                          }}
+                        >
+                          {!post.image && (
+                            <div className="w-100 h-100 d-flex align-items-center justify-content-center">
+                              <span className="text-muted">📷</span>
                             </div>
-                            
-                          </Card.Body>
-                        </Col>
-                      </Row>
-                    </Card>
-                  </Col>
+                          )}
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-grow-1 d-flex flex-column">
+                          <div className="d-flex justify-content-between align-items-start mb-2">
+                            <Badge bg="success" className="mb-2">
+                              Còn hàng
+                            </Badge>
+                            <button
+                              className="btn p-0 border-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveFromSaved(post.id, e);
+                              }}
+                              disabled={loading}
+                              title="Bỏ lưu"
+                              style={{ 
+                                width: "32px",
+                                height: "32px",
+                                borderRadius: "50%",
+                                backgroundColor: "#dc3545",
+                                color: "white",
+                                border: "2px solid #dc3545",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                transition: "all 0.3s ease",
+                                cursor: loading ? "not-allowed" : "pointer"
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!loading) {
+                                  e.target.style.backgroundColor = "#c82333";
+                                  e.target.style.borderColor = "#c82333";
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!loading) {
+                                  e.target.style.backgroundColor = "#dc3545";
+                                  e.target.style.borderColor = "#dc3545";
+                                }
+                              }}
+                            >
+                              <i className="bi bi-heart-fill" style={{ fontSize: "0.9rem" }}></i>
+                            </button>
+                          </div>
+                          
+                          <h6 className="mb-2" style={{ fontSize: "16px", lineHeight: "1.4" }}>
+                            {post.title || "Không có tiêu đề"}
+                          </h6>
+                          <p className="mb-2 fw-bold text-success" style={{ fontSize: "16px" }}>
+                            {post.price && !isNaN(post.price) ? formatCurrency(post.price) : "Liên hệ"}
+                          </p>
+                          <p className="text-muted small mb-2">
+                            {post.seller || "Không rõ người bán"}
+                          </p>
+                          <p className="text-muted small mb-2">
+                            {post.SellerInfo?.sellerAddress || post.brand || "Không có địa chỉ"} • {post.productType || post.brand || "Không phân loại"}
+                          </p>
+                          <p className="text-muted small mb-0">
+                            Lưu ngày: {formatDate(post.savedDate)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   ))}
-                </Row>
+                </div>
               )}
             </div>
 

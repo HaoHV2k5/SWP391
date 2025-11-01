@@ -17,10 +17,31 @@ export const kycService = {
       return { success: true, data: response.data.data };
     } catch (error) {
       const status = error?.response?.status;
-      const message = error?.response?.data?.message || error?.message;
+      const message = error?.response?.data?.message || error?.message || '';
+      
+      // Thông báo lỗi thân thiện không có mã lỗi
+      let userFriendlyMessage = 'Không thể gửi yêu cầu KYC';
+      if (status === 401) {
+        userFriendlyMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại';
+      } else if (status === 403) {
+        userFriendlyMessage = 'Bạn không có quyền thực hiện thao tác này';
+      } else if (status === 400) {
+        if (message.includes('KYC') && (message.includes('chưa') || message.includes('not approved'))) {
+          userFriendlyMessage = 'KYC của bạn chưa được duyệt. Vui lòng chờ duyệt hoặc liên hệ admin';
+        } else {
+          userFriendlyMessage = message || 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại';
+        }
+      } else if (status === 404) {
+        userFriendlyMessage = 'Không tìm thấy thông tin cần thiết';
+      } else if (status >= 500) {
+        userFriendlyMessage = 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau';
+      } else if (!status) {
+        userFriendlyMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet';
+      }
+      
       return {
         success: false,
-        message: `Submit KYC thất bại (${status || 'network'}): ${message || 'Không rõ'}`
+        message: userFriendlyMessage
       };
     }
   },
@@ -32,10 +53,38 @@ export const kycService = {
       return { success: true, data: response.data.data };
     } catch (error) {
       const status = error?.response?.status;
-      const message = error?.response?.data?.message || error?.message;
+      const message = error?.response?.data?.message || error?.message || '';
+      
+      // Nếu chưa có KYC (không phải lỗi thực sự), trả về thông báo thân thiện
+      if (status === 400 && (
+        message.includes('không có KYC nào tồn tại') || 
+        message.includes('KYC_NOT_EXISTED') ||
+        message.toLowerCase().includes('kyc not existed')
+      )) {
+        return {
+          success: false,
+          notExists: true, // Flag để biết đây không phải lỗi thực sự
+          message: 'Bạn chưa có KYC nào được đăng ký'
+        };
+      }
+      
+      // Các lỗi khác - thông báo thân thiện không có mã lỗi
+      let userFriendlyMessage = 'Không thể tải thông tin KYC';
+      if (status === 401) {
+        userFriendlyMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại';
+      } else if (status === 403) {
+        userFriendlyMessage = 'Bạn không có quyền truy cập thông tin này';
+      } else if (status === 404) {
+        userFriendlyMessage = 'Không tìm thấy thông tin KYC';
+      } else if (status >= 500) {
+        userFriendlyMessage = 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau';
+      } else if (!status) {
+        userFriendlyMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet';
+      }
+      
       return {
         success: false,
-        message: `Lấy thông tin KYC thất bại (${status || 'network'}): ${message || 'Không rõ'}`
+        message: userFriendlyMessage
       };
     }
   },

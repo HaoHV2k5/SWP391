@@ -50,7 +50,6 @@ const KycSubmissionForm = ({ userId, onSuccess, onCancel }) => {
 
   return (
     <div className="kyc-submission-form">
-      <h3>Xác thực danh tính (KYC)</h3>
       <p className="text-muted">
         Vui lòng upload ảnh mặt trước và mặt sau của CMND/CCCD để xác thực danh tính
       </p>

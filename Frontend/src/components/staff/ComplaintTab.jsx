@@ -10,61 +10,47 @@ import {
   Input,
   Select,
   Empty,
+  Modal,
+  message,
+  Tooltip,
 } from "antd";
 import {
-  getStatusColor,
-  getStatusText,
+  EyeOutlined,
+  PlayCircleOutlined,
+  CheckCircleOutlined,
+  ReloadOutlined,
+} from "@ant-design/icons";
+import {
   formatDate,
+  vnDate,
 } from "../../utils/staffUtils";
-import { API_CONFIG } from "../../constants/staffConstants";
-
-const COMPLAINTS_PATH = import.meta.env.VITE_COMPLAINTS_PATH || ""; // ví dụ: /complaints/staff
+import complaintService from "../../services/complaintService";
+import ComplaintDetailModal from "./ComplaintDetailModal";
+import ComplaintResolveModal from "./ComplaintResolveModal";
 
 const ComplaintTab = () => {
   const [rows, setRows] = useState([]);
-  const [status, setStatus] = useState("OPEN");
+  const [status, setStatus] = useState("all");
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(false);
-  const [supported, setSupported] = useState(Boolean(COMPLAINTS_PATH));
+  const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [detailVisible, setDetailVisible] = useState(false);
+  const [resolveVisible, setResolveVisible] = useState(false);
 
-  const toArray = (data) => {
-    if (Array.isArray(data)) return data;
-    if (data && Array.isArray(data.items)) return data.items;
-    return [];
-  };
-
-  const load = async (params = {}) => {
-    if (!COMPLAINTS_PATH) return; // không gọi nếu chưa cấu hình
+  // Load danh sách complaints
+  const load = async () => {
     setLoading(true);
     try {
-      const qs = new URLSearchParams({
-        status: params.status || status,
-        page: String(params.page || 1),
-        pageSize: String(params.pageSize || 10),
-        q: params.q ?? q,
-      });
-      const res = await fetch(
-        `${API_CONFIG.BASE_URL}${COMPLAINTS_PATH}?${qs}`,
-        {
-          headers: {
-            Authorization: localStorage.getItem("token")
-              ? `Bearer ${localStorage.getItem("token")}`
-              : undefined,
-          },
-        }
-      );
-
-      if (!res.ok) {
-        setSupported(false);
+      const result = await complaintService.getAllComplaints();
+      if (result.success) {
+        setRows(result.data || []);
+      } else {
+        message.error(result.message || "Không thể tải danh sách khiếu nại");
         setRows([]);
-        return;
       }
-
-      const payload = await res.json().catch(() => ({}));
-      setRows(toArray(payload));
-      setSupported(true);
-    } catch {
-      setSupported(false);
+    } catch (error) {
+      console.error("Error loading complaints:", error);
+      message.error("Lỗi khi tải danh sách khiếu nại");
       setRows([]);
     } finally {
       setLoading(false);
@@ -72,8 +58,78 @@ const ComplaintTab = () => {
   };
 
   useEffect(() => {
-    if (COMPLAINTS_PATH) load({});
+    load();
   }, []);
+
+  // Filter complaints by status
+  const filteredRows = rows.filter((row) => {
+    if (status !== "all" && row.status !== status) return false;
+    if (q && !row.title?.toLowerCase().includes(q.toLowerCase()) && 
+        !row.description?.toLowerCase().includes(q.toLowerCase()) &&
+        !row.buyerName?.toLowerCase().includes(q.toLowerCase()) &&
+        !row.sellerName?.toLowerCase().includes(q.toLowerCase())) {
+      return false;
+    }
+    return true;
+  });
+
+  // Get status tag info
+  const getStatusTag = (status) => {
+    const statusMap = {
+      PENDING: { color: "gold", text: "Chờ xử lý" },
+      UNDER_REVIEW: { color: "processing", text: "Đang xem xét" },
+      RESOLVED_BUYER_FAVOR: { color: "green", text: "Giải quyết cho Buyer" },
+      RESOLVED_SELLER_FAVOR: { color: "green", text: "Giải quyết cho Seller" },
+      CLOSED: { color: "default", text: "Đã đóng" },
+    };
+    return statusMap[status] || { color: "default", text: status || "—" };
+  };
+
+  // Get category text
+  const getCategoryText = (category) => {
+    const categoryMap = {
+      PRODUCT_QUALITY: "Chất lượng sản phẩm",
+      DAMAGED_ITEM: "Hàng bị hư hỏng",
+      NOT_AS_DESCRIBED: "Không đúng mô tả",
+      OTHER: "Khác",
+    };
+    return categoryMap[category] || category || "—";
+  };
+
+  // Handle view details
+  const handleViewDetail = (complaint) => {
+    setSelectedComplaint(complaint);
+    setDetailVisible(true);
+  };
+
+  // Handle start review
+  const handleStartReview = async (complaint) => {
+    try {
+      const result = await complaintService.startReview(complaint.id);
+      if (result.success) {
+        message.success(result.message || "Bắt đầu xem xét thành công");
+        load();
+      } else {
+        message.error(result.message || "Không thể bắt đầu xem xét");
+      }
+    } catch (error) {
+      console.error("Error starting review:", error);
+      message.error("Lỗi khi bắt đầu xem xét");
+    }
+  };
+
+  // Handle resolve
+  const handleResolve = (complaint) => {
+    setSelectedComplaint(complaint);
+    setResolveVisible(true);
+  };
+
+  // Handle resolve modal close
+  const handleResolveModalClose = () => {
+    setResolveVisible(false);
+    setSelectedComplaint(null);
+    load();
+  };
 
   const columns = [
     {
@@ -85,78 +141,146 @@ const ComplaintTab = () => {
     },
     {
       title: "Người khiếu nại",
-      dataIndex: "user",
-      key: "user",
-      render: (_, r) => r.user?.fullName || r.userName || r.user || "N/A",
+      dataIndex: "buyerName",
+      key: "buyerName",
+      render: (name) => name || "N/A",
     },
-    { title: "Lý do", dataIndex: "reason", key: "reason" },
+    {
+      title: "Người bị khiếu nại",
+      dataIndex: "sellerName",
+      key: "sellerName",
+      render: (name) => name || "N/A",
+    },
+    {
+      title: "Tiêu đề",
+      dataIndex: "title",
+      key: "title",
+      ellipsis: true,
+    },
+    {
+      title: "Loại",
+      dataIndex: "category",
+      key: "category",
+      render: (category) => getCategoryText(category),
+    },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (s) => <Tag color={getStatusColor(s)}>{getStatusText(s)}</Tag>,
+      render: (s) => {
+        const tag = getStatusTag(s);
+        return <Tag color={tag.color}>{tag.text}</Tag>;
+      },
     },
     {
       title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (d) => formatDate(d),
+      render: (d) => vnDate(d),
+      width: 180,
+    },
+    {
+      title: "Thao tác",
+      key: "actions",
+      width: 200,
+      render: (_, record) => (
+        <Space size="small">
+          <Tooltip title="Xem chi tiết">
+            <Button
+              type="text"
+              icon={<EyeOutlined />}
+              onClick={() => handleViewDetail(record)}
+            />
+          </Tooltip>
+          {record.status === "PENDING" && (
+            <Tooltip title="Bắt đầu xem xét">
+              <Button
+                type="text"
+                icon={<PlayCircleOutlined />}
+                onClick={() => handleStartReview(record)}
+              />
+            </Tooltip>
+          )}
+          {(record.status === "PENDING" || record.status === "UNDER_REVIEW") && (
+            <Tooltip title="Giải quyết">
+              <Button
+                type="text"
+                icon={<CheckCircleOutlined />}
+                onClick={() => handleResolve(record)}
+              />
+            </Tooltip>
+          )}
+        </Space>
+      ),
     },
   ];
 
   return (
-    <Card
-      title="Danh sách khiếu nại"
-      extra={
-        supported && (
+    <>
+      <Card
+        title="Danh sách khiếu nại"
+        extra={
           <Space>
             <Select
               value={status}
-              onChange={(v) => {
-                setStatus(v);
-                load({ status: v, page: 1 });
-              }}
+              onChange={(v) => setStatus(v)}
               options={[
-                { value: "OPEN", label: "Mở" },
-                { value: "INPROGRESS", label: "Đang xử lý" },
-                { value: "RESOLVED", label: "Đã xử lý" },
-                { value: "REJECTED", label: "Từ chối" },
+                { value: "all", label: "Tất cả" },
+                { value: "PENDING", label: "Chờ xử lý" },
+                { value: "UNDER_REVIEW", label: "Đang xem xét" },
+                { value: "RESOLVED_BUYER_FAVOR", label: "Đã giải quyết (Buyer)" },
+                { value: "RESOLVED_SELLER_FAVOR", label: "Đã giải quyết (Seller)" },
+                { value: "CLOSED", label: "Đã đóng" },
               ]}
-              style={{ width: 160 }}
+              style={{ width: 200 }}
             />
             <Input.Search
-              placeholder="Từ khoá"
+              placeholder="Tìm kiếm"
               allowClear
-              onSearch={(v) => {
-                setQ(v);
-                load({ q: v, page: 1 });
-              }}
+              onSearch={(v) => setQ(v)}
+              style={{ width: 250 }}
             />
-            <Button onClick={() => load({})}>Làm mới</Button>
+            <Button icon={<ReloadOutlined />} onClick={load}>
+              Làm mới
+            </Button>
           </Space>
-        )
-      }
-      style={{ padding: 16 }}
-    >
-      {loading ? (
-        <div style={{ textAlign: "center", padding: 40 }}>
-          <Spin spinning tip="Đang tải dữ liệu khiếu nại...">
-            <div style={{ height: 100 }} />
-          </Spin>
-        </div>
-      ) : !supported ? (
-        <Empty description="Tính năng khiếu nại chưa khả dụng (BE chưa có API)" />
-      ) : (
-        <Table
-          // luôn truyền mảng
-          dataSource={Array.isArray(rows) ? rows : []}
-          columns={columns}
-          rowKey={(r) => r.id}
-          pagination={{ pageSize: 10 }}
-          locale={{ emptyText: "Không có khiếu nại" }}
-        />
-      )}
-    </Card>
+        }
+        style={{ padding: 16 }}
+      >
+        {loading ? (
+          <div style={{ textAlign: "center", padding: 40 }}>
+            <Spin spinning tip="Đang tải dữ liệu khiếu nại...">
+              <div style={{ height: 100 }} />
+            </Spin>
+          </div>
+        ) : (
+          <Table
+            dataSource={filteredRows}
+            columns={columns}
+            rowKey="id"
+            pagination={{ pageSize: 10 }}
+            locale={{ emptyText: "Không có khiếu nại" }}
+          />
+        )}
+      </Card>
+
+      {/* Complaint Detail Modal */}
+      <ComplaintDetailModal
+        visible={detailVisible}
+        complaint={selectedComplaint}
+        onClose={() => {
+          setDetailVisible(false);
+          setSelectedComplaint(null);
+        }}
+      />
+
+      {/* Complaint Resolve Modal */}
+      <ComplaintResolveModal
+        visible={resolveVisible}
+        complaint={selectedComplaint}
+        onClose={handleResolveModalClose}
+      />
+    </>
   );
 };
 

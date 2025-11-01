@@ -46,7 +46,7 @@ const UserProfileCard = ({ user, onEdit, onAvatarChange }) => {
     const hideLoading = message.loading('Đang upload avatar lên server...', 0);
 
     try {
-      // Upload lên Cloudinary và cập nhật qua Backend API
+      // Upload avatar lên BE, BE sẽ tự upload lên Cloudinary
       const result = await memberService.updateAvatar(file);
       
       hideLoading();
@@ -54,26 +54,31 @@ const UserProfileCard = ({ user, onEdit, onAvatarChange }) => {
       if (result.success) {
         message.success(result.message || 'Avatar đã được cập nhật thành công!');
         
-        // Cập nhật avatar trong state để hiển thị ngay
-        if (result.imageUrl) {
-          setAvatar(result.imageUrl);
-        }
-        
-        // Trigger re-render - reload profile data từ server
+        // Reload profile data từ server để lấy avatar URL mới từ BE
+        let newAvatarUrl = null;
         if (onAvatarChange) {
-          onAvatarChange(); // AccountPage sẽ gọi loadProfile() để refresh user data
+          await onAvatarChange(); // AccountPage sẽ gọi loadProfile() để refresh user data
         }
         
-        // Force re-render bằng cách dispatch custom event với URL từ server
-        // Để các component khác (UserAvatar, etc.) cũng cập nhật
-        const userId = localStorage.getItem('userId') || user?.id || 'default';
-        window.dispatchEvent(new CustomEvent('avatarChanged', { 
-          detail: { userId, avatar: result.imageUrl } 
-        }));
+        // Reload lại profile để lấy avatar URL mới từ server
+        const profileResult = await memberService.getMemberProfile();
+        if (profileResult.success && profileResult.data?.data?.avatar) {
+          newAvatarUrl = profileResult.data.data.avatar;
+          setAvatar(newAvatarUrl);
+        }
         
-        // Cập nhật user prop nếu có (để sync với parent component)
-        if (user && result.imageUrl) {
-          user.avatar = result.imageUrl;
+        // Dispatch event để các component khác (UserAvatar trong navbar) cũng cập nhật
+        if (newAvatarUrl) {
+          // Lấy userId từ nhiều nguồn để đảm bảo match
+          const userId = localStorage.getItem('userId') || user?.id || user?.username || user?.email || 'default';
+          window.dispatchEvent(new CustomEvent('avatarChanged', { 
+            detail: { userId, avatar: newAvatarUrl } 
+          }));
+          
+          // Cập nhật user prop nếu có (để sync với parent component)
+          if (user) {
+            user.avatar = newAvatarUrl;
+          }
         }
       } else {
         message.error(result.message || 'Có lỗi xảy ra khi cập nhật avatar');

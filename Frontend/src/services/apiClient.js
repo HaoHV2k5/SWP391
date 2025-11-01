@@ -100,16 +100,27 @@ const refreshToken = async () => {
 /**
  * Interceptor xử lý request trước khi gửi
  * - Thêm Authorization header
- * - Kiểm tra token hết hạn
+ * - Kiểm tra token hết hạn và tự động refresh nếu cần
  */
-api.interceptors.request.use((config) => {
+api.interceptors.request.use(async (config) => {
   let token = readToken();
   
-  // Nếu token hết hạn, xóa và yêu cầu login lại
+  // Nếu token hết hạn, thử refresh token trước khi xóa
   if (token && isExpired(token)) {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userData");
-    token = null;
+    console.log("⚠️ Token expired, attempting refresh...");
+    const newToken = await refreshToken();
+    
+    if (newToken) {
+      token = newToken;
+      console.log("✅ Token refreshed successfully");
+    } else {
+      // Refresh thất bại mới xóa token
+      localStorage.removeItem("token");
+      localStorage.removeItem("userData");
+      localStorage.removeItem("refreshToken");
+      token = null;
+      console.warn("❌ Token refresh failed, removed auth data");
+    }
   }
   
   // Thêm Authorization header nếu có token

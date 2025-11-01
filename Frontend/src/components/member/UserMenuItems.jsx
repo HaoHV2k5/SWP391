@@ -1,7 +1,185 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const UserMenuItems = ({ onItemClick }) => {
+const UserMenuItems = ({ user, onItemClick }) => {
+  // Check if user is seller - enhanced detection
+  const isSeller = () => {
+    // Always check from localStorage first (most reliable)
+    try {
+      const raw = localStorage.getItem("userData");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        
+        // Check direct role field
+        const role = parsed?.role || parsed?.user?.role;
+        if (role === 'ROLE_SELLER' || role === 'SELLER') {
+          return true;
+        }
+        
+        // Check roles array
+        const roles = parsed?.roles || parsed?.user?.roles || [];
+        if (Array.isArray(roles)) {
+          const hasSellerRole = roles.some(r => {
+            const rName = typeof r === 'string' ? r : r?.name;
+            return rName === 'ROLE_SELLER' || rName === 'SELLER';
+          });
+          if (hasSellerRole) {
+            return true;
+          }
+        }
+      }
+    } catch (e) {
+      // Parse error, ignore
+    }
+    
+    // Check from user prop (if provided)
+    if (user) {
+      const role = user?.role || user?.user?.role;
+      if (role === 'ROLE_SELLER' || role === 'SELLER') {
+        return true;
+      }
+      
+      const roles = user?.roles || user?.user?.roles || [];
+      if (Array.isArray(roles) && roles.some(r => {
+        const rName = typeof r === 'string' ? r : r?.name;
+        return rName === 'ROLE_SELLER' || rName === 'SELLER';
+      })) {
+        return true;
+      }
+    }
+    
+    // Check from JWT token scope (fallback)
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const scope = (payload?.scope || "").toUpperCase();
+        if (scope.includes("ROLE_SELLER")) {
+          return true;
+        }
+      }
+    } catch (e) {
+      // Token decode error, ignore
+    }
+    
+    return false;
+  };
+
+  // Check if user is buyer (ROLE_USER = BUYER in this system, but NOT SELLER, ADMIN, STAFF)
+  const isBuyer = () => {
+    // Not seller and has BUYER or USER role, or default member role
+    if (isSeller()) return false;
+    
+    // Check if admin or staff (should not see buyer menu)
+    const isAdminOrStaff = () => {
+      try {
+        const raw = localStorage.getItem("userData");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const role = parsed?.role || parsed?.user?.role;
+          const roles = parsed?.roles || parsed?.user?.roles || [];
+          
+          const roleStr = role?.toUpperCase() || '';
+          const rolesStr = Array.isArray(roles) ? roles.map(r => (typeof r === 'string' ? r : r?.name)?.toUpperCase() || '') : [];
+          
+          if (roleStr.includes('ADMIN') || roleStr.includes('STAFF') ||
+              rolesStr.some(r => r.includes('ADMIN') || r.includes('STAFF'))) {
+            return true;
+          }
+        }
+        
+        if (user) {
+          const role = (user?.role || user?.user?.role || '').toUpperCase();
+          const roles = user?.roles || user?.user?.roles || [];
+          const rolesStr = Array.isArray(roles) ? roles.map(r => (typeof r === 'string' ? r : r?.name)?.toUpperCase() || '') : [];
+          
+          if (role.includes('ADMIN') || role.includes('STAFF') ||
+              rolesStr.some(r => r.includes('ADMIN') || r.includes('STAFF'))) {
+            return true;
+          }
+        }
+      } catch (e) {
+        // Ignore
+      }
+      return false;
+    };
+    
+    if (isAdminOrStaff()) return false;
+    
+    // Default: if not seller, not admin, not staff, then assume buyer
+    // But also check explicit roles for safety
+    try {
+      const raw = localStorage.getItem("userData");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        
+        // Check direct role field
+        const role = (parsed?.role || parsed?.user?.role || '').toUpperCase();
+        if (role === 'ROLE_BUYER' || role === 'ROLE_USER' || role === 'BUYER' || 
+            role === 'USER' || role === 'MEMBER' || role === '' || !role) {
+          return true; // Default role or member/user = buyer
+        }
+        
+        // Check roles array
+        const roles = parsed?.roles || parsed?.user?.roles || [];
+        if (Array.isArray(roles)) {
+          const hasBuyerRole = roles.some(r => {
+            const rName = (typeof r === 'string' ? r : r?.name || '').toUpperCase();
+            return rName === 'ROLE_BUYER' || rName === 'ROLE_USER' || 
+                   rName === 'BUYER' || rName === 'USER' || rName === 'MEMBER' || rName === '';
+          });
+          if (hasBuyerRole || roles.length === 0) {
+            return true;
+          }
+        }
+      }
+    } catch (e) {
+      // Parse error, ignore
+    }
+    
+    // Check from user prop (if provided)
+    if (user) {
+      const role = (user?.role || user?.user?.role || '').toUpperCase();
+      if (role === 'ROLE_BUYER' || role === 'ROLE_USER' || role === 'BUYER' || 
+          role === 'USER' || role === 'MEMBER' || role === '' || !role) {
+        return true;
+      }
+      
+      const roles = user?.roles || user?.user?.roles || [];
+      if (Array.isArray(roles)) {
+        const hasBuyerRole = roles.some(r => {
+          const rName = (typeof r === 'string' ? r : r?.name || '').toUpperCase();
+          return rName === 'ROLE_BUYER' || rName === 'ROLE_USER' || 
+                 rName === 'BUYER' || rName === 'USER' || rName === 'MEMBER';
+        });
+        if (hasBuyerRole || roles.length === 0) {
+          return true;
+        }
+      }
+    }
+    
+    // Check from JWT token scope (fallback)
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const scope = (payload?.scope || "").toUpperCase();
+        if (scope.includes("ROLE_BUYER") || scope.includes("ROLE_USER")) {
+          return true;
+        }
+      }
+    } catch (e) {
+      // Token decode error, ignore
+    }
+    
+    // Default: if user exists and not seller/admin/staff, assume buyer
+    if (user || localStorage.getItem("userData")) {
+      return true;
+    }
+    
+    return false;
+  };
+
   const menuItems = [
     { to: "/account", label: "Tài khoản" },
     { to: "/kyc", label: "Xác thực danh tính" },
@@ -11,6 +189,12 @@ const UserMenuItems = ({ onItemClick }) => {
     { to: "/ordered", label: "Các đơn hành đã mua" },
     { to: "/saved-posts", label: "Tin đã lưu" },
     { to: "/contracts", label: "Hợp đồng" },
+    // Reviews menu items
+    ...(isSeller() ? [{ to: "/reviews-about-me", label: "Đánh giá về tôi" }] : []),
+    { to: "/my-reviews", label: "Đánh giá tôi đã viết" },
+    // Complaints menu items
+    ...(isSeller() ? [{ to: "/complaints-about-me", label: "Khiếu nại về tôi" }] : []),
+    ...(isBuyer() ? [{ to: "/my-complaints", label: "Khiếu nại của tôi" }] : []),
   ];
 
   return (

@@ -321,9 +321,9 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 2px solid #dee2e6;
+  border: 2px solid #6c757d;
   background: white;
-  color: #6c757d;
+  color: #333;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -339,15 +339,15 @@
 }
 
 .btn-heart-active {
-  background: #dc3545;
-  color: white;
-  border-color: #dc3545;
+  background: #dc3545 !important;
+  color: white !important;
+  border-color: #dc3545 !important;
 }
 
 .btn-heart-active:hover {
-  background: #c82333;
-  border-color: #c82333;
-  color: white;
+  background: #c82333 !important;
+  border-color: #c82333 !important;
+  color: white !important;
 }
 
 .chat-button {

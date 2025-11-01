@@ -1,4 +1,4 @@
-import { TrendingUp, Users, Package, Shield, LogOut } from "lucide-react";
+import { TrendingUp, Users, Package, Shield, AlertTriangle, LogOut, Lock } from "lucide-react";
 
 const AdminSidebar = ({ activeTab, setActiveTab, user, onLogout }) => {
   const tabs = [
@@ -17,6 +17,16 @@ const AdminSidebar = ({ activeTab, setActiveTab, user, onLogout }) => {
       id: "kyc",
       label: "KYC Approval",
       icon: <Shield size={20} />,
+    },
+    {
+      id: "complaints",
+      label: "Khiếu nại",
+      icon: <AlertTriangle size={20} />,
+    },
+    {
+      id: "roles",
+      label: "Phân quyền",
+      icon: <Lock size={20} />,
     },
   ];
 
