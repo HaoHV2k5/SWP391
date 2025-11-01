@@ -2,6 +2,8 @@ package com.example.backend.repository;
 
 import com.example.backend.entity.PostingPackage;
 import com.example.backend.entity.UserPostingPackage;
+
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,4 +15,6 @@ public interface UserPackageTransactionRepository extends JpaRepository<UserPost
     List<UserPostingPackage> findByUserId(Long userId);
     UserPostingPackage findPostingPackageByUserIdAndActiveTrue(Long userId);
 
+    @EntityGraph(attributePaths = {"postingPackage", "user"})
+    List<UserPostingPackage> findByActiveTrueAndPostingPackageRequireApprovalTrue();
 }

@@ -149,12 +149,11 @@ function groupBySeller(items = []) {
     if (!groups.has(key)) {
       const { idText, nameText } = getSellerDisplay(it);
       const upp = it?.postingPackage; // user_posting_package
-      const pkg = upp?.postingPackage; // posting_package
-      const pkgName = pkg?.name || "—";
-      const dateFrom = upp?.startTime ? vnDate(upp.startTime) : "—";
-      const dateTo = upp?.endTime ? vnDate(upp.endTime) : "—";
-      const remaining = upp?.postPossible ?? null;
-      const isActive = upp?.active === true;
+      const pkgName = it?.packageName || "—";
+      const dateFrom = it?.startTime ? vnDate(upp.startTime) : "—";
+      const dateTo = it?.endTime ? vnDate(upp.endTime) : "—";
+      const remaining = it?.postPossible ?? null;
+      const isActive = it?.active === true;
 
       groups.set(key, {
         header: {
@@ -316,7 +315,7 @@ const ProductsTab = () => {
     );
 
     return (
-      <Badge.Ribbon text={pkgName} color="cyan">
+      <Badge.Ribbon text={""} color="cyan">
         <Card
           key={r.id}
           style={{
@@ -504,6 +503,7 @@ const ProductsTab = () => {
       ) : (
         sections.map((sec, idx) => {
           const h = sec.header;
+          console.log(h);
           const avatarText =
             (
               h?.sellerName?.trim?.()[0] ||
@@ -544,15 +544,13 @@ const ProductsTab = () => {
                       (ID: {h.sellerId})
                     </Text>
                   </div>
-                  <Tooltip title={tip} placement="right">
-                    <Tag
-                      icon={<GiftOutlined />}
-                      color="processing"
-                      style={{ cursor: "help", marginTop: 6 }}
-                    >
-                      {h.pkgName}
-                    </Tag>
-                  </Tooltip>
+                  <Tag
+                    icon={<GiftOutlined />}
+                    color="processing"
+                    style={{ cursor: "help", marginTop: 6 }}
+                  >
+                    {h?.pkgName}
+                  </Tag>
                 </div>
               </div>
 
