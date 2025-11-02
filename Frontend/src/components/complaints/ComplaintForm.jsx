@@ -7,7 +7,7 @@ import ComplaintSubmissionForm from "./ComplaintSubmissionForm";
 
 const { TabPane } = Tabs;
 
-const ComplaintForm = ({ visible, onClose, onSuccess, userId, complaints }) => {
+const ComplaintForm = ({ visible, onClose, onSuccess, userId, complaints, userEmail, userName }) => {
   const [contracts, setContracts] = useState([]);
   const [loadingContracts, setLoadingContracts] = useState(false);
   const [activeTab, setActiveTab] = useState("bought");
@@ -310,6 +310,8 @@ const ComplaintForm = ({ visible, onClose, onSuccess, userId, complaints }) => {
           contract={selectedContract}
           role={contractRole} // 'buyer' or 'seller'
           userId={userId}
+          userEmail={userEmail}
+          userName={userName}
         />
       )}
     </>

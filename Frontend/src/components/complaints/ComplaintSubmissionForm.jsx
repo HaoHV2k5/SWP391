@@ -13,6 +13,7 @@ import {
 } from "antd";
 import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
 import complaintService from "../../services/complaintService";
+import emailService from "../../services/emailService";
 
 const { TextArea } = Input;
 
@@ -23,6 +24,8 @@ const ComplaintSubmissionForm = ({
   contract,
   role, // 'buyer' or 'seller'
   userId,
+  userEmail, // Email của user - bạn sẽ truyền vào từ component cha
+  userName, // Tên của user - bạn sẽ truyền vào từ component cha
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -33,7 +36,9 @@ const ComplaintSubmissionForm = ({
   const handleSubmit = async (values) => {
     // Chỉ cho phép buyer tạo khiếu nại
     if (role !== "buyer") {
-      message.warning("Tính năng khiếu nại cho người bán đang được phát triển. Vui lòng thử lại sau!");
+      message.warning(
+        "Tính năng khiếu nại cho người bán đang được phát triển. Vui lòng thử lại sau!"
+      );
       return;
     }
 
@@ -49,9 +54,60 @@ const ComplaintSubmissionForm = ({
 
       // Gọi API tạo khiếu nại cho buyer
       const result = await complaintService.createComplaint(complaintData);
-      
+
       if (result.success) {
         message.success(result.message || "Tạo khiếu nại thành công");
+
+        // Gửi email xác nhận sau khi tạo khiếu nại thành công
+        // TODO: Thay thế các key này với key thực tế của bạn
+        const emailJsServiceId =
+          import.meta.env.VITE_EMAILJS_SERVICE_ID || "service_s7ydd83";
+        const emailJsTemplateId =
+          import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "template_ctfe6to";
+        const emailJsPublicKey =
+          import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "FjshdKF6t1gdT_YLs";
+
+        if (emailJsServiceId && emailJsTemplateId && emailJsPublicKey) {
+          try {
+            const templateParams = {
+              to_email: userEmail || "", // Email của user
+              to_name: userName || "Bạn", // Tên của user
+              companyName: "EV Exchange",
+              name: userName || "Bạn", // Tên của user
+              contractCode: contract.contractCode,
+              complaintId: result.data?.id || "N/A",
+              message: values.description,
+              submittedAt: new Date().toLocaleString("vi-VN", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              etaHours: "24",
+              portalUrl: `${window.location.origin}/complaints`,
+              supportEmail: "support@evexchange.com",
+              companyAddress: "Việt Nam",
+              hotline: "1900-xxxx",
+              subject: `Xác nhận tiếp nhận khiếu nại - Hợp đồng ${contract.contractCode}`,
+            };
+
+            // Gửi email (không block nếu lỗi)
+            emailService
+              .sendComplaintEmail(
+                emailJsServiceId,
+                emailJsTemplateId,
+                emailJsPublicKey,
+                templateParams
+              )
+              .catch((err) => {
+                console.warn("Không thể gửi email xác nhận:", err);
+              });
+          } catch (emailError) {
+            console.error("Lỗi khi gửi email:", emailError);
+          }
+        }
+
         form.resetFields();
         setFileList([]);
         onSuccess?.();
@@ -120,13 +176,18 @@ const ComplaintSubmissionForm = ({
         title={
           <div>
             <h4 style={{ margin: 0 }}>
-              <i className="bi bi-exclamation-triangle-fill me-2" style={{ color: "#ffc107" }}></i>
+              <i
+                className="bi bi-exclamation-triangle-fill me-2"
+                style={{ color: "#ffc107" }}
+              ></i>
               Gửi khiếu nại
             </h4>
             <div className="mt-2">
               <Alert
                 message={`Hợp đồng: ${contract.contractCode}`}
-                description={`${contract.productName} - ${role === "buyer" ? "Bạn là người mua" : "Bạn là người bán"}`}
+                description={`${contract.productName} - ${
+                  role === "buyer" ? "Bạn là người mua" : "Bạn là người bán"
+                }`}
                 type="info"
                 showIcon
                 style={{ marginBottom: 0 }}
@@ -166,11 +227,16 @@ const ComplaintSubmissionForm = ({
               },
             ]}
           >
-            <Select placeholder="Chọn loại khiếu nại" disabled={role === "seller"}>
+            <Select
+              placeholder="Chọn loại khiếu nại"
+              disabled={role === "seller"}
+            >
               <Select.Option value="PRODUCT_QUALITY">
                 Chất lượng sản phẩm
               </Select.Option>
-              <Select.Option value="DAMAGED_ITEM">Hàng bị hư hỏng</Select.Option>
+              <Select.Option value="DAMAGED_ITEM">
+                Hàng bị hư hỏng
+              </Select.Option>
               <Select.Option value="NOT_AS_DESCRIBED">
                 Không đúng mô tả
               </Select.Option>
@@ -192,7 +258,10 @@ const ComplaintSubmissionForm = ({
               },
             ]}
           >
-            <Input placeholder="Nhập tiêu đề khiếu nại" disabled={role === "seller"} />
+            <Input
+              placeholder="Nhập tiêu đề khiếu nại"
+              disabled={role === "seller"}
+            />
           </Form.Item>
 
           <Form.Item
@@ -236,13 +305,15 @@ const ComplaintSubmissionForm = ({
           <Form.Item>
             <Space style={{ width: "100%", justifyContent: "flex-end" }}>
               <Button onClick={handleCancel}>Hủy</Button>
-              <Button 
-                type="primary" 
-                htmlType="submit" 
+              <Button
+                type="primary"
+                htmlType="submit"
                 loading={loading}
                 disabled={role === "seller"}
               >
-                {role === "seller" ? "Tính năng đang phát triển" : "Gửi khiếu nại"}
+                {role === "seller"
+                  ? "Tính năng đang phát triển"
+                  : "Gửi khiếu nại"}
               </Button>
             </Space>
           </Form.Item>
@@ -263,4 +334,3 @@ const ComplaintSubmissionForm = ({
 };
 
 export default ComplaintSubmissionForm;
-
