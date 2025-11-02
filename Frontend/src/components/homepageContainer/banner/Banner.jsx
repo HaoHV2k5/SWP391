@@ -12,11 +12,22 @@ import 'swiper/css/pagination';
 const Banner = () => {
   const navigate = useNavigate();
   const [banners, setBanners] = useState([]);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   // Load banners on component mount
   useEffect(() => {
     const activeBanners = bannerService.getActiveBanners();
     setBanners(activeBanners);
+  }, []);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Handle banner click navigation
@@ -74,9 +85,9 @@ const Banner = () => {
       <Swiper
         className="banner-swiper"
         modules={[Navigation, Pagination, Autoplay]}
-        spaceBetween={30}
+        spaceBetween={isMobile ? 0 : 30}
         slidesPerView={1}
-        navigation={true}
+        navigation={!isMobile}
         pagination={{ clickable: true }}
         autoplay={{delay: 5000}}
         loop={banners.length > 1} // Only enable loop if more than 1 banner

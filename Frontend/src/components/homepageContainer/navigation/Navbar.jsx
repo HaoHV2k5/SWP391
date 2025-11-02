@@ -1,8 +1,6 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
 import SearchBar from './SearchBar';
 import CategoryDropdown from './CategoryDropdown';
-import StoreLocationModal from './StoreLocationModal';
 import NavbarActions from './NavbarActions';
 import TopBar from './TopBar';
 import '../styles/TopInfo.css';
@@ -13,7 +11,6 @@ import GuestDropdown from "../../member/GuestDropdown";
 const logoImage = '/logo_removeBg.png';
 
 const Navbar = ({ user, onLogout }) => {
-  const [showLocationModal, setShowLocationModal] = useState(false);
 
   return (
     <>
@@ -53,13 +50,6 @@ const Navbar = ({ user, onLogout }) => {
           </div>
         </div>
       </nav>
-
-      {/* Location Modal */}
-      <StoreLocationModal
-        show={showLocationModal}
-        onHide={() => setShowLocationModal(false)}
-      />
-
     </>
   );
 };

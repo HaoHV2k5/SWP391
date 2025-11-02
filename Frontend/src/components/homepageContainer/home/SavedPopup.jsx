@@ -34,7 +34,7 @@ const SavedPopup = () => {
     // Hiển thị loading
     if (state.loading) {
         return (
-            <Card className="shadow" style={{ width: "400px", borderRadius: "10px", overflow: "hidden" }}>
+            <Card className="shadow" style={{ width: "90vw", maxWidth: "400px", borderRadius: "10px", overflow: "hidden" }}>
                 <Card.Body>
                     <div className="d-flex justify-content-between align-items-center mb-2">
                         <strong>Tin đăng đã lưu</strong>
@@ -66,7 +66,7 @@ const SavedPopup = () => {
     }
 
     return (
-        <Card className="shadow" style={{ width: "400px", borderRadius: "10px", overflow: "hidden" }}>
+        <Card className="shadow" style={{ width: "90vw", maxWidth: "400px", borderRadius: "10px", overflow: "hidden" }}>
             <Card.Body>
                             <div className="d-flex justify-content-between align-items-center mb-2">
                                 <strong>Tin đăng đã lưu</strong>

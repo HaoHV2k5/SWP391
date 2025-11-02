@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
-import { Button, Badge } from "react-bootstrap";
-import { MapPin, Bell, Heart } from "lucide-react";
-import StoreLocationModal from "./StoreLocationModal";
+import { Button } from "react-bootstrap";
+import { Heart } from "lucide-react";
 import SavedPopup from "../home/SavedPopup";
 
 const NavbarActions = () => {
-  const [showStoreModal, setShowStoreModal] = useState(false);
   const [showSavedPopup, setShowSavedPopup] = useState(false);
   const [savedProductsCount, setSavedProductsCount] = useState(0);
 
@@ -38,31 +36,6 @@ const NavbarActions = () => {
   return (
     <>
       <div className="d-flex align-items-center gap-3 position-relative">
-        {/* Cửa hàng gần bạn */}
-        <Button
-          variant="link"
-          className="text-decoration-none text-dark d-flex align-items-center"
-          onClick={() => setShowStoreModal(true)}
-        >
-          <MapPin size={18} className="me-1" />
-          <span className="d-none d-md-inline">Cửa hàng gần bạn</span>
-        </Button>
-
-        {/* Thông báo */}
-        <Button
-          variant="link"
-          className="text-decoration-none text-dark position-relative"
-        >
-          <Bell size={18} />
-          <Badge
-            bg="danger"
-            className="position-absolute top-0 start-100 translate-middle rounded-pill"
-            style={{ fontSize: "10px" }}
-          >
-            0
-          </Badge>
-        </Button>
-
         {/* Wishlist */}
         <div className="position-relative">
           <Button
@@ -74,18 +47,19 @@ const NavbarActions = () => {
           </Button>
 
           {showSavedPopup && (
-            <div className="saved-popup position-absolute mt-2" style={{ top: "100%", left: "50%", transform: "translateX(-50%)" }}>
+            <div 
+              className="saved-popup position-absolute mt-2" 
+              style={{ 
+                top: "100%", 
+                right: "0",
+                zIndex: 1050
+              }}
+            >
               <SavedPopup />
             </div>
           )}
         </div>
       </div>
-
-      {/* Modal cửa hàng gần bạn */}
-      <StoreLocationModal
-        show={showStoreModal}
-        onHide={() => setShowStoreModal(false)}
-      />
     </>
   );
 };

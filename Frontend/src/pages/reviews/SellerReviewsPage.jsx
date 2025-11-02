@@ -54,9 +54,10 @@ const SellerReviewsPage = ({ user }) => {
       
       if (result.success) {
         const reviewData = result.data;
+        const list = reviewData?.content || reviewData?.data || reviewData || [];
         setReviews(prev => ({
           ...prev,
-          list: reviewData?.content || reviewData?.data || reviewData || [],
+          list: list,
           totalElements: reviewData?.totalElements || 0,
           totalPages: reviewData?.totalPages || 0,
           currentPage: reviewData?.number || page || 0,
@@ -303,7 +304,7 @@ const SellerReviewsPage = ({ user }) => {
               <Spinner animation="border" variant="success" className="mb-3" />
               <div className="text-muted">Đang tải đánh giá...</div>
             </div>
-          ) : reviews.list.length > 0 ? (
+          ) : Array.isArray(reviews.list) && reviews.list.length > 0 ? (
             <>
               {reviews.list.map((review) => (
                 <div key={review.id} className="border-bottom pb-3 mb-3">
