@@ -262,6 +262,8 @@ const MyComplaintsPage = ({ user }) => {
           onSuccess={loadComplaints}
           userId={user?.id || user?.user?.id}
           complaints={complaints}
+          userEmail={user?.email || user?.user?.email}
+          userName={user?.fullName || user?.user?.fullName || user?.fullname || user?.user?.fullname}
         />
       </Container>
     </div>
