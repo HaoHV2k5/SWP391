@@ -68,15 +68,16 @@ const PaymentDashboard = ({ user }) => {
           walletBalance = Number(latestTx.balanceAfter) || 0;
           console.log("💰 Using balanceAfter:", walletBalance);
         } else {
-          // Tính toán từ tất cả các transaction (COMPLETED và PENDING)
-          // Ưu tiên COMPLETED, nhưng nếu không có thì tính cả PENDING để hiển thị số dư tạm thời
+          // Tính toán CHỈ từ các transaction COMPLETED
+          // CHỈ tính COMPLETED - đảm bảo số dư chính xác (không tính PENDING để tránh hiển thị sai khi giao dịch thất bại)
           walletBalance = walletTransactions.reduce((sum, tx) => {
             const status = (tx?.status || "").toUpperCase();
-            const type = ((tx?.typeWalletTraction || tx?.type || "") + "").toUpperCase();
-            const amount = Number(tx?.amount || 0);
             
-            // Chỉ tính COMPLETED hoặc PENDING (bỏ qua FAILED, CANCELLED)
-            if (status === "COMPLETED" || status === "PENDING") {
+            // CHỈ tính COMPLETED transactions
+            if (status === "COMPLETED") {
+              const type = ((tx?.typeWalletTraction || tx?.type || "") + "").toUpperCase();
+              const amount = Number(tx?.amount || 0);
+              
               // Nạp tiền, hoàn tiền, refund → cộng vào
               if (
                 type === "RECHARGE" ||
@@ -88,46 +89,6 @@ const PaymentDashboard = ({ user }) => {
                 return sum + amount;
               }
               // Các loại chi (mua gói, mua sản phẩm, rút tiền) → trừ đi
-              // Lưu ý: Chỉ trừ khi COMPLETED, không trừ PENDING để tránh hiển thị sai
-              if (status === "COMPLETED") {
-                if (
-                  type === "PAYMENT_PACKAGE" ||
-                  type === "PAYMENT_PRODUCT" ||
-                  type === "WITHDRAWAL" ||
-                  type.includes("BUY") ||
-                  type.includes("PAYMENT") ||
-                  type.includes("WITHDRAWAL") ||
-                  type.includes("MUA") ||
-                  type.includes("RÚT")
-                ) {
-                  return sum - amount;
-                }
-              }
-            }
-            return sum;
-          }, 0);
-          console.log("💰 Calculated balance:", walletBalance);
-        }
-      } else {
-        console.warn("⚠️ No COMPLETED transactions found! Will calculate from PENDING transactions.");
-        // Nếu không có COMPLETED, tính từ PENDING recharge transactions
-        walletBalance = walletTransactions.reduce((sum, tx) => {
-          const status = (tx?.status || "").toUpperCase();
-          const type = ((tx?.typeWalletTraction || tx?.type || "") + "").toUpperCase();
-          const amount = Number(tx?.amount || 0);
-          
-          if (status === "PENDING" || status === "COMPLETED") {
-            if (
-              type === "RECHARGE" ||
-              type.includes("RECHARGE") ||
-              type.includes("REFUND") ||
-              type.includes("DEPOSIT") ||
-              type.includes("NẠP")
-            ) {
-              return sum + amount;
-            }
-            // Chỉ trừ khi COMPLETED
-            if (status === "COMPLETED") {
               if (
                 type === "PAYMENT_PACKAGE" ||
                 type === "PAYMENT_PRODUCT" ||
@@ -141,10 +102,13 @@ const PaymentDashboard = ({ user }) => {
                 return sum - amount;
               }
             }
-          }
-          return sum;
-        }, 0);
-        console.log("💰 Calculated balance from PENDING/COMPLETED:", walletBalance);
+            return sum;
+          }, 0);
+          console.log("💰 Calculated balance from COMPLETED:", walletBalance);
+        }
+      } else {
+        console.warn("⚠️ No COMPLETED transactions found! Balance will be 0.");
+        walletBalance = 0;
       }
 
       setStats({

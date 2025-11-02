@@ -48,16 +48,17 @@ const WalletNavbar = ({ user }) => {
         }
       }
       
-      // Cách 2: Tính toán từ tất cả các transaction (COMPLETED và PENDING)
-      // Ưu tiên COMPLETED, nhưng nếu không có thì tính cả PENDING để hiển thị số dư tạm thời
+      // Cách 2: Tính toán CHỈ từ các transaction COMPLETED
+      // CHỈ tính COMPLETED - đảm bảo số dư chính xác (không tính PENDING để tránh hiển thị sai khi giao dịch thất bại)
       const balance = list.reduce((sum, tx) => {
         const status = (tx?.status || "").toUpperCase();
-        const type = ((tx?.typeWalletTraction || tx?.type || "") + "").toUpperCase();
-        const amount = Number(tx?.amount || 0);
         
-        // Chỉ tính COMPLETED hoặc PENDING (bỏ qua FAILED, CANCELLED)
-        if (status === "COMPLETED" || status === "PENDING") {
-          console.log(`📊 Processing tx: type=${type}, amount=${amount}, status=${status}`);
+        // CHỈ tính COMPLETED transactions
+        if (status === "COMPLETED") {
+          const type = ((tx?.typeWalletTraction || tx?.type || "") + "").toUpperCase();
+          const amount = Number(tx?.amount || 0);
+          
+          console.log(`📊 Processing COMPLETED tx: type=${type}, amount=${amount}`);
           
           // Nạp tiền, hoàn tiền, refund → cộng vào
           if (
@@ -70,20 +71,17 @@ const WalletNavbar = ({ user }) => {
             return sum + amount;
           }
           // Các loại chi (mua gói, mua sản phẩm, rút tiền) → trừ đi
-          // Lưu ý: Chỉ trừ khi COMPLETED, không trừ PENDING để tránh hiển thị sai
-          if (status === "COMPLETED") {
-            if (
-              type === "PAYMENT_PACKAGE" ||
-              type === "PAYMENT_PRODUCT" ||
-              type === "WITHDRAWAL" ||
-              type.includes("BUY") ||
-              type.includes("PAYMENT") ||
-              type.includes("WITHDRAWAL") ||
-              type.includes("MUA") ||
-              type.includes("RÚT")
-            ) {
-              return sum - amount;
-            }
+          if (
+            type === "PAYMENT_PACKAGE" ||
+            type === "PAYMENT_PRODUCT" ||
+            type === "WITHDRAWAL" ||
+            type.includes("BUY") ||
+            type.includes("PAYMENT") ||
+            type.includes("WITHDRAWAL") ||
+            type.includes("MUA") ||
+            type.includes("RÚT")
+          ) {
+            return sum - amount;
           }
         }
         return sum;

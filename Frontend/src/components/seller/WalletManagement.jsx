@@ -278,19 +278,34 @@ const WalletManagement = ({ user }) => {
       title: "Số tiền",
       dataIndex: "amount",
       key: "amount",
-      render: (amount, record) => (
-        <Text
-          style={{
-            color: record.type?.toLowerCase().includes("recharge")
-              ? "#52c41a"
-              : "#1890ff",
-            fontWeight: "bold",
-          }}
-        >
-          {record.type?.toLowerCase().includes("recharge") ? "+" : "-"}
-          {formatPrice(amount)}
-        </Text>
-      ),
+      render: (amount, record) => {
+        // Kiểm tra cả type và typeWalletTraction, xử lý cả uppercase và lowercase
+        const type = (
+          (record.typeWalletTraction || record.type || "") + ""
+        ).toLowerCase();
+        const isRecharge =
+          type === "recharge" ||
+          type.includes("recharge") ||
+          type.includes("nạp") ||
+          type.includes("deposit") ||
+          type.includes("refund");
+
+        // Recharge → màu xanh lá (+), Payment → màu xanh dương (-)
+        const color = isRecharge ? "#52c41a" : "#1890ff";
+        const sign = isRecharge ? "+" : "-";
+
+        return (
+          <Text
+            style={{
+              color: color,
+              fontWeight: "bold",
+            }}
+          >
+            {sign}
+            {formatPrice(amount)}
+          </Text>
+        );
+      },
     },
     {
       title: "Mô tả",
