@@ -194,8 +194,25 @@ const WalletManagement = ({ user }) => {
         message.error("Không thể tạo link thanh toán. Vui lòng thử lại!");
       }
     } catch (error) {
-      console.error("Error recharging wallet:", error);
-      message.error("Có lỗi xảy ra khi nạp tiền. Vui lòng thử lại!");
+      // Xử lý lỗi cụ thể cho từng trường hợp
+      if (error?.code === "WALLET_NOT_EXIST") {
+        // Lỗi ví chưa tồn tại - hiển thị message rõ ràng, không log console
+        message.error({
+          content:
+            error.message ||
+            "Ví của bạn chưa được khởi tạo. Vui lòng liên hệ quản trị viên để được hỗ trợ.",
+          duration: 6,
+        });
+      } else {
+        // Các lỗi khác - log để debug
+        console.error("Error recharging wallet:", error);
+        const errorMessage =
+          error?.response?.data?.data?.message ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Có lỗi xảy ra khi nạp tiền. Vui lòng thử lại!";
+        message.error(errorMessage);
+      }
     }
   };
 
