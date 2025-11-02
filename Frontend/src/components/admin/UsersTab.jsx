@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { UserPlus, Edit, Lock, Unlock, Trash2 } from "lucide-react";
 import adminService from "../../services/adminService";
 import { toast } from "react-toastify";
@@ -18,6 +18,7 @@ const UsersTab = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [refreshKey, setRefreshKey] = useState(0); // Thêm key để force re-render
+  const cancelButtonRef = useRef(null);
   const [newUser, setNewUser] = useState({
     fullname: "",
     email: "",
@@ -27,7 +28,6 @@ const UsersTab = ({
     gender: "Nam",
     yob: "01/01/1990",
     address: "Địa chỉ mặc định",
-    role: "member",
   });
 
   const [editUser, setEditUser] = useState({
@@ -38,6 +38,15 @@ const UsersTab = ({
     address: "",
     avatar: "",
   });
+
+  // Apply styles to cancel button to override global CSS
+  useEffect(() => {
+    if (cancelButtonRef.current) {
+      cancelButtonRef.current.style.setProperty("color", "#fff", "important");
+      cancelButtonRef.current.style.setProperty("background-color", "#ef4444", "important");
+      cancelButtonRef.current.style.setProperty("border", "none", "important");
+    }
+  }, [showCreateUserModal, loading]);
 
   // Debug useEffect để theo dõi thay đổi của users
   useEffect(() => {
@@ -78,7 +87,6 @@ const UsersTab = ({
         gender: "Nam",
         yob: "01/01/1990",
         address: "Địa chỉ mặc định",
-        role: "member",
       });
       // Reload danh sách users
       loadUsers();
@@ -1062,34 +1070,6 @@ const UsersTab = ({
               />
             </div>
 
-            <div style={{ marginBottom: "1.5rem" }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "0.5rem",
-                  fontWeight: "bold",
-                }}
-              >
-                Vai trò:
-              </label>
-              <select
-                value={newUser.role}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, role: e.target.value })
-                }
-                style={{
-                  width: "100%",
-                  padding: "0.75rem",
-                  border: "2px solid #e9ecef",
-                  borderRadius: "5px",
-                  fontSize: "1rem",
-                }}
-              >
-                <option value="member">Member</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-
             <div
               style={{
                 display: "flex",
@@ -1098,9 +1078,28 @@ const UsersTab = ({
               }}
             >
               <button
-                className="btn btn-secondary"
+                ref={cancelButtonRef}
                 onClick={() => setShowCreateUserModal(false)}
                 disabled={loading}
+                style={{
+                  padding: "0.75rem 1.5rem",
+                  borderRadius: "5px",
+                  fontSize: "1rem",
+                  fontWeight: "500",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  opacity: loading ? 0.6 : 1,
+                  transition: "background-color 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.setProperty("background-color", "#dc2626", "important");
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.setProperty("background-color", "#ef4444", "important");
+                  }
+                }}
               >
                 Hủy
               </button>
