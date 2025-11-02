@@ -107,28 +107,22 @@ api.interceptors.request.use(async (config) => {
   
   // Nếu token hết hạn, thử refresh token trước khi xóa
   if (token && isExpired(token)) {
-    console.log("⚠️ Token expired, attempting refresh...");
     const newToken = await refreshToken();
     
     if (newToken) {
       token = newToken;
-      console.log("✅ Token refreshed successfully");
     } else {
       // Refresh thất bại mới xóa token
       localStorage.removeItem("token");
       localStorage.removeItem("userData");
       localStorage.removeItem("refreshToken");
       token = null;
-      console.warn("❌ Token refresh failed, removed auth data");
     }
   }
   
   // Thêm Authorization header nếu có token
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-    console.log("🔑 Token added to request:", config.url);
-  } else {
-    console.warn("⚠️ No token found for request:", config.url);
   }
   
   return config;
