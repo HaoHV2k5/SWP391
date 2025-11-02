@@ -128,8 +128,25 @@ public class PaymentService {
     private void saveTransaction(HttpServletRequest req, Long userId, String txnRef) {
 
         BigDecimal amount = BigDecimal.valueOf(Integer.parseInt(req.getParameter("amount")));
+        
+        // Tự động tạo wallet nếu chưa tồn tại
         Wallet wallet = walletRepository.findByUserId(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.WALLET_NOT_EXIST));
+                .orElseGet(() -> {
+                    // Tìm user để đảm bảo user tồn tại
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+                    
+                    // Tạo wallet mới với số dư 0
+                    Wallet newWallet = Wallet.builder()
+                            .user(user)
+                            .balance(BigDecimal.ZERO)
+                            .isActive(true)
+                            .build();
+                    
+                    log.info("Auto-creating wallet for user ID: {}", userId);
+                    return walletRepository.save(newWallet);
+                });
+        
         handleRechargeTransaction(wallet, txnRef, amount);
 
     }
