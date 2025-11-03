@@ -54,19 +54,33 @@ const isExpired = (jwt) => {
 
 /**
  * Refresh JWT token
+ * Backend trả về: ApiResponse<RefreshResponse> = {code: 1000, data: {token, refreshToken}}
  */
 const refreshToken = async () => {
   try {
     const refreshTokenValue = localStorage.getItem("refreshToken");
-    if (!refreshTokenValue) return null;
+    if (!refreshTokenValue) {
+      console.warn("⚠️ No refreshToken found in localStorage");
+      return null;
+    }
 
+    console.log("🔄 Attempting to refresh token...");
     const refreshResponse = await axios.post(`${API_BASE}/auth/refresh`, {
       refreshToken: refreshTokenValue,
     });
 
-    if (refreshResponse.data && refreshResponse.data.token) {
-      const newToken = refreshResponse.data.token;
+    // Backend trả về: {code: 1000, data: {token, refreshToken}}
+    const responseData = refreshResponse.data?.data || refreshResponse.data;
+    
+    if (responseData && responseData.token) {
+      const newToken = responseData.token;
+      const newRefreshToken = responseData.refreshToken || refreshTokenValue; // Fallback về refreshToken cũ nếu backend không trả về mới
+      
+      console.log("✅ Token refresh successful, updating localStorage...");
+      
+      // Cập nhật token và refreshToken mới
       localStorage.setItem("token", newToken);
+      localStorage.setItem("refreshToken", newRefreshToken);
 
       // Cập nhật userData với token mới
       const userData = localStorage.getItem("userData");
@@ -75,15 +89,19 @@ const refreshToken = async () => {
           const user = JSON.parse(userData);
           user.token = newToken;
           localStorage.setItem("userData", JSON.stringify(user));
+          console.log("✅ Updated userData with new token");
         } catch (e) {
-          // Không thể cập nhật userData, bỏ qua
+          console.error("❌ Error updating userData:", e);
         }
       }
 
       return newToken;
+    } else {
+      console.warn("⚠️ Invalid refresh response format:", refreshResponse.data);
     }
   } catch (error) {
-    console.error("Token refresh failed:", error);
+    console.error("❌ Token refresh failed:", error);
+    console.error("❌ Error details:", error.response?.data || error.message);
   }
 
   return null;
@@ -94,16 +112,26 @@ const refreshToken = async () => {
 /**
  * Interceptor xử lý request trước khi gửi
  * - Thêm Authorization header
- * - Kiểm tra token hết hạn
+ * - Kiểm tra token hết hạn (nhưng không xóa nếu có refreshToken - để response interceptor xử lý)
  */
 api.interceptors.request.use((config) => {
   let token = readToken();
 
-  // Nếu token hết hạn, xóa và yêu cầu login lại
+  // Nếu token hết hạn, kiểm tra xem có refreshToken không
   if (token && isExpired(token)) {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userData");
-    token = null;
+    const refreshTokenValue = localStorage.getItem("refreshToken");
+    
+    if (refreshTokenValue) {
+      // Có refreshToken → vẫn gửi token hết hạn đi
+      // Backend sẽ trả 401, response interceptor sẽ tự động refresh và retry
+      console.log("⚠️ Token expired but refreshToken exists, sending request (will auto-refresh on 401)");
+    } else {
+      // Không có refreshToken → xóa token và không gửi request với Authorization
+      console.warn("⚠️ Token expired and no refreshToken, removing auth data");
+      localStorage.removeItem("token");
+      localStorage.removeItem("userData");
+      token = null;
+    }
   }
 
   // Thêm Authorization header nếu có token

@@ -292,6 +292,7 @@ const LoginPage = ({ onLogin }) => {
 
             const userData = {
               token: data.data.token,
+              refreshToken: data.data.refreshToken, // Lưu refreshToken từ backend
               user: {
                 id: backendUser?.id || 0,
                 email: backendUser?.email || formData.email,
