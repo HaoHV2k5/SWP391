@@ -150,7 +150,8 @@ const LoginPage = ({ onLogin }) => {
     }
   };
 
-  // Xử lý Google login với Firebase
+  // Xử lý Google login với Firebase - Đã tạm thời comment
+  /*
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
@@ -180,8 +181,10 @@ const LoginPage = ({ onLogin }) => {
       setLoading(false);
     }
   };
+  */
 
-  // Xử lý Facebook login với Firebase
+  // Xử lý Facebook login với Firebase - Đã tạm thời comment
+  /*
   const handleFacebookLogin = async () => {
     try {
       setLoading(true);
@@ -211,6 +214,7 @@ const LoginPage = ({ onLogin }) => {
       setLoading(false);
     }
   };
+  */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -840,6 +844,8 @@ const LoginPage = ({ onLogin }) => {
           </button>
         </form>
 
+        {/* Google và Facebook login đã tạm thời bị comment */}
+        {/*
         <div style={{ textAlign: "center", margin: "1.5rem 0 0.5rem 0" }}>
           <button
             onClick={handleGoogleLogin}
@@ -925,52 +931,54 @@ const LoginPage = ({ onLogin }) => {
           <div style={{ margin: "1rem 0", color: "#aaa", fontWeight: 500 }}>
             Hoặc
           </div>
-          <p style={{ color: "#666" }}>
-            {isLogin ? "Chưa có tài khoản?" : "Đã có tài khoản?"}
-            <button
-              type="button"
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setError("");
-                setFieldErrors({});
-                setFormData({
-                  email: "",
-                  password: "",
-                  fullName: "",
-                  phone: "",
-                  dateOfBirth: "",
-                  confirmPassword: "",
-                });
-              }}
-              style={{
-                background: "none",
-                border: "none",
-                color: "#667eea",
-                cursor: "pointer",
-                textDecoration: "underline",
-                marginLeft: "0.5rem",
-              }}
-            >
-              {isLogin ? "Đăng ký ngay" : "Đăng nhập"}
-            </button>
-          </p>
         </div>
+        */}
 
-        <div style={{ textAlign: "center", marginTop: "2rem" }}>
-          <Link
-            to="/"
-            style={{
-              color: "#00A86B",
-              textDecoration: "none",
-              fontWeight: "500",
-              transition: "color 0.3s ease",
+        <p style={{ color: "#666" }}>
+          {isLogin ? "Chưa có tài khoản?" : "Đã có tài khoản?"}
+          <button
+            type="button"
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setError("");
+              setFieldErrors({});
+              setFormData({
+                email: "",
+                password: "",
+                fullName: "",
+                phone: "",
+                dateOfBirth: "",
+                confirmPassword: "",
+              });
             }}
-            onMouseEnter={(e) => (e.target.style.color = "#007A4B")}
-            onMouseLeave={(e) => (e.target.style.color = "#00A86B")}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#667eea",
+              cursor: "pointer",
+              textDecoration: "underline",
+              marginLeft: "0.5rem",
+            }}
           >
-            ← Quay về trang chủ
-          </Link>
-        </div>
+            {isLogin ? "Đăng ký ngay" : "Đăng nhập"}
+          </button>
+        </p>
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: "2rem" }}>
+        <Link
+          to="/"
+          style={{
+            color: "#00A86B",
+            textDecoration: "none",
+            fontWeight: "500",
+            transition: "color 0.3s ease",
+          }}
+          onMouseEnter={(e) => (e.target.style.color = "#007A4B")}
+          onMouseLeave={(e) => (e.target.style.color = "#00A86B")}
+        >
+          ← Quay về trang chủ
+        </Link>
       </div>
     </div>
   );
