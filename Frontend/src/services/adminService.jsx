@@ -66,6 +66,77 @@ const adminService = {
       throw error;
     }
   },
+
+  // Revenue APIs
+  async getAllWalletTransactions() {
+    try {
+      const response = await apiClient.get("/api/admin/wallettransactions");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching wallet transactions:", error);
+      throw error;
+    }
+  },
+
+  async getRechargeTransactions() {
+    try {
+      const response = await apiClient.get("/api/admin/wallettransactions/recharge");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching recharge transactions:", error);
+      throw error;
+    }
+  },
+
+  async getUserWalletTransactions(userId) {
+    try {
+      const response = await apiClient.get(`/api/admin/user/walletTransaction?userId=${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching user wallet transactions:", error);
+      throw error;
+    }
+  },
+
+  async getUserTransactions(userId) {
+    try {
+      const response = await apiClient.get(`/api/admin/user/transaction?userId=${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching user transactions:", error);
+      throw error;
+    }
+  },
+
+  async getUserPackages(userId) {
+    try {
+      const response = await apiClient.get(`/api/admin/user/transaction/package?userId=${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching user packages:", error);
+      throw error;
+    }
+  },
+
+  async getTransactionHistory() {
+    try {
+      const response = await apiClient.get("/api/admin/transaction/history");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching transaction history:", error);
+      throw error;
+    }
+  },
+
+  async getAdminBalance() {
+    try {
+      const response = await apiClient.get("/api/admin/balance");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching admin balance:", error);
+      throw error;
+    }
+  },
 };
 
 export default adminService;

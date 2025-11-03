@@ -9,7 +9,8 @@ import {
   Trash2, 
   Edit2, 
   Users,
-  Search
+  Search,
+  X
 } from "lucide-react";
 
 const RolesManagementTab = () => {
@@ -19,6 +20,8 @@ const RolesManagementTab = () => {
   const [loading, setLoading] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [showAddPermissionModal, setShowAddPermissionModal] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(null);
   const [searchRoleTerm, setSearchRoleTerm] = useState("");
   const [searchPermissionTerm, setSearchPermissionTerm] = useState("");
 
@@ -70,6 +73,30 @@ const RolesManagementTab = () => {
       }
     } catch (error) {
       toast.error("Lỗi khi tải danh sách permissions");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle remove permission from role
+  const handleRemovePermissionFromRole = async (roleName, permissionName) => {
+    if (loading) return;
+    
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa permission "${permissionName}" khỏi role "${roleName}"?`)) {
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const result = await roleService.removePermissionFromRole(roleName, permissionName);
+      if (result.success) {
+        toast.success(result.message || "Xóa permission thành công!");
+        loadRoles();
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error("Lỗi khi xóa permission khỏi role");
     } finally {
       setLoading(false);
     }
@@ -164,6 +191,39 @@ const RolesManagementTab = () => {
       }
     } catch (error) {
       toast.error("Lỗi khi xóa permission");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle add permission to role
+  const handleAddPermissionToRole = async (permissionName) => {
+    if (!selectedRole || !permissionName) {
+      toast.error("Vui lòng chọn permission");
+      return;
+    }
+
+    // Check if permission already exists
+    const role = roles.find(r => r.name === selectedRole);
+    if (role?.permissions?.some(p => (typeof p === "string" ? p : p.name) === permissionName)) {
+      toast.warning("Permission đã tồn tại trong role này");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await roleService.addPermissionToRole(selectedRole, permissionName);
+      if (result.success) {
+        toast.success(`Đã thêm "${permissionName}" vào role "${selectedRole}"!`);
+        setShowAddPermissionModal(false);
+        setSelectedRole(null);
+        loadRoles(); // Reload để cập nhật permissions
+        loadPermissions(); // Reload permissions list
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error("Lỗi khi thêm permission vào role");
     } finally {
       setLoading(false);
     }
@@ -347,46 +407,106 @@ const RolesManagementTab = () => {
                     </p>
                     {role.permissions && role.permissions.length > 0 && (
                       <div style={{ marginTop: "0.75rem", marginLeft: "2rem", display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                        {role.permissions.map((perm, idx) => (
-                          <span
-                            key={idx}
-                            style={{
-                              background: "rgba(102, 126, 234, 0.2)",
-                              color: "#667eea",
-                              padding: "0.25rem 0.75rem",
-                              borderRadius: "6px",
-                              fontSize: "0.85rem",
-                              fontWeight: "500",
-                            }}
-                          >
-                            {typeof perm === "string" ? perm : perm.name}
-                          </span>
-                        ))}
+                        {role.permissions.map((perm, idx) => {
+                          const permissionName = typeof perm === "string" ? perm : perm.name;
+                          return (
+                            <span
+                              key={idx}
+                              style={{
+                                background: "rgba(102, 126, 234, 0.2)",
+                                color: "#667eea",
+                                padding: "0.25rem 0.75rem",
+                                borderRadius: "6px",
+                                fontSize: "0.85rem",
+                                fontWeight: "500",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.5rem",
+                                position: "relative",
+                              }}
+                            >
+                              {permissionName}
+                              <button
+                                onClick={() => handleRemovePermissionFromRole(role.name, permissionName)}
+                                style={{
+                                  background: "rgba(239, 68, 68, 0.2)",
+                                  border: "none",
+                                  borderRadius: "4px",
+                                  padding: "0.15rem 0.25rem",
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  transition: "all 0.2s",
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.background = "rgba(239, 68, 68, 0.4)";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.background = "rgba(239, 68, 68, 0.2)";
+                                }}
+                                title={`Xóa ${permissionName} khỏi ${role.name}`}
+                              >
+                                <X size={12} color="#ef4444" />
+                              </button>
+                            </span>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
-                  <button
-                    onClick={() => handleDeleteRole(role.name)}
-                    style={{
-                      padding: "0.5rem",
-                      background: "rgba(239, 68, 68, 0.1)",
-                      border: "1px solid rgba(239, 68, 68, 0.3)",
-                      borderRadius: "8px",
-                      color: "#ef4444",
-                      cursor: "pointer",
-                      transition: "all 0.2s",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "rgba(239, 68, 68, 0.2)";
-                      e.currentTarget.style.borderColor = "rgba(239, 68, 68, 0.5)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
-                      e.currentTarget.style.borderColor = "rgba(239, 68, 68, 0.3)";
-                    }}
-                  >
-                    <Trash2 size={20} />
-                  </button>
+                  <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                    <button
+                      onClick={() => {
+                        setSelectedRole(role.name);
+                        setShowAddPermissionModal(true);
+                        loadPermissions();
+                      }}
+                      style={{
+                        padding: "0.5rem",
+                        background: "rgba(102, 126, 234, 0.2)",
+                        border: "1px solid rgba(102, 126, 234, 0.4)",
+                        borderRadius: "8px",
+                        color: "#667eea",
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "rgba(102, 126, 234, 0.3)";
+                        e.currentTarget.style.borderColor = "rgba(102, 126, 234, 0.6)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "rgba(102, 126, 234, 0.2)";
+                        e.currentTarget.style.borderColor = "rgba(102, 126, 234, 0.4)";
+                      }}
+                      title="Thêm permission vào role"
+                    >
+                      <Plus size={20} />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteRole(role.name)}
+                      style={{
+                        padding: "0.5rem",
+                        background: "rgba(239, 68, 68, 0.1)",
+                        border: "1px solid rgba(239, 68, 68, 0.3)",
+                        borderRadius: "8px",
+                        color: "#ef4444",
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "rgba(239, 68, 68, 0.2)";
+                        e.currentTarget.style.borderColor = "rgba(239, 68, 68, 0.5)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
+                        e.currentTarget.style.borderColor = "rgba(239, 68, 68, 0.3)";
+                      }}
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -672,6 +792,151 @@ const RolesManagementTab = () => {
                 }}
               >
                 Tạo Role
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Permission to Role Modal */}
+      {showAddPermissionModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0, 0, 0, 0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={() => {
+            setShowAddPermissionModal(false);
+            setSelectedRole(null);
+          }}
+        >
+          <div
+            style={{
+              background: "linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%)",
+              borderRadius: "15px",
+              padding: "2rem",
+              width: "90%",
+              maxWidth: "600px",
+              maxHeight: "80vh",
+              overflow: "auto",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              boxShadow: "0 20px 60px rgba(0, 0, 0, 0.5)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ color: "#fff", marginBottom: "1.5rem", fontSize: "1.5rem" }}>
+              Thêm Permission vào Role: <span style={{ color: "#667eea" }}>{selectedRole}</span>
+            </h2>
+            
+            <div style={{ marginBottom: "1.5rem" }}>
+              <p style={{ color: "rgba(255, 255, 255, 0.7)", marginBottom: "1rem" }}>
+                Chọn permission để thêm vào role:
+              </p>
+              
+              {loading ? (
+                <div style={{ textAlign: "center", padding: "2rem", color: "rgba(255, 255, 255, 0.7)" }}>
+                  Đang tải...
+                </div>
+              ) : permissions.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "2rem", color: "rgba(255, 255, 255, 0.5)" }}>
+                  Chưa có permission nào
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", maxHeight: "400px", overflowY: "auto" }}>
+                  {permissions.map((permission) => {
+                    const role = roles.find(r => r.name === selectedRole);
+                    const hasPermission = role?.permissions?.some(p => 
+                      (typeof p === "string" ? p : p.name) === permission.name
+                    );
+                    
+                    return (
+                      <button
+                        key={permission.name}
+                        onClick={() => handleAddPermissionToRole(permission.name)}
+                        disabled={hasPermission || loading}
+                        style={{
+                          padding: "1rem",
+                          background: hasPermission 
+                            ? "rgba(255, 255, 255, 0.05)" 
+                            : "rgba(102, 126, 234, 0.1)",
+                          border: hasPermission
+                            ? "1px solid rgba(255, 255, 255, 0.1)"
+                            : "1px solid rgba(102, 126, 234, 0.3)",
+                          borderRadius: "8px",
+                          color: hasPermission ? "rgba(255, 255, 255, 0.4)" : "#fff",
+                          cursor: hasPermission ? "not-allowed" : "pointer",
+                          textAlign: "left",
+                          transition: "all 0.2s",
+                          opacity: hasPermission ? 0.5 : 1,
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!hasPermission && !loading) {
+                            e.currentTarget.style.background = "rgba(102, 126, 234, 0.2)";
+                            e.currentTarget.style.borderColor = "rgba(102, 126, 234, 0.5)";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!hasPermission) {
+                            e.currentTarget.style.background = "rgba(102, 126, 234, 0.1)";
+                            e.currentTarget.style.borderColor = "rgba(102, 126, 234, 0.3)";
+                          }
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <div>
+                            <div style={{ fontWeight: "600", marginBottom: "0.25rem" }}>
+                              {permission.name}
+                            </div>
+                            {permission.description && (
+                              <div style={{ fontSize: "0.85rem", opacity: 0.7 }}>
+                                {permission.description}
+                              </div>
+                            )}
+                          </div>
+                          {hasPermission && (
+                            <span style={{ 
+                              padding: "0.25rem 0.75rem", 
+                              background: "rgba(102, 126, 234, 0.2)",
+                              borderRadius: "6px",
+                              fontSize: "0.8rem",
+                              color: "#667eea"
+                            }}>
+                              Đã có
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end", marginTop: "1.5rem" }}>
+              <button
+                onClick={() => {
+                  setShowAddPermissionModal(false);
+                  setSelectedRole(null);
+                }}
+                style={{
+                  padding: "0.75rem 1.5rem",
+                  background: "rgba(255, 255, 255, 0.1)",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  borderRadius: "8px",
+                  color: "#fff",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                }}
+              >
+                Đóng
               </button>
             </div>
           </div>

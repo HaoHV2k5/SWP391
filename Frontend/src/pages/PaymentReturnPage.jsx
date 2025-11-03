@@ -1,7 +1,7 @@
 // src/pages/PaymentReturnPage.jsx
 import { useEffect, useState } from "react";
-import { Result, Button, Spin } from "antd";
-import { useNavigate } from "react-router-dom";
+import { Result, Button, Spin, message } from "antd";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { paymentService } from "../services/paymentService";
 
 export default function PaymentReturnPage() {
@@ -11,28 +11,65 @@ export default function PaymentReturnPage() {
     message: "",
   });
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     const run = async () => {
       try {
+        // Lấy query string từ URL (VNPay redirect về với các params)
         const qs = window.location.search || "";
-        const res = await paymentService.paymentReturn(qs);
+        
+        // Kiểm tra response code từ VNPay trong URL params
+        const vnpResponseCode = searchParams.get("vnp_ResponseCode");
+        const isSuccess = vnpResponseCode === "00";
 
-        const ok = res?.code === 1000 || res?.success === true;
-        setStatus({ loading: false, success: ok, message: res?.message || "" });
-
-        // Đánh dấu để trang ví refresh khi quay lại
-        if (ok) sessionStorage.setItem("wallet.reload", "1");
+        if (isSuccess) {
+          // Thanh toán thành công - fetch lại số dư từ backend
+          try {
+            // Backend đã xử lý callback và cập nhật wallet
+            // Frontend chỉ cần fetch lại wallet transactions để lấy số dư mới
+            await paymentService.getWalletTransactions();
+            
+            // Đánh dấu để tất cả components liên quan reload balance
+            sessionStorage.setItem("wallet.reload", "1");
+            
+            setStatus({
+              loading: false,
+              success: true,
+              message: "Thanh toán thành công! Số dư ví đã được cập nhật.",
+            });
+            
+            message.success("Nạp tiền thành công! Số dư ví đã được cập nhật.");
+          } catch (fetchError) {
+            console.error("Error fetching wallet balance:", fetchError);
+            setStatus({
+              loading: false,
+              success: true,
+              message: "Thanh toán thành công. Vui lòng kiểm tra lại số dư.",
+            });
+            sessionStorage.setItem("wallet.reload", "1");
+          }
+        } else {
+          // Thanh toán thất bại hoặc bị hủy
+          setStatus({
+            loading: false,
+            success: false,
+            message: vnpResponseCode 
+              ? `Thanh toán thất bại. Mã lỗi: ${vnpResponseCode}`
+              : "Thanh toán thất bại hoặc bị hủy.",
+          });
+        }
       } catch (e) {
+        console.error("Error processing payment return:", e);
         setStatus({
           loading: false,
           success: false,
-          message: "Thanh toán thất bại hoặc bị hủy.",
+          message: "Có lỗi xảy ra khi xử lý kết quả thanh toán.",
         });
       }
     };
     run();
-  }, []);
+  }, [searchParams]);
 
   if (status.loading) {
     return (
@@ -80,3 +117,4 @@ export default function PaymentReturnPage() {
     </div>
   );
 }
+

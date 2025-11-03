@@ -194,8 +194,25 @@ const WalletManagement = ({ user }) => {
         message.error("Không thể tạo link thanh toán. Vui lòng thử lại!");
       }
     } catch (error) {
-      console.error("Error recharging wallet:", error);
-      message.error("Có lỗi xảy ra khi nạp tiền. Vui lòng thử lại!");
+      // Xử lý lỗi cụ thể cho từng trường hợp
+      if (error?.code === "WALLET_NOT_EXIST") {
+        // Lỗi ví chưa tồn tại - hiển thị message rõ ràng, không log console
+        message.error({
+          content:
+            error.message ||
+            "Ví của bạn chưa được khởi tạo. Vui lòng liên hệ quản trị viên để được hỗ trợ.",
+          duration: 6,
+        });
+      } else {
+        // Các lỗi khác - log để debug
+        console.error("Error recharging wallet:", error);
+        const errorMessage =
+          error?.response?.data?.data?.message ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Có lỗi xảy ra khi nạp tiền. Vui lòng thử lại!";
+        message.error(errorMessage);
+      }
     }
   };
 
@@ -261,19 +278,34 @@ const WalletManagement = ({ user }) => {
       title: "Số tiền",
       dataIndex: "amount",
       key: "amount",
-      render: (amount, record) => (
-        <Text
-          style={{
-            color: record.type?.toLowerCase().includes("recharge")
-              ? "#52c41a"
-              : "#1890ff",
-            fontWeight: "bold",
-          }}
-        >
-          {record.type?.toLowerCase().includes("recharge") ? "+" : "-"}
-          {formatPrice(amount)}
-        </Text>
-      ),
+      render: (amount, record) => {
+        // Kiểm tra cả type và typeWalletTraction, xử lý cả uppercase và lowercase
+        const type = (
+          (record.typeWalletTraction || record.type || "") + ""
+        ).toLowerCase();
+        const isRecharge =
+          type === "recharge" ||
+          type.includes("recharge") ||
+          type.includes("nạp") ||
+          type.includes("deposit") ||
+          type.includes("refund");
+
+        // Recharge → màu xanh lá (+), Payment → màu xanh dương (-)
+        const color = isRecharge ? "#52c41a" : "#1890ff";
+        const sign = isRecharge ? "+" : "-";
+
+        return (
+          <Text
+            style={{
+              color: color,
+              fontWeight: "bold",
+            }}
+          >
+            {sign}
+            {formatPrice(amount)}
+          </Text>
+        );
+      },
     },
     {
       title: "Mô tả",

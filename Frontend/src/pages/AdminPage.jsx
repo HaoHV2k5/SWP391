@@ -7,6 +7,7 @@ import AdminSidebar from "../components/admin/AdminSidebar";
 import DashboardTab from "../components/admin/DashboardTab";
 import UsersTab from "../components/admin/UsersTab";
 import ProductsTab from "../components/admin/ProductsTab";
+import RevenueTab from "../components/admin/RevenueTab";
 import KYCTab from "../components/admin/KYCTab";
 import AdminComplaintTab from "../components/admin/AdminComplaintTab";
 import RolesManagementTab from "../components/admin/RolesManagementTab";
@@ -20,6 +21,7 @@ const AdminPage = ({ user }) => {
     const path = location.pathname;
     if (path === "/admin/users") return "users";
     if (path === "/admin/products") return "products";
+    if (path === "/admin/revenue") return "revenue";
     if (path === "/admin/kyc") return "kyc";
     if (path === "/admin/complaints") return "complaints";
     if (path === "/admin/roles") return "roles";
@@ -318,6 +320,7 @@ const AdminPage = ({ user }) => {
                   {activeTab === "dashboard" && "Tổng quan"}
                   {activeTab === "users" && "Người dùng"}
                   {activeTab === "products" && "Sản phẩm"}
+                  {activeTab === "revenue" && "Doanh thu"}
                   {activeTab === "kyc" && "KYC Approval"}
                   {activeTab === "complaints" && "Khiếu nại"}
                   {activeTab === "roles" && "Phân quyền"}
@@ -433,6 +436,7 @@ const AdminPage = ({ user }) => {
               {activeTab === "dashboard" && "📊 Tổng quan"}
               {activeTab === "users" && "👥 Quản lý người dùng"}
               {activeTab === "products" && "📦 Quản lý sản phẩm"}
+              {activeTab === "revenue" && "💰 Quản lý doanh thu"}
               {activeTab === "kyc" && "🛡️ Duyệt KYC"}
               {activeTab === "complaints" && "⚠️ Quản lý khiếu nại"}
               {activeTab === "roles" && "🔐 Quản lý phân quyền"}
@@ -499,6 +503,13 @@ const AdminPage = ({ user }) => {
               </div>
             )}
 
+            {/* Revenue Tab */}
+            {activeTab === "revenue" && (
+              <div key="revenue-content">
+                <RevenueTab />
+              </div>
+            )}
+
             {/* KYC Tab */}
             {activeTab === "kyc" && (
               <div key="kyc-content">
@@ -521,7 +532,7 @@ const AdminPage = ({ user }) => {
             )}
 
             {/* Fallback - nếu không có tab nào match */}
-            {!["dashboard", "users", "products", "kyc", "complaints", "roles"].includes(activeTab) && (
+            {!["dashboard", "users", "products", "revenue", "kyc", "complaints", "roles"].includes(activeTab) && (
               <div style={{ textAlign: "center", padding: "2rem" }}>
                 <p style={{ color: "rgba(255, 255, 255, 0.7)" }}>
                   Tab không xác định: {activeTab}

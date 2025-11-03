@@ -8,8 +8,10 @@ import PostStatsCards from "../../components/member/PostStatsCards";
 import PostsList from "../../components/member/PostsList";
 import EditProductModal from "../../components/member/EditProductModal";
 import DeleteConfirmationModal from "../../components/member/DeleteConfirmationModal";
+import RequireApprovalPackageModal from "../../components/member/RequireApprovalPackageModal";
 import productService from "../../services/productService";
 import { memberService } from "../../services/memberService";
+import { paymentService } from "../../services/paymentService";
 import "../../styles/member/index.css";
 import "../../styles/member/MyPosts.css";
 
@@ -20,6 +22,8 @@ const MyPosts = ({ user }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showRequireApprovalModal, setShowRequireApprovalModal] = useState(false);
+  const [currentPackage, setCurrentPackage] = useState(null);
   
   const brands = [
     { value: "Dibao", label: "Dibao" },
@@ -103,6 +107,17 @@ const MyPosts = ({ user }) => {
     setFilteredPosts(filtered);
   }, [posts, filterStatus]);
 
+  // Load current package
+  const loadCurrentPackage = async () => {
+    try {
+      const response = await paymentService.getCurrentPackage();
+      setCurrentPackage(response.data);
+    } catch (error) {
+      console.error("Error loading current package:", error);
+      setCurrentPackage(null);
+    }
+  };
+
   useEffect(() => {
     localStorage.removeItem("recentPendingPost");
     if (!user) {
@@ -119,7 +134,11 @@ const MyPosts = ({ user }) => {
       return;
     }
     loadPosts();
-    const onFocus = () => loadPosts();
+    loadCurrentPackage();
+    const onFocus = () => {
+      loadPosts();
+      loadCurrentPackage();
+    };
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
   }, [user, navigate]);
@@ -215,7 +234,24 @@ const MyPosts = ({ user }) => {
     }
   };
 
-  const handleEditPost = (post) => {
+  const handleEditPost = async (post) => {
+    // Kiểm tra gói hiện tại trước khi cho phép chỉnh sửa
+    if (!currentPackage) {
+      // Nếu chưa load được gói, thử load lại
+      await loadCurrentPackage();
+    }
+
+    // Kiểm tra nếu gói không cần duyệt
+    // requireApproval giờ đã có trong response từ backend
+    const requireApproval = currentPackage?.requireApproval;
+
+    if (currentPackage && (!requireApproval || requireApproval === false)) {
+      // Hiển thị modal yêu cầu mua gói cần duyệt
+      setShowRequireApprovalModal(true);
+      return;
+    }
+
+    // Nếu có gói cần duyệt hoặc không có gói (cho phép thử chỉnh sửa)
     setSelectedPost(post);
     const productType = post.productType || post.category || "VEHICLE";
     
@@ -515,6 +551,12 @@ const MyPosts = ({ user }) => {
         onSubmit={confirmEdit}
         brands={brands}
         batteryTypes={batteryTypes}
+      />
+
+      {/* Require Approval Package Modal */}
+      <RequireApprovalPackageModal
+        show={showRequireApprovalModal}
+        onHide={() => setShowRequireApprovalModal(false)}
       />
     </Container>
   );
