@@ -284,7 +284,7 @@ const PackagesManagementTab = () => {
                     <td style={{ padding: "1rem" }}>
                       {pkg.postLimit === 9999 ? "Không giới hạn" : pkg.postLimit}
                     </td>
-                    <td style={{ padding: "1rem" }}>
+                    <td style={{ padding: "1rem", whiteSpace: "nowrap" }}>
                       <span
                         style={{
                           padding: "0.25rem 0.75rem",

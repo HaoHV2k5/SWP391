@@ -210,7 +210,8 @@ const UsersTab = ({
       setUserToDelete(null);
     } catch (error) {
       console.error("❌ Error deleting user:", error);
-      toast.error("Lỗi khi xóa user!");
+      const errorMessage = error.response?.data?.message || "Lỗi khi xóa user! Có thể do user đã có dữ liệu liên quan (đơn hàng, sản phẩm, reviews...). Vui lòng kiểm tra lại.";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -407,10 +408,6 @@ const UsersTab = ({
       console.error("❌ Error updating user roles:", error);
       console.error("❌ Error details:", error.response?.data);
       console.error("❌ Error full response:", error.response);
-      console.error("❌ Request body sent:", {
-        roleNames: validRoleNames,
-        userId: userToEditRole.id
-      });
       
       // Hiển thị error message chi tiết
       const errorMessage = error.response?.data?.message || error.message;
@@ -662,7 +659,7 @@ const UsersTab = ({
                         user.phoneNumber ||
                         "Chưa có SĐT"}
                     </td>
-                    <td style={{ padding: "1rem" }}>
+                    <td style={{ padding: "1rem", whiteSpace: "nowrap" }}>
                       <span
                         style={{
                           padding: "0.25rem 0.75rem",

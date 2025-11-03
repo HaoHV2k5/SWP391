@@ -180,6 +180,81 @@ const adminService = {
       throw error;
     }
   },
+
+  // Posting Packages APIs
+  async getAllPackages() {
+    try {
+      const response = await apiClient.get("/posting-packages");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching all packages:", error);
+      throw error;
+    }
+  },
+
+  async getPackageById(id) {
+    try {
+      const response = await apiClient.get(`/posting-packages/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching package by id:", error);
+      throw error;
+    }
+  },
+
+  async createPackage(packageData) {
+    try {
+      const response = await apiClient.post("/posting-packages", packageData);
+      return response.data;
+    } catch (error) {
+      console.error("Error creating package:", error);
+      throw error;
+    }
+  },
+
+  async updatePackage(id, packageData) {
+    try {
+      const response = await apiClient.put(`/posting-packages/${id}`, packageData);
+      return response.data;
+    } catch (error) {
+      console.error("Error updating package:", error);
+      throw error;
+    }
+  },
+
+  async deletePackage(id) {
+    try {
+      const response = await apiClient.delete(`/posting-packages/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error deleting package:", error);
+      throw error;
+    }
+  },
+
+  // Roles APIs
+  async getAllRoles() {
+    try {
+      const response = await apiClient.get("/roles/roles");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching all roles:", error);
+      throw error;
+    }
+  },
+
+  async updateUserRoles(userId, roleNames) {
+    try {
+      const response = await apiClient.put(`/admin/users/${userId}/roles`, {
+        userId: userId,
+        roleNames: roleNames
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error updating user roles:", error);
+      throw error;
+    }
+  },
 };
 
 export default adminService;
