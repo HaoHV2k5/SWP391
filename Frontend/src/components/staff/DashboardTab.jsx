@@ -72,10 +72,20 @@ const DashboardTab = () => {
 
   const [q, setQ] = useState("");
 
-  const filter = (arr) => {
+  const filterPro = (arr) => {
     if (!q.trim()) return arr;
     const t = q.toLowerCase();
-    return arr.filter((x) => JSON.stringify(x).toLowerCase().includes(t));
+    return arr.filter((x) =>
+      JSON.stringify(x?.title).toLowerCase().includes(t)
+    );
+  };
+
+  const filterKyc = (arr) => {
+    if (!q.trim()) return arr;
+    const t = q.toLowerCase();
+    return arr.filter((x) =>
+      JSON.stringify(x?.userId).toLowerCase().includes(t)
+    );
   };
 
   // -------------------- columns: GIỮ NGUYÊN LOGIC ---------------------------
@@ -118,7 +128,7 @@ const DashboardTab = () => {
         dataIndex: "id",
         key: "id",
         width: 90,
-        render: (v) => <span style={{ color: "#a3bffa" }}>#{v}</span>,
+        render: (v) => <span style={{ color: "#facca3ff" }}>#{v}</span>,
       },
       { title: "User ID", dataIndex: "userId", key: "userId" },
       {
@@ -211,6 +221,21 @@ const DashboardTab = () => {
         .dark-table .ant-table-tbody > tr > td {
           background: transparent;
           border-bottom: 1px solid rgba(255,255,255,.06);
+          transition: all 0.2s ease;
+        }
+        .dark-table .ant-table-tbody > tr:hover > td {
+          background: rgba(99, 102, 241, 0.15) !important;
+          color: #ffffff !important;
+        }
+        .dark-table .ant-table-tbody > tr:hover > td span[style*="color"] {
+          opacity: 1 !important;
+        }
+        .dark-table .ant-table-tbody > tr {
+          transition: all 0.2s ease;
+        }
+        .dark-table .ant-table-tbody > tr:hover {
+          transform: translateX(2px);
+          box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
         }
         .dark-table .ant-pagination .ant-pagination-item-active {
           border-color:#6366f1;
@@ -252,11 +277,11 @@ const DashboardTab = () => {
           </Col>
 
           <Col xs={24} md={6}>
-            <Tooltip title="Tìm theo mọi trường (soft search)">
+            <Tooltip title="Tìm Kiếm">
               <Input
                 allowClear
                 prefix={<SearchOutlined />}
-                placeholder="Tìm Kiếm Theo Tiêu Đề..."
+                placeholder="Tìm Kiếm..."
                 className="toolbar-input"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -287,7 +312,7 @@ const DashboardTab = () => {
                     rowKey="id"
                     loading={pro.initial}
                     columns={colsProducts}
-                    dataSource={filter(pro.list)}
+                    dataSource={filterPro(pro.list)}
                     pagination={{ pageSize: 8 }}
                   />
                 </div>
@@ -306,7 +331,7 @@ const DashboardTab = () => {
                     rowKey="id"
                     loading={kyc.initial}
                     columns={colsKyc}
-                    dataSource={filter(kyc.list)}
+                    dataSource={filterKyc(kyc.list)}
                     pagination={{ pageSize: 8 }}
                   />
                 </div>
