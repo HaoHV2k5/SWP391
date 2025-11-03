@@ -288,9 +288,29 @@ public List<ProductResponseStaff> getPendingProducts() {
             changeImportant = true;
         }
 
-
+        // Logic: Chỉ cần duyệt lại nếu seller có gói kiểm duyệt (requireApproval = true)
+        // Nếu gói không kiểm duyệt → giữ nguyên status và isPosted (không thay đổi)
         if (changeImportant) {
-            product.setStatus(ProductStatus.PENDING);
+            try {
+                // Lấy gói hiện tại của seller
+                UserPostingPackage userPackage = userPackageTransactionService.getUserPostingPackageByUserId(product.getSeller().getId());
+                
+                // Chỉ set PENDING nếu gói có requireApproval = true
+                if (userPackage != null && 
+                    userPackage.getPostingPackage() != null &&
+                    Boolean.TRUE.equals(userPackage.getPostingPackage().getRequireApproval())) {
+                    
+                    // Gói kiểm duyệt → PENDING và ẩn khỏi homepage
+                    product.setStatus(ProductStatus.PENDING);
+                    product.setPosted(false);
+                }
+                // Nếu gói không kiểm duyệt (requireApproval = false hoặc null)
+                // → KHÔNG thay đổi status và isPosted
+                // Giữ nguyên trạng thái hiện tại (ACTIVE vẫn ACTIVE, isPosted vẫn true)
+                
+            } catch (Exception e) {
+                // Nếu không tìm thấy gói → giữ nguyên status (không thay đổi)
+            }
         }
 
         productMapper.updateProduct(product, request);

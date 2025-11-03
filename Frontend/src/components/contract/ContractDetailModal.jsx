@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import contractService from '../../services/contractService';
+import orderService from '../../services/orderService';
 import { toast } from 'react-toastify';
 import '../../styles/contract/ContractDetailModal.css';
 
-const ContractDetailModal = ({ contract, isOpen, onClose, currentUserId, onPay }) => {
+const ContractDetailModal = ({ contract, isOpen, onClose, currentUserId, onPay, onConfirmReceived }) => {
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   if (!isOpen || !contract) return null;
 
@@ -13,6 +15,13 @@ const ContractDetailModal = ({ contract, isOpen, onClose, currentUserId, onPay }
   const isBuyer = currentUserId === contract.buyerId;
 
   const canPay = contract.status === 'SIGNED' && !contract.paymentCompleted && isBuyer;
+  
+  // Button xác nhận nhận hàng: chỉ hiển thị khi buyer, đã SIGNED, đã thanh toán, chưa xác nhận nhận hàng, có orderId
+  const canConfirmReceived = contract.status === 'SIGNED' && 
+                             contract.paymentCompleted && 
+                             !contract.deliveryCompleted && 
+                             isBuyer && 
+                             contract.orderId;
 
   const handlePay = async () => {
     if (!canPay || loading) return;
@@ -55,6 +64,45 @@ const ContractDetailModal = ({ contract, isOpen, onClose, currentUserId, onPay }
       toast.error('Tải xuống hợp đồng thất bại');
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleConfirmReceived = async () => {
+    if (!canConfirmReceived || confirming || !contract.orderId) return;
+    
+    // Xác nhận với user trước khi gửi request
+    const confirmed = window.confirm('Bạn có chắc chắn đã nhận hàng? Sau khi xác nhận, tiền sẽ được giải phóng cho người bán sau 3 ngày.');
+    if (!confirmed) return;
+    
+    setConfirming(true);
+    try {
+      if (onConfirmReceived) {
+        // Nếu có callback từ parent component
+        await onConfirmReceived(contract.orderId);
+      } else {
+        // Gọi API trực tiếp
+        const result = await orderService.confirmReceived(contract.orderId);
+        if (result.success) {
+          toast.success(result.message || 'Xác nhận đã nhận hàng thành công');
+          // Refresh contract data bằng cách đóng và mở lại modal
+          if (onClose) {
+            setTimeout(() => {
+              onClose();
+              // Trigger refresh nếu có event listener
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('contractUpdated'));
+              }
+            }, 1500);
+          }
+        } else {
+          toast.error(result.message || 'Xác nhận nhận hàng thất bại');
+        }
+      }
+    } catch (error) {
+      toast.error('Có lỗi xảy ra khi xác nhận nhận hàng');
+      console.error('Confirm received error:', error);
+    } finally {
+      setConfirming(false);
     }
   };
 
@@ -161,6 +209,24 @@ const ContractDetailModal = ({ contract, isOpen, onClose, currentUserId, onPay }
             </div>
           </section>
 
+          {/* Trạng thái nhận hàng */}
+          <section className="detail-section">
+            <div className="section-header-new">
+              <i className="bi bi-box-seam section-icon-new"></i>
+              <h4>Trạng thái nhận hàng</h4>
+            </div>
+            <div className="payment-box-new">
+              <div className={`payment-status-badge-new ${contract.deliveryCompleted ? 'paid' : 'unpaid'}`}>
+                {contract.deliveryCompleted ? '✓ Đã nhận hàng' : '○ Chưa nhận hàng'}
+              </div>
+              {contract.deliveryCompleted && contract.completedAt && (
+                <div className="payment-row-new" style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
+                  <span>Xác nhận lúc: {formatDate(contract.completedAt)}</span>
+                </div>
+              )}
+            </div>
+          </section>
+
           {/* Tình trạng ký */}
           <section className="detail-section">
             <div className="section-header-new">
@@ -257,6 +323,28 @@ const ContractDetailModal = ({ contract, isOpen, onClose, currentUserId, onPay }
             >
               <i className={`bi ${loading ? 'bi-hourglass-split' : 'bi-credit-card'}`}></i>
               {loading ? 'Đang xử lý...' : 'Thanh toán'}
+            </button>
+          )}
+          {canConfirmReceived && (
+            <button
+              className="btn-confirm-received-modal"
+              onClick={handleConfirmReceived}
+              disabled={confirming}
+              style={{
+                backgroundColor: '#52c41a',
+                color: 'white',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '4px',
+                cursor: confirming ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontWeight: '500'
+              }}
+            >
+              <i className={`bi ${confirming ? 'bi-hourglass-split' : 'bi-check-circle'}`}></i>
+              {confirming ? 'Đang xử lý...' : 'Xác nhận đã nhận hàng'}
             </button>
           )}
         </div>

@@ -138,6 +138,44 @@ const productService = {
     }
   },
 
+  // 📋 Lấy danh sách tin đăng chờ duyệt của seller
+  // 📍 Endpoint: /products/pending/seller/{userId}
+  // 👥 Users: Member, Seller (cần đăng nhập)
+  async getMyPendingPosts(userId) {
+    try {
+      const response = await apiClient.get(`/products/pending/seller/${userId}`);
+      const data = response?.data?.data ?? response?.data?.content ?? response?.data;
+      return { success: true, data: Array.isArray(data) ? data : [] };
+    } catch (error) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      console.error("❌ getMyPendingPosts error:", { status, backendMessage });
+      return {
+        success: false,
+        message: backendMessage || "Không thể tải danh sách tin chờ duyệt. Vui lòng thử lại sau.",
+      };
+    }
+  },
+
+  // 📋 Lấy danh sách tin đăng bị từ chối của seller
+  // 📍 Endpoint: /products/reject/seller/{userId}
+  // 👥 Users: Member, Seller (cần đăng nhập)
+  async getMyRejectedPosts(userId) {
+    try {
+      const response = await apiClient.get(`/products/reject/seller/${userId}`);
+      const data = response?.data?.data ?? response?.data?.content ?? response?.data;
+      return { success: true, data: Array.isArray(data) ? data : [] };
+    } catch (error) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      console.error("❌ getMyRejectedPosts error:", { status, backendMessage });
+      return {
+        success: false,
+        message: backendMessage || "Không thể tải danh sách tin bị từ chối. Vui lòng thử lại sau.",
+      };
+    }
+  },
+
   // ==================== PRODUCT MANAGEMENT API ====================
   // ➕ Tạo tin đăng mới (yêu cầu ROLE_SELLER trên BE)
   // 📍 Endpoint: /products/create?username=xxx
