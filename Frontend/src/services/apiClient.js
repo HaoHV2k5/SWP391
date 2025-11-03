@@ -1,8 +1,6 @@
 import axios from "axios";
 
-// ===========================================
 // CONFIGURATION
-// ===========================================
 
 const API_BASE = "http://localhost:3979";
 
@@ -11,9 +9,7 @@ const api = axios.create({
   withCredentials: false,
 });
 
-// ===========================================
 // TOKEN MANAGEMENT
-// ===========================================
 
 /**
  * Đọc JWT token từ localStorage
@@ -31,13 +27,13 @@ const readToken = () => {
   } catch {
     // Lỗi parse userData, bỏ qua
   }
-  
+
   // Fallback: token trực tiếp từ localStorage
   const direct = localStorage.getItem("token");
   if (direct) {
     return direct;
   }
-  
+
   return null;
 };
 
@@ -65,13 +61,13 @@ const refreshToken = async () => {
     if (!refreshTokenValue) return null;
 
     const refreshResponse = await axios.post(`${API_BASE}/auth/refresh`, {
-      refreshToken: refreshTokenValue
+      refreshToken: refreshTokenValue,
     });
-    
+
     if (refreshResponse.data && refreshResponse.data.token) {
       const newToken = refreshResponse.data.token;
       localStorage.setItem("token", newToken);
-      
+
       // Cập nhật userData với token mới
       const userData = localStorage.getItem("userData");
       if (userData) {
@@ -83,54 +79,45 @@ const refreshToken = async () => {
           // Không thể cập nhật userData, bỏ qua
         }
       }
-      
+
       return newToken;
     }
   } catch (error) {
     console.error("Token refresh failed:", error);
   }
-  
+
   return null;
 };
 
-// ===========================================
 // REQUEST INTERCEPTOR
-// ===========================================
 
 /**
  * Interceptor xử lý request trước khi gửi
  * - Thêm Authorization header
- * - Kiểm tra token hết hạn và tự động refresh nếu cần
+ * - Kiểm tra token hết hạn
  */
-api.interceptors.request.use(async (config) => {
+api.interceptors.request.use((config) => {
   let token = readToken();
-  
-  // Nếu token hết hạn, thử refresh token trước khi xóa
+
+  // Nếu token hết hạn, xóa và yêu cầu login lại
   if (token && isExpired(token)) {
-    const newToken = await refreshToken();
-    
-    if (newToken) {
-      token = newToken;
-    } else {
-      // Refresh thất bại mới xóa token
-      localStorage.removeItem("token");
-      localStorage.removeItem("userData");
-      localStorage.removeItem("refreshToken");
-      token = null;
-    }
+    localStorage.removeItem("token");
+    localStorage.removeItem("userData");
+    token = null;
   }
-  
+
   // Thêm Authorization header nếu có token
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+    console.log("🔑 Token added to request:", config.url);
+  } else {
+    console.warn("⚠️ No token found for request:", config.url);
   }
-  
+
   return config;
 });
 
-// ===========================================
 // RESPONSE INTERCEPTOR
-// ===========================================
 
 /**
  * Interceptor xử lý response sau khi nhận
@@ -143,46 +130,45 @@ api.interceptors.response.use(
   async (err) => {
     const status = err?.response?.status;
     const data = err?.response?.data;
-    const looksLikeHtml = typeof data === "string" && data.startsWith("<!DOCTYPE html>");
-    
+    const looksLikeHtml =
+      typeof data === "string" && data.startsWith("<!DOCTYPE html>");
+
     // Xử lý lỗi 401 - thử refresh token
     if (status === 401 && !err.config._retry) {
       err.config._retry = true;
-      
+
       const newToken = await refreshToken();
       if (newToken) {
         // Retry request với token mới
         err.config.headers.Authorization = `Bearer ${newToken}`;
         return api(err.config);
       }
-      
+
       // Nếu refresh thất bại, xóa auth data
       localStorage.removeItem("token");
       localStorage.removeItem("userData");
       localStorage.removeItem("refreshToken");
-      
+
       // Redirect đến login nếu đang ở staff page
       if (location.pathname.startsWith("/staff")) {
         location.replace("/login");
       }
-    } 
+    }
     // Xử lý lỗi 401 khác hoặc HTML response
     else if (status === 401 || looksLikeHtml) {
       localStorage.removeItem("token");
       localStorage.removeItem("userData");
       localStorage.removeItem("refreshToken");
-      
+
       if (location.pathname.startsWith("/staff")) {
         location.replace("/login");
       }
     }
-    
+
     return Promise.reject(err);
   }
 );
 
-// ===========================================
 // EXPORT
-// ===========================================
 
 export default api;

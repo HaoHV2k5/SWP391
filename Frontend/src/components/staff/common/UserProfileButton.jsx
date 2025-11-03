@@ -140,7 +140,7 @@ const UserProfileButton = ({ displayName = "Staff" }) => {
       </Button>
 
       <Drawer
-        title="Cập nhật thông tin người dùng"
+        title="Cập Nhật Thông Tin Của Staff "
         open={open}
         onClose={() => setOpen(false)}
         width={480}
