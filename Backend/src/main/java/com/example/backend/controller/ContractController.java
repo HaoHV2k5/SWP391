@@ -126,7 +126,7 @@ public class ContractController {
                 .message("đã lấy danh sách hợp đồng đã kí thành công!")
                 .build();
     }
-
+// thanh toán -> escrow đơn hàng
     @PreAuthorize("hasAnyAuthority('ROLE_USER','ROLE_SELLER')")
     @PostMapping("/contracts/{contractId}/pay")
     public ApiResponse<String> paySignedContract(@PathVariable Long contractId) {
@@ -140,7 +140,7 @@ public class ContractController {
                 .message("Thanh toán thất bại. Vui lòng kiểm tra số dư hoặc trạng thái hợp đồng!").build();
         }
     }
-
+// sellet có thể hủy hợp động nếu sau 3 ngayf kí hợp đồng chưa thanh toán
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
     @PostMapping("/contracts/{contractId}/cancel-by-seller")
     public ApiResponse<String> cancelContractBySeller(@PathVariable Long contractId, @RequestParam Long sellerId) {
@@ -149,7 +149,7 @@ public class ContractController {
                 .message("Seller đã huỷ hợp đồng thành công nếu hợp đồng đã ký quá 3 ngày mà chưa được thanh toán!")
                 .build();
     }
-
+// seller hủy hợp đồng nếu như ng mua ko chịu kí hợp đồng để treo
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
     @PostMapping("/contracts/{contractId}/cancel-pending-by-seller")
     public ApiResponse<String> cancelPendingContractBySeller(@PathVariable Long contractId, @RequestParam Long sellerId) {
