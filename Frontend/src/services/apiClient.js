@@ -156,12 +156,15 @@ api.interceptors.response.use(
     }
     // Xử lý lỗi 401 khác hoặc HTML response
     else if (status === 401 || looksLikeHtml) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("userData");
-      localStorage.removeItem("refreshToken");
+      // Chỉ xóa token nếu không phải ở admin page (tránh logout khi đang ở admin)
+      if (!window.location.pathname.startsWith("/admin")) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userData");
+        localStorage.removeItem("refreshToken");
 
-      if (location.pathname.startsWith("/staff")) {
-        location.replace("/login");
+        if (window.location.pathname.startsWith("/staff")) {
+          window.location.replace("/login");
+        }
       }
     }
 

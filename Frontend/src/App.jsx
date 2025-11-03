@@ -293,6 +293,14 @@ function AppContent() {
             </ProtectedAdminRoute>
           }
         />
+        <Route
+          path="/admin/withdrawals"
+          element={
+            <ProtectedAdminRoute user={user}>
+              <AdminPage user={user} />
+            </ProtectedAdminRoute>
+          }
+        />
 
         {/* STAFF ROUTES - Protected */}
         <Route

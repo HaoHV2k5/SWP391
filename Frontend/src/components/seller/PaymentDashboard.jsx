@@ -7,9 +7,11 @@ import {
   HistoryOutlined,
   DollarOutlined,
   GiftOutlined,
+  MoneyCollectOutlined,
 } from "@ant-design/icons";
 import PackagesList from "./PackagesList";
 import WalletManagement from "./WalletManagement";
+import WithdrawalRequest from "./WithdrawalRequest";
 import { paymentService } from "../../services/paymentService";
 
 const PaymentDashboard = ({ user }) => {
@@ -211,6 +213,16 @@ const PaymentDashboard = ({ user }) => {
         </span>
       ),
       children: <WalletManagement user={user} />,
+    },
+    {
+      key: "withdrawal",
+      label: (
+        <span>
+          <MoneyCollectOutlined />
+          Rút Tiền
+        </span>
+      ),
+      children: <WithdrawalRequest user={user} />,
     },
   ];
 
