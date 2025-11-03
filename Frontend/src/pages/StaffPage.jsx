@@ -34,7 +34,7 @@ const getItem = (label, key, icon) => ({ key, icon, label });
 const StaffPage = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState(TAB_KEYS.PRODUCTS);
+  const [activeTab, setActiveTab] = useState(TAB_KEYS.DASHBOARD);
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -45,7 +45,7 @@ const StaffPage = ({ user, onLogout }) => {
   const { isCheckingAuth } = useStaffAuth(user); //KHÔNG truyền navigate ở đây
 
   useEffect(() => {
-    // dùng reload(), không phải loadStats()
+    //dùng reload(), không phải loadStats()
     statsHook.reload?.();
   }, [statsHook]);
 
@@ -58,7 +58,7 @@ const StaffPage = ({ user, onLogout }) => {
       TAB_KEYS.COMPLAINTS,
       <ExclamationCircleOutlined />
     ),
-  ]; 
+  ];
 
   if (isCheckingAuth) {
     return (
@@ -76,6 +76,7 @@ const StaffPage = ({ user, onLogout }) => {
     [TAB_KEYS.DASHBOARD]: "Tổng Quan",
     [TAB_KEYS.PRODUCTS]: "Duyệt Tin Đăng",
     [TAB_KEYS.KYC]: "Duyệt Hồ Sơ KYC",
+    [TAB_KEYS.COMPLAINTS]: "Quản lý Khiếu Nại",
   };
 
   return (
