@@ -11,6 +11,7 @@ import RevenueTab from "../components/admin/RevenueTab";
 import KYCTab from "../components/admin/KYCTab";
 import AdminComplaintTab from "../components/admin/AdminComplaintTab";
 import RolesManagementTab from "../components/admin/RolesManagementTab";
+import EscrowTab from "../components/admin/EscrowTab";
 
 const AdminPage = ({ user }) => {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ const AdminPage = ({ user }) => {
     if (path === "/admin/revenue") return "revenue";
     if (path === "/admin/kyc") return "kyc";
     if (path === "/admin/complaints") return "complaints";
+    if (path === "/admin/escrow") return "escrow";
     if (path === "/admin/roles") return "roles";
     if (path === "/admin") return "dashboard";
     return "dashboard";
@@ -323,6 +325,7 @@ const AdminPage = ({ user }) => {
                   {activeTab === "revenue" && "Doanh thu"}
                   {activeTab === "kyc" && "KYC Approval"}
                   {activeTab === "complaints" && "Khiếu nại"}
+                  {activeTab === "escrow" && "Escrow"}
                   {activeTab === "roles" && "Phân quyền"}
                 </span>
               </div>
@@ -439,6 +442,7 @@ const AdminPage = ({ user }) => {
               {activeTab === "revenue" && "💰 Quản lý doanh thu"}
               {activeTab === "kyc" && "🛡️ Duyệt KYC"}
               {activeTab === "complaints" && "⚠️ Quản lý khiếu nại"}
+              {activeTab === "escrow" && "📄 Quản lý Escrow"}
               {activeTab === "roles" && "🔐 Quản lý phân quyền"}
             </h1>
 
@@ -524,6 +528,13 @@ const AdminPage = ({ user }) => {
               </div>
             )}
 
+            {/* Escrow Tab */}
+            {activeTab === "escrow" && (
+              <div key="escrow-content">
+                <EscrowTab />
+              </div>
+            )}
+
             {/* Roles Tab */}
             {activeTab === "roles" && (
               <div key="roles-content">
@@ -532,7 +543,7 @@ const AdminPage = ({ user }) => {
             )}
 
             {/* Fallback - nếu không có tab nào match */}
-            {!["dashboard", "users", "products", "revenue", "kyc", "complaints", "roles"].includes(activeTab) && (
+            {!["dashboard", "users", "products", "revenue", "kyc", "complaints", "escrow", "roles"].includes(activeTab) && (
               <div style={{ textAlign: "center", padding: "2rem" }}>
                 <p style={{ color: "rgba(255, 255, 255, 0.7)" }}>
                   Tab không xác định: {activeTab}

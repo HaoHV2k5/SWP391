@@ -19,6 +19,7 @@ public interface OrderMapper {
     @Mapping(source = "product.title", target = "productName")
     OrderResponse toOrderResponse(Order order);
 
+    @Mapping(source = "id", target = "escrowId")
     @Mapping(source = "order.id", target = "orderId")
     @Mapping(source = "sellerProofImage", target = "sellerProofImage")
     @Mapping(source = "sellerOrderCode", target = "sellerOrderCode")

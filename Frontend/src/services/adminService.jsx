@@ -137,6 +137,49 @@ const adminService = {
       throw error;
     }
   },
+
+  // Escrow APIs
+  async getSellerEscrowRequests() {
+    try {
+      const response = await apiClient.get("/admin/order-escrow/seller-requests");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching seller escrow requests:", error);
+      throw error;
+    }
+  },
+
+  async approveEscrowRequest(escrowId) {
+    try {
+      const response = await apiClient.post(`/admin/order-escrow/${escrowId}/approve`);
+      return response.data;
+    } catch (error) {
+      console.error("Error approving escrow request:", error);
+      throw error;
+    }
+  },
+
+  async rejectEscrowRequest(escrowId, reason) {
+    try {
+      const response = await apiClient.post(
+        `/admin/order-escrow/${escrowId}/reject?reason=${encodeURIComponent(reason)}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error rejecting escrow request:", error);
+      throw error;
+    }
+  },
+
+  async manualReleaseEscrow() {
+    try {
+      const response = await apiClient.post("/admin/escrow/manual-release");
+      return response.data;
+    } catch (error) {
+      console.error("Error manually releasing escrow:", error);
+      throw error;
+    }
+  },
 };
 
 export default adminService;

@@ -19,6 +19,8 @@ import Navbar from "./components/homepageContainer/navigation/Navbar";
 import Footer from "./components/homepageContainer/layout/Footer";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import PhoneInputModal from "./components/auth/PhoneInputModal";
 import RegisterPage from "./pages/RegisterPage";
 import AdminPage from "./pages/AdminPage";
 import StaffPage from "./pages/StaffPage";
@@ -63,6 +65,8 @@ function AppContent() {
   // STATE MANAGEMENT
   // ===========================================
   const [user, setUser] = useState(null);
+  const [showPhoneInput, setShowPhoneInput] = useState(false);
+  const [phoneInputEmail, setPhoneInputEmail] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -138,13 +142,19 @@ function AppContent() {
   // ===========================================
 
   // Xử lý khi user login thành công
-  const handleLogin = (loginResponse) => {
+  const handleLogin = (loginResponse, options = {}) => {
     const normalized = normalizeLoginResponse(loginResponse);
     const userData = persistAuth(normalized);
     setUser(userData);
 
     // Khởi tạo các service sau khi login (bao gồm redirect logic)
     AppService.handleAppLogin(userData, navigate);
+    
+    // Check if need to show phone input modal (for Facebook login)
+    if (options.showPhoneInput && options.email) {
+      setPhoneInputEmail(options.email);
+      setShowPhoneInput(true);
+    }
   };
 
   /**
@@ -226,6 +236,7 @@ function AppContent() {
         <Route path="/search" element={<SearchResultsPage />} />
         <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/verify-otp" element={<OTPVerificationPage />} />
 
         {/* ADMIN ROUTES - Protected */}
@@ -271,6 +282,14 @@ function AppContent() {
         />
         <Route
           path="/admin/complaints"
+          element={
+            <ProtectedAdminRoute user={user}>
+              <AdminPage user={user} />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/admin/escrow"
           element={
             <ProtectedAdminRoute user={user}>
               <AdminPage user={user} />
@@ -344,6 +363,27 @@ function AppContent() {
       <ToastContainer {...getToastDefaults()} theme="light" />
       {/* AI WIDGET - Chỉ hiển thị ở trang đăng tin */}
       {path === "/post-ad" && <PriceSuggestChat />}
+
+      {/* Phone Input Modal for Facebook Login */}
+      <PhoneInputModal
+        show={showPhoneInput}
+        onClose={() => {
+          setShowPhoneInput(false);
+          setPhoneInputEmail('');
+        }}
+        email={phoneInputEmail}
+        onSuccess={(userData) => {
+          // Update user data after phone input
+          if (userData) {
+            const currentUserData = JSON.parse(localStorage.getItem("userData") || "{}");
+            const updatedUser = { ...currentUserData, ...userData };
+            setUser(updatedUser);
+            localStorage.setItem("userData", JSON.stringify(updatedUser));
+          }
+          setShowPhoneInput(false);
+          setPhoneInputEmail('');
+        }}
+      />
     </div>
   );
 }

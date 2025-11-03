@@ -4,7 +4,6 @@ import { LogOut } from "lucide-react";
 import UserAvatar from "./UserAvatar";
 import UserMenuItems from "./UserMenuItems";
 import LogoutButton from "./LogoutButton";
-import WalletNavbar from "./WalletNavbar";
 
 const UserDropdown = ({ user, onLogout }) => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -38,9 +37,6 @@ const UserDropdown = ({ user, onLogout }) => {
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-      {/* Wallet */}
-      <WalletNavbar user={user} />
-
       {/* Admin Link */}
       {user.role === "admin" && (
         <Link

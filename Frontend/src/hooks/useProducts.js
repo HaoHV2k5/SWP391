@@ -56,7 +56,7 @@ export default function useProducts() {
 
   // Memoized function để chuẩn hóa và lọc dữ liệu sản phẩm
   const products = useMemo(() => {
-    return rawProducts
+    const mapped = rawProducts
       .map((p) => {
         // Chuẩn hóa các trường dữ liệu với fallback values
         const id = p.id || p.productId || p._id;
@@ -123,10 +123,29 @@ export default function useProducts() {
           productType: finalProductType, // Sử dụng productType từ backend
           SellerInfo: { sellerAddress },
           isActive,
+          approvedLabel: p.approvedLabel || "", // Thêm approvedLabel để sắp xếp
+          createdAt: p.createdAt || "", // Thêm createdAt để sắp xếp
         };
       })
       .filter((item) => item.isActive); // Lọc chỉ hiển thị sản phẩm active
-  }, [rawProducts]);
+    
+    // Sắp xếp: ưu tiên sản phẩm có approvedLabel (đã mua gói nâng cao và được duyệt), sau đó theo thời gian đăng
+    return mapped.sort((a, b) => {
+      // Sản phẩm có approvedLabel (đã mua gói nâng cao/premium và được duyệt) được ưu tiên
+      const aHasLabel = !!a.approvedLabel && a.approvedLabel.trim() !== "";
+      const bHasLabel = !!b.approvedLabel && b.approvedLabel.trim() !== "";
+      
+      // Ưu tiên sản phẩm có label
+      if (aHasLabel && !bHasLabel) return -1;
+      if (!aHasLabel && bHasLabel) return 1;
+      
+      // Nếu cả hai đều có hoặc không có label, sắp xếp theo thời gian đăng (mới nhất trước)
+      if (a.createdAt && b.createdAt) {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      }
+      return 0;
+    });
+  }, [rawProducts, isAdmin]);
 
   return { products, loading, error };
 }
