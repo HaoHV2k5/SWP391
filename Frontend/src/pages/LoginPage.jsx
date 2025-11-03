@@ -414,8 +414,7 @@ const LoginPage = ({ onLogin }) => {
     <div
       style={{
         minHeight: "100vh",
-        backgroundImage:
-          "url('/src/assets/images/background_den_7_6268ebdce9.jpg')",
+        background: "#ffffff",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
@@ -429,7 +428,15 @@ const LoginPage = ({ onLogin }) => {
       <style>
         {`
           .card input, .card select {
-            backdrop-filter: blur(10px);
+            background-color: #fff !important;
+            border: 1px solid #e0e0e0 !important;
+            transition: border-color 0.3s ease;
+          }
+          
+          .card input:focus, .card select:focus {
+            border-color: #667eea !important;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
           }
           
           .card .input-visible {
@@ -438,11 +445,11 @@ const LoginPage = ({ onLogin }) => {
           }
           
           .card input::placeholder {
-            color: rgba(0, 0, 0, 0.6) !important;
+            color: rgba(0, 0, 0, 0.4) !important;
           }
           
           .card label {
-            color: rgba(255, 255, 255, 0.9) !important;
+            color: #333 !important;
             font-weight: 500;
           }
           
@@ -462,25 +469,6 @@ const LoginPage = ({ onLogin }) => {
             box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
           }
           
-          .card .google-login {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            color: white !important;
-          }
-          
-          .card .google-login:hover {
-            background: rgba(255, 255, 255, 0.2) !important;
-          }
-          
-          .card .divider {
-            color: rgba(255, 255, 255, 0.6) !important;
-          }
-          
-          .card .divider::before,
-          .card .divider::after {
-            background: rgba(255, 255, 255, 0.3) !important;
-          }
-          
           .card .link {
             color: #667eea !important;
           }
@@ -490,18 +478,6 @@ const LoginPage = ({ onLogin }) => {
           }
         `}
       </style>
-      {/* Overlay để làm mờ background */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: "rgba(0, 0, 0, 0.4)",
-          backdropFilter: "blur(2px)",
-        }}
-      />
       <div
         className="card"
         style={{
@@ -509,11 +485,11 @@ const LoginPage = ({ onLogin }) => {
           maxWidth: "500px",
           position: "relative",
           zIndex: 10,
-          background: "rgba(26, 26, 46, 0.9)",
-          backdropFilter: "blur(20px)",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
-          borderRadius: "20px",
+          background: "#ffffff",
+          border: "1px solid #e0e0e0",
+          boxShadow: "0 10px 40px rgba(0, 0, 0, 0.1)",
+          borderRadius: "16px",
+          padding: "2.5rem",
         }}
       >
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
@@ -521,18 +497,17 @@ const LoginPage = ({ onLogin }) => {
             style={{
               fontSize: "2rem",
               marginBottom: "0.5rem",
-              color: "#ffffff",
+              color: "#333",
               fontWeight: "700",
-              textShadow: "0 2px 4px rgba(0,0,0,0.3)",
             }}
           >
             {isLogin ? "Đăng nhập" : "Đăng ký"}
           </h1>
           <p
             style={{
-              color: "rgba(255, 255, 255, 0.8)",
+              color: "#666",
               fontSize: "1rem",
-              fontWeight: "500",
+              fontWeight: "400",
             }}
           >
             {isLogin
@@ -934,8 +909,8 @@ const LoginPage = ({ onLogin }) => {
         </div>
         */}
 
-        <p style={{ color: "#666" }}>
-          {isLogin ? "Chưa có tài khoản?" : "Đã có tài khoản?"}
+        <p style={{ color: "#666", textAlign: "center", marginTop: "1.5rem" }}>
+          {isLogin ? "Chưa có tài khoản?" : "Đã có tài khoản?"}{" "}
           <button
             type="button"
             onClick={() => {
@@ -957,24 +932,26 @@ const LoginPage = ({ onLogin }) => {
               color: "#667eea",
               cursor: "pointer",
               textDecoration: "underline",
-              marginLeft: "0.5rem",
+              fontWeight: "500",
+              padding: "0",
             }}
           >
             {isLogin ? "Đăng ký ngay" : "Đăng nhập"}
           </button>
         </p>
 
-        <div style={{ textAlign: "center", marginTop: "2rem" }}>
+        <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
           <Link
             to="/"
             style={{
-              color: "#00A86B",
+              color: "#667eea",
               textDecoration: "none",
               fontWeight: "500",
               transition: "color 0.3s ease",
+              fontSize: "0.95rem",
             }}
-            onMouseEnter={(e) => (e.target.style.color = "#007A4B")}
-            onMouseLeave={(e) => (e.target.style.color = "#00A86B")}
+            onMouseEnter={(e) => (e.target.style.color = "#764ba2")}
+            onMouseLeave={(e) => (e.target.style.color = "#667eea")}
           >
             ← Quay về trang chủ
           </Link>
