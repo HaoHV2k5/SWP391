@@ -963,22 +963,22 @@ const LoginPage = ({ onLogin }) => {
             {isLogin ? "Đăng ký ngay" : "Đăng nhập"}
           </button>
         </p>
-      </div>
 
-      <div style={{ textAlign: "center", marginTop: "2rem" }}>
-        <Link
-          to="/"
-          style={{
-            color: "#00A86B",
-            textDecoration: "none",
-            fontWeight: "500",
-            transition: "color 0.3s ease",
-          }}
-          onMouseEnter={(e) => (e.target.style.color = "#007A4B")}
-          onMouseLeave={(e) => (e.target.style.color = "#00A86B")}
-        >
-          ← Quay về trang chủ
-        </Link>
+        <div style={{ textAlign: "center", marginTop: "2rem" }}>
+          <Link
+            to="/"
+            style={{
+              color: "#00A86B",
+              textDecoration: "none",
+              fontWeight: "500",
+              transition: "color 0.3s ease",
+            }}
+            onMouseEnter={(e) => (e.target.style.color = "#007A4B")}
+            onMouseLeave={(e) => (e.target.style.color = "#00A86B")}
+          >
+            ← Quay về trang chủ
+          </Link>
+        </div>
       </div>
     </div>
   );
