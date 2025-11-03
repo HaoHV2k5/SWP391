@@ -155,7 +155,7 @@ const KYCTab = () => {
     var dataList = (list || []).filter((r) => {
       if (!q) return true;
 
-      const parts = [r.id, r.userId, r.status, r.username, r.email]
+      const parts = [r.userId]
         .filter((x) => x !== undefined && x !== null)
         .map((x) => norm(x));
       return parts.some((p) => p.includes(q));
@@ -404,7 +404,7 @@ const KYCTab = () => {
         <Input
           allowClear
           prefix={<SearchOutlined />}
-          placeholder="Tìm kiếm mọi thứ..."
+          placeholder="Tìm kiếm..."
           style={{ width: 360 }}
           value={query}
           onChange={(e) => setQuery(e.target.value)}

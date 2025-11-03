@@ -7,7 +7,15 @@ import ComplaintSubmissionForm from "./ComplaintSubmissionForm";
 
 const { TabPane } = Tabs;
 
-const ComplaintForm = ({ visible, onClose, onSuccess, userId, complaints, userEmail, userName }) => {
+const ComplaintForm = ({
+  visible,
+  onClose,
+  onSuccess,
+  userId,
+  complaints,
+  userEmail,
+  userName,
+}) => {
   const [contracts, setContracts] = useState([]);
   const [loadingContracts, setLoadingContracts] = useState(false);
   const [activeTab, setActiveTab] = useState("bought");
@@ -266,7 +274,7 @@ const ComplaintForm = ({ visible, onClose, onSuccess, userId, complaints, userEm
                   getContractStatusBadges={getContractStatusBadges}
                 />
               </TabPane>
-              <TabPane
+              {/* <TabPane
                 tab={
                   <span>
                     <ShopOutlined />
@@ -291,7 +299,7 @@ const ComplaintForm = ({ visible, onClose, onSuccess, userId, complaints, userEm
                   getStatusTag={getStatusTag}
                   getContractStatusBadges={getContractStatusBadges}
                 />
-              </TabPane>
+              </TabPane> */}
             </Tabs>
           </div>
         )}

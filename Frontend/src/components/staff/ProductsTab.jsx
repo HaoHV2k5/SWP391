@@ -36,7 +36,6 @@ import {
 import { usePendingProducts } from "../../hooks/useStaff";
 import { vnDate, statusTag, collectImages } from "../../utils/staffUtils";
 import { productsApi } from "../../services/staffApi";
-import ImageMatchCheck from "./ImageMatchCheck";
 
 const { Title, Text } = Typography;
 
