@@ -1,7 +1,7 @@
 import React from 'react';
-import { User, Mail, Phone, MapPin, Users, Calendar } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Users, Calendar, Lock } from 'lucide-react';
 
-const PersonalInfo = ({ user }) => {
+const PersonalInfo = ({ user, onChangePassword }) => {
   const InfoItem = ({ icon: Icon, label, value }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
       <div style={{
@@ -113,6 +113,40 @@ const PersonalInfo = ({ user }) => {
           value={getGender()} 
         />
       </div>
+
+      {/* Change Password Button */}
+      {onChangePassword && (
+        <div style={{ marginTop: '30px', paddingTop: '30px', borderTop: '1px solid #eee' }}>
+          <button
+            onClick={onChangePassword}
+            style={{
+              width: '100%',
+              padding: '12px 24px',
+              border: '1px solid #00A86B',
+              borderRadius: '8px',
+              backgroundColor: 'white',
+              color: '#00A86B',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#f0f9f0';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'white';
+            }}
+          >
+            <Lock size={18} />
+            Đổi mật khẩu
+          </button>
+        </div>
+      )}
     </div>
   );
 };

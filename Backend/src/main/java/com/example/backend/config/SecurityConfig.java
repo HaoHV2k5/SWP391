@@ -39,6 +39,8 @@ public class SecurityConfig  {
             "/users/register",
             "/users/verify-otp",
             "/users/resend-otp",
+            "/users/forgot-password",
+            "/users/reset-password",
             "/tag/**",
 
 

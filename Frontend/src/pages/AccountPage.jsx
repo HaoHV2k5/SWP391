@@ -12,6 +12,7 @@ const AccountPage = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showEdit, setShowEdit] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   const loadProfile = async () => {
     try {
@@ -154,6 +155,15 @@ const AccountPage = ({ user }) => {
           onClose={() => setShowEdit(false)}
           onSuccess={() => {
             setShowEdit(false);
+            loadProfile();
+          }}
+        />
+      )}
+      {showChangePassword && (
+        <ChangePasswordModal
+          show={showChangePassword}
+          onClose={() => setShowChangePassword(false)}
+          onSuccess={() => {
             loadProfile();
           }}
         />

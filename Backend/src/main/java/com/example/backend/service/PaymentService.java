@@ -297,7 +297,7 @@ public class PaymentService {
         fields.remove("vnp_SecureHashType");
         fields.remove("vnp_SecureHash");
 
-        // ⚠️ Bước quan trọng: URL encode toàn bộ các value trước khi build chuỗi
+        //  Bước quan trọng: URL encode toàn bộ các value trước khi build chuỗi
         List<String> fieldNames = new ArrayList<>(fields.keySet());
         Collections.sort(fieldNames);
         StringBuilder hashData = new StringBuilder();
@@ -379,7 +379,7 @@ public class PaymentService {
 
                 Wallet wallet = walletRepository.findById(walletTx.getWallet().getId()).orElseThrow(() -> new AppException(ErrorCode.WALLET_NOT_EXIST));
                 wallet.setBalance(wallet.getBalance().add(amount));
-                walletTx.setBalanceAfter(wallet.getBalance().add(amount));
+                walletTx.setBalanceAfter(wallet.getBalance());
                 wallet.setLastTransactionAt(LocalDateTime.now());
                 walletRepository.save(wallet);
                 // add amount for wallet admin

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderEscrowReviewResponse {
+    private Long escrowId;
     private Long orderId;
     private String sellerProofImage;
     private String sellerOrderCode;

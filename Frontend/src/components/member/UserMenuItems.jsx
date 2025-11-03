@@ -267,31 +267,25 @@ const UserMenuItems = ({ user, onItemClick }) => {
 
   return (
     <>
-      {menuItems.map((item, index) => {
-        const Icon = item.icon;
-        return (
-          <Link
-            key={index}
-            to={item.to}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              padding: "12px 16px",
-              color: "#333",
-              textDecoration: "none",
-              fontSize: "14px",
-              transition: "background-color 0.15s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8f9fa")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-            onClick={onItemClick}
-          >
-            {Icon && <Icon size={16} strokeWidth={2} style={{ flexShrink: 0 }} />}
-            <span style={{ flex: 1 }}>{item.label}</span>
-          </Link>
-        );
-      })}
+      {menuItems.map((item, index) => (
+        <Link
+          key={index}
+          to={item.to}
+          style={{
+            display: "block",
+            padding: "10px 15px",
+            color: "#333",
+            textDecoration: "none",
+            fontSize: "14px",
+            transition: "background-color 0.2s",
+          }}
+          onMouseEnter={(e) => (e.target.style.backgroundColor = "#f8f9fa")}
+          onMouseLeave={(e) => (e.target.style.backgroundColor = "transparent")}
+          onClick={onItemClick}
+        >
+          {item.label}
+        </Link>
+      ))}
     </>
   );
 };

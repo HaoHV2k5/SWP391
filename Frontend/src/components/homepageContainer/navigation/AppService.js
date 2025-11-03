@@ -22,10 +22,17 @@ export const handleAppLogin = (user, navigate = null) => {
   setTimeout(async () => {
     await wishlistService.forceRefresh();
     
-    // Kiểm tra redirect đến saved-posts
+    // Kiểm tra redirect đến saved-posts hoặc post-ad
     if (navigate) {
       const shouldRedirectToSaved = localStorage.getItem('redirectToSaved') === 'true';
-      if (shouldRedirectToSaved) {
+      const shouldRedirectToPostAd = localStorage.getItem('redirectToPostAd') === 'true';
+      
+      if (shouldRedirectToPostAd) {
+        localStorage.removeItem('redirectToPostAd');
+        setTimeout(() => {
+          navigate('/post-ad');
+        }, 500);
+      } else if (shouldRedirectToSaved) {
         localStorage.removeItem('redirectToSaved');
         setTimeout(() => {
           navigate('/saved-posts');
