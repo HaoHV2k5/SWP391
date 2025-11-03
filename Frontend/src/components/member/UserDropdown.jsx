@@ -132,35 +132,6 @@ if (!showUserDropdown) {
               style={{ height: "1px", background: "#e5e7eb" }}
             ></div>
 
-            <Link
-              to="/post-ad"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                padding: "12px 16px",
-                color: "#14b8a6",
-                textDecoration: "none",
-                fontSize: "14px",
-                fontWeight: "600",
-                transition: "background-color 0.15s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f0fdfa")}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-              onClick={handleItemClick}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="16"></line>
-                <line x1="8" y1="12" x2="16" y2="12"></line>
-              </svg>
-              <span style={{ flex: 1 }}>Đăng tin ngay</span>
-            </Link>
-
-            <div
-              style={{ height: "1px", background: "#e5e7eb" }}
-            ></div>
-
             <LogoutButton onLogout={handleLogout} />
           </div>
         )}
