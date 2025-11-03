@@ -4,6 +4,7 @@ import { Container, Spinner } from "react-bootstrap";
 import MemberHeader from "../../components/member/MemberHeader";
 import ContractList from "../../components/contract/ContractList";
 import contractService from "../../services/contractService";
+import orderService from "../../services/orderService";
 import { toast } from "react-toastify";
 import "../../styles/member/index.css";
 
@@ -132,6 +133,22 @@ const MemberContracts = ({ user }) => {
       }
     } catch (error) {
       toast.error("Có lỗi xảy ra khi thanh toán");
+    }
+  };
+
+  const handleConfirmReceived = async (orderId) => {
+    try {
+      const result = await orderService.confirmReceived(orderId);
+      if (result.success) {
+        toast.success(result.message || "Xác nhận đã nhận hàng thành công");
+        // Reload contracts để cập nhật status
+        await loadContracts();
+      } else {
+        toast.error(result.message || "Xác nhận nhận hàng thất bại");
+      }
+    } catch (error) {
+      console.error("❌ Error confirming received:", error);
+      toast.error("Có lỗi xảy ra khi xác nhận nhận hàng");
     }
   };
 
@@ -309,6 +326,7 @@ const MemberContracts = ({ user }) => {
           contracts={contracts}
           onPay={handlePay}
           onCancel={handleCancel}
+          onConfirmReceived={handleConfirmReceived}
           currentUserId={currentUserId}
         />
         )}

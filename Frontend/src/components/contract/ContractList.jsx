@@ -3,7 +3,7 @@ import ContractCard from './ContractCard';
 import ContractDetailModal from './ContractDetailModal';
 import '../../styles/contract/ContractList.css';
 
-const ContractList = ({ contracts = [], onPay, onCancel, currentUserId }) => {
+const ContractList = ({ contracts = [], onPay, onCancel, onConfirmReceived, currentUserId }) => {
   const [selectedContract, setSelectedContract] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filter, setFilter] = useState('all');
@@ -85,6 +85,7 @@ const ContractList = ({ contracts = [], onPay, onCancel, currentUserId }) => {
           onViewDetail={handleViewDetail}
           onPay={onPay}
           onCancel={onCancel}
+          onConfirmReceived={onConfirmReceived}
           currentUserId={currentUserId}
         />
           ))}
@@ -98,6 +99,7 @@ const ContractList = ({ contracts = [], onPay, onCancel, currentUserId }) => {
           onClose={handleCloseModal}
           currentUserId={currentUserId}
           onPay={onPay}
+          onConfirmReceived={onConfirmReceived}
         />
       )}
     </div>
