@@ -262,6 +262,14 @@ function AppContent() {
           }
         />
         <Route
+          path="/admin/packages"
+          element={
+            <ProtectedAdminRoute user={user}>
+              <AdminPage user={user} />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
           path="/admin/kyc"
           element={
             <ProtectedAdminRoute user={user}>

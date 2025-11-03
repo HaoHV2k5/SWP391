@@ -17,5 +17,6 @@ public class PostingPackageSimpleResponse {
     private Integer duration;
     private Integer postLimit;
     private Boolean isActive;
+    private Boolean requireApproval;
 
 }

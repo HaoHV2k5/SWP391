@@ -60,9 +60,26 @@ const WalletManagement = ({ user }) => {
     // Nếu vừa thanh toán xong, refresh dữ liệu
     if (sessionStorage.getItem("wallet.reload") === "1") {
       sessionStorage.removeItem("wallet.reload");
-      fetchWalletData();
-      message.success("Ví đã được cập nhật sau thanh toán");
+      // Delay một chút để đảm bảo backend đã cập nhật xong
+      setTimeout(() => {
+        fetchWalletData();
+        message.success("Ví đã được cập nhật sau thanh toán");
+      }, 1500);
     }
+    
+    // Listen for wallet.reload event từ PaymentReturnPage
+    const handleWalletReload = () => {
+      setTimeout(() => {
+        fetchWalletData();
+        message.success("Ví đã được cập nhật sau thanh toán");
+      }, 1500);
+    };
+    
+    window.addEventListener('wallet.reload', handleWalletReload);
+    
+    return () => {
+      window.removeEventListener('wallet.reload', handleWalletReload);
+    };
   }, []);
 
   const fetchWalletData = async () => {

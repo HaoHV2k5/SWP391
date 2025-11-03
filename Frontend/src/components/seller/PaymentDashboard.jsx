@@ -23,12 +23,65 @@ const PaymentDashboard = ({ user }) => {
   const [loading, setLoading] = useState(true);
 
   React.useEffect(() => {
-    fetchStats();
+    fetchStats(true); // Initial load với loading
+    
+    // Listen for wallet reload events từ các components con
+    const handleWalletReload = () => {
+      console.log("🔄 PaymentDashboard: Received wallet.reload event, refreshing stats...");
+      // Polling để đợi transaction mới xuất hiện (tối đa 5s, mỗi 500ms check 1 lần)
+      let attempts = 0;
+      const maxAttempts = 10;
+      
+      const pollStats = async () => {
+        attempts++;
+        console.log(`🔄 PaymentDashboard: Polling attempt ${attempts}/${maxAttempts}`);
+        
+        try {
+          await fetchStats(false); // Không show loading khi auto-refresh
+          
+          // Nếu đã fetch được rồi, không cần poll nữa
+          if (attempts >= 3) {
+            console.log("🔄 PaymentDashboard: Finished polling after 3 attempts");
+            return; // Đã fetch 3 lần, đủ rồi
+          }
+        } catch (error) {
+          console.error("Error polling stats:", error);
+        }
+        
+        // Nếu chưa đủ attempts, tiếp tục poll
+        if (attempts < maxAttempts) {
+          setTimeout(pollStats, 500);
+        }
+      };
+      
+      // Bắt đầu poll ngay
+      pollStats();
+    };
+    
+    // Listen for sessionStorage flag (check mỗi 500ms để nhanh hơn)
+    const checkStorage = setInterval(() => {
+      if (sessionStorage.getItem("wallet.reload") === "1") {
+        sessionStorage.removeItem("wallet.reload");
+        console.log("🔄 PaymentDashboard: Found wallet.reload flag in sessionStorage");
+        handleWalletReload();
+      }
+    }, 500);
+    
+    window.addEventListener('wallet.reload', handleWalletReload);
+    
+    return () => {
+      clearInterval(checkStorage);
+      window.removeEventListener('wallet.reload', handleWalletReload);
+    };
   }, []);
 
-  const fetchStats = async () => {
+  const fetchStats = async (showLoading = false) => {
     try {
-      setLoading(true);
+      // Chỉ show loading spinner khi cần (không show khi auto-refresh)
+      if (showLoading) {
+        setLoading(true);
+      }
+      
       const [currentRes, walletRes, packageRes] = await Promise.all([
         paymentService.getCurrentPackage().catch(() => ({ data: null })),
         paymentService.getWalletTransactions().catch(() => ({ data: [] })),
@@ -57,16 +110,19 @@ const PaymentDashboard = ({ user }) => {
       if (completedTx.length > 0) {
         const latestTx = completedTx[0];
         console.log("💰 Latest COMPLETED tx:", {
+          id: latestTx?.id,
+          transactionCode: latestTx?.transactionCode,
           balanceAfter: latestTx?.balanceAfter,
           amount: latestTx?.amount,
           type: latestTx?.typeWalletTraction || latestTx?.type,
-          status: latestTx?.status
+          status: latestTx?.status,
+          completedAt: latestTx?.completedAt
         });
         
         // Nếu có balanceAfter, dùng nó (chính xác nhất)
         if (latestTx?.balanceAfter != null && latestTx.balanceAfter !== undefined) {
           walletBalance = Number(latestTx.balanceAfter) || 0;
-          console.log("💰 Using balanceAfter:", walletBalance);
+          console.log("💰 PaymentDashboard: Using balanceAfter from latest COMPLETED tx =", walletBalance);
         } else {
           // Tính toán CHỈ từ các transaction COMPLETED
           // CHỈ tính COMPLETED - đảm bảo số dư chính xác (không tính PENDING để tránh hiển thị sai khi giao dịch thất bại)
@@ -111,12 +167,15 @@ const PaymentDashboard = ({ user }) => {
         walletBalance = 0;
       }
 
-      setStats({
+      const newStats = {
         currentPackage: currentRes.data,
         walletBalance: walletBalance > 0 ? walletBalance : 0,
         totalTransactions: walletTransactions.length || 0,
         totalPackages: packageRes.data?.length || 0,
-      });
+      };
+      
+      console.log("💰 PaymentDashboard: Updating stats with balance =", newStats.walletBalance);
+      setStats(newStats);
     } catch (error) {
       console.error("Error fetching stats:", error);
       message.error("Không thể tải thống kê. Vui lòng thử lại!");

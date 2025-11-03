@@ -21,13 +21,22 @@ public class PostingPackageController {
 
     private final PostingPackageService postingPackageService;
 
-    // Lấy tất cả gói đăng tin
+    // Lấy tất cả gói đăng tin (chỉ admin)
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping
     public ApiResponse<List<PostingPackageSimpleResponse>> getAll() {
         return ApiResponse.<List<PostingPackageSimpleResponse>>builder()
                 .message("Lấy danh sách các gói đăng tin thành công")
                 .data(postingPackageService.getAll())
+                .build();
+    }
+
+    // Lấy danh sách gói đăng tin active cho user (public - không cần ADMIN)
+    @GetMapping("/available")
+    public ApiResponse<List<PostingPackageSimpleResponse>> getAvailablePackages() {
+        return ApiResponse.<List<PostingPackageSimpleResponse>>builder()
+                .message("Lấy danh sách các gói đăng tin thành công")
+                .data(postingPackageService.getAllActive())
                 .build();
     }
 
