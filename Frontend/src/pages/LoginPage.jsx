@@ -858,9 +858,11 @@ const LoginPage = ({ onLogin }) => {
         </form>
 
 
-        <div style={{ textAlign: "center", margin: "1rem 0 0.5rem 0" }}>
+        {/* Google và Facebook login tạm thời bị comment */}
+        {false && (
+          <div style={{ textAlign: "center", margin: "1rem 0 0.5rem 0" }}>
           <button
-            onClick={handleGoogleLogin}
+            onClick={() => {}}
             disabled={loading}
             style={{
               width: "100%",
@@ -908,7 +910,7 @@ const LoginPage = ({ onLogin }) => {
           </button>
 
           <button
-            onClick={handleFacebookLogin}
+            onClick={() => {}}
             disabled={loading}
             style={{
               width: "100%",
@@ -972,8 +974,8 @@ const LoginPage = ({ onLogin }) => {
               {isLogin ? "Đăng ký ngay" : "Đăng nhập"}
             </button>
           </p>
-        </div>
-        */}
+          </div>
+        )}
 
         <p style={{ color: "#666", textAlign: "center", marginTop: "1.5rem" }}>
           {isLogin ? "Chưa có tài khoản?" : "Đã có tài khoản?"}{" "}
@@ -993,13 +995,26 @@ const LoginPage = ({ onLogin }) => {
               });
             }}
             style={{
-              background: "none",
+              background: "linear-gradient(135deg, #00A86B 0%, #2BB673 100%)",
               border: "none",
-              color: "#667eea",
+              color: "white",
               cursor: "pointer",
-              textDecoration: "underline",
+              textDecoration: "none",
               fontWeight: "500",
-              padding: "0",
+              padding: "8px 20px",
+              fontSize: "14px",
+              borderRadius: "8px",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "linear-gradient(135deg, #007A4B 0%, #22995A 100%)";
+              e.target.style.transform = "translateY(-2px)";
+              e.target.style.boxShadow = "0 4px 12px rgba(0, 168, 107, 0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "linear-gradient(135deg, #00A86B 0%, #2BB673 100%)";
+              e.target.style.transform = "translateY(0)";
+              e.target.style.boxShadow = "none";
             }}
           >
             {isLogin ? "Đăng ký ngay" : "Đăng nhập"}
