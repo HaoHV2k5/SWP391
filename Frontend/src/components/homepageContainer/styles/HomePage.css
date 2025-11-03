@@ -288,6 +288,31 @@
   }
   
   /* ===========================================
+     POST AD BUTTON
+     =========================================== */
+  
+  .navbar-post-ad-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background-color: transparent;
+    color: #00A86B;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 1px solid #00A86B;
+    white-space: nowrap;
+  }
+  
+  .navbar-post-ad-button:hover {
+    background-color: #00A86B;
+    color: white;
+  }
+  
+  /* ===========================================
      SEARCH SUGGESTIONS
      =========================================== */
   

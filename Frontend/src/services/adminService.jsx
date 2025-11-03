@@ -138,98 +138,45 @@ const adminService = {
     }
   },
 
-  // Posting Packages APIs
-  async getAllPackages() {
+  // Escrow APIs
+  async getSellerEscrowRequests() {
     try {
-      const response = await apiClient.get("/posting-packages");
+      const response = await apiClient.get("/admin/order-escrow/seller-requests");
       return response.data;
     } catch (error) {
-      console.error("Error fetching packages:", error);
+      console.error("Error fetching seller escrow requests:", error);
       throw error;
     }
   },
 
-  async getPackageById(id) {
+  async approveEscrowRequest(escrowId) {
     try {
-      const response = await apiClient.get(`/posting-packages/${id}`);
+      const response = await apiClient.post(`/admin/order-escrow/${escrowId}/approve`);
       return response.data;
     } catch (error) {
-      console.error("Error fetching package:", error);
+      console.error("Error approving escrow request:", error);
       throw error;
     }
   },
 
-  async createPackage(packageData) {
+  async rejectEscrowRequest(escrowId, reason) {
     try {
-      const response = await apiClient.post("/posting-packages", packageData);
+      const response = await apiClient.post(
+        `/admin/order-escrow/${escrowId}/reject?reason=${encodeURIComponent(reason)}`
+      );
       return response.data;
     } catch (error) {
-      console.error("Error creating package:", error);
+      console.error("Error rejecting escrow request:", error);
       throw error;
     }
   },
 
-  async updatePackage(id, packageData) {
+  async manualReleaseEscrow() {
     try {
-      const response = await apiClient.put(`/posting-packages/${id}`, packageData);
+      const response = await apiClient.post("/admin/escrow/manual-release");
       return response.data;
     } catch (error) {
-      console.error("Error updating package:", error);
-      throw error;
-    }
-  },
-
-  async deletePackage(id) {
-    try {
-      const response = await apiClient.delete(`/posting-packages/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error("Error deleting package:", error);
-      throw error;
-    }
-  },
-
-  // Role APIs
-  async getAllRoles() {
-    try {
-      const response = await apiClient.get("/roles/roles");
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching roles:", error);
-      throw error;
-    }
-  },
-
-  // Update user roles
-  async updateUserRoles(userId, roleNames) {
-    try {
-      // Đảm bảo roleNames là array
-      const roleNamesArray = Array.isArray(roleNames) ? roleNames : [roleNames];
-      
-      // Backend UpdateUserRoleRequest có @NotNull validation trên userId
-      // Nên cần gửi userId trong request body (mặc dù có trong path variable)
-      const requestBody = {
-        userId: userId, // Backend validation yêu cầu field này
-        roleNames: roleNamesArray,
-      };
-      
-      console.log("📡 Sending update roles request:", {
-        userId,
-        roleNames: roleNamesArray,
-        requestBody: requestBody,
-        url: `/admin/users/${userId}/roles`
-      });
-      
-      // Log request body JSON string để xem format
-      console.log("📡 Request body JSON:", JSON.stringify(requestBody));
-      
-      const response = await apiClient.put(`/admin/users/${userId}/roles`, requestBody);
-      console.log("✅ Response received:", response.data);
-      return response.data;
-    } catch (error) {
-      console.error("Error updating user roles:", error);
-      console.error("Error response data:", error.response?.data);
-      console.error("Error response status:", error.response?.status);
+      console.error("Error manually releasing escrow:", error);
       throw error;
     }
   },

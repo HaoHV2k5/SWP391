@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, User, Mail, Lock, Phone, Calendar } from "lucide-react";
 import { toast } from "react-toastify";
 import firebaseAuthService from "../services/firebaseAuthService";
+import ForgotPasswordModal from "../components/auth/ForgotPasswordModal";
 
 const LoginPage = ({ onLogin }) => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const LoginPage = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   // Validation functions
   const _validateRegistration = (data) => {
@@ -164,10 +166,12 @@ const LoginPage = ({ onLogin }) => {
         console.log("✅ Google login successful!");
         toast.success("Đăng nhập Google thành công!");
 
-        // Chuyển hướng về homepage
-        setTimeout(() => {
-          navigate("/");
-        }, 1000);
+        // Gọi onLogin để xử lý redirect
+        const userData = {
+          token: result.data.token,
+          user: result.data
+        };
+        onLogin(userData);
       } else if (result.cancelled) {
         // User đã hủy đăng nhập, không hiển thị lỗi
         console.log("User cancelled Google login");
@@ -197,10 +201,22 @@ const LoginPage = ({ onLogin }) => {
         console.log("✅ Facebook login successful!");
         toast.success("Đăng nhập Facebook thành công!");
 
-        // Chuyển hướng về homepage
-        setTimeout(() => {
-          navigate("/");
-        }, 1000);
+        // Gọi onLogin để xử lý redirect
+        const userData = {
+          token: result.data.token,
+          user: result.data
+        };
+        
+        // Check if user needs to input phone number (after Facebook login)
+        // Pass email to parent so App.jsx can show PhoneInputModal if needed
+        const userEmail = result.data?.email || result.data?.user?.email;
+        const userPhone = result.data?.phone || result.data?.user?.phone;
+        if (userEmail && !userPhone) {
+          // User logged in via Facebook but no phone number - will show modal in App.jsx
+          onLogin(userData, { showPhoneInput: true, email: userEmail });
+        } else {
+          onLogin(userData);
+        }
       } else if (result.cancelled) {
         // User đã hủy đăng nhập, không hiển thị lỗi
         console.log("User cancelled Facebook login");
@@ -414,10 +430,7 @@ const LoginPage = ({ onLogin }) => {
     <div
       style={{
         minHeight: "100vh",
-        background: "#ffffff",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
+        background: "#f5f5f5",
         position: "relative",
         display: "flex",
         alignItems: "center",
@@ -458,23 +471,47 @@ const LoginPage = ({ onLogin }) => {
           }
           
           .card button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            background: linear-gradient(135deg, #00A86B 0%, #2BB673 100%) !important;
             border: none !important;
             color: white !important;
             font-weight: 600;
+            transition: all 0.3s ease;
           }
           
           .card button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(135deg, #009057 0%, #00A86B 100%) !important;
+            opacity: 0.95;
+          }
+          
+          .card .google-login {
+            background: rgba(66, 133, 244, 0.1) !important;
+            border: 1px solid rgba(66, 133, 244, 0.3) !important;
+            color: #4285f4 !important;
+          }
+          
+          .card .google-login:hover {
+            background: rgba(66, 133, 244, 0.2) !important;
+          }
+          
+          .card .divider {
+            color: #666 !important;
+          }
+          
+          .card .divider::before,
+          .card .divider::after {
+            background: rgba(0, 0, 0, 0.2) !important;
           }
           
           .card .link {
-            color: #667eea !important;
+            color: #00A86B !important;
           }
           
           .card .link:hover {
-            color: #764ba2 !important;
+            color: #2BB673 !important;
+          }
+          
+          .card .form-group {
+            margin-bottom: 1rem !important;
           }
         `}
       </style>
@@ -487,16 +524,16 @@ const LoginPage = ({ onLogin }) => {
           zIndex: 10,
           background: "#ffffff",
           border: "1px solid #e0e0e0",
-          boxShadow: "0 10px 40px rgba(0, 0, 0, 0.1)",
-          borderRadius: "16px",
-          padding: "2.5rem",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+          borderRadius: "12px",
+          padding: "2rem",
         }}
       >
-        <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+        <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
           <h1
             style={{
               fontSize: "2rem",
-              marginBottom: "0.5rem",
+              marginBottom: "0.25rem",
               color: "#333",
               fontWeight: "700",
             }}
@@ -507,7 +544,8 @@ const LoginPage = ({ onLogin }) => {
             style={{
               color: "#666",
               fontSize: "1rem",
-              fontWeight: "400",
+              fontWeight: "500",
+              margin: "0",
             }}
           >
             {isLogin
@@ -523,7 +561,7 @@ const LoginPage = ({ onLogin }) => {
               color: "#721c24",
               padding: "1rem",
               borderRadius: "8px",
-              marginBottom: "1rem",
+              marginBottom: "0.75rem",
               border: "1px solid #f5c6cb",
             }}
           >
@@ -803,7 +841,7 @@ const LoginPage = ({ onLogin }) => {
             className="btn btn-primary"
             style={{
               width: "100%",
-              marginBottom: "1rem",
+              marginBottom: "0.75rem",
               opacity:
                 !isLogin && Object.keys(fieldErrors).length > 0 ? 0.6 : 1,
               cursor:
@@ -819,9 +857,8 @@ const LoginPage = ({ onLogin }) => {
           </button>
         </form>
 
-        {/* Google và Facebook login đã tạm thời bị comment */}
-        {/*
-        <div style={{ textAlign: "center", margin: "1.5rem 0 0.5rem 0" }}>
+
+        <div style={{ textAlign: "center", margin: "1rem 0 0.5rem 0" }}>
           <button
             onClick={handleGoogleLogin}
             disabled={loading}
@@ -903,9 +940,38 @@ const LoginPage = ({ onLogin }) => {
             {isLogin ? "Đăng nhập với Facebook" : "Đăng ký với Facebook"}
           </button>
 
-          <div style={{ margin: "1rem 0", color: "#aaa", fontWeight: 500 }}>
+          <div style={{ margin: "0.75rem 0", color: "#aaa", fontWeight: 500 }}>
             Hoặc
           </div>
+          <p style={{ color: "#666" }}>
+            {isLogin ? "Chưa có tài khoản?" : "Đã có tài khoản?"}
+            <button
+              type="button"
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setError("");
+                setFieldErrors({});
+                setFormData({
+                  email: "",
+                  password: "",
+                  fullName: "",
+                  phone: "",
+                  dateOfBirth: "",
+                  confirmPassword: "",
+                });
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#667eea",
+                cursor: "pointer",
+                textDecoration: "none",
+                marginLeft: "0.5rem",
+              }}
+            >
+              {isLogin ? "Đăng ký ngay" : "Đăng nhập"}
+            </button>
+          </p>
         </div>
         */}
 
@@ -940,7 +1006,7 @@ const LoginPage = ({ onLogin }) => {
           </button>
         </p>
 
-        <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
+        <div style={{ textAlign: "center", marginTop: "1.5rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem" }}>
           <Link
             to="/"
             style={{
@@ -955,8 +1021,40 @@ const LoginPage = ({ onLogin }) => {
           >
             ← Quay về trang chủ
           </Link>
+          {isLogin && (
+            <span style={{ color: "#666" }}>|</span>
+          )}
+          {isLogin && (
+            <button
+              onClick={() => setShowForgotPassword(true)}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#00A86B",
+                cursor: "pointer",
+                fontSize: "14px",
+                fontWeight: "500",
+                textDecoration: "none",
+                transition: "color 0.3s ease",
+              }}
+              onMouseEnter={(e) => (e.target.style.color = "#007A4B")}
+              onMouseLeave={(e) => (e.target.style.color = "#00A86B")}
+            >
+              Quên mật khẩu?
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
+        show={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+        onSuccess={(email) => {
+          // Navigate to reset password page with email
+          navigate(`/reset-password?email=${encodeURIComponent(email)}`);
+        }}
+      />
     </div>
   );
 };

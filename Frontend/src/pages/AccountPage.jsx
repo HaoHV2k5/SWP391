@@ -4,6 +4,7 @@ import EditProfileModal from '../components/account/EditProfileModal';
 import PersonalInfo from '../components/account/PersonalInfo';
 import ReviewsAboutMe from '../components/account/ReviewsAboutMe';
 import ComplaintsAboutMe from '../components/account/ComplaintsAboutMe';
+import ChangePasswordModal from '../components/account/ChangePasswordModal';
 import { memberService } from '../services/memberService';
 
 const AccountPage = ({ user }) => {
@@ -11,6 +12,7 @@ const AccountPage = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showEdit, setShowEdit] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   const loadProfile = async () => {
     try {
@@ -134,7 +136,10 @@ const AccountPage = ({ user }) => {
           onEdit={() => setShowEdit(true)}
           onAvatarChange={loadProfile}
         />
-        <PersonalInfo user={mergedUser} />
+        <PersonalInfo 
+          user={mergedUser} 
+          onChangePassword={() => setShowChangePassword(true)}
+        />
         
         {/* Reviews About Me - Chỉ hiển thị cho Seller */}
         {isSeller() && (
@@ -152,6 +157,15 @@ const AccountPage = ({ user }) => {
           onClose={() => setShowEdit(false)}
           onSuccess={() => {
             setShowEdit(false);
+            loadProfile();
+          }}
+        />
+      )}
+      {showChangePassword && (
+        <ChangePasswordModal
+          show={showChangePassword}
+          onClose={() => setShowChangePassword(false)}
+          onSuccess={() => {
             loadProfile();
           }}
         />

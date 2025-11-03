@@ -122,10 +122,10 @@ const RegisterPage = () => {
         {/* Form */}
         <form onSubmit={handleSubmit}>
           {/* Full Name */}
-          <div style={{ marginBottom: "12px" }}>
+          <div style={{ marginBottom: "10px" }}>
             <label style={{
               display: "block",
-              marginBottom: "8px",
+              marginBottom: "6px",
               fontSize: "14px",
               fontWeight: "500",
               color: "#333"
@@ -151,7 +151,7 @@ const RegisterPage = () => {
                 placeholder="Nhập họ và tên"
                 style={{
                   width: "100%",
-                  padding: "8px 8px 8px 35px",
+                  padding: "6px 8px 6px 35px",
                   border: `2px solid ${errors.fullName ? "#f44336" : "#e0e0e0"}`,
                   borderRadius: "10px",
                   fontSize: "14px",
@@ -180,10 +180,10 @@ const RegisterPage = () => {
           </div>
 
           {/* Email */}
-          <div style={{ marginBottom: "12px" }}>
+          <div style={{ marginBottom: "10px" }}>
             <label style={{
               display: "block",
-              marginBottom: "8px",
+              marginBottom: "6px",
               fontSize: "14px",
               fontWeight: "500",
               color: "#333"
@@ -209,7 +209,7 @@ const RegisterPage = () => {
                 placeholder="Nhập email"
                 style={{
                   width: "100%",
-                  padding: "8px 8px 8px 35px",
+                  padding: "6px 8px 6px 35px",
                   border: `2px solid ${errors.email ? "#f44336" : "#e0e0e0"}`,
                   borderRadius: "10px",
                   fontSize: "14px",
@@ -238,10 +238,10 @@ const RegisterPage = () => {
           </div>
 
           {/* Phone */}
-          <div style={{ marginBottom: "12px" }}>
+          <div style={{ marginBottom: "10px" }}>
             <label style={{
               display: "block",
-              marginBottom: "8px",
+              marginBottom: "6px",
               fontSize: "14px",
               fontWeight: "500",
               color: "#333"
@@ -267,7 +267,7 @@ const RegisterPage = () => {
                 placeholder="Nhập số điện thoại"
                 style={{
                   width: "100%",
-                  padding: "8px 8px 8px 35px",
+                  padding: "6px 8px 6px 35px",
                   border: `2px solid ${errors.phone ? "#f44336" : "#e0e0e0"}`,
                   borderRadius: "10px",
                   fontSize: "14px",
@@ -296,10 +296,10 @@ const RegisterPage = () => {
           </div>
 
           {/* Address */}
-          <div style={{ marginBottom: "12px" }}>
+          <div style={{ marginBottom: "10px" }}>
             <label style={{
               display: "block",
-              marginBottom: "8px",
+              marginBottom: "6px",
               fontSize: "14px",
               fontWeight: "500",
               color: "#333"
@@ -325,7 +325,7 @@ const RegisterPage = () => {
                 placeholder="Nhập địa chỉ"
                 style={{
                   width: "100%",
-                  padding: "8px 8px 8px 35px",
+                  padding: "6px 8px 6px 35px",
                   border: `2px solid ${errors.address ? "#f44336" : "#e0e0e0"}`,
                   borderRadius: "10px",
                   fontSize: "14px",
@@ -354,10 +354,10 @@ const RegisterPage = () => {
           </div>
 
           {/* Password */}
-          <div style={{ marginBottom: "12px" }}>
+          <div style={{ marginBottom: "10px" }}>
             <label style={{
               display: "block",
-              marginBottom: "8px",
+              marginBottom: "6px",
               fontSize: "14px",
               fontWeight: "500",
               color: "#333"
@@ -383,7 +383,7 @@ const RegisterPage = () => {
                 placeholder="Nhập mật khẩu"
                 style={{
                   width: "100%",
-                  padding: "12px 45px 12px 45px",
+                  padding: "6px 45px 6px 45px",
                   border: `2px solid ${errors.password ? "#f44336" : "#e0e0e0"}`,
                   borderRadius: "10px",
                   fontSize: "14px",
@@ -428,10 +428,10 @@ const RegisterPage = () => {
           </div>
 
           {/* Confirm Password */}
-          <div style={{ marginBottom: "30px" }}>
+          <div style={{ marginBottom: "24px" }}>
             <label style={{
               display: "block",
-              marginBottom: "8px",
+              marginBottom: "6px",
               fontSize: "14px",
               fontWeight: "500",
               color: "#333"
@@ -457,7 +457,7 @@ const RegisterPage = () => {
                 placeholder="Xác nhận mật khẩu"
                 style={{
                   width: "100%",
-                  padding: "12px 45px 12px 45px",
+                  padding: "6px 45px 6px 45px",
                   border: `2px solid ${errors.confirmPassword ? "#f44336" : "#e0e0e0"}`,
                   borderRadius: "10px",
                   fontSize: "14px",
@@ -537,11 +537,9 @@ const RegisterPage = () => {
             }}
             onMouseEnter={(e) => {
               e.target.style.color = "#007A4B";
-              e.target.style.textDecoration = "underline";
             }}
             onMouseLeave={(e) => {
               e.target.style.color = "#00A86B";
-              e.target.style.textDecoration = "none";
             }}>
               ← Quay về trang chủ
             </Link>
