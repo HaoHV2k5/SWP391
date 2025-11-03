@@ -19,5 +19,6 @@ public class PostingPackageResponse {
 
     private LocalDateTime endTime;
 
+    private Boolean requireApproval; // Field để frontend kiểm tra gói có cần duyệt không
 
 }
