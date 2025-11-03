@@ -4,7 +4,7 @@ import EditProfileModal from '../components/account/EditProfileModal';
 import PersonalInfo from '../components/account/PersonalInfo';
 import ReviewsAboutMe from '../components/account/ReviewsAboutMe';
 import ComplaintsAboutMe from '../components/account/ComplaintsAboutMe';
-import ChangePasswordModal from '../components/account/ChangePasswordModal';
+import AccountOverview from '../components/account/AccountOverview';
 import { memberService } from '../services/memberService';
 
 const AccountPage = ({ user }) => {
@@ -136,10 +136,8 @@ const AccountPage = ({ user }) => {
           onEdit={() => setShowEdit(true)}
           onAvatarChange={loadProfile}
         />
-        <PersonalInfo 
-          user={mergedUser} 
-          onChangePassword={() => setShowChangePassword(true)}
-        />
+        <AccountOverview user={mergedUser} />
+        <PersonalInfo user={mergedUser} />
         
         {/* Reviews About Me - Chỉ hiển thị cho Seller */}
         {isSeller() && (
