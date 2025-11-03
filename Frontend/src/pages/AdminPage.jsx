@@ -13,6 +13,7 @@ import KYCTab from "../components/admin/KYCTab";
 import AdminComplaintTab from "../components/admin/AdminComplaintTab";
 import RolesManagementTab from "../components/admin/RolesManagementTab";
 import EscrowTab from "../components/admin/EscrowTab";
+import WithdrawalTab from "../components/admin/WithdrawalTab";
 
 const AdminPage = ({ user }) => {
   const navigate = useNavigate();
