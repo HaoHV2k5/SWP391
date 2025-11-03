@@ -1,4 +1,4 @@
-import { TrendingUp, Users, Package, Shield, AlertTriangle, LogOut, Lock, DollarSign } from "lucide-react";
+import { TrendingUp, Users, Package, Shield, AlertTriangle, LogOut, Lock, DollarSign, ShoppingBag } from "lucide-react";
 
 const AdminSidebar = ({ activeTab, setActiveTab, user, onLogout }) => {
   const tabs = [
@@ -17,6 +17,11 @@ const AdminSidebar = ({ activeTab, setActiveTab, user, onLogout }) => {
       id: "revenue",
       label: "Doanh thu",
       icon: <DollarSign size={20} />,
+    },
+    {
+      id: "packages",
+      label: "Gói dịch vụ",
+      icon: <ShoppingBag size={20} />,
     },
     {
       id: "kyc",

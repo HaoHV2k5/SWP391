@@ -8,6 +8,7 @@ import DashboardTab from "../components/admin/DashboardTab";
 import UsersTab from "../components/admin/UsersTab";
 import ProductsTab from "../components/admin/ProductsTab";
 import RevenueTab from "../components/admin/RevenueTab";
+import PackagesManagementTab from "../components/admin/PackagesManagementTab";
 import KYCTab from "../components/admin/KYCTab";
 import AdminComplaintTab from "../components/admin/AdminComplaintTab";
 import RolesManagementTab from "../components/admin/RolesManagementTab";
@@ -22,6 +23,7 @@ const AdminPage = ({ user }) => {
     if (path === "/admin/users") return "users";
     if (path === "/admin/products") return "products";
     if (path === "/admin/revenue") return "revenue";
+    if (path === "/admin/packages") return "packages";
     if (path === "/admin/kyc") return "kyc";
     if (path === "/admin/complaints") return "complaints";
     if (path === "/admin/roles") return "roles";
@@ -321,6 +323,7 @@ const AdminPage = ({ user }) => {
                   {activeTab === "users" && "Người dùng"}
                   {activeTab === "products" && "Sản phẩm"}
                   {activeTab === "revenue" && "Doanh thu"}
+                  {activeTab === "packages" && "Gói dịch vụ"}
                   {activeTab === "kyc" && "KYC Approval"}
                   {activeTab === "complaints" && "Khiếu nại"}
                   {activeTab === "roles" && "Phân quyền"}
@@ -510,6 +513,13 @@ const AdminPage = ({ user }) => {
               </div>
             )}
 
+            {/* Packages Tab */}
+            {activeTab === "packages" && (
+              <div key="packages-content">
+                <PackagesManagementTab />
+              </div>
+            )}
+
             {/* KYC Tab */}
             {activeTab === "kyc" && (
               <div key="kyc-content">
@@ -532,7 +542,7 @@ const AdminPage = ({ user }) => {
             )}
 
             {/* Fallback - nếu không có tab nào match */}
-            {!["dashboard", "users", "products", "revenue", "kyc", "complaints", "roles"].includes(activeTab) && (
+            {!["dashboard", "users", "products", "revenue", "packages", "kyc", "complaints", "roles"].includes(activeTab) && (
               <div style={{ textAlign: "center", padding: "2rem" }}>
                 <p style={{ color: "rgba(255, 255, 255, 0.7)" }}>
                   Tab không xác định: {activeTab}

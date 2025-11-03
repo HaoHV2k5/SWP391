@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { UserPlus, Edit, Lock, Unlock, Trash2 } from "lucide-react";
+import { UserPlus, Edit, Lock, Unlock, Trash2, Shield } from "lucide-react";
 import adminService from "../../services/adminService";
 import { toast } from "react-toastify";
 
@@ -13,8 +13,12 @@ const UsersTab = ({
   const [showCreateUserModal, setShowCreateUserModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [userToEdit, setUserToEdit] = useState(null);
+  const [userToEditRole, setUserToEditRole] = useState(null);
+  const [availableRoles, setAvailableRoles] = useState([]);
+  const [selectedRoles, setSelectedRoles] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [refreshKey, setRefreshKey] = useState(0); // Thêm key để force re-render
@@ -272,6 +276,154 @@ const UsersTab = ({
       address: "",
       avatar: "",
     });
+  };
+
+  // Mở modal chỉnh sửa role
+  const openRoleModal = async (user) => {
+    try {
+      console.log("🛡️ Opening role modal for user:", user);
+      setLoading(true);
+      
+      // Tìm user hiện tại từ danh sách users
+      const currentUser = users.find((u) => u.id === user.id) || user;
+      setUserToEditRole(currentUser);
+
+      // Fetch danh sách roles có sẵn
+      const rolesResponse = await adminService.getAllRoles();
+      const roles = rolesResponse.data || rolesResponse || [];
+      setAvailableRoles(roles);
+      console.log("📋 Available roles:", roles);
+
+      // Set selected roles từ user hiện tại
+      // User có thể có roles trong response dưới dạng array hoặc object
+      // DB role names: ADMIN, SELLER, STAFF, USER (uppercase, không có ROLE_ prefix)
+      const userRoles = currentUser.roles || [];
+      const roleNames = Array.isArray(userRoles) 
+        ? userRoles.map(r => {
+            let roleName;
+            // Role có thể là string hoặc object
+            if (typeof r === 'string') {
+              roleName = r;
+            } else {
+              // Nếu là object, lấy name (vì name là ID của Role entity)
+              roleName = r.name || r.roleName || r.id || r;
+            }
+            
+            // Normalize: uppercase và remove ROLE_ prefix nếu có
+            if (roleName && typeof roleName === 'string') {
+              roleName = roleName.trim().toUpperCase();
+              if (roleName.startsWith("ROLE_")) {
+                roleName = roleName.substring(5);
+              }
+            }
+            return roleName;
+          }).filter(r => r && typeof r === 'string' && r.length > 0) // Filter out null/undefined/empty
+        : [];
+      
+      console.log("👤 User current roles (normalized):", roleNames);
+      console.log("👤 User roles raw:", userRoles);
+      setSelectedRoles(roleNames);
+
+      setShowRoleModal(true);
+    } catch (error) {
+      console.error("❌ Error opening role modal:", error);
+      toast.error("Lỗi khi tải danh sách roles!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Đóng modal chỉnh sửa role
+  const closeRoleModal = () => {
+    setShowRoleModal(false);
+    setUserToEditRole(null);
+    setSelectedRoles([]);
+  };
+
+  // Toggle role selection
+  const toggleRole = (roleName) => {
+    setSelectedRoles(prev => {
+      if (prev.includes(roleName)) {
+        return prev.filter(r => r !== roleName);
+      } else {
+        return [...prev, roleName];
+      }
+    });
+  };
+
+  // Cập nhật roles cho user
+  const handleUpdateUserRoles = async () => {
+    try {
+      if (!userToEditRole) {
+        toast.error("Không tìm thấy user!");
+        return;
+      }
+
+      if (selectedRoles.length === 0) {
+        toast.error("User phải có ít nhất 1 role!");
+        return;
+      }
+
+      console.log("🛡️ Updating roles for user:", userToEditRole.id);
+      console.log("📋 Selected roles:", selectedRoles);
+      console.log("📋 Selected roles type:", typeof selectedRoles, Array.isArray(selectedRoles));
+      
+      // Validate: đảm bảo tất cả role names là string và không rỗng
+      // Role names trong DB là: ADMIN, SELLER, STAFF, USER (uppercase, không có ROLE_ prefix)
+      const validRoleNames = selectedRoles
+        .filter(r => r && typeof r === 'string' && r.trim().length > 0)
+        .map(r => {
+          // Đảm bảo uppercase và trim
+          let roleName = r.trim().toUpperCase();
+          // Nếu có prefix "ROLE_", remove nó (DB không có prefix)
+          if (roleName.startsWith("ROLE_")) {
+            roleName = roleName.substring(5); // Remove "ROLE_" prefix
+          }
+          return roleName;
+        })
+        .filter(r => r.length > 0); // Filter empty strings after processing
+      
+      if (validRoleNames.length === 0) {
+        toast.error("Vui lòng chọn ít nhất 1 role hợp lệ!");
+        return;
+      }
+      
+      console.log("📋 Valid role names to send (after processing):", validRoleNames);
+      console.log("📋 Expected format: ['ADMIN', 'USER', 'SELLER', 'STAFF']");
+      setLoading(true);
+
+      // Gọi API cập nhật roles
+      const response = await adminService.updateUserRoles(userToEditRole.id, validRoleNames);
+      console.log("✅ User roles updated successfully:", response);
+
+      // Reload danh sách users
+      loadUsers();
+
+      toast.success("Cập nhật roles thành công!");
+
+      // Đóng modal
+      closeRoleModal();
+    } catch (error) {
+      console.error("❌ Error updating user roles:", error);
+      console.error("❌ Error details:", error.response?.data);
+      console.error("❌ Error full response:", error.response);
+      console.error("❌ Request body sent:", {
+        roleNames: validRoleNames,
+        userId: userToEditRole.id
+      });
+      
+      // Hiển thị error message chi tiết
+      const errorMessage = error.response?.data?.message || error.message;
+      const errorCode = error.response?.data?.code;
+      console.error("❌ Error code:", errorCode);
+      console.error("❌ Error message:", errorMessage);
+      
+      toast.error(
+        `Lỗi khi cập nhật roles: ${errorMessage || error.message || "Lỗi không xác định"}`
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Cập nhật user
@@ -548,6 +700,17 @@ const UsersTab = ({
                           onClick={() => openEditModal(user)}
                         >
                           <Edit size={16} />
+                        </button>
+                        <button
+                          className="btn btn-secondary"
+                          style={{
+                            padding: "0.5rem",
+                            backgroundColor: "#6f42c1",
+                          }}
+                          onClick={() => openRoleModal(user)}
+                          title="Chỉnh sửa roles"
+                        >
+                          <Shield size={16} />
                         </button>
                         {!user.locked ? (
                           <button
@@ -1362,6 +1525,221 @@ const UsersTab = ({
                   fontWeight: "600",
                   transition: "all 0.3s ease",
                   opacity: loading ? 0.6 : 1,
+                }}
+              >
+                {loading ? "Đang cập nhật..." : "Cập nhật"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal chỉnh sửa roles */}
+      {showRoleModal && userToEditRole && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "2rem",
+              borderRadius: "10px",
+              width: "500px",
+              maxWidth: "90vw",
+              maxHeight: "90vh",
+              overflowY: "auto",
+            }}
+          >
+            <h3 style={{ marginBottom: "1.5rem", color: "#333" }}>
+              Chỉnh sửa roles
+            </h3>
+            <p
+              style={{
+                marginBottom: "1.5rem",
+                color: "#666",
+                fontSize: "0.9rem",
+              }}
+            >
+              Chỉnh sửa roles cho user:{" "}
+              <strong>
+                {userToEditRole.fullname || userToEditRole.username || "Chưa có tên"}
+              </strong>
+            </p>
+
+            <div style={{ marginBottom: "1.5rem" }}>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "0.75rem",
+                  fontWeight: "bold",
+                  color: "#333",
+                }}
+              >
+                Chọn roles: *
+              </label>
+              {availableRoles.length === 0 ? (
+                <div style={{ padding: "1rem", textAlign: "center", color: "#999" }}>
+                  Đang tải roles...
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.75rem",
+                    maxHeight: "300px",
+                    overflowY: "auto",
+                    padding: "0.5rem",
+                    border: "2px solid #e9ecef",
+                    borderRadius: "8px",
+                  }}
+                >
+                  {availableRoles.map((role) => {
+                    // Role.name là ID của Role entity (@Id private String name)
+                    // DB có: ADMIN, SELLER, STAFF, USER (uppercase, không có ROLE_ prefix)
+                    let roleName = role.name || role.roleName || role.id || role;
+                    
+                    // Đảm bảo roleName là string và uppercase để khớp với DB
+                    if (typeof roleName === 'string') {
+                      roleName = roleName.trim().toUpperCase();
+                      // Remove "ROLE_" prefix nếu có (DB không có prefix)
+                      if (roleName.startsWith("ROLE_")) {
+                        roleName = roleName.substring(5);
+                      }
+                    }
+                    
+                    const roleDisplayName = role.description || roleName || roleName;
+                    const isSelected = selectedRoles.includes(roleName);
+                    
+                    // Debug log cho role đầu tiên
+                    if (availableRoles.indexOf(role) === 0) {
+                      console.log("🔍 First role:", { role, roleName, roleDisplayName });
+                    }
+                    
+                    return (
+                      <label
+                        key={roleName}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          padding: "0.75rem",
+                          backgroundColor: isSelected ? "#6f42c120" : "#f8f9fa",
+                          borderRadius: "8px",
+                          cursor: "pointer",
+                          border: isSelected ? "2px solid #6f42c1" : "2px solid transparent",
+                          transition: "all 0.2s",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.backgroundColor = "#e9ecef";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.backgroundColor = "#f8f9fa";
+                          }
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleRole(roleName)}
+                          style={{
+                            width: "18px",
+                            height: "18px",
+                            marginRight: "0.75rem",
+                            cursor: "pointer",
+                          }}
+                        />
+                        <span
+                          style={{
+                            fontSize: "0.95rem",
+                            color: "#333",
+                            fontWeight: isSelected ? "600" : "400",
+                          }}
+                        >
+                          {roleDisplayName}
+                        </span>
+                        {isSelected && (
+                          <span
+                            style={{
+                              marginLeft: "auto",
+                              fontSize: "0.75rem",
+                              color: "#6f42c1",
+                              fontWeight: "600",
+                            }}
+                          >
+                            ✓
+                          </span>
+                        )}
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+              {selectedRoles.length === 0 && (
+                <p
+                  style={{
+                    marginTop: "0.5rem",
+                    fontSize: "0.85rem",
+                    color: "#dc3545",
+                  }}
+                >
+                  ⚠️ User phải có ít nhất 1 role!
+                </p>
+              )}
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                gap: "1rem",
+                justifyContent: "flex-end",
+              }}
+            >
+              <button
+                onClick={closeRoleModal}
+                disabled={loading}
+                style={{
+                  padding: "0.75rem 1.5rem",
+                  backgroundColor: "#6c757d",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  fontSize: "1rem",
+                  fontWeight: "600",
+                  transition: "all 0.3s ease",
+                  opacity: loading ? 0.6 : 1,
+                }}
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleUpdateUserRoles}
+                disabled={loading || selectedRoles.length === 0}
+                style={{
+                  padding: "0.75rem 1.5rem",
+                  backgroundColor: selectedRoles.length === 0 ? "#ccc" : "#6f42c1",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: loading || selectedRoles.length === 0 ? "not-allowed" : "pointer",
+                  fontSize: "1rem",
+                  fontWeight: "600",
+                  transition: "all 0.3s ease",
+                  opacity: loading || selectedRoles.length === 0 ? 0.6 : 1,
                 }}
               >
                 {loading ? "Đang cập nhật..." : "Cập nhật"}

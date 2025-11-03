@@ -56,7 +56,7 @@ export default function useProducts() {
 
   // Memoized function để chuẩn hóa và lọc dữ liệu sản phẩm
   const products = useMemo(() => {
-    return rawProducts
+    const processedProducts = rawProducts
       .map((p) => {
         // Chuẩn hóa các trường dữ liệu với fallback values
         const id = p.id || p.productId || p._id;
@@ -112,6 +112,15 @@ export default function useProducts() {
         const description =
           p.description || p.vehicleInfo?.description || title;
 
+        // Lưu sellerId và approvedLabel để sắp xếp
+        const sellerId = p.sellerId || p.seller?.id || null;
+        const approvedLabel = p.approvedLabel || "";
+        
+        // Kiểm tra nếu có approvedLabel thì đây là sản phẩm từ gói requireApproval
+        const hasApprovalLabel = approvedLabel && approvedLabel.trim().length > 0;
+        // Có thể parse tên gói từ label hoặc dựa vào pattern khác
+        // Tạm thời dùng hasApprovalLabel để xác định
+
         return {
           id,
           title,
@@ -119,13 +128,56 @@ export default function useProducts() {
           brand,
           year,
           price,
+          priceNumber, // Lưu số để so sánh
           image,
           productType: finalProductType, // Sử dụng productType từ backend
           SellerInfo: { sellerAddress },
           isActive,
+          sellerId,
+          approvedLabel, // Lưu để hiển thị và sắp xếp
+          hasApprovalLabel, // Flag để sắp xếp
+          createdAt: p.createdAt ? new Date(p.createdAt) : new Date(0),
         };
       })
       .filter((item) => item.isActive); // Lọc chỉ hiển thị sản phẩm active
+
+    // Sắp xếp sản phẩm theo logic ưu tiên gói có kiểm duyệt
+    // Logic: Products từ gói requireApproval (có approvedLabel) sẽ hiện lên đầu danh mục
+    // Thứ tự ưu tiên: 275k > 132k > 55k > 250k > 120k > 50k (cần thông tin packagePrice từ BE)
+    // Tạm thời: Sắp xếp theo approvedLabel (có label → lên đầu), sau đó theo createdAt
+    
+    // Mapping giá package theo tên gói (cần update khi có thông tin chính xác từ BE)
+    // Giả định: dựa vào approvedLabel hoặc pattern khác để xác định giá package
+    const getPackagePricePriority = (product) => {
+      // Nếu không có approvedLabel, không phải gói requireApproval → priority = 0 (xuống dưới)
+      if (!product.hasApprovalLabel) return 0;
+      
+      // Tạm thời: vì không có thông tin packagePrice từ BE,
+      // ta sẽ sort theo createdAt DESC trong nhóm có approval
+      // TODO: Khi BE thêm packagePrice vào ProductResponse, update logic này:
+      // - Package 275k → priority = 600
+      // - Package 132k → priority = 500  
+      // - Package 55k → priority = 400
+      // - Package 250k → priority = 300
+      // - Package 120k → priority = 200
+      // - Package 50k → priority = 100
+      
+      // Hiện tại: tất cả products có approvedLabel sẽ có cùng priority = 1000
+      return 1000;
+    };
+    
+    return processedProducts.sort((a, b) => {
+      // 1. Ưu tiên: Products có approvedLabel (gói requireApproval) → lên đầu
+      const priorityA = getPackagePricePriority(a);
+      const priorityB = getPackagePricePriority(b);
+      
+      if (priorityA !== priorityB) {
+        return priorityB - priorityA; // Priority cao hơn → lên đầu
+      }
+      
+      // 2. Nếu cùng priority (cùng loại gói), sort theo createdAt DESC (mới nhất lên đầu)
+      return b.createdAt - a.createdAt;
+    });
   }, [rawProducts]);
 
   return { products, loading, error };

@@ -36,7 +36,7 @@ public class PaymentController {
         return ApiResponse.<Map<String, Object>>builder().data(map).build();
     }
 // mua goi
-@PreAuthorize("hasAuthority('ROLE_SELLER')")
+@PreAuthorize("hasAnyAuthority('ROLE_SELLER','ROLE_USER')")
     @PostMapping("/buy-package")
     public ApiResponse<Boolean> buyPackage(@RequestBody BuyPackageRequest request) {
        boolean ans = paymentService.handleBuyTransaction(request.getUserId(),request.getPackageId());

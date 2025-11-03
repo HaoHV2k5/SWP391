@@ -51,4 +51,11 @@ public class PostingPackageService {
     public void delete(Long id) {
         postingPackageRepository.deleteById(id);
     }
+
+    // Lấy tất cả gói đăng tin active cho user (public)
+    public List<PostingPackageSimpleResponse> getAllActive() {
+        return postingPackageRepository.findByIsActiveTrue().stream()
+                .map(postingPackageMapper::toPostingPackageSimpleResponse)
+                .collect(Collectors.toList());
+    }
 }

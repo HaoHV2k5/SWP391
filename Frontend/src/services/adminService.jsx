@@ -137,6 +137,102 @@ const adminService = {
       throw error;
     }
   },
+
+  // Posting Packages APIs
+  async getAllPackages() {
+    try {
+      const response = await apiClient.get("/posting-packages");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching packages:", error);
+      throw error;
+    }
+  },
+
+  async getPackageById(id) {
+    try {
+      const response = await apiClient.get(`/posting-packages/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching package:", error);
+      throw error;
+    }
+  },
+
+  async createPackage(packageData) {
+    try {
+      const response = await apiClient.post("/posting-packages", packageData);
+      return response.data;
+    } catch (error) {
+      console.error("Error creating package:", error);
+      throw error;
+    }
+  },
+
+  async updatePackage(id, packageData) {
+    try {
+      const response = await apiClient.put(`/posting-packages/${id}`, packageData);
+      return response.data;
+    } catch (error) {
+      console.error("Error updating package:", error);
+      throw error;
+    }
+  },
+
+  async deletePackage(id) {
+    try {
+      const response = await apiClient.delete(`/posting-packages/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error deleting package:", error);
+      throw error;
+    }
+  },
+
+  // Role APIs
+  async getAllRoles() {
+    try {
+      const response = await apiClient.get("/roles/roles");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+      throw error;
+    }
+  },
+
+  // Update user roles
+  async updateUserRoles(userId, roleNames) {
+    try {
+      // Đảm bảo roleNames là array
+      const roleNamesArray = Array.isArray(roleNames) ? roleNames : [roleNames];
+      
+      // Backend UpdateUserRoleRequest có @NotNull validation trên userId
+      // Nên cần gửi userId trong request body (mặc dù có trong path variable)
+      const requestBody = {
+        userId: userId, // Backend validation yêu cầu field này
+        roleNames: roleNamesArray,
+      };
+      
+      console.log("📡 Sending update roles request:", {
+        userId,
+        roleNames: roleNamesArray,
+        requestBody: requestBody,
+        url: `/admin/users/${userId}/roles`
+      });
+      
+      // Log request body JSON string để xem format
+      console.log("📡 Request body JSON:", JSON.stringify(requestBody));
+      
+      const response = await apiClient.put(`/admin/users/${userId}/roles`, requestBody);
+      console.log("✅ Response received:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error updating user roles:", error);
+      console.error("Error response data:", error.response?.data);
+      console.error("Error response status:", error.response?.status);
+      throw error;
+    }
+  },
 };
 
 export default adminService;
