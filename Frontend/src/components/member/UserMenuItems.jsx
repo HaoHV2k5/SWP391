@@ -1,5 +1,19 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { 
+  Settings, 
+  CheckCircle, 
+  BarChart3, 
+  FileText, 
+  MessageSquare, 
+  ShoppingCart, 
+  Heart, 
+  Briefcase, 
+  User, 
+  MessageCircle,
+  Info,
+  PlusCircle
+} from "lucide-react";
 
 const UserMenuItems = ({ user, onItemClick }) => {
   // Check if user is seller - enhanced detection
@@ -229,71 +243,55 @@ const UserMenuItems = ({ user, onItemClick }) => {
   };
 
   const menuItems = [
-    { to: "/account", label: "Tài khoản" },
-    { to: "/kyc", label: "Xác thực danh tính" },
-    { to: "/payment", label: "Quản lý ví & gói" },
-    { to: "/my-posts", label: "Tin đăng của tôi" },
-    { to: "/my-orders", label: "Yêu cầu mua hàng" },
-    { to: "/ordered", label: "Các đơn hàng đã mua" },
-    { to: "/saved-posts", label: "Tin đã lưu" },
-    { to: "/contracts", label: "Hợp đồng" },
+    { to: "/account", label: "Tài khoản", icon: Settings },
+    { to: "/kyc", label: "Xác thực danh tính", icon: CheckCircle },
+    { to: "/payment", label: "Quản lý ví & gói", icon: BarChart3 },
+    { to: "/my-posts", label: "Tin đăng của tôi", icon: FileText },
+    { to: "/my-orders", label: "Yêu cầu mua hàng", icon: MessageSquare },
+    { to: "/ordered", label: "Các đơn hàng đã mua", icon: ShoppingCart },
+    { to: "/saved-posts", label: "Tin đã lưu", icon: Heart },
+    { to: "/contracts", label: "Hợp đồng", icon: Briefcase },
     // Reviews menu items
     ...(isSeller()
-      ? [{ to: "/reviews-about-me", label: "Đánh giá về tôi" }]
+      ? [{ to: "/reviews-about-me", label: "Đánh giá về tôi", icon: User }]
       : []),
-    { to: "/my-reviews", label: "Đánh giá tôi đã viết" },
+    { to: "/my-reviews", label: "Đánh giá tôi đã viết", icon: MessageCircle },
     // Complaints menu items
     ...(isSeller()
-      ? [{ to: "/complaints-about-me", label: "Khiếu nại về tôi" }]
+      ? [{ to: "/complaints-about-me", label: "Khiếu nại của tôi", icon: Info }]
       : []),
     ...(isBuyer()
-      ? [{ to: "/my-complaints", label: "Khiếu nại của tôi" }]
+      ? [{ to: "/my-complaints", label: "Khiếu nại của tôi", icon: Info }]
       : []),
   ];
 
   return (
     <>
-      {menuItems.map((item, index) => (
-        <Link
-          key={index}
-          to={item.to}
-          style={{
-            display: "block",
-            padding: "10px 15px",
-            color: "#333",
-            textDecoration: "none",
-            fontSize: "14px",
-            transition: "background-color 0.2s",
-          }}
-          onMouseEnter={(e) => (e.target.style.backgroundColor = "#f8f9fa")}
-          onMouseLeave={(e) => (e.target.style.backgroundColor = "transparent")}
-          onClick={onItemClick}
-        >
-          {item.label}
-        </Link>
-      ))}
-
-      <div
-        style={{ height: "1px", background: "#e0e0e0", margin: "8px 0" }}
-      ></div>
-
-      <Link
-        to="/post-ad"
-        style={{
-          display: "block",
-          padding: "10px 15px",
-          color: "#00A86B",
-          textDecoration: "none",
-          fontSize: "14px",
-          fontWeight: "600",
-          transition: "background-color 0.2s",
-        }}
-        onMouseEnter={(e) => (e.target.style.backgroundColor = "#f0f9f0")}
-        onMouseLeave={(e) => (e.target.style.backgroundColor = "transparent")}
-        onClick={onItemClick}
-      >
-        Đăng tin ngay
-      </Link>
+      {menuItems.map((item, index) => {
+        const Icon = item.icon;
+        return (
+          <Link
+            key={index}
+            to={item.to}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              padding: "12px 16px",
+              color: "#333",
+              textDecoration: "none",
+              fontSize: "14px",
+              transition: "background-color 0.15s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8f9fa")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+            onClick={onItemClick}
+          >
+            {Icon && <Icon size={16} strokeWidth={2} style={{ flexShrink: 0 }} />}
+            <span style={{ flex: 1 }}>{item.label}</span>
+          </Link>
+        );
+      })}
     </>
   );
 };
