@@ -395,11 +395,7 @@ const LoginPage = ({ onLogin }) => {
             address: "Địa chỉ mặc định",
           });
 
-          if (
-            response.ok &&
-            data.message &&
-            data.message.includes("Check your email")
-          ) {
+          if (response.ok) {
             toast.success(
               "Đăng ký thành công! Vui lòng kiểm tra email để xác thực OTP."
             );
@@ -409,9 +405,8 @@ const LoginPage = ({ onLogin }) => {
             });
           } else {
             console.error("❌ Register failed:", data);
-            toast.error(
-              data.message || `Đăng ký thất bại! (${response.status})`
-            );
+            const errorMsg = data?.message || `Đăng ký thất bại! (${response.status})`;
+            toast.error(errorMsg);
           }
         } catch (error) {
           console.error("❌ Register error:", error);
@@ -860,7 +855,7 @@ const LoginPage = ({ onLogin }) => {
 
         {/* Google và Facebook login tạm thời bị comment */}
         {false && (
-          <div style={{ textAlign: "center", margin: "1rem 0 0.5rem 0" }}>
+        <div style={{ textAlign: "center", margin: "1rem 0 0.5rem 0" }}>
           <button
             onClick={() => {}}
             disabled={loading}
@@ -974,7 +969,7 @@ const LoginPage = ({ onLogin }) => {
               {isLogin ? "Đăng ký ngay" : "Đăng nhập"}
             </button>
           </p>
-          </div>
+        </div>
         )}
 
         <p style={{ color: "#666", textAlign: "center", marginTop: "1.5rem" }}>

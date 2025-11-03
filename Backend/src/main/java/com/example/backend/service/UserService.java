@@ -98,9 +98,12 @@ private String emailLoginFacebook;
                 request.getConfirmPassword(),
                 () -> userMapper.toUser(request)
         );
-        String avatar = cloudinaryService.upload(request.getImage());
-        user.setAvatar(avatar);
-        userRepository.save(user);
+        // Only upload avatar if image is provided
+        if (request.getImage() != null && !request.getImage().isEmpty()) {
+            String avatar = cloudinaryService.upload(request.getImage());
+            user.setAvatar(avatar);
+            userRepository.save(user);
+        }
         return user;
     }
 
