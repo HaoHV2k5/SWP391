@@ -103,7 +103,7 @@ const WalletNavbar = ({ user }) => {
     fetchBalance();
   }, [user?.id]);
 
-  // Listen for wallet.reload flag để update balance sau khi payment return
+  // Listen for wallet.reload flag và event để update balance sau khi payment return
   useEffect(() => {
     // Check periodically for wallet.reload flag (khi payment return)
     const interval = setInterval(() => {
@@ -112,11 +112,23 @@ const WalletNavbar = ({ user }) => {
         // Delay một chút để đảm bảo backend đã cập nhật xong
         setTimeout(() => {
           fetchBalance();
-        }, 1000);
+        }, 1500);
       }
     }, 1000);
     
-    return () => clearInterval(interval);
+    // Listen for wallet.reload event từ PaymentReturnPage
+    const handleWalletReload = () => {
+      setTimeout(() => {
+        fetchBalance();
+      }, 1500);
+    };
+    
+    window.addEventListener('wallet.reload', handleWalletReload);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('wallet.reload', handleWalletReload);
+    };
   }, []);
 
   const formatCurrency = (amount) => {

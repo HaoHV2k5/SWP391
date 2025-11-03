@@ -8,6 +8,7 @@ import DashboardTab from "../components/admin/DashboardTab";
 import UsersTab from "../components/admin/UsersTab";
 import ProductsTab from "../components/admin/ProductsTab";
 import RevenueTab from "../components/admin/RevenueTab";
+import PackagesManagementTab from "../components/admin/PackagesManagementTab";
 import KYCTab from "../components/admin/KYCTab";
 import AdminComplaintTab from "../components/admin/AdminComplaintTab";
 import RolesManagementTab from "../components/admin/RolesManagementTab";
@@ -23,10 +24,12 @@ const AdminPage = ({ user }) => {
     if (path === "/admin/users") return "users";
     if (path === "/admin/products") return "products";
     if (path === "/admin/revenue") return "revenue";
+    if (path === "/admin/packages") return "packages";
     if (path === "/admin/kyc") return "kyc";
     if (path === "/admin/complaints") return "complaints";
     if (path === "/admin/escrow") return "escrow";
     if (path === "/admin/roles") return "roles";
+    if (path === "/admin/withdrawals") return "withdrawals";
     if (path === "/admin") return "dashboard";
     return "dashboard";
   }, [location.pathname]);
@@ -323,10 +326,12 @@ const AdminPage = ({ user }) => {
                   {activeTab === "users" && "Người dùng"}
                   {activeTab === "products" && "Sản phẩm"}
                   {activeTab === "revenue" && "Doanh thu"}
+                  {activeTab === "packages" && "Gói dịch vụ"}
                   {activeTab === "kyc" && "KYC Approval"}
                   {activeTab === "complaints" && "Khiếu nại"}
                   {activeTab === "escrow" && "Escrow"}
                   {activeTab === "roles" && "Phân quyền"}
+                  {activeTab === "withdrawals" && "Rút tiền"}
                 </span>
               </div>
             </div>
@@ -514,6 +519,13 @@ const AdminPage = ({ user }) => {
               </div>
             )}
 
+            {/* Packages Tab */}
+            {activeTab === "packages" && (
+              <div key="packages-content">
+                <PackagesManagementTab />
+              </div>
+            )}
+
             {/* KYC Tab */}
             {activeTab === "kyc" && (
               <div key="kyc-content">
@@ -539,6 +551,13 @@ const AdminPage = ({ user }) => {
             {activeTab === "roles" && (
               <div key="roles-content">
                 <RolesManagementTab />
+              </div>
+            )}
+
+            {/* Withdrawals Tab */}
+            {activeTab === "withdrawals" && (
+              <div key="withdrawals-content">
+                <WithdrawalTab user={user} />
               </div>
             )}
 

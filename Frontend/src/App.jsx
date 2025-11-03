@@ -273,6 +273,14 @@ function AppContent() {
           }
         />
         <Route
+          path="/admin/packages"
+          element={
+            <ProtectedAdminRoute user={user}>
+              <AdminPage user={user} />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
           path="/admin/kyc"
           element={
             <ProtectedAdminRoute user={user}>
@@ -298,6 +306,14 @@ function AppContent() {
         />
         <Route
           path="/admin/roles"
+          element={
+            <ProtectedAdminRoute user={user}>
+              <AdminPage user={user} />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/admin/withdrawals"
           element={
             <ProtectedAdminRoute user={user}>
               <AdminPage user={user} />

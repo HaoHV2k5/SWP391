@@ -19,6 +19,11 @@ const AdminSidebar = ({ activeTab, setActiveTab, user, onLogout }) => {
       icon: <DollarSign size={20} />,
     },
     {
+      id: "packages",
+      label: "Gói dịch vụ",
+      icon: <ShoppingBag size={20} />,
+    },
+    {
       id: "kyc",
       label: "KYC Approval",
       icon: <Shield size={20} />,
@@ -37,6 +42,11 @@ const AdminSidebar = ({ activeTab, setActiveTab, user, onLogout }) => {
       id: "roles",
       label: "Phân quyền",
       icon: <Lock size={20} />,
+    },
+    {
+      id: "withdrawals",
+      label: "Rút tiền",
+      icon: <Wallet size={20} />,
     },
   ];
 

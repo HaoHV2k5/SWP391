@@ -13,6 +13,8 @@ import java.util.List;
 public interface UserPackageTransactionRepository extends JpaRepository<UserPostingPackage, Long> {
 
     List<UserPostingPackage> findByUserId(Long userId);
+    
+    @EntityGraph(attributePaths = {"postingPackage", "user"})
     UserPostingPackage findPostingPackageByUserIdAndActiveTrue(Long userId);
 
     @EntityGraph(attributePaths = {"postingPackage", "user"})

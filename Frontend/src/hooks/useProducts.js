@@ -112,6 +112,15 @@ export default function useProducts() {
         const description =
           p.description || p.vehicleInfo?.description || title;
 
+        // Lưu sellerId và approvedLabel để sắp xếp
+        const sellerId = p.sellerId || p.seller?.id || null;
+        const approvedLabel = p.approvedLabel || "";
+        
+        // Kiểm tra nếu có approvedLabel thì đây là sản phẩm từ gói requireApproval
+        const hasApprovalLabel = approvedLabel && approvedLabel.trim().length > 0;
+        // Có thể parse tên gói từ label hoặc dựa vào pattern khác
+        // Tạm thời dùng hasApprovalLabel để xác định
+
         return {
           id,
           title,
@@ -119,6 +128,7 @@ export default function useProducts() {
           brand,
           year,
           price,
+          priceNumber, // Lưu số để so sánh
           image,
           productType: finalProductType, // Sử dụng productType từ backend
           SellerInfo: { sellerAddress },

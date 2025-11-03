@@ -198,4 +198,24 @@ export const paymentService = {
       throw error;
     }
   },
+
+  // Lấy tất cả gói đăng tin active (public endpoint cho user)
+  async getAllPackages() {
+    try {
+      const response = await apiClient.get("/posting-packages/available");
+      const packages = response?.data?.data || [];
+      return {
+        success: true,
+        data: packages,
+        message: response?.data?.message || "Lấy danh sách gói thành công"
+      };
+    } catch (error) {
+      console.error("Error getting packages:", error);
+      return {
+        success: false,
+        data: [],
+        message: "Không thể tải danh sách gói dịch vụ"
+      };
+    }
+  },
 };

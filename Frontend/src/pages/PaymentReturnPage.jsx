@@ -18,46 +18,138 @@ export default function PaymentReturnPage() {
       try {
         // Lấy query string từ URL (VNPay redirect về với các params)
         const qs = window.location.search || "";
-        
-        // Kiểm tra response code từ VNPay trong URL params
-        const vnpResponseCode = searchParams.get("vnp_ResponseCode");
-        const isSuccess = vnpResponseCode === "00";
 
-        if (isSuccess) {
-          // Thanh toán thành công - fetch lại số dư từ backend
-          try {
-            // Backend đã xử lý callback và cập nhật wallet
-            // Frontend chỉ cần fetch lại wallet transactions để lấy số dư mới
-            await paymentService.getWalletTransactions();
-            
-            // Đánh dấu để tất cả components liên quan reload balance
-            sessionStorage.setItem("wallet.reload", "1");
-            
+        // ⚠️ QUAN TRỌNG: Gọi BE endpoint để verify và xử lý payment return
+        // BE sẽ verify chữ ký và redirect về payment-success/fail
+        try {
+          // Backend sẽ verify và xử lý, nhưng endpoint này chỉ redirect
+          // Nên ta cần check responseCode từ URL để hiển thị UI
+          const vnpResponseCode = searchParams.get("vnp_ResponseCode");
+          const isSuccess = vnpResponseCode === "00";
+
+          if (isSuccess) {
+            // Lấy transactionCode từ URL để check transaction cụ thể
+            const vnpTxnRef = searchParams.get("vnp_TxnRef");
+
+            // Polling để đợi transaction chuyển sang COMPLETED (tối đa 30s, mỗi 2s check 1 lần)
+            let attempts = 0;
+            const maxAttempts = 15;
+            let transactionCompleted = false;
+
+            while (attempts < maxAttempts && !transactionCompleted) {
+              await new Promise((resolve) => setTimeout(resolve, 2000));
+              attempts++;
+
+              try {
+                const walletRes = await paymentService.getWalletTransactions();
+                const transactions = walletRes?.data || [];
+
+                // Tìm transaction theo transactionCode
+                const currentTx = transactions.find(
+                  (tx) =>
+                    tx.transactionCode === vnpTxnRef ||
+                    tx.transactionCode === searchParams.get("vnp_TxnRef")
+                );
+
+                if (currentTx) {
+                  const status = (currentTx.status || "").toUpperCase();
+                  console.log(
+                    `Attempt ${attempts}: Transaction ${vnpTxnRef} status = ${status}`
+                  );
+
+                  if (status === "COMPLETED") {
+                    transactionCompleted = true;
+
+                    // Đánh dấu để tất cả components liên quan reload balance
+                    sessionStorage.setItem("wallet.reload", "1");
+
+                    // Trigger reload cho các components khác
+                    window.dispatchEvent(new Event("wallet.reload"));
+
+                    setStatus({
+                      loading: false,
+                      success: true,
+                      message:
+                        "Thanh toán thành công! Số dư ví đã được cập nhật.",
+                    });
+
+                    message.success(
+                      "Nạp tiền thành công! Số dư ví đã được cập nhật."
+                    );
+                    return; // Thoát khỏi function
+                  } else if (status === "FAILED") {
+                    setStatus({
+                      loading: false,
+                      success: false,
+                      message: "Giao dịch đã bị từ chối. Vui lòng thử lại.",
+                    });
+                    return;
+                  }
+                  // Nếu vẫn PENDING, tiếp tục polling
+                } else {
+                  console.log(
+                    `Attempt ${attempts}: Transaction ${vnpTxnRef} not found yet`
+                  );
+                }
+              } catch (pollError) {
+                console.error(
+                  `Attempt ${attempts}: Error polling transaction:`,
+                  pollError
+                );
+              }
+            }
+
+            // Nếu sau 30s vẫn chưa COMPLETED
+            if (!transactionCompleted) {
+              console.warn(
+                "Transaction still PENDING after 30s, showing success anyway"
+              );
+              // Vẫn hiển thị success vì VNPAY đã confirm, chỉ là BE callback chậm
+              sessionStorage.setItem("wallet.reload", "1");
+              window.dispatchEvent(new Event("wallet.reload"));
+
+              setStatus({
+                loading: false,
+                success: true,
+                message:
+                  "Thanh toán thành công. Vui lòng đợi một chút và refresh trang để xem số dư cập nhật.",
+              });
+
+              message.warning(
+                "Thanh toán thành công nhưng đang chờ xử lý. Vui lòng refresh trang sau vài giây."
+              );
+            }
+          } else {
+            // Thanh toán thất bại hoặc bị hủy
             setStatus({
               loading: false,
-              success: true,
-              message: "Thanh toán thành công! Số dư ví đã được cập nhật.",
+              success: false,
+              message: vnpResponseCode
+                ? `Thanh toán thất bại. Mã lỗi: ${vnpResponseCode}`
+                : "Thanh toán thất bại hoặc bị hủy.",
             });
-            
-            message.success("Nạp tiền thành công! Số dư ví đã được cập nhật.");
-          } catch (fetchError) {
-            console.error("Error fetching wallet balance:", fetchError);
+          }
+        } catch (backendError) {
+          console.error("Error verifying payment with backend:", backendError);
+          // Fallback: check responseCode từ URL
+          const vnpResponseCode = searchParams.get("vnp_ResponseCode");
+          const isSuccess = vnpResponseCode === "00";
+
+          if (isSuccess) {
             setStatus({
               loading: false,
               success: true,
               message: "Thanh toán thành công. Vui lòng kiểm tra lại số dư.",
             });
             sessionStorage.setItem("wallet.reload", "1");
+            window.dispatchEvent(new Event("wallet.reload"));
+          } else {
+            setStatus({
+              loading: false,
+              success: false,
+              message: "Có lỗi xảy ra khi xác nhận thanh toán.",
+            });
           }
-        } else {
-          // Thanh toán thất bại hoặc bị hủy
-          setStatus({
-            loading: false,
-            success: false,
-            message: vnpResponseCode 
-              ? `Thanh toán thất bại. Mã lỗi: ${vnpResponseCode}`
-              : "Thanh toán thất bại hoặc bị hủy.",
-          });
         }
       } catch (e) {
         console.error("Error processing payment return:", e);
@@ -117,4 +209,3 @@ export default function PaymentReturnPage() {
     </div>
   );
 }
-
