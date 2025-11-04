@@ -14,6 +14,7 @@ import AdminComplaintTab from "../components/admin/AdminComplaintTab";
 import RolesManagementTab from "../components/admin/RolesManagementTab";
 import EscrowTab from "../components/admin/EscrowTab";
 import WithdrawalTab from "../components/admin/WithdrawalTab";
+import TagsTab from "../components/admin/TagsTab";
 
 const AdminPage = ({ user }) => {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ const AdminPage = ({ user }) => {
     if (path === "/admin/escrow") return "escrow";
     if (path === "/admin/roles") return "roles";
     if (path === "/admin/withdrawals") return "withdrawals";
+    if (path === "/admin/tags") return "tags";
     if (path === "/admin") return "dashboard";
     return "dashboard";
   }, [location.pathname]);
@@ -333,6 +335,7 @@ const AdminPage = ({ user }) => {
                   {activeTab === "escrow" && "Escrow"}
                   {activeTab === "roles" && "Phân quyền"}
                   {activeTab === "withdrawals" && "Rút tiền"}
+                  {activeTab === "tags" && "Tags"}
                 </span>
               </div>
             </div>
@@ -562,8 +565,15 @@ const AdminPage = ({ user }) => {
               </div>
             )}
 
+            {/* Tags Tab */}
+            {activeTab === "tags" && (
+              <div key="tags-content">
+                <TagsTab />
+              </div>
+            )}
+
             {/* Fallback - nếu không có tab nào match */}
-            {!["dashboard", "users", "products", "revenue", "kyc", "complaints", "escrow", "roles"].includes(activeTab) && (
+            {!["dashboard", "users", "products", "revenue", "kyc", "complaints", "escrow", "roles", "withdrawals", "tags"].includes(activeTab) && (
               <div style={{ textAlign: "center", padding: "2rem" }}>
                 <p style={{ color: "rgba(255, 255, 255, 0.7)" }}>
                   Tab không xác định: {activeTab}

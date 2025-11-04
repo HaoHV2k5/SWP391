@@ -195,7 +195,69 @@ const orderService = {
         originalMessage: backendMessage
       };
     }
-  }
+  },
+
+  // 📤 Seller gửi yêu cầu admin review escrow (submit proof)
+  // 📍 Endpoint: POST /order/request-complete
+  // 👥 Users: Seller (ROLE_SELLER)
+  async requestOrderComplete(orderId, shippingCode, proofImage) {
+    try {
+      console.log("🚀 Requesting admin review for order:", orderId);
+
+      const formData = new FormData();
+      formData.append("orderId", orderId);
+      if (shippingCode) {
+        formData.append("shippingCode", shippingCode);
+      }
+      if (proofImage) {
+        formData.append("proofImage", proofImage);
+      }
+
+      const response = await apiClient.post("/order/request-complete", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      console.log("✅ Request submitted successfully");
+
+      return {
+        success: true,
+        message: response?.data?.message || "Đã gửi yêu cầu xác nhận tới admin",
+        data: response.data,
+      };
+    } catch (error) {
+      console.error("❌ Request order complete error:", error);
+
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+
+      let errorMessage = "Gửi yêu cầu thất bại";
+
+      if (status === 401) {
+        errorMessage = "Bạn cần đăng nhập để thực hiện thao tác này";
+      } else if (status === 403) {
+        errorMessage = "Bạn không có quyền gửi yêu cầu này";
+      } else if (status === 400) {
+        if (backendMessage?.includes("escrow") || backendMessage?.includes("trạng thái")) {
+          errorMessage = "Đơn hàng không ở trạng thái có thể gửi yêu cầu";
+        } else {
+          errorMessage = backendMessage || "Không thể gửi yêu cầu";
+        }
+      } else if (status === 404) {
+        errorMessage = "Không tìm thấy đơn hàng";
+      } else if (status === 500) {
+        errorMessage = "Lỗi hệ thống. Vui lòng thử lại sau";
+      }
+
+      return {
+        success: false,
+        message: errorMessage,
+        status: status,
+        originalMessage: backendMessage,
+      };
+    }
+  },
 };
 
 export default orderService;

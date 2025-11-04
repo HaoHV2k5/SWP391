@@ -59,7 +59,8 @@ export default function OrdersBought({ defaultBuyerId = 26 }) {
     }
     try {
       setLoading(true);
-      const res = await memberService.getBoughtOrders(26);
+      // ✅ Sửa bug: Dùng id động thay vì hardcode 26
+      const res = await memberService.getBoughtOrders(Number(id));
       if (!res.success) {
         message.error(res.message || "Không tải được danh sách đơn hàng");
         setRows([]);
@@ -77,7 +78,10 @@ export default function OrdersBought({ defaultBuyerId = 26 }) {
   };
 
   useEffect(() => {
-    load(26); // load lần đầu
+    // ✅ Sửa bug: Dùng buyerId từ state thay vì hardcode 26
+    if (buyerId) {
+      load(buyerId);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
