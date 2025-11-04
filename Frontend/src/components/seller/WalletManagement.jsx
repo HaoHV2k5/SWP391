@@ -164,49 +164,12 @@ const WalletManagement = ({ user }) => {
         response?.data?.code === "00" &&
         paymentUrl
       ) {
-        // Mở cửa sổ thanh toán VNPay
-        const paymentWindow = window.open(
-          paymentUrl,
-          "vnpay_payment",
-          "width=800,height=600,scrollbars=yes,resizable=yes"
-        );
-
-        // Poll dữ liệu ví trong khi popup đang mở (2s/lần, tối đa ~2 phút)
-        let polls = 0;
-        let lastTxCount = Array.isArray(walletTransactions)
-          ? walletTransactions.length
-          : 0;
-        const pollInterval = setInterval(async () => {
-          polls += 1;
-          try {
-            const resTx = await paymentService.getWalletTransactions();
-            const list = resTx?.data || [];
-            if (Array.isArray(list) && list.length !== lastTxCount) {
-              setWalletTransactions(list);
-              lastTxCount = list.length;
-            }
-          } catch {
-            // ignore
-          }
-          if (polls >= 60) {
-            clearInterval(pollInterval);
-          }
-        }, 2000);
-
-        // Kiểm tra cửa sổ thanh toán có bị đóng không
-        const checkClosed = setInterval(() => {
-          if (paymentWindow.closed) {
-            clearInterval(checkClosed);
-            clearInterval(pollInterval);
-            message.info(
-              "Đã đóng cửa sổ thanh toán. Vui lòng kiểm tra lại ví của bạn."
-            );
-            fetchWalletData(); // Refresh data
-          }
-        }, 1000);
-
+        // Chuyển hẳn sang trang thanh toán VNPay
         setRechargeModalVisible(false);
         message.success("Đang chuyển đến trang thanh toán VNPay...");
+        
+        // Redirect trực tiếp sang trang ngân hàng
+        window.location.href = paymentUrl;
       } else {
         message.error("Không thể tạo link thanh toán. Vui lòng thử lại!");
       }

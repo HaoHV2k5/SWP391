@@ -320,6 +320,14 @@ function AppContent() {
             </ProtectedAdminRoute>
           }
         />
+        <Route
+          path="/admin/tags"
+          element={
+            <ProtectedAdminRoute user={user}>
+              <AdminPage user={user} />
+            </ProtectedAdminRoute>
+          }
+        />
 
         {/* STAFF ROUTES - Protected */}
         <Route

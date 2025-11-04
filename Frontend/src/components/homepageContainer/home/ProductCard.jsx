@@ -184,11 +184,6 @@ const ProductCard = ({ product }) => {
               <i className={saved ? "bi bi-heart-fill" : "bi bi-heart"}></i>
             </Button>
           </div>
-
-          {/* Location */}
-          <div style={{ fontSize: "12px", color: "#999" }}>
-            <i className="bi bi-geo-alt"></i> {SellerInfo?.sellerAddress}
-          </div>
         </div>
       </Card.Body>
     </Card>

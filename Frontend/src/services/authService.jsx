@@ -72,6 +72,38 @@ export const authService = {
     }
   },
 
+  // Gửi lại mã OTP
+  async resendOtp(email) {
+    try {
+      const response = await apiClient.post("/users/resend-otp", { email });
+      return {
+        success: true,
+        message: response?.data?.message || "Đã gửi lại mã OTP mới",
+        data: response.data,
+      };
+    } catch (error) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      
+      let errorMessage = "Không thể gửi lại mã OTP";
+      if (status === 400) {
+        errorMessage = backendMessage || "Email không hợp lệ";
+      } else if (status === 404) {
+        errorMessage = "Không tìm thấy user với email này";
+      } else if (status >= 500) {
+        errorMessage = "Lỗi hệ thống. Vui lòng thử lại sau";
+      } else if (!status) {
+        errorMessage = "Không thể kết nối đến máy chủ";
+      }
+      
+      return {
+        success: false,
+        message: errorMessage,
+        status: status,
+      };
+    }
+  },
+
   // Lấy thông tin user hiện tại
   async getCurrentUser() {
     try {

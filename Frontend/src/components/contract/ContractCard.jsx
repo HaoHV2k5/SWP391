@@ -7,6 +7,12 @@ import { toast } from 'react-toastify';
 const ContractCard = ({ contract, onViewDetail, onPay, onCancel, onConfirmReceived, currentUserId }) => {
   const [loading, setLoading] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [showProofModal, setShowProofModal] = useState(false);
+  const [submittingProof, setSubmittingProof] = useState(false);
+  const [proofForm, setProofForm] = useState({
+    shippingCode: '',
+    proofImage: null
+  });
 
   const getStatusBadge = (status) => {
     const statusConfig = {
@@ -40,6 +46,16 @@ const ContractCard = ({ contract, onViewDetail, onPay, onCancel, onConfirmReceiv
                              !contract.deliveryCompleted && 
                              isBuyer && 
                              contract.orderId;
+
+  // Seller có thể submit proof khi: đã SIGNED, đã thanh toán, buyer đã xác nhận nhận hàng, có orderId, chưa submit proof
+  const canSubmitProof = contract.status === 'SIGNED' && 
+                         contract.paymentCompleted && 
+                         contract.deliveryCompleted && 
+                         isSeller && 
+                         contract.orderId &&
+                         !contract.escrowStatus?.includes('ADMIN_REVIEW') && // Chưa submit proof
+                         !contract.escrowStatus?.includes('ADMIN_APPROVED') && // Chưa được admin approve
+                         !contract.escrowStatus?.includes('RELEASED'); // Chưa được release
 
   // Can cancel logic based on backend conditions:
   // Case 1: SIGNED && !paymentCompleted && isSeller && 3 days passed
@@ -237,6 +253,42 @@ const ContractCard = ({ contract, onViewDetail, onPay, onCancel, onConfirmReceiv
     }
   };
 
+  // Seller submit proof để admin review
+  const handleSubmitProof = async () => {
+    if (!contract.orderId || submittingProof) return;
+
+    if (!proofForm.shippingCode.trim()) {
+      toast.warning('Vui lòng nhập mã vận chuyển');
+      return;
+    }
+
+    setSubmittingProof(true);
+    try {
+      const result = await orderService.requestOrderComplete(
+        contract.orderId,
+        proofForm.shippingCode.trim(),
+        proofForm.proofImage
+      );
+
+      if (result.success) {
+        toast.success(result.message || 'Đã gửi yêu cầu xác nhận tới admin');
+        setShowProofModal(false);
+        setProofForm({ shippingCode: '', proofImage: null });
+        // Trigger refresh
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('contractUpdated'));
+        }
+      } else {
+        toast.error(result.message || 'Gửi yêu cầu thất bại');
+      }
+    } catch (error) {
+      toast.error('Có lỗi xảy ra khi gửi yêu cầu');
+      console.error('Submit proof error:', error);
+    } finally {
+      setSubmittingProof(false);
+    }
+  };
+
   const lifecycleStep = (() => {
     if (contract.status === 'COMPLETED') return 3;
     if (contract.status === 'SIGNED') return 2;
@@ -370,6 +422,31 @@ const ContractCard = ({ contract, onViewDetail, onPay, onCancel, onConfirmReceiv
             </button>
           )}
 
+          {/* Seller submit proof button */}
+          {canSubmitProof && (
+            <button 
+              className="btn-submit-proof"
+              onClick={() => setShowProofModal(true)}
+              disabled={loading}
+              style={{
+                backgroundColor: '#1890ff',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontWeight: '500',
+                fontSize: '14px'
+              }}
+            >
+              <i className="bi bi-upload"></i>
+              Gửi minh chứng
+            </button>
+          )}
+
           {canCancel && (
             <button 
               className="btn-cancel"
@@ -391,6 +468,123 @@ const ContractCard = ({ contract, onViewDetail, onPay, onCancel, onConfirmReceiv
           </div>
         )}
       </div>
+
+      {/* Modal Submit Proof */}
+      {showProofModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+          }}
+          onClick={() => setShowProofModal(false)}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '2rem',
+              maxWidth: '500px',
+              width: '90%',
+              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>Gửi minh chứng giao hàng</h3>
+            
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                Mã vận chuyển <span style={{ color: 'red' }}>*</span>
+              </label>
+              <input
+                type="text"
+                value={proofForm.shippingCode}
+                onChange={(e) => setProofForm({ ...proofForm, shippingCode: e.target.value })}
+                placeholder="Nhập mã vận chuyển (VD: GHN123456789)"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                Ảnh minh chứng (tùy chọn)
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    if (file.size > 5 * 1024 * 1024) {
+                      toast.warning('Kích thước file không được vượt quá 5MB');
+                      return;
+                    }
+                    setProofForm({ ...proofForm, proofImage: file });
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                }}
+              />
+              {proofForm.proofImage && (
+                <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#666' }}>
+                  Đã chọn: {proofForm.proofImage.name}
+                </p>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  setShowProofModal(false);
+                  setProofForm({ shippingCode: '', proofImage: null });
+                }}
+                disabled={submittingProof}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: submittingProof ? 'not-allowed' : 'pointer',
+                }}
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleSubmitProof}
+                disabled={submittingProof || !proofForm.shippingCode.trim()}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: submittingProof || !proofForm.shippingCode.trim() ? '#ccc' : '#1890ff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: submittingProof || !proofForm.shippingCode.trim() ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {submittingProof ? 'Đang gửi...' : 'Gửi yêu cầu'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
