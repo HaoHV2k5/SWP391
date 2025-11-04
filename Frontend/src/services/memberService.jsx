@@ -250,7 +250,14 @@ export const memberService = {
   },
   async getBoughtOrders(buyerId) {
     try {
-      const response = await apiClient.get(`/order/get-ordered/26`);
+      if (!buyerId) {
+        return {
+          success: false,
+          message: "Không thể xác định user ID",
+          data: [],
+        };
+      }
+      const response = await apiClient.get(`/order/get-ordered/${buyerId}`);
       return {
         success: true,
         message: response.data?.message || "OK",
@@ -261,6 +268,7 @@ export const memberService = {
         success: false,
         message:
           error.response?.data?.message || "Không thể lấy danh sách đơn đã mua",
+        data: [],
       };
     }
   },
