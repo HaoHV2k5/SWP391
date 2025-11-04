@@ -250,7 +250,14 @@ export const memberService = {
   },
   async getBoughtOrders(buyerId) {
     try {
-      const response = await apiClient.get(`/order/get-ordered/26`);
+      // ✅ Sửa bug: Dùng buyerId động thay vì hardcode 26
+      if (!buyerId) {
+        return {
+          success: false,
+          message: "buyerId không được để trống",
+        };
+      }
+      const response = await apiClient.get(`/order/get-ordered/${buyerId}`);
       return {
         success: true,
         message: response.data?.message || "OK",

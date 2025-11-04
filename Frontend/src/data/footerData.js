@@ -2,7 +2,7 @@
 // File: src/data/footerData.js
 
 export const paymentData = {
-  paymentMethods: ["VNPay", "Momo"],
+  paymentMethods: ["VNPay"],
   appButtons: ["Xem ứng dụng trên web", "Tải về trên CH Play"]
 };
 

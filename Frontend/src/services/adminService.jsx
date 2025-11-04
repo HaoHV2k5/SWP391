@@ -12,6 +12,17 @@ const adminService = {
     }
   },
 
+  // Lấy chi tiết user theo ID
+  async getUserById(userId) {
+    try {
+      const response = await apiClient.get(`/admin/users/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching user by id:", error);
+      throw error;
+    }
+  },
+
   // Tạo user mới
   async createUser(userData) {
     try {

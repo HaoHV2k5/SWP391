@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { UserPlus, Edit, Lock, Unlock, Trash2, Shield } from "lucide-react";
+import { createPortal } from "react-dom";
+import { UserPlus, Edit, Lock, Unlock, Trash2, Shield, Eye } from "lucide-react";
 import adminService from "../../services/adminService";
 import { toast } from "react-toastify";
 
@@ -14,9 +15,12 @@ const UsersTab = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
+  const [showUserDetailModal, setShowUserDetailModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [userToEdit, setUserToEdit] = useState(null);
   const [userToEditRole, setUserToEditRole] = useState(null);
+  const [userDetail, setUserDetail] = useState(null);
+  const [loadingUserDetail, setLoadingUserDetail] = useState(false);
   const [availableRoles, setAvailableRoles] = useState([]);
   const [selectedRoles, setSelectedRoles] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -277,6 +281,31 @@ const UsersTab = ({
       address: "",
       avatar: "",
     });
+  };
+
+  // Mở modal xem chi tiết user
+  const openUserDetailModal = async (user) => {
+    try {
+      console.log("🔍 Opening user detail modal for user ID:", user.id);
+      setLoadingUserDetail(true);
+      const response = await adminService.getUserById(user.id);
+      console.log("📋 User detail response:", response);
+      const detailData = response.data || response;
+      setUserDetail(detailData);
+      setShowUserDetailModal(true);
+      console.log("✅ Modal state set to true, userDetail:", detailData);
+    } catch (error) {
+      console.error("❌ Error fetching user detail:", error);
+      toast.error("Không thể tải thông tin chi tiết user");
+    } finally {
+      setLoadingUserDetail(false);
+    }
+  };
+
+  // Đóng modal xem chi tiết user
+  const closeUserDetailModal = () => {
+    setShowUserDetailModal(false);
+    setUserDetail(null);
   };
 
   // Mở modal chỉnh sửa role
@@ -690,6 +719,14 @@ const UsersTab = ({
                     </td>
                     <td style={{ padding: "1rem" }}>
                       <div style={{ display: "flex", gap: "0.5rem" }}>
+                        <button
+                          className="btn btn-secondary"
+                          style={{ padding: "0.5rem", backgroundColor: "#17a2b8" }}
+                          title="Xem chi tiết"
+                          onClick={() => openUserDetailModal(user)}
+                        >
+                          <Eye size={16} />
+                        </button>
                         <button
                           className="btn btn-secondary"
                           style={{ padding: "0.5rem" }}
@@ -1745,6 +1782,171 @@ const UsersTab = ({
           </div>
         </div>
       )}
+
+      {/* Modal Xem chi tiết User - Using Portal để render ra ngoài DOM tree */}
+      {showUserDetailModal && createPortal(
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+          onClick={closeUserDetailModal}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              borderRadius: "12px",
+              padding: "2rem",
+              maxWidth: "600px",
+              width: "90%",
+              maxHeight: "80vh",
+              overflowY: "auto",
+              boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "1.5rem",
+              }}
+            >
+              <h2 style={{ margin: 0, color: "#333" }}>Chi tiết User</h2>
+              <button
+                onClick={closeUserDetailModal}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: "1.5rem",
+                  cursor: "pointer",
+                  color: "#666",
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {loadingUserDetail ? (
+              <div style={{ textAlign: "center", padding: "2rem" }}>
+                <div className="spinner-border" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            ) : userDetail ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                  <div>
+                    <label style={{ fontWeight: "600", color: "#666" }}>ID:</label>
+                    <p style={{ margin: "0.25rem 0", fontSize: "1rem" }}>#{userDetail.id}</p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: "600", color: "#666" }}>Email:</label>
+                    <p style={{ margin: "0.25rem 0", fontSize: "1rem" }}>{userDetail.email || "Chưa có"}</p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: "600", color: "#666" }}>Họ tên:</label>
+                    <p style={{ margin: "0.25rem 0", fontSize: "1rem" }}>{userDetail.fullname || "Chưa có"}</p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: "600", color: "#666" }}>Số điện thoại:</label>
+                    <p style={{ margin: "0.25rem 0", fontSize: "1rem" }}>{userDetail.phone || "Chưa có"}</p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: "600", color: "#666" }}>Giới tính:</label>
+                    <p style={{ margin: "0.25rem 0", fontSize: "1rem" }}>{userDetail.gender || "Chưa có"}</p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: "600", color: "#666" }}>Ngày sinh:</label>
+                    <p style={{ margin: "0.25rem 0", fontSize: "1rem" }}>{userDetail.yob ? formatDate(userDetail.yob) : "Chưa có"}</p>
+                  </div>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <label style={{ fontWeight: "600", color: "#666" }}>Địa chỉ:</label>
+                    <p style={{ margin: "0.25rem 0", fontSize: "1rem" }}>{userDetail.address || "Chưa có"}</p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: "600", color: "#666" }}>Trạng thái:</label>
+                    <p style={{ margin: "0.25rem 0", fontSize: "1rem" }}>
+                      <span
+                        style={{
+                          padding: "0.25rem 0.75rem",
+                          borderRadius: "15px",
+                          fontSize: "0.85rem",
+                          backgroundColor: userDetail.locked ? "#dc354520" : "#28a74520",
+                          color: userDetail.locked ? "#dc3545" : "#28a745",
+                        }}
+                      >
+                        {userDetail.locked ? "Đã khóa" : "Hoạt động"}
+                      </span>
+                    </p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: "600", color: "#666" }}>Roles:</label>
+                    <div style={{ margin: "0.25rem 0", display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                      {userDetail.roles && Array.isArray(userDetail.roles) && userDetail.roles.length > 0 ? (
+                        userDetail.roles.map((role, idx) => {
+                          const roleName = typeof role === "string" ? role : role.name || role.roleName || "N/A";
+                          return (
+                            <span
+                              key={idx}
+                              style={{
+                                padding: "0.25rem 0.75rem",
+                                borderRadius: "15px",
+                                fontSize: "0.85rem",
+                                backgroundColor: "#6f42c120",
+                                color: "#6f42c1",
+                              }}
+                            >
+                              {roleName}
+                            </span>
+                          );
+                        })
+                      ) : (
+                        <span style={{ color: "#999" }}>Chưa có role</span>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: "600", color: "#666" }}>Ngày tham gia:</label>
+                    <p style={{ margin: "0.25rem 0", fontSize: "1rem" }}>
+                      {formatDate(userDetail.createdAt || userDetail.joinDate || userDetail.created_at)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p style={{ textAlign: "center", color: "#999" }}>Không có dữ liệu</p>
+            )}
+
+            <div style={{ marginTop: "1.5rem", display: "flex", justifyContent: "flex-end" }}>
+              <button
+                onClick={closeUserDetailModal}
+                style={{
+                  padding: "0.75rem 1.5rem",
+                  backgroundColor: "#6c757d",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "1rem",
+                  fontWeight: "600",
+                }}
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      , document.body)}
     </div>
   );
 };

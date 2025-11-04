@@ -95,7 +95,6 @@ const HomePage = () => {
             style={{
               padding: "20px 0",
               background: "#fff",
-              borderBottom: "1px solid #e0e0e0",
             }}
           >
             <div
