@@ -12,7 +12,9 @@ import {
   User, 
   MessageCircle,
   Info,
-  PlusCircle
+  PlusCircle,
+  AlertCircle,
+  ShieldAlert
 } from "lucide-react";
 
 const UserMenuItems = ({ user, onItemClick }) => {
@@ -257,11 +259,16 @@ const UserMenuItems = ({ user, onItemClick }) => {
       : []),
     { to: "/my-reviews", label: "Đánh giá tôi đã viết", icon: MessageCircle },
     // Complaints menu items
+    // Seller: có cả "Khiếu nại của tôi" và "Khiếu nại về tôi"
+    // Buyer: chỉ có "Khiếu nại của tôi"
     ...(isSeller()
-      ? [{ to: "/complaints-about-me", label: "Khiếu nại của tôi", icon: Info }]
+      ? [
+          { to: "/my-complaints", label: "Khiếu nại của tôi", icon: AlertCircle },
+          { to: "/complaints-about-me", label: "Khiếu nại về tôi", icon: ShieldAlert },
+        ]
       : []),
     ...(isBuyer()
-      ? [{ to: "/my-complaints", label: "Khiếu nại của tôi", icon: Info }]
+      ? [{ to: "/my-complaints", label: "Khiếu nại của tôi", icon: AlertCircle }]
       : []),
   ];
 

@@ -43,9 +43,10 @@ public class ComplaintController {
     
     /**
      * Lấy tất cả complaint của buyer hiện tại
+     * Cho phép cả buyer và seller (seller cũng có thể là buyer khi mua hàng)
      */
     @GetMapping("/my-complaints")
-    @PreAuthorize("hasAnyAuthority('ROLE_BUYER', 'ROLE_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_BUYER', 'ROLE_USER', 'ROLE_SELLER')")
     public ApiResponse<List<ComplaintResponse>> getMyComplaints(Authentication authentication) {
         String username = authentication.getName();
         User user = userService.getUserByUsername(username);

@@ -10,6 +10,7 @@ import EditProductModal from "../../components/member/EditProductModal";
 import DeleteConfirmationModal from "../../components/member/DeleteConfirmationModal";
 import productService from "../../services/productService";
 import { memberService } from "../../services/memberService";
+import { paymentService } from "../../services/paymentService";
 import "../../styles/member/index.css";
 import "../../styles/member/MyPosts.css";
 
@@ -65,6 +66,7 @@ const MyPosts = ({ user }) => {
   const [postingProducts, setPostingProducts] = useState(new Set());
   const hasShownError = useRef(false); // Track xem đã hiển thị lỗi chưa
   const [currentImageIndexes, setCurrentImageIndexes] = useState({}); // Track current image index for each post
+  const [requireApproval, setRequireApproval] = useState(false); // Track xem user có gói kiểm duyệt không
 
   const loadPosts = useCallback(async (status = "ALL") => {
     setLoadingPosts(true);
@@ -147,6 +149,38 @@ const MyPosts = ({ user }) => {
       return;
     }
     loadPosts(filterStatus);
+    
+    // Fetch current package để kiểm tra requireApproval
+    const loadCurrentPackage = async () => {
+      try {
+        const result = await paymentService.getCurrentPackage();
+        // Kiểm tra nhiều cấu trúc response có thể có
+        const packageData = result?.data;
+        if (packageData) {
+          // Case 1: requireApproval trong postingPackage object
+          if (packageData.postingPackage?.requireApproval !== undefined) {
+            setRequireApproval(packageData.postingPackage.requireApproval === true);
+          }
+          // Case 2: requireApproval trực tiếp trong response
+          else if (packageData.requireApproval !== undefined) {
+            setRequireApproval(packageData.requireApproval === true);
+          }
+          // Case 3: Không có requireApproval → default false
+          else {
+            setRequireApproval(false);
+          }
+        } else {
+          // Không có package data → default false
+          setRequireApproval(false);
+        }
+      } catch (error) {
+        console.error("Error loading current package:", error);
+        // Nếu không load được package hoặc user chưa có package, default là false
+        setRequireApproval(false);
+      }
+    };
+    loadCurrentPackage();
+    
     const onFocus = () => {
       loadPosts(filterStatus);
     };
@@ -474,8 +508,8 @@ const MyPosts = ({ user }) => {
         {/* Header */}
         <MemberHeader activeTab="my-posts" />
 
-        {/* Stats Cards */}
-        <PostStatsCards posts={posts} />
+        {/* Stats Cards - Chỉ hiển thị nếu user có gói kiểm duyệt */}
+        {requireApproval && <PostStatsCards posts={posts} />}
 
         {/* Action Bar với Filter */}
         <div className="mb-4">
@@ -492,20 +526,24 @@ const MyPosts = ({ user }) => {
             </Button>
           </div>
 
-          <div>
-            <Form.Select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              size="sm"
-              style={{ maxWidth: "250px" }}
-            >
-              <option value="ALL">Tất cả trạng thái</option>
-              <option value="PENDING">Chờ duyệt</option>
-              <option value="STAFF_APPROVED">Đã duyệt Staff</option>
-              <option value="ACTIVE">Đang hiển thị</option>
-              <option value="REJECTED">Bị từ chối</option>
-            </Form.Select>
-          </div>
+          {/* Dropdown Filter - Chỉ hiển thị nếu user có gói kiểm duyệt */}
+          {requireApproval && (
+            <div>
+              <Form.Select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                size="sm"
+                style={{ maxWidth: "250px" }}
+              >
+                <option value="ALL">Tất cả trạng thái</option>
+                <option value="PENDING">Chờ duyệt</option>
+                <option value="STAFF_APPROVED">Đã duyệt Staff</option>
+                <option value="ADMIN_APPROVED">Đã duyệt Admin</option>
+                <option value="ACTIVE">Đang hiển thị</option>
+                <option value="REJECTED">Bị từ chối</option>
+              </Form.Select>
+            </div>
+          )}
         </div>
 
         {/* Posts List */}
