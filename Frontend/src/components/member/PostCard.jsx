@@ -130,26 +130,11 @@ const PostCard = ({
                 )}
               </span>
             </div>
-
-            {/* Location */}
-            <div className="post-location">
-              <i className="bi bi-geo-alt"></i>
-              <span>
-                {post.location ||
-                  post.address ||
-                  post.sellerAddress ||
-                  "Chưa có địa chỉ"}
-              </span>
-            </div>
           </div>
 
           {/* Footer */}
           <div className="post-footer">
             <div className="post-footer-left">
-              <div className="post-stat">
-                <i className="bi bi-eye"></i>
-                <span>{post.views || 0} lượt xem</span>
-              </div>
               <div className="post-stat">
                 <span>
                   Đăng:{" "}
