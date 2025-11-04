@@ -159,16 +159,6 @@ const ProductDetailPage = ({ user }) => {
                       <small>{currentImageIndex + 1}/{images.length}</small>
                     </div>
                   )}
-
-                  {/* Action buttons */}
-                  <div className="image-actions">
-                    <button className="image-action-btn">
-                      <i className="bi bi-share"></i>
-                    </button>
-                    <button className="image-action-btn">
-                      <i className="bi bi-three-dots"></i>
-                    </button>
-                  </div>
                 </div>
                 
                 {/* Thư viện hình ảnh thumbnails */}
@@ -201,9 +191,33 @@ const ProductDetailPage = ({ user }) => {
               <div className="product-info-card">
                 {/* Tiêu đề và nút Lưu */}
                 <div className="d-flex justify-content-between align-items-start mb-4">
-                  <h1 className="product-title">
-                    {data.title}
-                  </h1>
+                  <div style={{ flex: 1 }}>
+                    <h1 className="product-title">
+                      {data.title}
+                    </h1>
+                    {/* Approved Badge - Hiển thị khi có approvedLabel */}
+                    {data.approvedLabel && (
+                      <div
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          marginTop: "12px",
+                          background: "#f0fdf4",
+                          color: "#16a34a",
+                          padding: "8px 14px",
+                          borderRadius: "8px",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                          border: "1px solid #bbf7d0",
+                        }}
+                        title="Đã được kiểm duyệt"
+                      >
+                        <i className="bi bi-patch-check-fill" style={{ fontSize: "15px" }}></i>
+                        <span>Đã kiểm duyệt</span>
+                      </div>
+                    )}
+                  </div>
                   <button 
                     className={`btn btn-heart ${saved ? 'btn-heart-active' : ''}`}
                     onClick={handleSaveClick}

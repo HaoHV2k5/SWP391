@@ -2,8 +2,8 @@ import { Row, Col, Card } from "react-bootstrap";
 
 const PostStatsCards = ({ posts }) => {
   return (
-    <Row className="g-4 mb-4">
-      <Col lg={3} md={6}>
+    <Row className="g-4 mb-4" style={{ display: 'flex', flexWrap: 'nowrap' }}>
+      <Col style={{ flex: 1 }} md={6}>
         <Card
           className="text-dark h-100"
           style={{
@@ -19,7 +19,7 @@ const PostStatsCards = ({ posts }) => {
           </Card.Body>
         </Card>
       </Col>
-      <Col lg={3} md={6}>
+      <Col style={{ flex: 1 }} md={6}>
         <Card
           className="text-dark h-100"
           style={{
@@ -35,7 +35,7 @@ const PostStatsCards = ({ posts }) => {
           </Card.Body>
         </Card>
       </Col>
-      <Col lg={3} md={6}>
+      <Col style={{ flex: 1 }} md={6}>
         <Card
           className="text-dark h-100"
           style={{
@@ -45,17 +45,29 @@ const PostStatsCards = ({ posts }) => {
         >
           <Card.Body className="text-center p-3">
             <h4 className="fw-bold mb-1 text-dark">
-              {posts.filter(
-                (p) =>
-                  (p.status || "").toUpperCase() === "ADMIN_APPROVED" ||
-                  (p.status || "").toUpperCase() === "ACTIVE"
-              ).length}
+              {posts.filter((p) => (p.status || "").toUpperCase() === "ADMIN_APPROVED").length}
             </h4>
-            <small className="text-dark">Đã duyệt/Hiển thị</small>
+            <small className="text-dark">Đã duyệt Admin</small>
           </Card.Body>
         </Card>
       </Col>
-      <Col lg={3} md={6}>
+      <Col style={{ flex: 1 }} md={6}>
+        <Card
+          className="text-dark h-100"
+          style={{
+            backgroundColor: "white",
+            border: "2px solid #28a745",
+          }}
+        >
+          <Card.Body className="text-center p-3">
+            <h4 className="fw-bold mb-1 text-dark">
+              {posts.filter((p) => (p.status || "").toUpperCase() === "ACTIVE").length}
+            </h4>
+            <small className="text-dark">Đang hiển thị</small>
+          </Card.Body>
+        </Card>
+      </Col>
+      <Col style={{ flex: 1 }} md={6}>
         <Card
           className="text-dark h-100"
           style={{
