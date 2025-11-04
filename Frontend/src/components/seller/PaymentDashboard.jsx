@@ -249,9 +249,12 @@ const PaymentDashboard = ({ user }) => {
       </div>
 
       {/* Stats Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+      <Row gutter={[16, 16]} style={{ marginBottom: "24px", display: "flex", alignItems: "stretch" }}>
+        <Col xs={24} sm={12} lg={6} style={{ display: "flex" }}>
+          <Card 
+            style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}
+            styles={{ body: { flex: 1, display: "flex", flexDirection: "column" } }}
+          >
             <Statistic
               title="Số dư ví"
               value={stats.walletBalance}
@@ -261,20 +264,34 @@ const PaymentDashboard = ({ user }) => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+        <Col xs={24} sm={12} lg={6} style={{ display: "flex" }}>
+          <Card 
+            style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}
+            styles={{ body: { flex: 1, display: "flex", flexDirection: "column" } }}
+          >
             <Statistic
               title="Gói hiện tại"
               value={
                 stats.currentPackage ? stats.currentPackage.name : "Chưa có"
               }
               prefix={<GiftOutlined style={{ color: "#1890ff" }} />}
-              valueStyle={{ color: "#1890ff" }}
+              valueStyle={{ 
+                color: "#1890ff", 
+                wordBreak: "break-word", 
+                overflow: "hidden", 
+                textOverflow: "ellipsis",
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical"
+              }}
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+        <Col xs={24} sm={12} lg={6} style={{ display: "flex" }}>
+          <Card 
+            style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}
+            styles={{ body: { flex: 1, display: "flex", flexDirection: "column" } }}
+          >
             <Statistic
               title="Tổng giao dịch"
               value={stats.totalTransactions}
@@ -283,8 +300,11 @@ const PaymentDashboard = ({ user }) => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+        <Col xs={24} sm={12} lg={6} style={{ display: "flex" }}>
+          <Card 
+            style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}
+            styles={{ body: { flex: 1, display: "flex", flexDirection: "column" } }}
+          >
             <Statistic
               title="Gói đã mua"
               value={stats.totalPackages}
