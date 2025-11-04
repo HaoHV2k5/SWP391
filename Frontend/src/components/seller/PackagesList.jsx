@@ -423,7 +423,21 @@ const PackagesList = ({ user }) => {
     if (!currentPackage) return null;
 
     if (currentPackage.name === pkg.name) {
-      return <Tag color="green">Đang sử dụng</Tag>;
+      return (
+        <Tag 
+          color="green" 
+          style={{ 
+            position: "absolute", 
+            top: "16px", 
+            left: "16px",
+            fontSize: "12px",
+            fontWeight: "600",
+            zIndex: 1
+          }}
+        >
+          Đang sử dụng
+        </Tag>
+      );
     }
     return null;
   };
@@ -500,20 +514,31 @@ const PackagesList = ({ user }) => {
         </Card>
       )}
 
-      <Row gutter={[24, 24]}>
+      <Row gutter={[24, 24]} style={{ display: "flex", alignItems: "stretch" }}>
         {packages.map((pkg) => (
-          <Col xs={24} sm={12} lg={8} xl={6} key={pkg.id}>
+          <Col xs={24} sm={12} lg={8} xl={8} key={pkg.id} style={{ display: "flex" }}>
             <Card
               hoverable
               style={{
                 height: "100%",
+                width: "100%",
                 border:
                   currentPackage?.name === pkg.name
                     ? "2px solid #52c41a"
                     : "1px solid #d9d9d9",
                 position: "relative",
+                display: "flex",
+                flexDirection: "column",
               }}
-              styles={{ body: { padding: "24px" } }}
+              styles={{ 
+                body: { 
+                  padding: "24px",
+                  display: "flex",
+                  flexDirection: "column",
+                  flex: 1,
+                  height: "100%"
+                } 
+              }}
             >
               {getPackageStatus(pkg)}
               {pkg.requireApproval && (
@@ -522,16 +547,17 @@ const PackagesList = ({ user }) => {
                   style={{ 
                     position: "absolute", 
                     top: "16px", 
-                    right: "16px",
+                    right: "8px",
                     fontSize: "12px",
-                    fontWeight: "600"
+                    fontWeight: "600",
+                    zIndex: 2
                   }}
                 >
                   Cần kiểm duyệt
                 </Tag>
               )}
 
-              <div style={{ textAlign: "center", marginBottom: "20px" }}>
+              <div style={{ textAlign: "center", marginBottom: "20px", flexShrink: 0 }}>
                 <div
                   style={{
                     fontSize: "48px",
@@ -551,7 +577,7 @@ const PackagesList = ({ user }) => {
                 </p>
               </div>
 
-              <div style={{ textAlign: "center", marginBottom: "24px" }}>
+              <div style={{ textAlign: "center", marginBottom: "24px", flexShrink: 0 }}>
                 <div
                   style={{
                     fontSize: "32px",
@@ -567,7 +593,7 @@ const PackagesList = ({ user }) => {
                 </div>
               </div>
 
-              <div style={{ marginBottom: "24px" }}>
+              <div style={{ marginBottom: "24px", flex: 1, minHeight: "120px" }}>
                 <h4 style={{ marginBottom: "12px", fontSize: "16px" }}>
                   Tính năng:
                 </h4>
@@ -604,9 +630,17 @@ const PackagesList = ({ user }) => {
                 style={{
                   background: pkg.color,
                   borderColor: pkg.color,
+                  color: "white",
                   height: "48px",
                   fontSize: "16px",
                   fontWeight: "bold",
+                  marginTop: "auto",
+                  flexShrink: 0,
+                }}
+                styles={{
+                  label: {
+                    color: "white !important"
+                  }
                 }}
                 onClick={() => handleBuyPackage(pkg)}
                 loading={buyingPackage === pkg.id || checkingBalance}
