@@ -40,21 +40,51 @@ const ProductCard = ({ product }) => {
       style={{
         height: "100%",
         cursor: "pointer",
+        position: "relative",
       }}
       onClick={handleCardClick}
     >
-      <Card.Img
-        variant="top"
-        src={
-          product.image ||
-          "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=="
-        }
-        style={{ height: "200px", objectFit: "cover" }}
-        onError={(e) => {
-          e.currentTarget.src =
-            "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==";
-        }}
-      />
+      <div style={{ position: "relative" }}>
+        {/* Approved Badge - Hiển thị khi có approvedLabel */}
+        {product.approvedLabel && (
+          <div
+            style={{
+              position: "absolute",
+              top: "12px",
+              right: "12px",
+              zIndex: 10,
+              background: "#f0fdf4",
+              color: "#16a34a",
+              padding: "6px 10px",
+              borderRadius: "8px",
+              fontSize: "11px",
+              fontWeight: "600",
+              border: "1px solid #bbf7d0",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+            }}
+            title="Đã được kiểm duyệt"
+          >
+            <i className="bi bi-patch-check-fill" style={{ fontSize: "13px", color: "#16a34a" }}></i>
+            <span style={{ color: "#16a34a" }}>Đã kiểm duyệt</span>
+          </div>
+        )}
+
+        <Card.Img
+          variant="top"
+          src={
+            product.imageUrls?.[0] ||
+            product.image ||
+            "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=="
+          }
+          style={{ height: "200px", objectFit: "cover" }}
+          onError={(e) => {
+            e.currentTarget.src =
+              "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==";
+          }}
+        />
+      </div>
 
       <Card.Body
         style={{

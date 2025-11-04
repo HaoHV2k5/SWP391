@@ -96,6 +96,7 @@ public enum ErrorCode {
     INVALID_TRANSACTION_TYPE(1075, "Loại giao dịch không hợp lệ", HttpStatus.BAD_REQUEST),
     TRANSACTION_ALREADY_PROCESSED(1076, "Giao dịch đã được xử lý", HttpStatus.BAD_REQUEST),
     PACKAGE_CANNOT_BUY_LOWER(1076,  "Không thể mua gói thấp hơn hoặc bằng gói hiện tại khi gói hiện tại còn hiệu lực", HttpStatus.BAD_REQUEST),
+    PRICE_OVER(1077,  "Không vượt quá 20000000", HttpStatus.BAD_REQUEST),
 
 
 

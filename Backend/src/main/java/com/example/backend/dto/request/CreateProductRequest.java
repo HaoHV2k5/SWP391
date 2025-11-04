@@ -31,6 +31,7 @@ public class CreateProductRequest {
     
     @NotNull(message = "PRICE_REQUIRED")
     @DecimalMin(value = "0.0", inclusive = false, message = "PRICE_INVALID")
+    @Max(value = 20000000, message = "PRICE_OVER")
     private BigDecimal price;
     
     @NotNull(message = "PRODUCT_TYPE_REQUIRED")
