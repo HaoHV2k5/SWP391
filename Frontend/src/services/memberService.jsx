@@ -250,11 +250,11 @@ export const memberService = {
   },
   async getBoughtOrders(buyerId) {
     try {
-      // ✅ Sửa bug: Dùng buyerId động thay vì hardcode 26
       if (!buyerId) {
         return {
           success: false,
-          message: "buyerId không được để trống",
+          message: "Không thể xác định user ID",
+          data: [],
         };
       }
       const response = await apiClient.get(`/order/get-ordered/${buyerId}`);
@@ -268,6 +268,7 @@ export const memberService = {
         success: false,
         message:
           error.response?.data?.message || "Không thể lấy danh sách đơn đã mua",
+        data: [],
       };
     }
   },
