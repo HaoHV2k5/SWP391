@@ -9,10 +9,10 @@ import {
 import apiClient from "../../services/apiClient";
 
 const KYCTab = () => {
-  const [activeSubTab, setActiveSubTab] = useState("pending");
+  const [activeSubTab, setActiveSubTab] = useState("pending"); // tab trang thái đang chọn
   const [kycData, setKycData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(""); // từ khóa tìm kiếm
   const [selectedKyc, setSelectedKyc] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -22,8 +22,8 @@ const KYCTab = () => {
     setLoading(true);
     try {
       // Test API trước
-      const testResponse = await apiClient.get("/kyc/test");
-      console.log("Test API response:", testResponse.data);
+      // const testResponse = await apiClient.get("/kyc/test");
+      // console.log("Test API response:", testResponse.data);
 
       // Sau đó gọi API admin
       const response = await apiClient.get("/kyc/admin");
@@ -287,7 +287,7 @@ const KYCTab = () => {
         items={subTabItems}
         style={{ marginBottom: "1rem" }}
       />
-
+      {/* hiển thị bảng */}
       {/* Table */}
       <Table
         columns={columns}

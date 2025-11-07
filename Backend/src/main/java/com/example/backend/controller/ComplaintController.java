@@ -25,10 +25,10 @@ public class ComplaintController {
     private final UserService userService;
     
     /**
-     * Tạo complaint mới - chỉ buyer có thể tạo
+     * Tạo complaint mới
      */
     @PostMapping(consumes = "multipart/form-data")
-    @PreAuthorize("hasAnyAuthority('ROLE_BUYER', 'ROLE_USER')")
+//    @PreAuthorize("hasAnyAuthority('ROLE_BUYER', 'ROLE_SELLER')")
     public ApiResponse<ComplaintResponse> createComplaint(@ModelAttribute ComplaintRequest request, Authentication authentication) {
         String username = authentication.getName();
         User user = userService.getUserByUsername(username);

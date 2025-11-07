@@ -22,7 +22,7 @@ public class Contract {
     @Column(nullable = false, unique = true)
     private String contractCode;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 

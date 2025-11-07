@@ -65,6 +65,7 @@ public class EversignService {
 
     public Map<String, Object> createDocumentUsingTemplate(ContractCreateTemplateRequest req) {
         Order order = orderService.findById(req.getOrderId());
+        // 1 sp thì chỉ có 1 hợp đồng, nếu họ đồng bị từ chối thì có ms có thể kí thêm
         if(order.isSellerAccepted() ) {
             ContractStatus status = order.getContracts().get(0).getStatus();
             if(!status.name().equalsIgnoreCase(ContractStatus.CANCELLED.name()))
@@ -197,7 +198,7 @@ public class EversignService {
             Map<String, Object> signer = (Map<String, Object>) payload.get("signer");
             String signerId = signer != null ? (String) signer.get("id") : null;
 
-            System.out.printf("📄 Event: %s | Document: %s | Signer: %s%n",
+            System.out.printf(" Event: %s | Document: %s | Signer: %s%n",
                     eventType, documentHash, signerId);
             Contract contract = contractRepository.findByContractCode(documentHash);
             if(contract == null) {

@@ -129,6 +129,18 @@ public class ManageBalanceController {
 
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_SELLER','ROLE_BUYER')")
+    @GetMapping("/user/balance")
+    public ApiResponse<BigDecimal> getUserBalance(Authentication authentication) {
+        String username = authentication.getName();
+        User user = userService.getUserByUsername(username);
+        BigDecimal balance = walletService.getBalanceUser(user);
+        return ApiResponse.<BigDecimal>builder()
+                .data(balance)
+                .message("xem số tiền trong ví user thành công")
+                .build();
+    }
+
 
 
 }

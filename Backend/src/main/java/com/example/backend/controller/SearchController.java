@@ -25,13 +25,13 @@ public class SearchController {
         List<Tags> list = tagsService.findAllByDisplayNameContainingIgnoreCase(displayName);
         return  ApiResponse.<List<Tags>>builder().data(list).build();
     }
-
+// search theo tag
     @GetMapping("/{slugs}")
     public ApiResponse<List<ProductResponse>> searchByTag(@PathVariable String slugs) {
         List<ProductResponse> list = searchService.getProductByTagSlug(slugs);
         return  ApiResponse.<List<ProductResponse>>builder().data(list).build();
     }
-
+// search theo param
     @GetMapping("/product/search")
     public ApiResponse<List<ProductResponse>> searchByVehicle(@RequestParam String request) {
         List<ProductResponse> list = searchService.searchProductByParam(request);

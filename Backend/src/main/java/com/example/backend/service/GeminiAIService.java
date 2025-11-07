@@ -34,7 +34,7 @@ public class GeminiAIService {
 
         // Làm sạch output
         String cleanedOutput = jsonText
-                .replaceAll("(?i)```json", "")
+                .replaceAll("(?i)```json", "") // không phân biệt chữ hoa và chữ thường
                 .replaceAll("```", "")
                 .trim();
 

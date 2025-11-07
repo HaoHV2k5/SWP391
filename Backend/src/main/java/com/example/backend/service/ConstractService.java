@@ -2,15 +2,12 @@ package com.example.backend.service;
 
 import com.example.backend.config.Config;
 import com.example.backend.dto.response.ContractResponse;
-import com.example.backend.entity.Contract;
+import com.example.backend.entity.*;
 import com.example.backend.enums.ContractStatus;
 import com.example.backend.enums.EscrowStatus;
 import com.example.backend.enums.PaymentMethod;
 import com.example.backend.enums.TransactionStatus;
 import com.example.backend.enums.WalletTransactionType;
-import com.example.backend.entity.OrderEscrow;
-import com.example.backend.entity.Transaction;
-import com.example.backend.entity.WalletTransaction;
 import com.example.backend.exception.AppException;
 import com.example.backend.exception.ErrorCode;
 import com.example.backend.repository.WalletRepository;
@@ -25,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import com.example.backend.repository.ComplaintRepository;
-import com.example.backend.entity.Complaint;
 import com.example.backend.enums.ComplaintStatus;
 import java.util.Optional;
 import com.example.backend.service.MailService;
@@ -34,9 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import com.example.backend.entity.User;
-import com.example.backend.entity.Product;
-import com.example.backend.entity.Wallet;
 
 @Slf4j
 @Service
@@ -327,6 +320,7 @@ public class ConstractService {
      */
     @Transactional
     public void autoReleaseEscrowMoney() {
+
         List<OrderEscrow> escrows = orderEscrowRepository.findAll();
         LocalDateTime now = LocalDateTime.now();
         
@@ -342,7 +336,8 @@ public class ConstractService {
                 log.debug("Processing escrow ID: {}, Status: {}", escrow.getId(), escrow.getStatus());
                 
                 // Kiểm tra có complaint chưa giải quyết không
-                Contract contract = escrow.getOrder().getContracts().get(0); // Giả sử 1 order có 1 contract
+                    Order order = escrow.getOrder(); // Giả sử 1 order có 1 contract
+                Contract contract = contractRepository.findByOrderId(order.getId());
                 Optional<Complaint> complaintOpt = complaintRepository.findByContract(contract);
                 
                 if (complaintOpt.isPresent()) {
@@ -539,8 +534,8 @@ public class ConstractService {
         
         log.info("Successfully refunded {} to buyer {} for contract {}", amount, buyer.getId(), contract.getId());
     }
-    
-    @Scheduled(cron = "0 0 2 * * *") // Chạy lúc 2h sáng hàng ngày
+    @Transactional
+    @Scheduled(cron = "0 31 20 * * *") // Chạy lúc 2h sáng hàng ngày
     public void scheduledAutoReleaseEscrowMoney() {
         log.info("Starting scheduled auto release escrow money");
         autoReleaseEscrowMoney();

@@ -54,7 +54,7 @@ public class ComplaintService {
         }
         
         // Kiểm tra contract đã hoàn thành chưa (status = COMPLETED và deliveryCompleted = true)
-        if (contract.getStatus() != ContractStatus.COMPLETED || !contract.getDeliveryCompleted()) {
+        if (contract.getStatus() == ContractStatus.COMPLETED || !contract.getDeliveryCompleted()) {
             throw new AppException(ErrorCode.CONTRACT_NOT_COMPLETED);
         }
         

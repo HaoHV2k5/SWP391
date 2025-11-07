@@ -147,6 +147,7 @@ public class PaymentService {
 
         walletTransactionRepository.save(walletTx);
     }
+    // mua goi
     public boolean handleBuyTransaction(Long userId, Long packageId) {
         // Kiểm tra xem user có gói còn hiệu lực không
         UserPostingPackage currentActive = userPackageTransactionRepository.findPostingPackageByUserIdAndActiveTrue(userId);
@@ -187,6 +188,7 @@ public class PaymentService {
         BigDecimal balanceWallet = wallet.getBalance();
         BigDecimal balanceBefore = wallet.getBalance();
         BigDecimal balanceAfter =  wallet.getBalance();
+        // kiem tra xem vi co du tien mua ko
         if(transaction.getAmount().compareTo(balanceWallet) <= 0) {
 
             balanceAfter = wallet.getBalance().subtract(postingPackage.getPrice());

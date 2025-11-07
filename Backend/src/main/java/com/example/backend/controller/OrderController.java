@@ -18,12 +18,13 @@ import com.example.backend.dto.request.OrderReviewRequest;
 public class OrderController {
     private final OrderService orderService;
     private final com.example.backend.service.ConstractService constractService;
+    // mua sản phẩm
     @PreAuthorize("hasAnyAuthority('ROLE_USER','ROLE_SELLER')")
     @PostMapping("/create")
     public ApiResponse<OrderResponse> buyProduct(@RequestBody BuyProductRequest request) {
         OrderResponse order =orderService.buyOrder(request);
         return  ApiResponse.<OrderResponse>builder().data(order)
-                .message("đã gửi yêu cầu mua sản phẩm tới ngươ bán")
+                .message("đã gửi yêu cầu mua sản phẩm tới người bán")
                 .build();
 
     }
@@ -40,24 +41,25 @@ public class OrderController {
         List<OrderResponse> orders = orderService.getOrdersByProductId(productId);
         return ApiResponse.<List<OrderResponse>>builder().data(orders).message("Lấy danh sách order cho sản phẩm thành công").build();
     }
-
+// user confirm nhan hang
 //    @PreAuthorize("hasAuthority('ROLE_USER')")
     @PostMapping("/confirm-received")
     public ApiResponse<Void> confirmReceived(@RequestParam Long orderId) {
-        // lấy userId từ context (giả sử có method getCurrentUserId())
+
 
         constractService.handleBuyerConfirmReceived(orderId);
         return ApiResponse.<Void>builder().message("Xác nhận đã nhận hàng thành công").build();
     }
-
-//    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    // seller gui request xac nhan giao hang thanh cong khi ng mua ko confirm
+    @PreAuthorize("hasAuthority('ROLE_SELLER')")
     @PostMapping("/request-complete")
     public ApiResponse<Void> requestOrderAdminReview(@ModelAttribute OrderReviewRequest request) {
         orderService.sellerRequestAdminReview(request);
         return ApiResponse.<Void>builder().message("Đã gửi yêu cầu xác nhận tới admin").build();
     }
 
-        @PreAuthorize("hasAnyAuthority('ROLE_USER','ROLE_SELLER')")
+// lay danh sach don hang
+    @PreAuthorize("hasAnyAuthority('ROLE_USER','ROLE_SELLER')")
     @GetMapping("/get-ordered/{buyerId}")
     public ApiResponse<List<OrderResponse>> getOrderedByBuyerId(@PathVariable Long buyerId) {
         List<OrderResponse> list = orderService.getOrdersByBuyerId(buyerId);

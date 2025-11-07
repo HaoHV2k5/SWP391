@@ -36,6 +36,7 @@ public class WalletTransactionService {
                 .orElseThrow(() -> new AppException(ErrorCode.WALLET_NOT_EXIST));
         return walletTransactionMapper
                 .toResponseList(walletTransactionRepository.findbyWalletid(wallet.getId()));
+
     }
 
 }
