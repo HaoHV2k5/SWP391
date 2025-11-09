@@ -4,7 +4,6 @@ import { LogOut } from "lucide-react";
 import UserAvatar from "./UserAvatar";
 import UserMenuItems from "./UserMenuItems";
 import LogoutButton from "./LogoutButton";
-import WalletNavbar from "./WalletNavbar";
 
 const UserDropdown = ({ user, onLogout }) => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -38,9 +37,6 @@ const UserDropdown = ({ user, onLogout }) => {
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-      {/* Wallet */}
-      <WalletNavbar user={user} />
-
       {/* Admin Link */}
       {user.role === "admin" && (
         <Link
@@ -114,15 +110,26 @@ if (!showUserDropdown) {
               borderRadius: "8px",
               boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
               zIndex: 1001,
-              minWidth: "200px",
-              padding: "8px 0",
+              minWidth: "230px",
               marginTop: "8px",
+              overflow: "hidden",
             }}
           >
-            <UserMenuItems user={user} onItemClick={handleItemClick} />
-
+            {/* Scrollable menu items */}
             <div
-              style={{ height: "1px", background: "#e0e0e0", margin: "8px 0" }}
+              style={{
+                maxHeight: "300px",
+                overflowY: "auto",
+                overflowX: "hidden",
+                padding: "8px 0",
+              }}
+            >
+              <UserMenuItems user={user} onItemClick={handleItemClick} />
+            </div>
+
+            {/* Fixed bottom buttons */}
+            <div
+              style={{ height: "1px", background: "#e5e7eb" }}
             ></div>
 
             <LogoutButton onLogout={handleLogout} />

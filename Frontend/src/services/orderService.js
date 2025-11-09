@@ -144,7 +144,120 @@ const orderService = {
         originalMessage: backendMessage
       };
     }
-  }
+  },
+
+  // ✅ Buyer xác nhận đã nhận hàng
+  // 📍 Endpoint: POST /order/confirm-received?orderId={orderId}
+  // 👥 Users: Buyer (ROLE_USER)
+  async confirmReceived(orderId) {
+    try {
+      console.log("🚀 Confirming receipt for order:", orderId);
+
+      const response = await apiClient.post("/order/confirm-received", null, {
+        params: { orderId: orderId }
+      });
+      
+      console.log("✅ Order confirmed received successfully");
+      
+      return { 
+        success: true, 
+        message: response?.data?.message || "Xác nhận đã nhận hàng thành công",
+        data: response.data 
+      };
+    } catch (error) {
+      console.error("❌ Confirm received error:", error);
+      
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      
+      let errorMessage = "Xác nhận nhận hàng thất bại";
+      
+      if (status === 401) {
+        errorMessage = "Bạn cần đăng nhập để thực hiện thao tác này";
+      } else if (status === 403) {
+        errorMessage = "Bạn không có quyền xác nhận đơn hàng này";
+      } else if (status === 400) {
+        if (backendMessage?.includes('escrow') || backendMessage?.includes('trạng thái')) {
+          errorMessage = "Đơn hàng không ở trạng thái có thể xác nhận nhận hàng";
+        } else {
+          errorMessage = backendMessage || "Không thể xác nhận nhận hàng";
+        }
+      } else if (status === 404) {
+        errorMessage = "Không tìm thấy đơn hàng";
+      } else if (status === 500) {
+        errorMessage = "Lỗi hệ thống. Vui lòng thử lại sau";
+      }
+      
+      return {
+        success: false,
+        message: errorMessage,
+        status: status,
+        originalMessage: backendMessage
+      };
+    }
+  },
+
+  // 📤 Seller gửi yêu cầu admin review escrow (submit proof)
+  // 📍 Endpoint: POST /order/request-complete
+  // 👥 Users: Seller (ROLE_SELLER)
+  async requestOrderComplete(orderId, shippingCode, proofImage) {
+    try {
+      console.log("🚀 Requesting admin review for order:", orderId);
+
+      const formData = new FormData();
+      formData.append("orderId", orderId);
+      if (shippingCode) {
+        formData.append("shippingCode", shippingCode);
+      }
+      if (proofImage) {
+        formData.append("proofImage", proofImage);
+      }
+
+      const response = await apiClient.post("/order/request-complete", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      console.log("✅ Request submitted successfully");
+
+      return {
+        success: true,
+        message: response?.data?.message || "Đã gửi yêu cầu xác nhận tới admin",
+        data: response.data,
+      };
+    } catch (error) {
+      console.error("❌ Request order complete error:", error);
+
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+
+      let errorMessage = "Gửi yêu cầu thất bại";
+
+      if (status === 401) {
+        errorMessage = "Bạn cần đăng nhập để thực hiện thao tác này";
+      } else if (status === 403) {
+        errorMessage = "Bạn không có quyền gửi yêu cầu này";
+      } else if (status === 400) {
+        if (backendMessage?.includes("escrow") || backendMessage?.includes("trạng thái")) {
+          errorMessage = "Đơn hàng không ở trạng thái có thể gửi yêu cầu";
+        } else {
+          errorMessage = backendMessage || "Không thể gửi yêu cầu";
+        }
+      } else if (status === 404) {
+        errorMessage = "Không tìm thấy đơn hàng";
+      } else if (status === 500) {
+        errorMessage = "Lỗi hệ thống. Vui lòng thử lại sau";
+      }
+
+      return {
+        success: false,
+        message: errorMessage,
+        status: status,
+        originalMessage: backendMessage,
+      };
+    }
+  },
 };
 
 export default orderService;

@@ -1,4 +1,4 @@
-import { TrendingUp, Users, Package, Shield, AlertTriangle, LogOut, Lock } from "lucide-react";
+import { TrendingUp, Users, Package, Shield, AlertTriangle, LogOut, Lock, DollarSign, FileText, ShoppingBag, Wallet, Tag } from "lucide-react";
 
 const AdminSidebar = ({ activeTab, setActiveTab, user, onLogout }) => {
   const tabs = [
@@ -14,6 +14,16 @@ const AdminSidebar = ({ activeTab, setActiveTab, user, onLogout }) => {
       icon: <Package size={20} />,
     },
     {
+      id: "revenue",
+      label: "Doanh thu",
+      icon: <DollarSign size={20} />,
+    },
+    {
+      id: "packages",
+      label: "Gói dịch vụ",
+      icon: <ShoppingBag size={20} />,
+    },
+    {
       id: "kyc",
       label: "KYC Approval",
       icon: <Shield size={20} />,
@@ -24,9 +34,24 @@ const AdminSidebar = ({ activeTab, setActiveTab, user, onLogout }) => {
       icon: <AlertTriangle size={20} />,
     },
     {
+      id: "escrow",
+      label: "Escrow",
+      icon: <FileText size={20} />,
+    },
+    {
       id: "roles",
       label: "Phân quyền",
       icon: <Lock size={20} />,
+    },
+    {
+      id: "withdrawals",
+      label: "Rút tiền",
+      icon: <Wallet size={20} />,
+    },
+    {
+      id: "tags",
+      label: "Tags",
+      icon: <Tag size={20} />,
     },
   ];
 

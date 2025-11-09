@@ -7,9 +7,14 @@ import AdminSidebar from "../components/admin/AdminSidebar";
 import DashboardTab from "../components/admin/DashboardTab";
 import UsersTab from "../components/admin/UsersTab";
 import ProductsTab from "../components/admin/ProductsTab";
+import RevenueTab from "../components/admin/RevenueTab";
+import PackagesManagementTab from "../components/admin/PackagesManagementTab";
 import KYCTab from "../components/admin/KYCTab";
 import AdminComplaintTab from "../components/admin/AdminComplaintTab";
 import RolesManagementTab from "../components/admin/RolesManagementTab";
+import EscrowTab from "../components/admin/EscrowTab";
+import WithdrawalTab from "../components/admin/WithdrawalTab";
+import TagsTab from "../components/admin/TagsTab";
 
 const AdminPage = ({ user }) => {
   const navigate = useNavigate();
@@ -20,9 +25,14 @@ const AdminPage = ({ user }) => {
     const path = location.pathname;
     if (path === "/admin/users") return "users";
     if (path === "/admin/products") return "products";
+    if (path === "/admin/revenue") return "revenue";
+    if (path === "/admin/packages") return "packages";
     if (path === "/admin/kyc") return "kyc";
     if (path === "/admin/complaints") return "complaints";
+    if (path === "/admin/escrow") return "escrow";
     if (path === "/admin/roles") return "roles";
+    if (path === "/admin/withdrawals") return "withdrawals";
+    if (path === "/admin/tags") return "tags";
     if (path === "/admin") return "dashboard";
     return "dashboard";
   }, [location.pathname]);
@@ -318,9 +328,14 @@ const AdminPage = ({ user }) => {
                   {activeTab === "dashboard" && "Tổng quan"}
                   {activeTab === "users" && "Người dùng"}
                   {activeTab === "products" && "Sản phẩm"}
+                  {activeTab === "revenue" && "Doanh thu"}
+                  {activeTab === "packages" && "Gói dịch vụ"}
                   {activeTab === "kyc" && "KYC Approval"}
                   {activeTab === "complaints" && "Khiếu nại"}
+                  {activeTab === "escrow" && "Escrow"}
                   {activeTab === "roles" && "Phân quyền"}
+                  {activeTab === "withdrawals" && "Rút tiền"}
+                  {activeTab === "tags" && "Tags"}
                 </span>
               </div>
             </div>
@@ -433,8 +448,10 @@ const AdminPage = ({ user }) => {
               {activeTab === "dashboard" && "📊 Tổng quan"}
               {activeTab === "users" && "👥 Quản lý người dùng"}
               {activeTab === "products" && "📦 Quản lý sản phẩm"}
+              {activeTab === "revenue" && "💰 Quản lý doanh thu"}
               {activeTab === "kyc" && "🛡️ Duyệt KYC"}
               {activeTab === "complaints" && "⚠️ Quản lý khiếu nại"}
+              {activeTab === "escrow" && "📄 Quản lý Escrow"}
               {activeTab === "roles" && "🔐 Quản lý phân quyền"}
             </h1>
 
@@ -499,6 +516,20 @@ const AdminPage = ({ user }) => {
               </div>
             )}
 
+            {/* Revenue Tab */}
+            {activeTab === "revenue" && (
+              <div key="revenue-content">
+                <RevenueTab />
+              </div>
+            )}
+
+            {/* Packages Tab */}
+            {activeTab === "packages" && (
+              <div key="packages-content">
+                <PackagesManagementTab />
+              </div>
+            )}
+
             {/* KYC Tab */}
             {activeTab === "kyc" && (
               <div key="kyc-content">
@@ -513,6 +544,13 @@ const AdminPage = ({ user }) => {
               </div>
             )}
 
+            {/* Escrow Tab */}
+            {activeTab === "escrow" && (
+              <div key="escrow-content">
+                <EscrowTab />
+              </div>
+            )}
+
             {/* Roles Tab */}
             {activeTab === "roles" && (
               <div key="roles-content">
@@ -520,8 +558,22 @@ const AdminPage = ({ user }) => {
               </div>
             )}
 
+            {/* Withdrawals Tab */}
+            {activeTab === "withdrawals" && (
+              <div key="withdrawals-content">
+                <WithdrawalTab user={user} />
+              </div>
+            )}
+
+            {/* Tags Tab */}
+            {activeTab === "tags" && (
+              <div key="tags-content">
+                <TagsTab />
+              </div>
+            )}
+
             {/* Fallback - nếu không có tab nào match */}
-            {!["dashboard", "users", "products", "kyc", "complaints", "roles"].includes(activeTab) && (
+            {!["dashboard", "users", "products", "revenue", "kyc", "complaints", "escrow", "roles", "withdrawals", "tags"].includes(activeTab) && (
               <div style={{ textAlign: "center", padding: "2rem" }}>
                 <p style={{ color: "rgba(255, 255, 255, 0.7)" }}>
                   Tab không xác định: {activeTab}

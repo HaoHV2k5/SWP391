@@ -24,7 +24,7 @@ const ProductGrid = ({
   const hasMore = visibleCount < displayProducts.length;
 
   return (
-    <section style={{ padding: "30px 0", background: "#fff" }}>
+    <section style={{ padding: "30px 0 50px 0", background: "#fff", marginBottom: "0" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}>
         <h2
           style={{

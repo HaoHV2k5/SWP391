@@ -130,7 +130,17 @@ public class AdminController {
                 .message("Permission added successfully")
                 .build();
     }
+
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @DeleteMapping("/remove/role")
+    public ApiResponse<Void> removePermissionForRole(@RequestBody AddPermissionRequest request){
+        roleService.removePermissionForRole(request.getRoleName(), request.getPermissionName());
+        return  ApiResponse.<Void>builder()
+                .message("Permission removed successfully")
+                .build();
+    }
 // lay danh sach seller request rut tien
+
     @GetMapping("/order-escrow/seller-requests")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ApiResponse<List<OrderEscrowReviewResponse>> getSellerRequests() {

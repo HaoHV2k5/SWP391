@@ -1,286 +1,456 @@
 // src/components/complaints/ComplaintForm.jsx
 import React, { useState, useEffect } from "react";
-import {
-  Modal,
-  Form,
-  Input,
-  Select,
-  Upload,
-  Button,
-  message,
-  Space,
-  Alert,
-  Spin,
-} from "antd";
-import { UploadOutlined, PlusOutlined } from "@ant-design/icons";
-import complaintService from "../../services/complaintService";
+import { Modal, Button, message, Spin, Tabs, Card, Tag, Empty } from "antd";
+import { ShoppingCartOutlined, ShopOutlined } from "@ant-design/icons";
 import contractService from "../../services/contractService";
+import ComplaintSubmissionForm from "./ComplaintSubmissionForm";
 
-const { TextArea } = Input;
+const { TabPane } = Tabs;
 
-const ComplaintForm = ({ visible, onClose, onSuccess, userId }) => {
-  const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
+const ComplaintForm = ({
+  visible,
+  onClose,
+  onSuccess,
+  userId,
+  complaints,
+  userEmail,
+  userName,
+}) => {
   const [contracts, setContracts] = useState([]);
   const [loadingContracts, setLoadingContracts] = useState(false);
-  const [fileList, setFileList] = useState([]);
-  const [previewVisible, setPreviewVisible] = useState(false);
-  const [previewImage, setPreviewImage] = useState("");
+  const [activeTab, setActiveTab] = useState("bought");
+  const [showComplaintSubmission, setShowComplaintSubmission] = useState(false);
+  const [selectedContract, setSelectedContract] = useState(null);
+  const [contractRole, setContractRole] = useState(null); // 'buyer' or 'seller'
 
-  // Load completed contracts
+  // Load contracts
   useEffect(() => {
     if (visible && userId) {
-      loadCompletedContracts();
+      loadContracts();
     } else {
       setContracts([]);
     }
   }, [visible, userId]);
 
-  const loadCompletedContracts = async () => {
+  const loadContracts = async () => {
     setLoadingContracts(true);
     try {
       const result = await contractService.getContractsByUser(userId);
       if (result.success && result.data) {
-        // Filter only completed contracts with deliveryCompleted = true
-        const completed = result.data.filter(
-          (contract) =>
-            contract.status === "COMPLETED" &&
-            contract.deliveryCompleted === true
+        // todo
+
+        var data = Array.isArray(result.data) ? result.data : [];
+
+        // Lấy list productId, loại bỏ null/undefined
+        const complaintIdSet = new Set(
+          complaints.map((x) => x?.productId).filter(Boolean)
         );
-        setContracts(completed);
+
+        // Giữ lại những id KHÔNG có trong complaints
+        data = data.filter((x) => !complaintIdSet.has(x?.productId));
+        setContracts(data);
       } else {
         message.warning("Không thể tải danh sách hợp đồng");
+        setContracts([]);
       }
     } catch (error) {
       console.error("Error loading contracts:", error);
       message.error("Lỗi khi tải danh sách hợp đồng");
+      setContracts([]);
     } finally {
       setLoadingContracts(false);
     }
   };
 
-  const handleSubmit = async (values) => {
-    setLoading(true);
-    try {
-      const complaintData = {
-        contractId: values.contractId,
-        title: values.title,
-        description: values.description,
-        category: values.category,
-        evidenceImages: fileList.map((file) => file.originFileObj),
-      };
+  // Filter contracts based on user role
+  const getFilteredContracts = () => {
+    if (!userId || !contracts.length) return [];
+    const userIdNum = Number(userId);
 
-      const result = await complaintService.createComplaint(complaintData);
-      if (result.success) {
-        message.success(result.message || "Tạo khiếu nại thành công");
-        form.resetFields();
-        setFileList([]);
-        onSuccess?.();
-        onClose();
-      } else {
-        message.error(result.message || "Không thể tạo khiếu nại");
-      }
-    } catch (error) {
-      console.error("Error creating complaint:", error);
-      message.error("Lỗi khi tạo khiếu nại");
-    } finally {
-      setLoading(false);
+    if (activeTab === "bought") {
+      // Contracts where user is buyer
+      return contracts.filter(
+        (contract) => Number(contract.buyerId) === userIdNum
+      );
+    } else {
+      // Contracts where user is seller
+      return contracts.filter(
+        (contract) => Number(contract.sellerId) === userIdNum
+      );
     }
   };
 
-  const uploadProps = {
-    beforeUpload: (file) => {
-      const isJpgOrPng =
-        file.type === "image/jpeg" ||
-        file.type === "image/png" ||
-        file.type === "image/jpg";
-      if (!isJpgOrPng) {
-        message.error("Chỉ chấp nhận file ảnh JPG/PNG!");
-        return Upload.LIST_IGNORE;
-      }
-      const isLt5M = file.size / 1024 / 1024 < 5;
-      if (!isLt5M) {
-        message.error("Ảnh phải nhỏ hơn 5MB!");
-        return Upload.LIST_IGNORE;
-      }
-      return false;
-    },
-    onChange: ({ fileList: newFileList }) => {
-      setFileList(newFileList);
-    },
-    listType: "picture-card",
-    fileList,
-    onPreview: async (file) => {
-      if (!file.url && !file.preview) {
-        file.preview = await getBase64(file.originFileObj);
-      }
-      setPreviewImage(file.url || file.preview);
-      setPreviewVisible(true);
-    },
-    multiple: true,
+  const formatCurrency = (amount) => {
+    if (!amount) return "0 VNĐ";
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
   };
 
-  const getBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
-
-  const handleCancel = () => {
-    form.resetFields();
-    setFileList([]);
-    onClose();
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("vi-VN", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch {
+      return dateString;
+    }
   };
+
+  const getStatusTag = (status) => {
+    const statusConfig = {
+      PENDING: { color: "orange", text: "Chờ ký" },
+      SIGNED: { color: "blue", text: "Đã ký" },
+      CANCELLED: { color: "red", text: "Đã hủy" },
+      COMPLETED: { color: "green", text: "Hoàn thành" },
+    };
+    const config = statusConfig[status] || { color: "default", text: status };
+    return <Tag color={config.color}>{config.text}</Tag>;
+  };
+
+  // Hiển thị status badges theo độ ưu tiên: deliveryCompleted > paymentCompleted > sellerSigned > buyerSigned
+  const getContractStatusBadges = (contract) => {
+    const badges = [];
+
+    // Ưu tiên 1: deliveryCompleted
+    if (contract.deliveryCompleted) {
+      badges.push(
+        <Tag key="delivery" color="success">
+          <i className="bi bi-truck me-1"></i>
+          Đã giao hàng
+        </Tag>
+      );
+    } else {
+      badges.push(
+        <Tag key="delivery" color="default">
+          <i className="bi bi-hourglass-split me-1"></i>
+          Chưa giao hàng
+        </Tag>
+      );
+    }
+
+    // Ưu tiên 2: paymentCompleted
+    if (contract.paymentCompleted) {
+      badges.push(
+        <Tag key="payment" color="success">
+          <i className="bi bi-check-circle me-1"></i>
+          Đã thanh toán
+        </Tag>
+      );
+    } else {
+      badges.push(
+        <Tag key="payment" color="warning">
+          <i className="bi bi-clock me-1"></i>
+          Chưa thanh toán
+        </Tag>
+      );
+    }
+
+    // Ưu tiên 3: sellerSigned
+    if (contract.sellerSigned) {
+      badges.push(
+        <Tag key="seller-signed" color="blue">
+          <i className="bi bi-person-check me-1"></i>
+          Người bán đã ký
+        </Tag>
+      );
+    } else {
+      badges.push(
+        <Tag key="seller-signed" color="default">
+          <i className="bi bi-person-x me-1"></i>
+          Người bán chưa ký
+        </Tag>
+      );
+    }
+
+    // Ưu tiên 4: buyerSigned
+    if (contract.buyerSigned) {
+      badges.push(
+        <Tag key="buyer-signed" color="blue">
+          <i className="bi bi-person-check me-1"></i>
+          Người mua đã ký
+        </Tag>
+      );
+    } else {
+      badges.push(
+        <Tag key="buyer-signed" color="default">
+          <i className="bi bi-person-x me-1"></i>
+          Người mua chưa ký
+        </Tag>
+      );
+    }
+
+    return badges;
+  };
+
+  const handleComplaintClick = (contract) => {
+    const userIdNum = Number(userId);
+    const isBuyer = Number(contract.buyerId) === userIdNum;
+
+    // Chỉ cho phép mở form khiếu nại nếu là buyer
+    if (!isBuyer) {
+      message.warning(
+        "Tính năng khiếu nại cho người bán đang được phát triển. Vui lòng thử lại sau!"
+      );
+      return;
+    }
+
+    setSelectedContract(contract);
+    setContractRole("buyer");
+    setShowComplaintSubmission(true);
+  };
+
+  const handleComplaintSubmitSuccess = () => {
+    setShowComplaintSubmission(false);
+    setSelectedContract(null);
+    setContractRole(null);
+    onSuccess?.();
+    // Optionally close the main modal
+    // onClose();
+  };
+
+  const filteredContracts = getFilteredContracts();
 
   return (
-    <Modal
-      title="Tạo khiếu nại mới"
-      open={visible}
-      onCancel={handleCancel}
-      footer={null}
-      width={700}
-    >
-      {loadingContracts ? (
-        <div style={{ textAlign: "center", padding: "40px 0" }}>
-          <Spin size="large" tip="Đang tải danh sách hợp đồng..." />
-        </div>
-      ) : contracts.length === 0 ? (
-        <Alert
-          message="Không có hợp đồng nào để khiếu nại"
-          description="Bạn chỉ có thể tạo khiếu nại cho các hợp đồng đã hoàn thành giao hàng."
-          type="info"
-          showIcon
-        />
-      ) : (
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-          initialValues={{
-            category: undefined,
+    <>
+      <Modal
+        title={
+          <div>
+            <h4 style={{ margin: 0 }}>
+              <i
+                className="bi bi-exclamation-triangle-fill me-2"
+                style={{ color: "#ffc107" }}
+              ></i>
+              Tạo khiếu nại mới
+            </h4>
+          </div>
+        }
+        open={visible}
+        onCancel={onClose}
+        footer={null}
+        width={900}
+        style={{ top: 20 }}
+      >
+        {loadingContracts ? (
+          <div style={{ textAlign: "center", padding: "40px 0" }}>
+            <Spin size="large" tip="Đang tải danh sách hợp đồng..." />
+          </div>
+        ) : contracts.length === 0 ? (
+          <Empty
+            description="Không có hợp đồng nào"
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+        ) : (
+          <div>
+            <Tabs activeKey={activeTab} onChange={setActiveTab} type="card">
+              <TabPane
+                tab={
+                  <span>
+                    <ShoppingCartOutlined />
+                    Hợp đồng tôi mua (
+                    {
+                      contracts.filter(
+                        (c) => Number(c.buyerId) === Number(userId)
+                      ).length
+                    }
+                    )
+                  </span>
+                }
+                key="bought"
+              >
+                <ContractList
+                  contracts={filteredContracts}
+                  userId={userId}
+                  role="buyer"
+                  onComplaintClick={handleComplaintClick}
+                  formatCurrency={formatCurrency}
+                  formatDate={formatDate}
+                  getStatusTag={getStatusTag}
+                  getContractStatusBadges={getContractStatusBadges}
+                />
+              </TabPane>
+              {/* <TabPane
+                tab={
+                  <span>
+                    <ShopOutlined />
+                    Hợp đồng tôi bán (
+                    {
+                      contracts.filter(
+                        (c) => Number(c.sellerId) === Number(userId)
+                      ).length
+                    }
+                    )
+                  </span>
+                }
+                key="sold"
+              >
+                <ContractList
+                  contracts={filteredContracts}
+                  userId={userId}
+                  role="seller"
+                  onComplaintClick={handleComplaintClick}
+                  formatCurrency={formatCurrency}
+                  formatDate={formatDate}
+                  getStatusTag={getStatusTag}
+                  getContractStatusBadges={getContractStatusBadges}
+                />
+              </TabPane> */}
+            </Tabs>
+          </div>
+        )}
+      </Modal>
+
+      {/* Complaint Submission Form Modal */}
+      {showComplaintSubmission && selectedContract && (
+        <ComplaintSubmissionForm
+          visible={showComplaintSubmission}
+          onClose={() => {
+            setShowComplaintSubmission(false);
+            setSelectedContract(null);
+            setContractRole(null);
           }}
-        >
-          <Form.Item
-            label="Chọn hợp đồng"
-            name="contractId"
-            rules={[
-              {
-                required: true,
-                message: "Vui lòng chọn hợp đồng",
-              },
-            ]}
-          >
-            <Select placeholder="Chọn hợp đồng">
-              {contracts.map((contract) => (
-                <Select.Option key={contract.id} value={contract.id}>
-                  {contract.contractCode} - {contract.productName} (Giá:{" "}
-                  {contract.agreedPrice?.toLocaleString("vi-VN")} VNĐ)
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            label="Loại khiếu nại"
-            name="category"
-            rules={[
-              {
-                required: true,
-                message: "Vui lòng chọn loại khiếu nại",
-              },
-            ]}
-          >
-            <Select placeholder="Chọn loại khiếu nại">
-              <Select.Option value="PRODUCT_QUALITY">
-                Chất lượng sản phẩm
-              </Select.Option>
-              <Select.Option value="DAMAGED_ITEM">Hàng bị hư hỏng</Select.Option>
-              <Select.Option value="NOT_AS_DESCRIBED">
-                Không đúng mô tả
-              </Select.Option>
-              <Select.Option value="OTHER">Khác</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            label="Tiêu đề"
-            name="title"
-            rules={[
-              {
-                required: true,
-                message: "Vui lòng nhập tiêu đề",
-              },
-              {
-                max: 255,
-                message: "Tiêu đề không được vượt quá 255 ký tự",
-              },
-            ]}
-          >
-            <Input placeholder="Nhập tiêu đề khiếu nại" />
-          </Form.Item>
-
-          <Form.Item
-            label="Mô tả chi tiết"
-            name="description"
-            rules={[
-              {
-                required: true,
-                message: "Vui lòng nhập mô tả chi tiết",
-              },
-              {
-                max: 2000,
-                message: "Mô tả không được vượt quá 2000 ký tự",
-              },
-            ]}
-          >
-            <TextArea
-              rows={6}
-              placeholder="Mô tả chi tiết về vấn đề bạn gặp phải..."
-              maxLength={2000}
-              showCount
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="Ảnh minh chứng"
-            name="evidenceImages"
-            extra="Tải lên ảnh minh chứng cho khiếu nại của bạn (JPG/PNG, tối đa 5MB/ảnh)"
-          >
-            <Upload {...uploadProps}>
-              {fileList.length >= 8 ? null : (
-                <div>
-                  <PlusOutlined />
-                  <div style={{ marginTop: 8 }}>Tải lên</div>
-                </div>
-              )}
-            </Upload>
-          </Form.Item>
-
-          <Form.Item>
-            <Space style={{ width: "100%", justifyContent: "flex-end" }}>
-              <Button onClick={handleCancel}>Hủy</Button>
-              <Button type="primary" htmlType="submit" loading={loading}>
-                Gửi khiếu nại
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
+          onSuccess={handleComplaintSubmitSuccess}
+          contract={selectedContract}
+          role={contractRole} // 'buyer' or 'seller'
+          userId={userId}
+          userEmail={userEmail}
+          userName={userName}
+        />
       )}
-      
-      {previewVisible && (
-        <Modal
-          open={previewVisible}
-          footer={null}
-          onCancel={() => setPreviewVisible(false)}
-        >
-          <img alt="preview" style={{ width: "100%" }} src={previewImage} />
-        </Modal>
-      )}
-    </Modal>
+    </>
   );
 };
 
-export default ComplaintForm;
+// Contract List Component
+const ContractList = ({
+  contracts,
+  userId,
+  role,
+  onComplaintClick,
+  formatCurrency,
+  formatDate,
+  getStatusTag,
+  getContractStatusBadges,
+}) => {
+  if (contracts.length === 0) {
+    return (
+      <Empty
+        description={`Bạn chưa có hợp đồng ${
+          role === "buyer" ? "mua hàng" : "bán hàng"
+        } nào`}
+        image={Empty.PRESENTED_IMAGE_SIMPLE}
+        style={{ padding: "40px 0" }}
+      />
+    );
+  }
 
+  return (
+    <div style={{ maxHeight: "500px", overflowY: "auto" }}>
+      {contracts.map((contract) => (
+        <Card
+          key={contract.id}
+          className="mb-3"
+          style={{ borderLeft: `4px solid ${getStatusColor(contract.status)}` }}
+        >
+          <div className="d-flex justify-content-between align-items-start mb-2">
+            <div className="flex-grow-1">
+              <h6 className="mb-1">
+                <strong>{contract.productName}</strong>
+              </h6>
+              <div className="text-muted small mb-2">
+                <strong>Mã hợp đồng:</strong> {contract.contractCode}
+              </div>
+            </div>
+            {getStatusTag(contract.status)}
+          </div>
+
+          <div className="row mb-2">
+            <div className="col-md-6">
+              <div className="mb-1">
+                <strong>{role === "buyer" ? "Người bán" : "Người mua"}:</strong>{" "}
+                <span className="text-primary">
+                  {role === "buyer" ? contract.sellerName : contract.buyerName}
+                </span>
+              </div>
+              <div className="mb-1">
+                <strong>Giá thỏa thuận:</strong>{" "}
+                <span className="text-success fw-bold">
+                  {formatCurrency(contract.agreedPrice)}
+                </span>
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="mb-1">
+                <small className="text-muted">
+                  <strong>Tạo lúc:</strong> {formatDate(contract.createdAt)}
+                </small>
+              </div>
+              {contract.signedAt && (
+                <div className="mb-1">
+                  <small className="text-muted">
+                    <strong>Ký lúc:</strong> {formatDate(contract.signedAt)}
+                  </small>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Status Badges theo độ ưu tiên */}
+          <div className="mb-2 pt-2 border-top">
+            <div className="mb-1">
+              <strong>
+                <i className="bi bi-info-circle me-1"></i>
+                Trạng thái hợp đồng:
+              </strong>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+              {getContractStatusBadges(contract)}
+            </div>
+          </div>
+
+          <div className="border-top pt-2 mt-2">
+            {role === "seller" ? (
+              <Button
+                type="default"
+                size="small"
+                disabled
+                block
+                title="Tính năng khiếu nại cho người bán đang được phát triển"
+              >
+                <i className="bi bi-exclamation-triangle me-2"></i>
+                Gửi đơn khiếu nại (Đang phát triển)
+              </Button>
+            ) : (
+              <Button
+                type="primary"
+                size="small"
+                onClick={() => onComplaintClick(contract)}
+                block
+              >
+                <i className="bi bi-exclamation-triangle me-2"></i>
+                Gửi đơn khiếu nại
+              </Button>
+            )}
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+};
+
+const getStatusColor = (status) => {
+  const colors = {
+    PENDING: "#ffc107",
+    SIGNED: "#0d6efd",
+    CANCELLED: "#dc3545",
+    COMPLETED: "#198754",
+  };
+  return colors[status] || "#6c757d";
+};
+
+export default ComplaintForm;

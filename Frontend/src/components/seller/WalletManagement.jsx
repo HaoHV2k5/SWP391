@@ -60,9 +60,26 @@ const WalletManagement = ({ user }) => {
     // Nếu vừa thanh toán xong, refresh dữ liệu
     if (sessionStorage.getItem("wallet.reload") === "1") {
       sessionStorage.removeItem("wallet.reload");
-      fetchWalletData();
-      message.success("Ví đã được cập nhật sau thanh toán");
+      // Delay một chút để đảm bảo backend đã cập nhật xong
+      setTimeout(() => {
+        fetchWalletData();
+        message.success("Ví đã được cập nhật sau thanh toán");
+      }, 1500);
     }
+    
+    // Listen for wallet.reload event từ PaymentReturnPage
+    const handleWalletReload = () => {
+      setTimeout(() => {
+        fetchWalletData();
+        message.success("Ví đã được cập nhật sau thanh toán");
+      }, 1500);
+    };
+    
+    window.addEventListener('wallet.reload', handleWalletReload);
+    
+    return () => {
+      window.removeEventListener('wallet.reload', handleWalletReload);
+    };
   }, []);
 
   const fetchWalletData = async () => {
@@ -147,55 +164,35 @@ const WalletManagement = ({ user }) => {
         response?.data?.code === "00" &&
         paymentUrl
       ) {
-        // Mở cửa sổ thanh toán VNPay
-        const paymentWindow = window.open(
-          paymentUrl,
-          "vnpay_payment",
-          "width=800,height=600,scrollbars=yes,resizable=yes"
-        );
-
-        // Poll dữ liệu ví trong khi popup đang mở (2s/lần, tối đa ~2 phút)
-        let polls = 0;
-        let lastTxCount = Array.isArray(walletTransactions)
-          ? walletTransactions.length
-          : 0;
-        const pollInterval = setInterval(async () => {
-          polls += 1;
-          try {
-            const resTx = await paymentService.getWalletTransactions();
-            const list = resTx?.data || [];
-            if (Array.isArray(list) && list.length !== lastTxCount) {
-              setWalletTransactions(list);
-              lastTxCount = list.length;
-            }
-          } catch {
-            // ignore
-          }
-          if (polls >= 60) {
-            clearInterval(pollInterval);
-          }
-        }, 2000);
-
-        // Kiểm tra cửa sổ thanh toán có bị đóng không
-        const checkClosed = setInterval(() => {
-          if (paymentWindow.closed) {
-            clearInterval(checkClosed);
-            clearInterval(pollInterval);
-            message.info(
-              "Đã đóng cửa sổ thanh toán. Vui lòng kiểm tra lại ví của bạn."
-            );
-            fetchWalletData(); // Refresh data
-          }
-        }, 1000);
-
+        // Chuyển hẳn sang trang thanh toán VNPay
         setRechargeModalVisible(false);
         message.success("Đang chuyển đến trang thanh toán VNPay...");
+        
+        // Redirect trực tiếp sang trang ngân hàng
+        window.location.href = paymentUrl;
       } else {
         message.error("Không thể tạo link thanh toán. Vui lòng thử lại!");
       }
     } catch (error) {
-      console.error("Error recharging wallet:", error);
-      message.error("Có lỗi xảy ra khi nạp tiền. Vui lòng thử lại!");
+      // Xử lý lỗi cụ thể cho từng trường hợp
+      if (error?.code === "WALLET_NOT_EXIST") {
+        // Lỗi ví chưa tồn tại - hiển thị message rõ ràng, không log console
+        message.error({
+          content:
+            error.message ||
+            "Ví của bạn chưa được khởi tạo. Vui lòng liên hệ quản trị viên để được hỗ trợ.",
+          duration: 6,
+        });
+      } else {
+        // Các lỗi khác - log để debug
+        console.error("Error recharging wallet:", error);
+        const errorMessage =
+          error?.response?.data?.data?.message ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Có lỗi xảy ra khi nạp tiền. Vui lòng thử lại!";
+        message.error(errorMessage);
+      }
     }
   };
 
@@ -261,19 +258,34 @@ const WalletManagement = ({ user }) => {
       title: "Số tiền",
       dataIndex: "amount",
       key: "amount",
-      render: (amount, record) => (
-        <Text
-          style={{
-            color: record.type?.toLowerCase().includes("recharge")
-              ? "#52c41a"
-              : "#1890ff",
-            fontWeight: "bold",
-          }}
-        >
-          {record.type?.toLowerCase().includes("recharge") ? "+" : "-"}
-          {formatPrice(amount)}
-        </Text>
-      ),
+      render: (amount, record) => {
+        // Kiểm tra cả type và typeWalletTraction, xử lý cả uppercase và lowercase
+        const type = (
+          (record.typeWalletTraction || record.type || "") + ""
+        ).toLowerCase();
+        const isRecharge =
+          type === "recharge" ||
+          type.includes("recharge") ||
+          type.includes("nạp") ||
+          type.includes("deposit") ||
+          type.includes("refund");
+
+        // Recharge → màu xanh lá (+), Payment → màu xanh dương (-)
+        const color = isRecharge ? "#52c41a" : "#1890ff";
+        const sign = isRecharge ? "+" : "-";
+
+        return (
+          <Text
+            style={{
+              color: color,
+              fontWeight: "bold",
+            }}
+          >
+            {sign}
+            {formatPrice(amount)}
+          </Text>
+        );
+      },
     },
     {
       title: "Mô tả",

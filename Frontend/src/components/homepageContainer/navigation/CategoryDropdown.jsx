@@ -55,25 +55,29 @@ const CategoryDropdown = () => {
       {/* Dropdown menu - hiển thị khi isOpen = true */}
       {isOpen && (
         <div
-          className="position-absolute bg-white border shadow-lg"
+          className="position-absolute bg-white border shadow-lg rounded"
           style={{
             top: '100%',
-            left: 0,
+            left: '50%',
+            transform: 'translateX(-50%)',
             minWidth: "200px",
-            zIndex: 1050
+            zIndex: 1050,
+            marginTop: '4px'
           }}
         >
           {Object.entries(categoryData).map(([key, cat]) => (
             <Link
               key={key}
               to={`/products/${key}`}
-              className="d-block text-decoration-none text-dark p-3"
-              style={{ cursor: 'pointer' }}
+              className="d-block text-decoration-none text-dark px-3 py-2"
+              style={{ cursor: 'pointer', transition: 'background-color 0.2s ease' }}
               onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
               onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
               onClick={() => setIsOpen(false)}
             >
-              {cat.title}
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                {cat.title}
+              </span>
             </Link>
           ))}
         </div>

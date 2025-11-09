@@ -51,5 +51,13 @@ public class RoleService {
         roleRepository.save(role);
     }
 
+    public void removePermissionForRole(String roleName, String permission) {
+        Role role = roleRepository.findById(roleName).orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
+        Permission per = permissionRepository.findById(permission).orElseThrow(() -> new AppException(ErrorCode.PERMISSION_NOT_EXISTED));
+
+        role.getPermissions().remove(per);
+        roleRepository.save(role);
+    }
+
 
 }

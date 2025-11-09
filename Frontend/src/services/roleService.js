@@ -80,6 +80,64 @@ const roleService = {
       };
     }
   },
+
+  /**
+   * Thêm permission vào role
+   * @param {string} roleName - Tên role
+   * @param {string} permissionName - Tên permission
+   * @returns {Promise<{success: boolean, message?: string}>}
+   */
+  async addPermissionToRole(roleName, permissionName) {
+    try {
+      const response = await apiClient.post("/admin/add/role", {
+        roleName: roleName,
+        permissionName: permissionName,
+      });
+      return {
+        success: true,
+        message: response?.data?.message || "Thêm permission vào role thành công",
+      };
+    } catch (error) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      return {
+        success: false,
+        message: `Lỗi thêm permission (${status || "network"}): ${
+          backendMessage || "Không rõ"
+        }`,
+      };
+    }
+  },
+
+  /**
+   * Xóa permission khỏi role
+   * @param {string} roleName - Tên role
+   * @param {string} permissionName - Tên permission
+   * @returns {Promise<{success: boolean, message?: string}>}
+   */
+  async removePermissionFromRole(roleName, permissionName) {
+    try {
+      const response = await apiClient.delete("/admin/remove/role", {
+        data: {
+          roleName: roleName,
+          permissionName: permissionName,
+        },
+      });
+      return {
+        success: true,
+        message: response?.data?.message || "Xóa permission khỏi role thành công",
+      };
+    } catch (error) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message || error?.message;
+      return {
+        success: false,
+        message: `Lỗi xóa permission (${status || "network"}): ${
+          backendMessage || "Không rõ"
+        }`,
+      };
+    }
+  },
 };
 
 export default roleService;

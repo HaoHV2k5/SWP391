@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Button, Form, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
@@ -10,6 +10,7 @@ import EditProductModal from "../../components/member/EditProductModal";
 import DeleteConfirmationModal from "../../components/member/DeleteConfirmationModal";
 import productService from "../../services/productService";
 import { memberService } from "../../services/memberService";
+import { paymentService } from "../../services/paymentService";
 import "../../styles/member/index.css";
 import "../../styles/member/MyPosts.css";
 
@@ -65,13 +66,37 @@ const MyPosts = ({ user }) => {
   const [postingProducts, setPostingProducts] = useState(new Set());
   const hasShownError = useRef(false); // Track xem đã hiển thị lỗi chưa
   const [currentImageIndexes, setCurrentImageIndexes] = useState({}); // Track current image index for each post
+  const [requireApproval, setRequireApproval] = useState(false); // Track xem user có gói kiểm duyệt không
 
-  const loadPosts = async () => {
+  const loadPosts = useCallback(async (status = "ALL") => {
     setLoadingPosts(true);
     try {
       localStorage.removeItem("recentPendingPost");
-      const username = user?.username || user?.user?.username || user?.email || user?.user?.email;
-      const result = await productService.getMyPosts(username);
+      
+      // Lấy userId từ user object hoặc localStorage
+      const userId = user?.id || user?.user?.id || null;
+      
+      let result;
+      
+      // Chọn API endpoint phù hợp dựa trên filter status
+      if (status === "PENDING") {
+        // Chọn 'Chờ duyệt' → Gọi API lấy pending
+        if (!userId) {
+          throw new Error("Không tìm thấy userId");
+        }
+        result = await productService.getMyPendingPosts(userId);
+      } else if (status === "REJECTED") {
+        // Chọn 'Bị từ chối' → Gọi API lấy rejected
+        if (!userId) {
+          throw new Error("Không tìm thấy userId");
+        }
+        result = await productService.getMyRejectedPosts(userId);
+      } else {
+        // Chọn 'Tất cả trạng thái' hoặc filter khác → Gọi API lấy tất cả
+        // getMyPosts tự động lấy userId từ localStorage nếu không truyền tham số
+        result = await productService.getMyPosts();
+      }
+      
       if (result.success) {
         setPosts(result.data || []);
         hasShownError.current = false; // Reset flag khi thành công
@@ -93,11 +118,16 @@ const MyPosts = ({ user }) => {
     } finally {
       setLoadingPosts(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     let filtered = posts;
-    if (filterStatus !== "ALL") {
+    // Chỉ filter client-side cho các filter khác (không phải ALL, PENDING, REJECTED)
+    if (filterStatus === "ALL" || filterStatus === "PENDING" || filterStatus === "REJECTED") {
+      // Dữ liệu đã được filter từ API rồi
+      filtered = posts;
+    } else {
+      // Các filter khác → Filter client-side
       filtered = filtered.filter((p) => (p.status || "").toUpperCase() === filterStatus);
     }
     setFilteredPosts(filtered);
@@ -118,11 +148,45 @@ const MyPosts = ({ user }) => {
       navigate("/");
       return;
     }
-    loadPosts();
-    const onFocus = () => loadPosts();
+    loadPosts(filterStatus);
+    
+    // Fetch current package để kiểm tra requireApproval
+    const loadCurrentPackage = async () => {
+      try {
+        const result = await paymentService.getCurrentPackage();
+        // Kiểm tra nhiều cấu trúc response có thể có
+        const packageData = result?.data;
+        if (packageData) {
+          // Case 1: requireApproval trong postingPackage object
+          if (packageData.postingPackage?.requireApproval !== undefined) {
+            setRequireApproval(packageData.postingPackage.requireApproval === true);
+          }
+          // Case 2: requireApproval trực tiếp trong response
+          else if (packageData.requireApproval !== undefined) {
+            setRequireApproval(packageData.requireApproval === true);
+          }
+          // Case 3: Không có requireApproval → default false
+          else {
+            setRequireApproval(false);
+          }
+        } else {
+          // Không có package data → default false
+          setRequireApproval(false);
+        }
+      } catch (error) {
+        console.error("Error loading current package:", error);
+        // Nếu không load được package hoặc user chưa có package, default là false
+        setRequireApproval(false);
+      }
+    };
+    loadCurrentPackage();
+    
+    const onFocus = () => {
+      loadPosts(filterStatus);
+    };
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
-  }, [user, navigate]);
+  }, [user, navigate, filterStatus, loadPosts]);
 
   const getStatusColor = (status) => {
     const s = (status || "").toUpperCase();
@@ -215,7 +279,11 @@ const MyPosts = ({ user }) => {
     }
   };
 
-  const handleEditPost = (post) => {
+  const handleEditPost = async (post) => {
+    // Backend tự động xử lý logic kiểm duyệt khi edit:
+    // - Nếu seller có gói kiểm duyệt (requireApproval = true) → Backend sẽ set PENDING và isPosted = false
+    // - Nếu seller có gói không kiểm duyệt (requireApproval = false) → Backend giữ nguyên status
+    // Frontend chỉ cần cho phép edit, Backend sẽ xử lý logic
     setSelectedPost(post);
     const productType = post.productType || post.category || "VEHICLE";
     
@@ -440,8 +508,8 @@ const MyPosts = ({ user }) => {
         {/* Header */}
         <MemberHeader activeTab="my-posts" />
 
-        {/* Stats Cards */}
-        <PostStatsCards posts={posts} />
+        {/* Stats Cards - Chỉ hiển thị nếu user có gói kiểm duyệt */}
+        {requireApproval && <PostStatsCards posts={posts} />}
 
         {/* Action Bar với Filter */}
         <div className="mb-4">
@@ -458,20 +526,24 @@ const MyPosts = ({ user }) => {
             </Button>
           </div>
 
-          <div>
-            <Form.Select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              size="sm"
-              style={{ maxWidth: "250px" }}
-            >
-              <option value="ALL">Tất cả trạng thái</option>
-              <option value="PENDING">Chờ duyệt</option>
-              <option value="STAFF_APPROVED">Đã duyệt Staff</option>
-              <option value="ACTIVE">Đang hiển thị</option>
-              <option value="REJECTED">Bị từ chối</option>
-            </Form.Select>
-          </div>
+          {/* Dropdown Filter - Chỉ hiển thị nếu user có gói kiểm duyệt */}
+          {requireApproval && (
+            <div>
+              <Form.Select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                size="sm"
+                style={{ maxWidth: "250px" }}
+              >
+                <option value="ALL">Tất cả trạng thái</option>
+                <option value="PENDING">Chờ duyệt</option>
+                <option value="STAFF_APPROVED">Đã duyệt Staff</option>
+                <option value="ADMIN_APPROVED">Đã duyệt Admin</option>
+                <option value="ACTIVE">Đang hiển thị</option>
+                <option value="REJECTED">Bị từ chối</option>
+              </Form.Select>
+            </div>
+          )}
         </div>
 
         {/* Posts List */}
@@ -516,6 +588,7 @@ const MyPosts = ({ user }) => {
         brands={brands}
         batteryTypes={batteryTypes}
       />
+
     </Container>
   );
 };

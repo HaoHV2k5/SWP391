@@ -12,6 +12,17 @@ const adminService = {
     }
   },
 
+  // Lấy chi tiết user theo ID
+  async getUserById(userId) {
+    try {
+      const response = await apiClient.get(`/admin/users/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching user by id:", error);
+      throw error;
+    }
+  },
+
   // Tạo user mới
   async createUser(userData) {
     try {
@@ -63,6 +74,195 @@ const adminService = {
       return response.data;
     } catch (error) {
       console.error("Error updating user:", error);
+      throw error;
+    }
+  },
+
+  // Revenue APIs
+  async getAllWalletTransactions() {
+    try {
+      const response = await apiClient.get("/api/admin/wallettransactions");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching wallet transactions:", error);
+      throw error;
+    }
+  },
+
+  async getRechargeTransactions() {
+    try {
+      const response = await apiClient.get("/api/admin/wallettransactions/recharge");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching recharge transactions:", error);
+      throw error;
+    }
+  },
+
+  async getUserWalletTransactions(userId) {
+    try {
+      const response = await apiClient.get(`/api/admin/user/walletTransaction?userId=${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching user wallet transactions:", error);
+      throw error;
+    }
+  },
+
+  async getUserTransactions(userId) {
+    try {
+      const response = await apiClient.get(`/api/admin/user/transaction?userId=${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching user transactions:", error);
+      throw error;
+    }
+  },
+
+  async getUserPackages(userId) {
+    try {
+      const response = await apiClient.get(`/api/admin/user/transaction/package?userId=${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching user packages:", error);
+      throw error;
+    }
+  },
+
+  async getTransactionHistory() {
+    try {
+      const response = await apiClient.get("/api/admin/transaction/history");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching transaction history:", error);
+      throw error;
+    }
+  },
+
+  async getAdminBalance() {
+    try {
+      const response = await apiClient.get("/api/admin/balance");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching admin balance:", error);
+      throw error;
+    }
+  },
+
+  // Escrow APIs
+  async getSellerEscrowRequests() {
+    try {
+      const response = await apiClient.get("/admin/order-escrow/seller-requests");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching seller escrow requests:", error);
+      throw error;
+    }
+  },
+
+  async approveEscrowRequest(escrowId) {
+    try {
+      const response = await apiClient.post(`/admin/order-escrow/${escrowId}/approve`);
+      return response.data;
+    } catch (error) {
+      console.error("Error approving escrow request:", error);
+      throw error;
+    }
+  },
+
+  async rejectEscrowRequest(escrowId, reason) {
+    try {
+      const response = await apiClient.post(
+        `/admin/order-escrow/${escrowId}/reject?reason=${encodeURIComponent(reason)}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error rejecting escrow request:", error);
+      throw error;
+    }
+  },
+
+  async manualReleaseEscrow() {
+    try {
+      const response = await apiClient.post("/admin/escrow/manual-release");
+      return response.data;
+    } catch (error) {
+      console.error("Error manually releasing escrow:", error);
+      throw error;
+    }
+  },
+
+  // Posting Packages APIs
+  async getAllPackages() {
+    try {
+      const response = await apiClient.get("/posting-packages");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching all packages:", error);
+      throw error;
+    }
+  },
+
+  async getPackageById(id) {
+    try {
+      const response = await apiClient.get(`/posting-packages/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching package by id:", error);
+      throw error;
+    }
+  },
+
+  async createPackage(packageData) {
+    try {
+      const response = await apiClient.post("/posting-packages", packageData);
+      return response.data;
+    } catch (error) {
+      console.error("Error creating package:", error);
+      throw error;
+    }
+  },
+
+  async updatePackage(id, packageData) {
+    try {
+      const response = await apiClient.put(`/posting-packages/${id}`, packageData);
+      return response.data;
+    } catch (error) {
+      console.error("Error updating package:", error);
+      throw error;
+    }
+  },
+
+  async deletePackage(id) {
+    try {
+      const response = await apiClient.delete(`/posting-packages/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error deleting package:", error);
+      throw error;
+    }
+  },
+
+  // Roles APIs
+  async getAllRoles() {
+    try {
+      const response = await apiClient.get("/roles/roles");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching all roles:", error);
+      throw error;
+    }
+  },
+
+  async updateUserRoles(userId, roleNames) {
+    try {
+      const response = await apiClient.put(`/admin/users/${userId}/roles`, {
+        userId: userId,
+        roleNames: roleNames
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error updating user roles:", error);
       throw error;
     }
   },

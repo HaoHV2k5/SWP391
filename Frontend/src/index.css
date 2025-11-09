@@ -85,3 +85,28 @@ button:focus-visible {
   object-fit: cover;
   display: block;
 }
+
+/* Responsive Banner Styles */
+@media (max-width: 768px) {
+  .banner-container {
+    width: 95%;
+    border-radius: 8px;
+    margin: 0 auto;
+  }
+  
+  .banner-swiper {
+    height: 800px;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner-container {
+    width: 100%;
+    border-radius: 0;
+    margin: 0;
+  }
+  
+  .banner-swiper {
+    height: 320px;
+  }
+}

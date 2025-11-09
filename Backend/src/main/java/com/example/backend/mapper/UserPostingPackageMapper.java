@@ -12,6 +12,7 @@ public interface UserPostingPackageMapper {
     @Mapping(target = "name" , source = "postingPackage.name")
     @Mapping(target = "price" , source = "postingPackage.price")
     @Mapping(target = "duration" , source = "postingPackage.duration")
+    @Mapping(target = "requireApproval" , source = "postingPackage.requireApproval")
 
 
     PostingPackageResponse toPostingPackageResponse(UserPostingPackage userPostingPackage);

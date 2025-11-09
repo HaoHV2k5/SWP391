@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
+import authService from "../services/authService";
 
 // CSS animations
 const styles = `
@@ -99,23 +100,12 @@ const OTPVerificationPage = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3979/users/resend-otp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email,
-        }),
-      });
-
-      const data = await response.json();
-      console.log("🔍 Resend OTP response:", data);
-
-      if (data.message && data.message.includes("sent")) {
-        toast.success("Đã gửi lại mã OTP mới!");
+      const result = await authService.resendOtp(email);
+      
+      if (result.success) {
+        toast.success(result.message || "Đã gửi lại mã OTP mới!");
       } else {
-        toast.error(data.message || "Lỗi khi gửi lại OTP");
+        toast.error(result.message || "Lỗi khi gửi lại OTP");
       }
     } catch (error) {
       console.error("❌ Resend OTP error:", error);

@@ -36,7 +36,6 @@ import {
 import { usePendingProducts } from "../../hooks/useStaff";
 import { vnDate, statusTag, collectImages } from "../../utils/staffUtils";
 import { productsApi } from "../../services/staffApi";
-import ImageMatchCheck from "./ImageMatchCheck";
 
 const { Title, Text } = Typography;
 
@@ -51,9 +50,18 @@ const REJECT_REASONS = [
 ];
 
 const PACKAGE_FILTER_OPTIONS = [
-  { label: "Gói Cơ Bản", value: "Gói Cơ Bản" },
-  { label: "Gói Nâng Cao ", value: "Gói Nâng Cao" },
-  { label: "Gói Premium", value: "Gói Premium" },
+  {
+    label: "Gói Cơ Bản (Kèm kiểm duyệt)",
+    value: "Gói Cơ Bản (Kèm kiểm duyệt)",
+  },
+  {
+    label: "Gói Nâng Cao (Kèm kiểm duyệt)",
+    value: "Gói Nâng Cao (Kèm kiểm duyệt)",
+  },
+  {
+    label: "Gói Premium (Kèm kiểm duyệt)",
+    value: "Gói Premium (Kèm kiểm duyệt)",
+  },
   { label: "Tất cả", value: null },
 ];
 
@@ -184,7 +192,6 @@ const ProductsTab = () => {
   const [previewIndex, setPreviewIndex] = useState(0);
   const [pkgUI, setPkgUI] = useState(null);
   const [detail, setDetail] = useState(null);
-  const [showAIScan, setShowAIScan] = useState(false);
   const [rejectDlg, setRejectDlg] = useState({
     open: false,
     id: null,
@@ -228,15 +235,15 @@ const ProductsTab = () => {
     });
 
     var baseA = base.filter((x) => {
-      return x?.packageName == "Gói Cơ Bản";
+      return x?.packageName == "Gói Cơ Bản (Kèm kiểm duyệt)";
     });
 
     var baseB = base.filter((x) => {
-      return x?.packageName == "Gói Nâng Cao";
+      return x?.packageName == "Gói Nâng Cao (Kèm kiểm duyệt)";
     });
 
     var baseC = base.filter((x) => {
-      return x?.packageName == "Gói Premium";
+      return x?.packageName == "Gói Premium (Kèm kiểm duyệt)";
     });
 
     base = baseC.concat(baseB).concat(baseA);
@@ -598,9 +605,6 @@ const ProductsTab = () => {
         onCancel={() => setDetail(null)}
         footer={
           <Space>
-            <Button onClick={() => setShowAIScan(true)}>
-              AI Scan
-            </Button>
             <Button type="primary" onClick={() => setDetail(null)}>
               Đóng
             </Button>
@@ -811,17 +815,6 @@ const ProductsTab = () => {
             </Col>
           </Row>
         )}
-      </Modal>
-
-      {/* AI Scan Modal */}
-      <Modal
-        title="AI Image Match Check"
-        open={showAIScan}
-        onCancel={() => setShowAIScan(false)}
-        footer={null}
-        width={800}
-      >
-        <ImageMatchCheck />
       </Modal>
 
       {/* Modal chọn lý do từ chối */}

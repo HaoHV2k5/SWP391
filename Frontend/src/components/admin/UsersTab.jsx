@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import { UserPlus, Edit, Lock, Unlock, Trash2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import { UserPlus, Edit, Lock, Unlock, Trash2, Shield, Eye } from "lucide-react";
 import adminService from "../../services/adminService";
 import { toast } from "react-toastify";
 
@@ -13,11 +14,19 @@ const UsersTab = ({
   const [showCreateUserModal, setShowCreateUserModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [showUserDetailModal, setShowUserDetailModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [userToEdit, setUserToEdit] = useState(null);
+  const [userToEditRole, setUserToEditRole] = useState(null);
+  const [userDetail, setUserDetail] = useState(null);
+  const [loadingUserDetail, setLoadingUserDetail] = useState(false);
+  const [availableRoles, setAvailableRoles] = useState([]);
+  const [selectedRoles, setSelectedRoles] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [refreshKey, setRefreshKey] = useState(0); // Thêm key để force re-render
+  const cancelButtonRef = useRef(null);
   const [newUser, setNewUser] = useState({
     fullname: "",
     email: "",
@@ -27,7 +36,6 @@ const UsersTab = ({
     gender: "Nam",
     yob: "01/01/1990",
     address: "Địa chỉ mặc định",
-    role: "member",
   });
 
   const [editUser, setEditUser] = useState({
@@ -38,6 +46,15 @@ const UsersTab = ({
     address: "",
     avatar: "",
   });
+
+  // Apply styles to cancel button to override global CSS
+  useEffect(() => {
+    if (cancelButtonRef.current) {
+      cancelButtonRef.current.style.setProperty("color", "#fff", "important");
+      cancelButtonRef.current.style.setProperty("background-color", "#ef4444", "important");
+      cancelButtonRef.current.style.setProperty("border", "none", "important");
+    }
+  }, [showCreateUserModal, loading]);
 
   // Debug useEffect để theo dõi thay đổi của users
   useEffect(() => {
@@ -78,7 +95,6 @@ const UsersTab = ({
         gender: "Nam",
         yob: "01/01/1990",
         address: "Địa chỉ mặc định",
-        role: "member",
       });
       // Reload danh sách users
       loadUsers();
@@ -198,7 +214,8 @@ const UsersTab = ({
       setUserToDelete(null);
     } catch (error) {
       console.error("❌ Error deleting user:", error);
-      toast.error("Lỗi khi xóa user!");
+      const errorMessage = error.response?.data?.message || "Lỗi khi xóa user! Có thể do user đã có dữ liệu liên quan (đơn hàng, sản phẩm, reviews...). Vui lòng kiểm tra lại.";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -264,6 +281,175 @@ const UsersTab = ({
       address: "",
       avatar: "",
     });
+  };
+
+  // Mở modal xem chi tiết user
+  const openUserDetailModal = async (user) => {
+    try {
+      console.log("🔍 Opening user detail modal for user ID:", user.id);
+      setLoadingUserDetail(true);
+      const response = await adminService.getUserById(user.id);
+      console.log("📋 User detail response:", response);
+      const detailData = response.data || response;
+      setUserDetail(detailData);
+      setShowUserDetailModal(true);
+      console.log("✅ Modal state set to true, userDetail:", detailData);
+    } catch (error) {
+      console.error("❌ Error fetching user detail:", error);
+      toast.error("Không thể tải thông tin chi tiết user");
+    } finally {
+      setLoadingUserDetail(false);
+    }
+  };
+
+  // Đóng modal xem chi tiết user
+  const closeUserDetailModal = () => {
+    setShowUserDetailModal(false);
+    setUserDetail(null);
+  };
+
+  // Mở modal chỉnh sửa role
+  const openRoleModal = async (user) => {
+    try {
+      console.log("🛡️ Opening role modal for user:", user);
+      setLoading(true);
+      
+      // Tìm user hiện tại từ danh sách users
+      const currentUser = users.find((u) => u.id === user.id) || user;
+      setUserToEditRole(currentUser);
+
+      // Fetch danh sách roles có sẵn
+      const rolesResponse = await adminService.getAllRoles();
+      const roles = rolesResponse.data || rolesResponse || [];
+      setAvailableRoles(roles);
+      console.log("📋 Available roles:", roles);
+
+      // Set selected roles từ user hiện tại
+      // User có thể có roles trong response dưới dạng array hoặc object
+      // DB role names: ADMIN, SELLER, STAFF, USER (uppercase, không có ROLE_ prefix)
+      const userRoles = currentUser.roles || [];
+      const roleNames = Array.isArray(userRoles) 
+        ? userRoles.map(r => {
+            let roleName;
+            // Role có thể là string hoặc object
+            if (typeof r === 'string') {
+              roleName = r;
+            } else {
+              // Nếu là object, lấy name (vì name là ID của Role entity)
+              roleName = r.name || r.roleName || r.id || r;
+            }
+            
+            // Normalize: uppercase và remove ROLE_ prefix nếu có
+            if (roleName && typeof roleName === 'string') {
+              roleName = roleName.trim().toUpperCase();
+              if (roleName.startsWith("ROLE_")) {
+                roleName = roleName.substring(5);
+              }
+            }
+            return roleName;
+          }).filter(r => r && typeof r === 'string' && r.length > 0) // Filter out null/undefined/empty
+        : [];
+      
+      console.log("👤 User current roles (normalized):", roleNames);
+      console.log("👤 User roles raw:", userRoles);
+      setSelectedRoles(roleNames);
+
+      setShowRoleModal(true);
+    } catch (error) {
+      console.error("❌ Error opening role modal:", error);
+      toast.error("Lỗi khi tải danh sách roles!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Đóng modal chỉnh sửa role
+  const closeRoleModal = () => {
+    setShowRoleModal(false);
+    setUserToEditRole(null);
+    setSelectedRoles([]);
+  };
+
+  // Toggle role selection
+  const toggleRole = (roleName) => {
+    setSelectedRoles(prev => {
+      if (prev.includes(roleName)) {
+        return prev.filter(r => r !== roleName);
+      } else {
+        return [...prev, roleName];
+      }
+    });
+  };
+
+  // Cập nhật roles cho user
+  const handleUpdateUserRoles = async () => {
+    try {
+      if (!userToEditRole) {
+        toast.error("Không tìm thấy user!");
+        return;
+      }
+
+      if (selectedRoles.length === 0) {
+        toast.error("User phải có ít nhất 1 role!");
+        return;
+      }
+
+      console.log("🛡️ Updating roles for user:", userToEditRole.id);
+      console.log("📋 Selected roles:", selectedRoles);
+      console.log("📋 Selected roles type:", typeof selectedRoles, Array.isArray(selectedRoles));
+      
+      // Validate: đảm bảo tất cả role names là string và không rỗng
+      // Role names trong DB là: ADMIN, SELLER, STAFF, USER (uppercase, không có ROLE_ prefix)
+      const validRoleNames = selectedRoles
+        .filter(r => r && typeof r === 'string' && r.trim().length > 0)
+        .map(r => {
+          // Đảm bảo uppercase và trim
+          let roleName = r.trim().toUpperCase();
+          // Nếu có prefix "ROLE_", remove nó (DB không có prefix)
+          if (roleName.startsWith("ROLE_")) {
+            roleName = roleName.substring(5); // Remove "ROLE_" prefix
+          }
+          return roleName;
+        })
+        .filter(r => r.length > 0); // Filter empty strings after processing
+      
+      if (validRoleNames.length === 0) {
+        toast.error("Vui lòng chọn ít nhất 1 role hợp lệ!");
+        return;
+      }
+      
+      console.log("📋 Valid role names to send (after processing):", validRoleNames);
+      console.log("📋 Expected format: ['ADMIN', 'USER', 'SELLER', 'STAFF']");
+      setLoading(true);
+
+      // Gọi API cập nhật roles
+      const response = await adminService.updateUserRoles(userToEditRole.id, validRoleNames);
+      console.log("✅ User roles updated successfully:", response);
+
+      // Reload danh sách users
+      loadUsers();
+
+      toast.success("Cập nhật roles thành công!");
+
+      // Đóng modal
+      closeRoleModal();
+    } catch (error) {
+      console.error("❌ Error updating user roles:", error);
+      console.error("❌ Error details:", error.response?.data);
+      console.error("❌ Error full response:", error.response);
+      
+      // Hiển thị error message chi tiết
+      const errorMessage = error.response?.data?.message || error.message;
+      const errorCode = error.response?.data?.code;
+      console.error("❌ Error code:", errorCode);
+      console.error("❌ Error message:", errorMessage);
+      
+      toast.error(
+        `Lỗi khi cập nhật roles: ${errorMessage || error.message || "Lỗi không xác định"}`
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Cập nhật user
@@ -502,7 +688,7 @@ const UsersTab = ({
                         user.phoneNumber ||
                         "Chưa có SĐT"}
                     </td>
-                    <td style={{ padding: "1rem" }}>
+                    <td style={{ padding: "1rem", whiteSpace: "nowrap" }}>
                       <span
                         style={{
                           padding: "0.25rem 0.75rem",
@@ -535,11 +721,30 @@ const UsersTab = ({
                       <div style={{ display: "flex", gap: "0.5rem" }}>
                         <button
                           className="btn btn-secondary"
+                          style={{ padding: "0.5rem", backgroundColor: "#17a2b8" }}
+                          title="Xem chi tiết"
+                          onClick={() => openUserDetailModal(user)}
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          className="btn btn-secondary"
                           style={{ padding: "0.5rem" }}
                           title="Chỉnh sửa"
                           onClick={() => openEditModal(user)}
                         >
                           <Edit size={16} />
+                        </button>
+                        <button
+                          className="btn btn-secondary"
+                          style={{
+                            padding: "0.5rem",
+                            backgroundColor: "#6f42c1",
+                          }}
+                          onClick={() => openRoleModal(user)}
+                          title="Chỉnh sửa roles"
+                        >
+                          <Shield size={16} />
                         </button>
                         {!user.locked ? (
                           <button
@@ -1062,34 +1267,6 @@ const UsersTab = ({
               />
             </div>
 
-            <div style={{ marginBottom: "1.5rem" }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "0.5rem",
-                  fontWeight: "bold",
-                }}
-              >
-                Vai trò:
-              </label>
-              <select
-                value={newUser.role}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, role: e.target.value })
-                }
-                style={{
-                  width: "100%",
-                  padding: "0.75rem",
-                  border: "2px solid #e9ecef",
-                  borderRadius: "5px",
-                  fontSize: "1rem",
-                }}
-              >
-                <option value="member">Member</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-
             <div
               style={{
                 display: "flex",
@@ -1098,9 +1275,28 @@ const UsersTab = ({
               }}
             >
               <button
-                className="btn btn-secondary"
+                ref={cancelButtonRef}
                 onClick={() => setShowCreateUserModal(false)}
                 disabled={loading}
+                style={{
+                  padding: "0.75rem 1.5rem",
+                  borderRadius: "5px",
+                  fontSize: "1rem",
+                  fontWeight: "500",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  opacity: loading ? 0.6 : 1,
+                  transition: "background-color 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.setProperty("background-color", "#dc2626", "important");
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.setProperty("background-color", "#ef4444", "important");
+                  }
+                }}
               >
                 Hủy
               </button>
@@ -1371,6 +1567,386 @@ const UsersTab = ({
           </div>
         </div>
       )}
+
+      {/* Modal chỉnh sửa roles */}
+      {showRoleModal && userToEditRole && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "2rem",
+              borderRadius: "10px",
+              width: "500px",
+              maxWidth: "90vw",
+              maxHeight: "90vh",
+              overflowY: "auto",
+            }}
+          >
+            <h3 style={{ marginBottom: "1.5rem", color: "#333" }}>
+              Chỉnh sửa roles
+            </h3>
+            <p
+              style={{
+                marginBottom: "1.5rem",
+                color: "#666",
+                fontSize: "0.9rem",
+              }}
+            >
+              Chỉnh sửa roles cho user:{" "}
+              <strong>
+                {userToEditRole.fullname || userToEditRole.username || "Chưa có tên"}
+              </strong>
+            </p>
+
+            <div style={{ marginBottom: "1.5rem" }}>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "0.75rem",
+                  fontWeight: "bold",
+                  color: "#333",
+                }}
+              >
+                Chọn roles: *
+              </label>
+              {availableRoles.length === 0 ? (
+                <div style={{ padding: "1rem", textAlign: "center", color: "#999" }}>
+                  Đang tải roles...
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.75rem",
+                    maxHeight: "300px",
+                    overflowY: "auto",
+                    padding: "0.5rem",
+                    border: "2px solid #e9ecef",
+                    borderRadius: "8px",
+                  }}
+                >
+                  {availableRoles.map((role) => {
+                    // Role.name là ID của Role entity (@Id private String name)
+                    // DB có: ADMIN, SELLER, STAFF, USER (uppercase, không có ROLE_ prefix)
+                    let roleName = role.name || role.roleName || role.id || role;
+                    
+                    // Đảm bảo roleName là string và uppercase để khớp với DB
+                    if (typeof roleName === 'string') {
+                      roleName = roleName.trim().toUpperCase();
+                      // Remove "ROLE_" prefix nếu có (DB không có prefix)
+                      if (roleName.startsWith("ROLE_")) {
+                        roleName = roleName.substring(5);
+                      }
+                    }
+                    
+                    const roleDisplayName = role.description || roleName || roleName;
+                    const isSelected = selectedRoles.includes(roleName);
+                    
+                    // Debug log cho role đầu tiên
+                    if (availableRoles.indexOf(role) === 0) {
+                      console.log("🔍 First role:", { role, roleName, roleDisplayName });
+                    }
+                    
+                    return (
+                      <label
+                        key={roleName}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          padding: "0.75rem",
+                          backgroundColor: isSelected ? "#6f42c120" : "#f8f9fa",
+                          borderRadius: "8px",
+                          cursor: "pointer",
+                          border: isSelected ? "2px solid #6f42c1" : "2px solid transparent",
+                          transition: "all 0.2s",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.backgroundColor = "#e9ecef";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.backgroundColor = "#f8f9fa";
+                          }
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleRole(roleName)}
+                          style={{
+                            width: "18px",
+                            height: "18px",
+                            marginRight: "0.75rem",
+                            cursor: "pointer",
+                          }}
+                        />
+                        <span
+                          style={{
+                            fontSize: "0.95rem",
+                            color: "#333",
+                            fontWeight: isSelected ? "600" : "400",
+                          }}
+                        >
+                          {roleDisplayName}
+                        </span>
+                        {isSelected && (
+                          <span
+                            style={{
+                              marginLeft: "auto",
+                              fontSize: "0.75rem",
+                              color: "#6f42c1",
+                              fontWeight: "600",
+                            }}
+                          >
+                            ✓
+                          </span>
+                        )}
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+              {selectedRoles.length === 0 && (
+                <p
+                  style={{
+                    marginTop: "0.5rem",
+                    fontSize: "0.85rem",
+                    color: "#dc3545",
+                  }}
+                >
+                  ⚠️ User phải có ít nhất 1 role!
+                </p>
+              )}
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                gap: "1rem",
+                justifyContent: "flex-end",
+              }}
+            >
+              <button
+                onClick={closeRoleModal}
+                disabled={loading}
+                style={{
+                  padding: "0.75rem 1.5rem",
+                  backgroundColor: "#6c757d",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  fontSize: "1rem",
+                  fontWeight: "600",
+                  transition: "all 0.3s ease",
+                  opacity: loading ? 0.6 : 1,
+                }}
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleUpdateUserRoles}
+                disabled={loading || selectedRoles.length === 0}
+                style={{
+                  padding: "0.75rem 1.5rem",
+                  backgroundColor: selectedRoles.length === 0 ? "#ccc" : "#6f42c1",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: loading || selectedRoles.length === 0 ? "not-allowed" : "pointer",
+                  fontSize: "1rem",
+                  fontWeight: "600",
+                  transition: "all 0.3s ease",
+                  opacity: loading || selectedRoles.length === 0 ? 0.6 : 1,
+                }}
+              >
+                {loading ? "Đang cập nhật..." : "Cập nhật"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Xem chi tiết User - Using Portal để render ra ngoài DOM tree */}
+      {showUserDetailModal && createPortal(
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+          onClick={closeUserDetailModal}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              borderRadius: "12px",
+              padding: "2rem",
+              maxWidth: "600px",
+              width: "90%",
+              maxHeight: "80vh",
+              overflowY: "auto",
+              boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "1.5rem",
+              }}
+            >
+              <h2 style={{ margin: 0, color: "#333" }}>Chi tiết User</h2>
+              <button
+                onClick={closeUserDetailModal}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: "1.5rem",
+                  cursor: "pointer",
+                  color: "#666",
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {loadingUserDetail ? (
+              <div style={{ textAlign: "center", padding: "2rem" }}>
+                <div className="spinner-border" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            ) : userDetail ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                  <div>
+                    <label style={{ fontWeight: "600", color: "#666" }}>ID:</label>
+                    <p style={{ margin: "0.25rem 0", fontSize: "1rem" }}>#{userDetail.id}</p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: "600", color: "#666" }}>Email:</label>
+                    <p style={{ margin: "0.25rem 0", fontSize: "1rem" }}>{userDetail.email || "Chưa có"}</p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: "600", color: "#666" }}>Họ tên:</label>
+                    <p style={{ margin: "0.25rem 0", fontSize: "1rem" }}>{userDetail.fullname || "Chưa có"}</p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: "600", color: "#666" }}>Số điện thoại:</label>
+                    <p style={{ margin: "0.25rem 0", fontSize: "1rem" }}>{userDetail.phone || "Chưa có"}</p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: "600", color: "#666" }}>Giới tính:</label>
+                    <p style={{ margin: "0.25rem 0", fontSize: "1rem" }}>{userDetail.gender || "Chưa có"}</p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: "600", color: "#666" }}>Ngày sinh:</label>
+                    <p style={{ margin: "0.25rem 0", fontSize: "1rem" }}>{userDetail.yob ? formatDate(userDetail.yob) : "Chưa có"}</p>
+                  </div>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <label style={{ fontWeight: "600", color: "#666" }}>Địa chỉ:</label>
+                    <p style={{ margin: "0.25rem 0", fontSize: "1rem" }}>{userDetail.address || "Chưa có"}</p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: "600", color: "#666" }}>Trạng thái:</label>
+                    <p style={{ margin: "0.25rem 0", fontSize: "1rem" }}>
+                      <span
+                        style={{
+                          padding: "0.25rem 0.75rem",
+                          borderRadius: "15px",
+                          fontSize: "0.85rem",
+                          backgroundColor: userDetail.locked ? "#dc354520" : "#28a74520",
+                          color: userDetail.locked ? "#dc3545" : "#28a745",
+                        }}
+                      >
+                        {userDetail.locked ? "Đã khóa" : "Hoạt động"}
+                      </span>
+                    </p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: "600", color: "#666" }}>Roles:</label>
+                    <div style={{ margin: "0.25rem 0", display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                      {userDetail.roles && Array.isArray(userDetail.roles) && userDetail.roles.length > 0 ? (
+                        userDetail.roles.map((role, idx) => {
+                          const roleName = typeof role === "string" ? role : role.name || role.roleName || "N/A";
+                          return (
+                            <span
+                              key={idx}
+                              style={{
+                                padding: "0.25rem 0.75rem",
+                                borderRadius: "15px",
+                                fontSize: "0.85rem",
+                                backgroundColor: "#6f42c120",
+                                color: "#6f42c1",
+                              }}
+                            >
+                              {roleName}
+                            </span>
+                          );
+                        })
+                      ) : (
+                        <span style={{ color: "#999" }}>Chưa có role</span>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: "600", color: "#666" }}>Ngày tham gia:</label>
+                    <p style={{ margin: "0.25rem 0", fontSize: "1rem" }}>
+                      {formatDate(userDetail.createdAt || userDetail.joinDate || userDetail.created_at)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p style={{ textAlign: "center", color: "#999" }}>Không có dữ liệu</p>
+            )}
+
+            <div style={{ marginTop: "1.5rem", display: "flex", justifyContent: "flex-end" }}>
+              <button
+                onClick={closeUserDetailModal}
+                style={{
+                  padding: "0.75rem 1.5rem",
+                  backgroundColor: "#6c757d",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "1rem",
+                  fontWeight: "600",
+                }}
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      , document.body)}
     </div>
   );
 };
