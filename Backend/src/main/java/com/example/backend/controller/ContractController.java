@@ -126,6 +126,9 @@ public class ContractController {
                 .message("đã lấy danh sách hợp đồng đã kí thành công!")
                 .build();
     }
+
+
+
 // thanh toán -> escrow đơn hàng
     @PreAuthorize("hasAnyAuthority('ROLE_USER','ROLE_SELLER')")
     @PostMapping("/contracts/{contractId}/pay")
@@ -140,7 +143,12 @@ public class ContractController {
                 .message("Thanh toán thất bại. Vui lòng kiểm tra số dư hoặc trạng thái hợp đồng!").build();
         }
     }
-// sellet có thể hủy hợp động nếu sau 3 ngayf kí hợp đồng chưa thanh toán
+
+
+
+
+
+// seller có thể hủy hợp động nếu sau 3 ngayf kí hợp đồng chưa thanh toán
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
     @PostMapping("/contracts/{contractId}/cancel-by-seller")
     public ApiResponse<String> cancelContractBySeller(@PathVariable Long contractId, @RequestParam Long sellerId) {

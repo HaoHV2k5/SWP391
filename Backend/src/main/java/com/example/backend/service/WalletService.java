@@ -34,4 +34,10 @@ public class WalletService {
 
         }
 
+        public BigDecimal getBalanceUser(User user){
+            Wallet wallet = user.getWallet();
+            return wallet.getBalance();
+
+        }
+
 }

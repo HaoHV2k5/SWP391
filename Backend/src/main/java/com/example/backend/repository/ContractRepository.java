@@ -21,4 +21,6 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
     List<Contract> findAllConstractByStatus(long userId, ContractStatus status);
 
     List<Contract> findAllByOrder(Order order);
+
+    Contract findByOrderId(Long orderId);
 }

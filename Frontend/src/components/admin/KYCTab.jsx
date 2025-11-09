@@ -12,13 +12,13 @@ import apiClient from "../../services/apiClient";
 const { TextArea } = Input;
 
 const KYCTab = () => {
-  const [activeSubTab, setActiveSubTab] = useState("pending");
+  const [activeSubTab, setActiveSubTab] = useState("pending"); // tab trang thái đang chọn
   const [kycData, setKycData] = useState([]);
   // Lưu các KYC đã duyệt/từ chối để hiển thị ở các tab tương ứng
   const [approvedKyc, setApprovedKyc] = useState([]);
   const [rejectedKyc, setRejectedKyc] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(""); // từ khóa tìm kiếm
   const [selectedKyc, setSelectedKyc] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -614,6 +614,33 @@ const KYCTab = () => {
         />
       </div>
 
+<<<<<<< hao
+      {/* Sub-tabs */}
+      <Tabs
+        activeKey={activeSubTab}
+        onChange={setActiveSubTab}
+        items={subTabItems}
+        style={{ marginBottom: "1rem" }}
+      />
+      {/* hiển thị bảng */}
+      {/* Table */}
+      <Table
+        columns={columns}
+        dataSource={filteredData}
+        loading={loading}
+        rowKey="id"
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total) => `Tổng ${total} bản ghi`,
+        }}
+        style={{
+          backgroundColor: "rgba(255, 255, 255, 0.05)",
+          borderRadius: "8px",
+        }}
+      />
+=======
       {/* Table with Dark Theme */}
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", color: "white" }}>
@@ -797,6 +824,7 @@ const KYCTab = () => {
           </div>
         </div>
       )}
+>>>>>>> master
 
       {/* Detail Modal */}
       <Modal

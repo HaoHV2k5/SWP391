@@ -121,7 +121,7 @@ public class AdminController {
                 .message("User roles updated successfully")
                 .build();
     }
-
+ // add role
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping("/add/role")
     public ApiResponse<Void> addPermissionForRole(@RequestBody AddPermissionRequest request){
@@ -139,6 +139,7 @@ public class AdminController {
                 .message("Permission removed successfully")
                 .build();
     }
+// lay danh sach seller request rut tien
 
     @GetMapping("/order-escrow/seller-requests")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
@@ -146,14 +147,14 @@ public class AdminController {
         List<OrderEscrowReviewResponse> reqs = orderService.getEscrowAdminReviewing();
         return ApiResponse.<List<OrderEscrowReviewResponse>>builder().data(reqs).message("Danh sách yêu cầu seller chờ duyệt").build();
     }
-
+// chap nhận seller request
     @PostMapping("/order-escrow/{escrowId}/approve")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ApiResponse<Void> adminApproveSellerRequest(@PathVariable Long escrowId) {
         orderService.adminApproveEscrow(escrowId);
         return ApiResponse.<Void>builder().message("Đã xác nhận và thông báo buyer thành công").build();
     }
-
+// từ chối seller request
     @PostMapping("/order-escrow/{escrowId}/reject")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ApiResponse<Void> adminRejectSellerRequest(@PathVariable Long escrowId, @RequestParam String reason) {
@@ -165,6 +166,8 @@ public class AdminController {
      * API để admin có thể gọi thủ công để release escrow money
      * Chạy logic tự động release tiền cho các escrow đủ điều kiện
      */
+
+
     @PostMapping("/escrow/manual-release")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ApiResponse<Integer> manualReleaseEscrowMoney() {

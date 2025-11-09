@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { kycService } from '../../services/kycService';
-import KycSubmissionForm from '../../components/kyc/KycSubmissionForm';
-import KycStatusCard from '../../components/kyc/KycStatusCard';
+import React, { useState, useEffect } from 'react'; // quản lí state và side-effects
+import { useNavigate } from 'react-router-dom'; // điều hướng trang
+import { kycService } from '../../services/kycService'; // gọi api
+import KycSubmissionForm from '../../components/kyc/KycSubmissionForm'; //component form upload KYC
+import KycStatusCard from '../../components/kyc/KycStatusCard'; // component trạng thái kyc
 
 const KycPage = ({ user }) => {
   const navigate = useNavigate();
-  
-  const [currentKyc, setCurrentKyc] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [currentKyc, setCurrentKyc] = useState(null); // chứa dữ liệu nếu user đã submit
+  const [loading, setLoading] = useState(false); // tải dữ liệu từ server
   const [error, setError] = useState('');
   const [showSubmissionForm, setShowSubmissionForm] = useState(false);
+  // true => form hien thi, false => form khong hien thi
 
   useEffect(() => {
     if (!user) {
@@ -32,9 +32,9 @@ const KycPage = ({ user }) => {
         setCurrentKyc(result.data);
       } else {
         // Nếu chưa có KYC (không phải lỗi thực sự), không hiển thị lỗi
-        if (result.notExists || 
-            result.message.includes('chưa có KYC') || 
-            result.message.includes('KYC_NOT_EXISTED')) {
+        if (result.notExists ||
+          result.message.includes('chưa có KYC') ||
+          result.message.includes('KYC_NOT_EXISTED')) {
           setCurrentKyc(null);
           setError(''); // Không hiển thị lỗi khi chưa có KYC
         } else {
@@ -79,41 +79,41 @@ const KycPage = ({ user }) => {
   }
 
   return (
-      <div className="container mt-4">
-        <div className="row">
-          <div className="col-12">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <h2>Xác thực danh tính (KYC)</h2>
-              {canSubmitNewKyc() && (
-                <button
-                  className="btn btn-primary"
-                  onClick={() => setShowSubmissionForm(true)}
-                >
-                  {currentKyc ? 'Submit KYC mới' : 'Submit KYC'}
-                </button>
+    <div className="container mt-4">
+      <div className="row">
+        <div className="col-12">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h2>Xác thực danh tính (KYC)</h2>
+            {canSubmitNewKyc() && (
+              <button
+                className="btn btn-primary"
+                onClick={() => setShowSubmissionForm(true)}
+              >
+                {currentKyc ? 'Submit KYC mới' : 'Submit KYC'}
+              </button>
+            )}
+          </div>
+
+          {error && (
+            <div className="alert alert-danger">
+              {error}
+            </div>
+          )}
+
+          {/* User KYC Section */}
+          <div className="row mb-4">
+            <div className="col-12">
+              {showSubmissionForm ? (
+                <KycSubmissionForm
+                  userId={user?.id}
+                  onSuccess={handleSubmitSuccess}
+                  onCancel={handleCancelSubmit}
+                />
+              ) : (
+                <KycStatusCard kycData={currentKyc} />
               )}
             </div>
-
-            {error && (
-              <div className="alert alert-danger">
-                {error}
-              </div>
-            )}
-
-            {/* User KYC Section */}
-            <div className="row mb-4">
-              <div className="col-12">
-                {showSubmissionForm ? (
-                  <KycSubmissionForm
-                    userId={user?.id}
-                    onSuccess={handleSubmitSuccess}
-                    onCancel={handleCancelSubmit}
-                  />
-                ) : (
-                  <KycStatusCard kycData={currentKyc} />
-                )}
-              </div>
-            </div>
+          </div>
 
           {/* KYC Information */}
           <div className="row mt-4">
