@@ -160,7 +160,7 @@ public class ProductController {
     //seller lay tat ca  bai dang cua minh
 
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
-    @GetMapping("history/seller/{id}")
+    @GetMapping("/history/seller/{id}")
     public ApiResponse<List<ProductResponse>> getAllProductSeller(@PathVariable Long id) {
         List<ProductResponse> responses = productService.getAllPostOfSeller(id);
         return ApiResponse.<List<ProductResponse>>builder()

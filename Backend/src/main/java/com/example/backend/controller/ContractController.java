@@ -115,12 +115,12 @@ public class ContractController {
                 .message("đã lấy danh sách hợp đồng đang chờ kí thành công!")
                 .build();
     }
-    //api lay danh sach hop dong signed
+    //api lay danh sach hop dong signed theo userid
 
     @PreAuthorize("hasAnyAuthority('ROLE_SELLER','ROLE_USER')")
     @GetMapping("/contracts/signed")
     public ApiResponse<List<ContractResponse>> getContractsSign(@RequestParam Long userid){
-        List<ContractResponse> list = constractService.getContractUserPending(userid);
+        List<ContractResponse> list = constractService.getContractUserSign(userid);
         return ApiResponse.<List<ContractResponse>>builder()
                 .data(list)
                 .message("đã lấy danh sách hợp đồng đã kí thành công!")

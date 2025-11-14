@@ -23,4 +23,6 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
     List<Contract> findAllByOrder(Order order);
 
     Contract findByOrderId(Long orderId);
+
+    List<Contract> findAllByOrderId(Long orderId);
 }

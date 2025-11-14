@@ -45,6 +45,7 @@ public class ConstractService {
     private final MailService mailService;
     private final ComplaintRepository complaintRepository;
 
+
     public List<ContractResponse> getContractUserInvolved(Long userId) {
         List<Contract> list = contractRepository.findAllByUserInvolved(userId);
         return contractMapper.toContractResponseList(list);
@@ -73,13 +74,12 @@ public class ConstractService {
         if (contract.getStatus() != ContractStatus.SIGNED || Boolean.TRUE.equals(contract.getPaymentCompleted())) return false;
 
         // Lấy order và số tiền cần thanh toán
-        var order = contract.getOrder();
-        var amount = contract.getAgreedPrice();
-        var buyer = contract.getBuyer();
+        Order order = contract.getOrder();
+        BigDecimal amount = contract.getAgreedPrice();
+        User buyer = contract.getBuyer();
         // Tìm ví buyer
-        var walletOpt = walletRepository.findByUserId(buyer.getId());
-        if (walletOpt.isEmpty()) return false;
-        var wallet = walletOpt.get();
+        Wallet wallet = walletRepository.findByUserId(buyer.getId()).orElseThrow(() -> new AppException(ErrorCode.WISHLIST_NOT_EXISTED));
+
         if (wallet.getBalance().compareTo(amount) < 0) {
             Transaction transactionInvalid = Transaction.builder()
                     .user(buyer)
@@ -133,19 +133,22 @@ public class ConstractService {
                 .build();
         walletTransactionRepository.save(walletTransaction);
 
-        // Tạo OrderEscrow
+
+        orderRespository.save(order);
+
         OrderEscrow orderEscrow = OrderEscrow.builder()
                 .order(order)
                 .status(EscrowStatus.AWAIT_CONFIRM)
                 .holdStartTime(LocalDateTime.now())
                 .build();
+
+
         order.setOrderEscrow(orderEscrow);
+
         orderEscrowRepository.save(orderEscrow);
 
-        // Cập nhật contract
-        contract.setPaymentCompleted(true);
-        contract.setTransaction(transaction);
-        contractRepository.save(contract);
+        log.warn("Đã lưu OrderEscrow xuống DB thành công");
+
         return true;
     }
 
@@ -159,12 +162,14 @@ public class ConstractService {
      */
     @Transactional
     public boolean handleBuyerConfirmReceived(Long orderId) {
-        var order = orderRespository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        Order order = orderRespository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
         User buyer = order.getBuyer();
        if(buyer == null){
            throw new AppException(ErrorCode.USER_NOT_FOUND);
        }
-        var escrow = order.getOrderEscrow();
+       OrderEscrow escrow = orderEscrowRepository.findByOrderId(orderId);
+
+
         if (escrow == null || !escrow.getStatus().equals(EscrowStatus.AWAIT_CONFIRM)) {
             throw new AppException(ErrorCode.INVALID_ORDER_ESCROW_STATUS);
         }
@@ -175,11 +180,12 @@ public class ConstractService {
         escrow.setExpectedReleaseTime(LocalDateTime.now().plusDays(3));
         orderEscrowRepository.save(escrow);
         // Update contract (deliveryCompleted)
-        var contracts = order.getContracts();
+        var contracts = contractRepository.findAllByOrderId(orderId);
         for(var contract : contracts) {
-            if(contract.getStatus() == ContractStatus.COMPLETED) {
+            if(contract.getStatus() == ContractStatus.SIGNED) {
                 contract.setDeliveryCompleted(true);
                 contract.setCompletedAt(LocalDateTime.now());
+                contract.setStatus(ContractStatus.COMPLETED);
                 contractRepository.save(contract);
             }
         }

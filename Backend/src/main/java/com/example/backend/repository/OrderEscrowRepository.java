@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OrderEscrowRepository extends JpaRepository<OrderEscrow, Long> {
+    OrderEscrow findByOrderId(Long orderId);
 }
